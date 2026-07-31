@@ -14,7 +14,6 @@
 set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
-mkdir -p slurm_logs
 
 source "$repo_root/scripts/jean_zay_env.sh"
 python_bin="${PYTHON:-python}"
