@@ -24,7 +24,7 @@ if ! command -v python >/dev/null 2>&1; then
 fi
 # Slurm may strip LD_LIBRARY_PATH while moving from the login node to the
 # compute image. Keep the OpenMPI runtime needed by the module's PyTorch.
-openmpi_lib=/gpfslocalsup/spack_soft/openmpi/4.1.8/gcc-11.5.0-6k5g5tjbenywyt5p6czzbxg7fgo3pvam/lib
+openmpi_lib=/lustre/fshomisc/sup/hpe/spack_soft/openmpi/4.1.8/gcc-11.5.0-6k5g5tjbenywyt5p6czzbxg7fgo3pvam/lib
 if [[ -d "$openmpi_lib" ]]; then
   export LD_LIBRARY_PATH="$openmpi_lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
   export LD_PRELOAD="$openmpi_lib/libmpi.so.40${LD_PRELOAD:+:${LD_PRELOAD}}"
