@@ -22,6 +22,12 @@ if ! command -v python >/dev/null 2>&1; then
   echo 'Jean-Zay Python module was not exported into the job' >&2
   exit 2
 fi
+# Slurm may strip LD_LIBRARY_PATH while moving from the login node to the
+# compute image. Keep the OpenMPI runtime needed by the module's PyTorch.
+openmpi_lib=/gpfslocalsup/spack_soft/openmpi/4.1.8/gcc-11.5.0-6k5g5tjbenywyt5p6czzbxg7fgo3pvam/lib
+if [[ -d "$openmpi_lib" ]]; then
+  export LD_LIBRARY_PATH="$openmpi_lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+fi
 export PYTHONPATH="${repo_root}/src:${repo_root}/vendor${PYTHONPATH:+:${PYTHONPATH}}"
 export HF_HOME="${HF_HOME:-${repo_root}/.hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
