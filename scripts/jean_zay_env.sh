@@ -22,6 +22,6 @@ if ! command -v python >/dev/null 2>&1; then
   echo 'Jean-Zay Python module was not exported into the job' >&2
   exit 2
 fi
-export PYTHONPATH="${repo_root}/vendor${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${repo_root}/src:${repo_root}/vendor${PYTHONPATH:+:${PYTHONPATH}}"
 export HF_HOME="${HF_HOME:-${repo_root}/.hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
