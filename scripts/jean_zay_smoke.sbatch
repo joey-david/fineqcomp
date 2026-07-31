@@ -6,7 +6,8 @@
 #SBATCH --qos=qos_gpu_h100-dev
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:h100:2
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=48
+#SBATCH --hint=nomultithread
 #SBATCH --time=02:00:00
 #SBATCH --output=slurm_logs/%x-%j.out
 #SBATCH --error=slurm_logs/%x-%j.err
