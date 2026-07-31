@@ -12,7 +12,7 @@
 #SBATCH --error=slurm_logs/%x-%j.err
 
 set -euo pipefail
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
 
 source "$repo_root/scripts/jean_zay_env.sh"
