@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-usage="usage: scripts/remote.sh push | pull | pull-stats"
+usage="usage: scripts/remote.sh push | push-prepared | pull | pull-stats"
 action="${1:?$usage}"
 host="${SSH_SERVER:-lamgate}"
 remote_root="${REMOTE_REPO_ROOT:-/home/lamsade/jdavid/fineQComp}"
@@ -22,7 +22,13 @@ push)
     --exclude reports/ \
     --exclude slurm_logs/ \
     --exclude remote_logs/ \
-    ./ "$host:$remote_root/"
+  ./ "$host:$remote_root/"
+  ;;
+push-prepared)
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "$host" "mkdir -p '$remote_root/prepared'"
+  rsync -avz --delete \
+    --exclude local-preflight.json \
+    prepared/ "$host:$remote_root/prepared/"
   ;;
 pull)
   mkdir -p runs reports remote_logs

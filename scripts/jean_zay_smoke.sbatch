@@ -19,7 +19,10 @@ cd "$repo_root"
 source "$repo_root/scripts/jean_zay_env.sh"
 python_bin="${PYTHON:-python}"
 
-"$python_bin" -m fineqcomp prepare
+if [[ ! -s prepared/manifest.jsonl ]]; then
+  echo 'missing prepared campaign data; stage it before submission' >&2
+  exit 2
+fi
 "$python_bin" -m fineqcomp preflight \
   --require-gpus --tokenizers --model-smoke \
   --report prepared/smoke-preflight.json

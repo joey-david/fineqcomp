@@ -32,7 +32,10 @@ export HF_HOME="${HF_HOME:-${repo_root}/.hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 mkdir -p remote_logs
 
-"$python_bin" -m fineqcomp prepare
+if [[ ! -s prepared/manifest.jsonl ]]; then
+  echo 'missing prepared campaign data; run scripts/remote.sh push-prepared first' >&2
+  exit 2
+fi
 "$python_bin" -m fineqcomp preflight \
   --require-gpus --tokenizers --model-smoke \
   >remote_logs/preflight.log 2>&1
