@@ -15,4 +15,5 @@ prepared/
 runs/
 reports/
 remote_logs/
+slurm_logs/
 .hf_cache/

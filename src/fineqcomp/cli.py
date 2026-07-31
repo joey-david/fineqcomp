@@ -50,7 +50,12 @@ def _run(args: argparse.Namespace) -> int:
     partitions = partition_runs(runs, args.shards)
     if not 0 <= args.shard < args.shards:
         raise ValueError("shard index must be less than shard count")
-    selected = partitions[args.shard]
+    if args.run_id is not None:
+        selected = [run for run in runs if run.run_id == args.run_id]
+        if len(selected) != 1:
+            raise ValueError(f"unknown run ID: {args.run_id}")
+    else:
+        selected = partitions[args.shard]
     if args.dry_run:
         print(json.dumps(describe_partition(runs, args.shards), indent=2))
         shown = selected if args.limit is None else selected[: args.limit]
@@ -117,6 +122,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--shard", type=int, required=True)
     run.add_argument("--shards", type=int, default=2)
     run.add_argument("--limit", type=int)
+    run.add_argument("--run-id")
     run.add_argument("--force", action="store_true")
     run.add_argument("--dry-run", action="store_true")
     run.set_defaults(func=_run)

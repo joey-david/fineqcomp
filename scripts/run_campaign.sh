@@ -16,7 +16,7 @@ if [[ ! -x "$python_bin" ]]; then
   exit 2
 fi
 
-export HF_HOME="${HF_HOME:-${HOME}/.cache/huggingface}"
+export HF_HOME="${HF_HOME:-${repo_root}/.hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 mkdir -p remote_logs
 

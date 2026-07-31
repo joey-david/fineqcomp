@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#SBATCH --job-name=fineqcomp-full
+#SBATCH --account=fas@h100
+#SBATCH --partition=gpu_p6
+#SBATCH --qos=qos_gpu_h100-t4
+#SBATCH --nodes=1
+#SBATCH --gres=gpu:h100:2
+#SBATCH --cpus-per-task=32
+#SBATCH --mem=200G
+#SBATCH --time=4-04:00:00
+#SBATCH --output=slurm_logs/%x-%j.out
+#SBATCH --error=slurm_logs/%x-%j.err
+
+set -euo pipefail
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+mkdir -p slurm_logs
+export HF_HOME="${HF_HOME:-${repo_root}/.hf_cache}"
+export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
+exec ./scripts/run_campaign.sh
