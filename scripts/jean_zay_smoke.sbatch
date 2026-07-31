@@ -2,6 +2,7 @@
 #SBATCH --job-name=fineqcomp-smoke
 #SBATCH --account=fas@h100
 #SBATCH --partition=gpu_p6
+#SBATCH --constraint=h100
 #SBATCH --qos=qos_gpu_h100-dev
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:h100:2
