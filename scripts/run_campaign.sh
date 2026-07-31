@@ -10,9 +10,21 @@ if [[ -f .env ]]; then
   set +a
 fi
 
-python_bin="${PYTHON:-.venv/bin/python}"
+if [[ -n "${PYTHON:-}" ]]; then
+  python_bin="$PYTHON"
+elif [[ -x .venv/bin/python ]]; then
+  python_bin=.venv/bin/python
+else
+  python_bin=python
+fi
 if [[ ! -x "$python_bin" ]]; then
-  echo "missing $python_bin; run scripts/bootstrap.sh first" >&2
+  command -v "$python_bin" >/dev/null 2>&1 || {
+    echo "missing $python_bin; run scripts/bootstrap.sh first" >&2
+    exit 2
+  }
+fi
+if ! "$python_bin" -c 'import fineqcomp' >/dev/null 2>&1; then
+  echo "cannot import fineqcomp with $python_bin" >&2
   exit 2
 fi
 

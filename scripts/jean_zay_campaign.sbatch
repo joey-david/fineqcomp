@@ -15,6 +15,5 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 mkdir -p slurm_logs
-export HF_HOME="${HF_HOME:-${repo_root}/.hf_cache}"
-export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
+source "$repo_root/scripts/jean_zay_env.sh"
 exec ./scripts/run_campaign.sh

@@ -15,8 +15,12 @@ push)
     --exclude .env \
     --exclude __pycache__/ \
     --exclude .pytest_cache/ \
+    --exclude .ruff_cache/ \
+    --exclude '*.egg-info/' \
+    --exclude prepared/ \
     --exclude runs/ \
     --exclude reports/ \
+    --exclude slurm_logs/ \
     --exclude remote_logs/ \
     ./ "$host:$remote_root/"
   ;;

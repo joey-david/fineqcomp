@@ -16,9 +16,8 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 mkdir -p slurm_logs
 
-python_bin="${PYTHON:-.venv/bin/python}"
-export HF_HOME="${HF_HOME:-${repo_root}/.hf_cache}"
-export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
+source "$repo_root/scripts/jean_zay_env.sh"
+python_bin="${PYTHON:-python}"
 
 "$python_bin" -m fineqcomp prepare
 "$python_bin" -m fineqcomp preflight \
