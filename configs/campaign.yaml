@@ -1,0 +1,170 @@
+version: 1
+
+precisions: [2, 3, 4, 8, 16]
+clip_percentiles: [99.0, 99.9, 100.0]
+
+models:
+  qwen3_8b_base:
+    name: Qwen/Qwen3-8B-Base
+    revision: 49e3418fbbbca6ecbdf9608b4d22e5a407081db4
+    backbone: nf4
+  qwen3_14b_base:
+    name: Qwen/Qwen3-14B-Base
+    revision: 0b0bd3732e2c374d483664439ea334928b65f304
+    backbone: nf4
+  mistral_7b_base:
+    name: mistralai/Mistral-7B-v0.3
+    revision: caa1feb0e54d415e2df31207e5f4e273e33509b1
+    backbone: nf4
+  qwen3_8b_instruct:
+    name: Qwen/Qwen3-8B
+    revision: b968826d9c46dd6066d109eabc6255188de91218
+    backbone: nf4
+    chat: true
+    disable_thinking: true
+  mistral_7b_instruct:
+    name: mistralai/Mistral-7B-Instruct-v0.3
+    revision: c170c708c41dac9275d15a8fff4eca08d52bab71
+    backbone: nf4
+    chat: true
+
+adapters:
+  seeded_last1_r4:
+    method: seeded_b
+    rank: 4
+    target_modules: [q_proj, v_proj]
+    last_n_layers: 1
+    alpha: 8
+  seeded_last4_r4:
+    method: seeded_b
+    rank: 4
+    target_modules: [q_proj, v_proj]
+    last_n_layers: 4
+    alpha: 8
+  seeded_last4_r16:
+    method: seeded_b
+    rank: 16
+    target_modules: [q_proj, v_proj]
+    last_n_layers: 4
+    alpha: 32
+  seeded_all_qv_r16:
+    method: seeded_b
+    rank: 16
+    target_modules: [q_proj, v_proj]
+    last_n_layers: null
+    alpha: 32
+  full_all_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+
+training:
+  synthetic:
+    epochs: 3
+    learning_rate: 0.0002
+    effective_batch_size: 128
+    micro_batch_size: 32
+    max_length: 96
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+  gsm8k:
+    epochs: 3
+    learning_rate: 0.0001
+    effective_batch_size: 32
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+  mbpp:
+    epochs: 10
+    learning_rate: 0.0001
+    effective_batch_size: 32
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+
+datasets:
+  synthetic_codebook:
+    codebook_dir: codebooks
+    train_rows: 16384
+    items_per_family: 16
+    labels: [" A", " B", " C", " D", " E", " F", " G", " H", " I", " J", " K", " L", " M", " N", " O", " P"]
+  gsm8k:
+    path: openai/gsm8k
+    name: main
+    revision: 740312add88f781978c0658806c59bc2815b9866
+    train_split: train
+    test_split: test
+    validation_rows: 512
+  mbpp:
+    path: google-research-datasets/mbpp
+    name: sanitized
+    revision: 4bb6404fdc6cacfda99d4ac4205087b89d32030c
+    train_split: train
+    validation_split: validation
+    test_split: test
+  ifeval:
+    path: google/IFEval
+    revision: 966cd89545d6b6acfd7638bc708b98261ca58e84
+    split: train
+
+studies:
+  exact_seeded:
+    kind: synthetic
+    models: [qwen3_8b_base]
+    backbone: nf4
+    family_counts: [4, 32, 256, 1024]
+    seeds: [11, 22, 33]
+    adapters: [seeded_last1_r4, seeded_last4_r4, seeded_last4_r16, seeded_all_qv_r16]
+    training: synthetic
+  exact_full:
+    kind: synthetic
+    models: [qwen3_8b_base]
+    backbone: nf4
+    family_counts: [32, 1024]
+    seeds: [11, 22, 33]
+    adapters: [full_all_r16]
+    training: synthetic
+  family_check:
+    kind: synthetic
+    models: [mistral_7b_base]
+    backbone: nf4
+    family_counts: [32, 1024]
+    seeds: [11, 22, 33]
+    adapters: [seeded_last4_r16, full_all_r16]
+    training: synthetic
+  scale_check:
+    kind: synthetic
+    models: [qwen3_14b_base]
+    backbone: nf4
+    family_counts: [32, 1024]
+    seeds: [11]
+    adapters: [seeded_last4_r16, full_all_r16]
+    training: synthetic
+  backbone_check:
+    kind: synthetic
+    models: [qwen3_8b_base]
+    backbone: bf16
+    family_counts: [32, 1024]
+    seeds: [11]
+    adapters: [seeded_last4_r16]
+    training: synthetic
+  natural_qwen:
+    kind: natural
+    models: [qwen3_8b_instruct]
+    datasets: [gsm8k, mbpp]
+    seeds: [11, 22, 33]
+    adapters: [seeded_last4_r16, seeded_all_qv_r16, full_all_r16]
+    training: gsm8k
+    training_by_dataset: {gsm8k: gsm8k, mbpp: mbpp}
+  natural_mistral:
+    kind: natural
+    models: [mistral_7b_instruct]
+    datasets: [gsm8k, mbpp]
+    seeds: [11]
+    adapters: [seeded_last4_r16, seeded_all_qv_r16, full_all_r16]
+    training: gsm8k
+    training_by_dataset: {gsm8k: gsm8k, mbpp: mbpp}

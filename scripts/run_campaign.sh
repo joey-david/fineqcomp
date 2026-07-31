@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+if [[ -f .env ]]; then
+  set -a
+  source .env
+  set +a
+fi
+
+python_bin="${PYTHON:-.venv/bin/python}"
+if [[ ! -x "$python_bin" ]]; then
+  echo "missing $python_bin; run scripts/bootstrap.sh first" >&2
+  exit 2
+fi
+
+export HF_HOME="${HF_HOME:-${HOME}/.cache/huggingface}"
+export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
+mkdir -p remote_logs
+
+"$python_bin" -m fineqcomp prepare
+"$python_bin" -m fineqcomp preflight \
+  --require-gpus --tokenizers --model-smoke \
+  >remote_logs/preflight.log 2>&1
+
+worker_pids=()
+stop_workers() {
+  trap - INT TERM
+  local pid
+  for pid in "${worker_pids[@]}"; do
+    kill -TERM "$pid" 2>/dev/null || true
+  done
+  wait || true
+  exit 130
+}
+trap stop_workers INT TERM
+
+(
+  set -o pipefail
+  CUDA_VISIBLE_DEVICES=0 "$python_bin" -m fineqcomp run --shard 0 --shards 2 \
+    2>&1 | tee -a remote_logs/worker0.log
+) &
+worker_pids+=("$!")
+(
+  set -o pipefail
+  CUDA_VISIBLE_DEVICES=1 "$python_bin" -m fineqcomp run --shard 1 --shards 2 \
+    2>&1 | tee -a remote_logs/worker1.log
+) &
+worker_pids+=("$!")
+
+status=0
+for pid in "${worker_pids[@]}"; do
+  if ! wait "$pid"; then
+    status=1
+  fi
+done
+
+"$python_bin" -m fineqcomp analyze 2>&1 | tee -a remote_logs/analysis.log
+if ((status != 0)); then
+  echo "one or more workers failed; rerun this script to resume" >&2
+fi
+exit "$status"

@@ -1,0 +1,471 @@
+"""Restart-safe execution of prepared campaign records."""
+
+from __future__ import annotations
+
+import math
+import time
+import traceback
+from collections import defaultdict
+from pathlib import Path
+from typing import Any
+
+import torch
+
+from fineqcomp.adapters import adapter_tensors, apply_adapter_tensors
+from fineqcomp.artifacts import read_json, run_complete, write_json
+from fineqcomp.codec import decode_tensor_map, encode_tensor_map
+from fineqcomp.config import RunSpec
+from fineqcomp.data import (
+    Example,
+    load_ifeval,
+    load_natural_dataset,
+    read_jsonl,
+    synthetic_data_dir,
+    validate_synthetic_dataset,
+)
+from fineqcomp.evaluation import (
+    evaluate_ifeval,
+    evaluate_natural,
+    evaluate_synthetic,
+    write_predictions,
+)
+from fineqcomp.modeling import ModelSession, validate_single_token_labels
+from fineqcomp.training import causal_nll, train_adapter
+
+
+def estimate_run_cost(run: RunSpec) -> float:
+    """Return a stable relative GPU cost used only for worker partitioning."""
+    size = 14.0 if "14b" in run.model.key else 8.0 if "8b" in run.model.key else 7.0
+    if run.kind == "synthetic":
+        examples = 16_384
+        evaluation = float(run.family_count or 1) * 16
+    elif run.dataset_key == "gsm8k":
+        examples, evaluation = 7_000, 1_319 * len(run.precisions)
+    else:
+        examples, evaluation = 374, 500 * len(run.precisions)
+    train = examples * run.training.epochs * math.sqrt(run.training.max_length / 96)
+    return size * (train + evaluation * 16)
+
+
+def partition_runs(runs: list[RunSpec], shards: int) -> list[list[RunSpec]]:
+    if shards < 1:
+        raise ValueError("shards must be positive")
+    partitions: list[list[RunSpec]] = [[] for _ in range(shards)]
+    costs = [0.0] * shards
+    for run in sorted(runs, key=lambda item: (-estimate_run_cost(item), item.run_id)):
+        target = min(range(shards), key=lambda index: (costs[index], index))
+        partitions[target].append(run)
+        costs[target] += estimate_run_cost(run)
+    for partition in partitions:
+        partition.sort(key=lambda run: (run.model.key, run.model.backbone, run.run_id))
+    return partitions
+
+
+class RunEngine:
+    def __init__(
+        self,
+        campaign: dict[str, Any],
+        prepared_root: str | Path = "prepared",
+        runs_root: str | Path = "runs",
+    ) -> None:
+        self.campaign = campaign
+        self.prepared_root = Path(prepared_root)
+        self.runs_root = Path(runs_root)
+        self._data_cache: dict[tuple[str, int], dict[str, list[Example]]] = {}
+        self._ifeval: tuple[list[Example], list[dict[str, Any]]] | None = None
+
+    def _load_data(
+        self, run: RunSpec
+    ) -> tuple[dict[str, list[Example]], dict[str, Any]]:
+        if run.kind == "synthetic":
+            if run.family_count is None:
+                raise ValueError("synthetic run lacks family_count")
+            root = synthetic_data_dir(self.prepared_root, run.family_count, run.seed)
+            metadata = validate_synthetic_dataset(root)
+            data = {
+                split: read_jsonl(root / f"{split}.jsonl")
+                for split in ("train", "calibration", "test")
+            }
+            return data, metadata
+        if run.dataset_key is None:
+            raise ValueError("natural run lacks dataset_key")
+        key = (run.dataset_key, run.seed)
+        if key not in self._data_cache:
+            self._data_cache[key] = load_natural_dataset(
+                self.campaign, run.dataset_key, run.seed
+            )
+        return self._data_cache[key], {"dataset_key": run.dataset_key}
+
+    def _load_ifeval(self) -> tuple[list[Example], list[dict[str, Any]]]:
+        if self._ifeval is None:
+            self._ifeval = load_ifeval(self.campaign)
+        return self._ifeval
+
+    def _baseline_key(self, run: RunSpec) -> str:
+        data = (
+            f"k{run.family_count}-seed{run.seed}"
+            if run.kind == "synthetic"
+            else str(run.dataset_key)
+        )
+        return f"{run.model.key}__{run.model.backbone}__{data}"
+
+    def ensure_baseline(
+        self,
+        session: ModelSession,
+        run: RunSpec,
+        data: dict[str, list[Example]],
+        data_metadata: dict[str, Any],
+    ) -> None:
+        baseline_dir = self.runs_root / "baselines" / self._baseline_key(run)
+        if (baseline_dir / "metrics.json").is_file():
+            return
+        lock = baseline_dir.with_name(baseline_dir.name + ".lock")
+        lock.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            lock.mkdir()
+        except FileExistsError:
+            return
+        try:
+            baseline_dir.mkdir(parents=True, exist_ok=True)
+            if run.kind == "synthetic":
+                labels = list(self.campaign["datasets"]["synthetic_codebook"]["labels"])
+                metrics, predictions = evaluate_synthetic(
+                    session.model,
+                    session.tokenizer,
+                    data["test"],
+                    run.model,
+                    labels,
+                    batch_size=run.training.micro_batch_size * 4,
+                )
+                write_predictions(baseline_dir / "predictions.jsonl", predictions)
+                output = {
+                    "kind": "synthetic",
+                    "model": run.model.name,
+                    "model_key": run.model.key,
+                    "backbone": run.model.backbone,
+                    **data_metadata,
+                    **metrics,
+                }
+            else:
+                metrics, predictions = evaluate_natural(
+                    session.model,
+                    session.tokenizer,
+                    data["test"],
+                    run.model,
+                    str(run.dataset_key),
+                    batch_size=run.training.micro_batch_size,
+                )
+                write_predictions(baseline_dir / "predictions.jsonl", predictions)
+                ifeval_examples, evaluator_rows = self._load_ifeval()
+                ifeval, ifeval_predictions = evaluate_ifeval(
+                    session.model,
+                    session.tokenizer,
+                    ifeval_examples,
+                    evaluator_rows,
+                    run.model,
+                    batch_size=run.training.micro_batch_size,
+                )
+                write_predictions(
+                    baseline_dir / "ifeval_predictions.jsonl", ifeval_predictions
+                )
+                output = {
+                    "kind": "natural",
+                    "model": run.model.name,
+                    "model_key": run.model.key,
+                    "backbone": run.model.backbone,
+                    "dataset_key": run.dataset_key,
+                    **metrics,
+                    "heldout_nll": causal_nll(
+                        session.model,
+                        session.tokenizer,
+                        data["test"],
+                        run.model,
+                        run.training.max_length,
+                        run.training.micro_batch_size,
+                    )["nll"],
+                    "ifeval": ifeval,
+                }
+            write_json(baseline_dir / "metrics.json", output)
+        finally:
+            lock.rmdir()
+
+    def _calibration_score(
+        self,
+        session: ModelSession,
+        run: RunSpec,
+        examples: list[Example],
+    ) -> tuple[float, dict[str, Any]]:
+        if run.kind == "synthetic":
+            labels = list(self.campaign["datasets"]["synthetic_codebook"]["labels"])
+            metrics, _ = evaluate_synthetic(
+                session.model,
+                session.tokenizer,
+                examples,
+                run.model,
+                labels,
+                batch_size=run.training.micro_batch_size * 4,
+            )
+            return float(metrics["label_nll"]), metrics
+        metrics = causal_nll(
+            session.model,
+            session.tokenizer,
+            examples,
+            run.model,
+            run.training.max_length,
+            run.training.micro_batch_size,
+        )
+        return float(metrics["nll"]), metrics
+
+    def _evaluate_codec(
+        self,
+        session: ModelSession,
+        run: RunSpec,
+        run_dir: Path,
+        data: dict[str, list[Example]],
+        raw_tensors: dict[str, torch.Tensor],
+        bits: int,
+    ) -> dict[str, Any]:
+        codec_path = run_dir / "codecs" / f"adapter_b{bits}.fqcb"
+        candidates = (100.0,) if bits == 16 else run.clip_percentiles
+        trials = []
+        best: tuple[float, int, float] | None = None
+        for clip in candidates:
+            candidate = run_dir / "codecs" / f".candidate_b{bits}_p{clip:g}.fqcb"
+            storage = encode_tensor_map(
+                raw_tensors,
+                candidate,
+                bits,
+                clip,
+                metadata={
+                    "run_id": run.run_id,
+                    "adapter_method": run.adapter.method,
+                    "adapter_seed": run.seed,
+                    "adapter_key": run.adapter.key,
+                },
+            )
+            _, decoded = decode_tensor_map(candidate)
+            apply_adapter_tensors(session.model, decoded)
+            score, calibration = self._calibration_score(
+                session, run, data["calibration"]
+            )
+            trials.append(
+                {
+                    **{key: value for key, value in storage.items() if key != "path"},
+                    "calibration": calibration,
+                }
+            )
+            choice = (score, int(storage["file_bits"]), float(clip))
+            if best is None or choice < best:
+                best = choice
+            candidate.unlink()
+            apply_adapter_tensors(session.model, raw_tensors)
+        if best is None:
+            raise RuntimeError("codec calibration produced no candidate")
+        selected_clip = best[2]
+        storage = encode_tensor_map(
+            raw_tensors,
+            codec_path,
+            bits,
+            selected_clip,
+            metadata={
+                "run_id": run.run_id,
+                "adapter_method": run.adapter.method,
+                "adapter_seed": run.seed,
+                "adapter_key": run.adapter.key,
+            },
+        )
+        _, decoded = decode_tensor_map(codec_path)
+        apply_adapter_tensors(session.model, decoded)
+        if run.kind == "synthetic":
+            labels = list(self.campaign["datasets"]["synthetic_codebook"]["labels"])
+            task_metrics, predictions = evaluate_synthetic(
+                session.model,
+                session.tokenizer,
+                data["test"],
+                run.model,
+                labels,
+                batch_size=run.training.micro_batch_size * 4,
+            )
+            extra: dict[str, Any] = {}
+        else:
+            task_metrics, predictions = evaluate_natural(
+                session.model,
+                session.tokenizer,
+                data["test"],
+                run.model,
+                str(run.dataset_key),
+                batch_size=run.training.micro_batch_size,
+            )
+            task_metrics["heldout_nll"] = causal_nll(
+                session.model,
+                session.tokenizer,
+                data["test"],
+                run.model,
+                run.training.max_length,
+                run.training.micro_batch_size,
+            )["nll"]
+            ifeval_examples, evaluator_rows = self._load_ifeval()
+            ifeval_metrics, ifeval_predictions = evaluate_ifeval(
+                session.model,
+                session.tokenizer,
+                ifeval_examples,
+                evaluator_rows,
+                run.model,
+                batch_size=run.training.micro_batch_size,
+            )
+            write_predictions(
+                run_dir / "predictions" / f"ifeval_b{bits}.jsonl",
+                ifeval_predictions,
+            )
+            extra = {"ifeval": ifeval_metrics}
+        write_predictions(run_dir / "predictions" / f"task_b{bits}.jsonl", predictions)
+        apply_adapter_tensors(session.model, raw_tensors)
+        return {
+            "bits": bits,
+            "selected_clip_percentile": selected_clip,
+            "storage": storage,
+            "calibration_trials": trials,
+            "task": task_metrics,
+            **extra,
+        }
+
+    def run_one(
+        self,
+        session: ModelSession,
+        run: RunSpec,
+        force: bool = False,
+    ) -> str:
+        run_dir = self.runs_root / run.run_id
+        if not force and run_complete(run_dir, run.precisions):
+            return "skipped"
+        run_dir.mkdir(parents=True, exist_ok=True)
+        write_json(run_dir / "config.json", run.to_dict())
+        data, data_metadata = self._load_data(run)
+        if run.kind == "synthetic":
+            validate_single_token_labels(
+                session.tokenizer,
+                list(self.campaign["datasets"]["synthetic_codebook"]["labels"]),
+            )
+        self.ensure_baseline(session, run, data, data_metadata)
+        write_json(
+            run_dir / "status.json",
+            {"state": "running", "stage": "adapter", "updated_at": time.time()},
+        )
+        session.attach(run.adapter, run.seed)
+        raw_path = run_dir / "raw_channel.pt"
+        training_path = run_dir / "training_metrics.json"
+        if raw_path.is_file() and training_path.is_file() and not force:
+            raw_tensors = torch.load(raw_path, map_location="cpu", weights_only=True)
+            apply_adapter_tensors(session.model, raw_tensors)
+            training_metrics = read_json(training_path)
+        else:
+            training_metrics = train_adapter(
+                session.model,
+                session.tokenizer,
+                data["train"],
+                data["calibration"],
+                run.model,
+                run.training,
+                run.seed,
+                run_dir / "logs" / "training.jsonl",
+            )
+            raw_tensors = adapter_tensors(session.model, run.adapter.method)
+            torch.save(raw_tensors, raw_path)
+            write_json(training_path, training_metrics)
+        write_json(
+            run_dir / "status.json",
+            {"state": "running", "stage": "codecs", "updated_at": time.time()},
+        )
+        codec_metrics = []
+        for bits in run.precisions:
+            metric_path = run_dir / "codec_metrics" / f"b{bits}.json"
+            if metric_path.is_file() and not force:
+                codec_metrics.append(read_json(metric_path))
+                continue
+            metrics = self._evaluate_codec(
+                session, run, run_dir, data, raw_tensors, bits
+            )
+            write_json(metric_path, metrics)
+            codec_metrics.append(metrics)
+        output = {
+            "run_id": run.run_id,
+            "study": run.study,
+            "kind": run.kind,
+            "model": run.model.name,
+            "model_key": run.model.key,
+            "model_revision": run.model.revision,
+            "backbone": run.model.backbone,
+            "adapter": run.adapter.key,
+            "adapter_method": run.adapter.method,
+            "seed": run.seed,
+            "family_count": run.family_count,
+            "dataset_key": run.dataset_key,
+            "data": data_metadata,
+            "training": training_metrics,
+            "nominal_channel_values": sum(
+                value.numel() for value in raw_tensors.values()
+            ),
+            "nominal_channel_bits_bf16": sum(
+                value.numel() for value in raw_tensors.values()
+            )
+            * 16,
+            "codecs": codec_metrics,
+        }
+        write_json(run_dir / "metrics.json", output)
+        write_json(
+            run_dir / "status.json",
+            {"state": "complete", "stage": "done", "updated_at": time.time()},
+        )
+        return "completed"
+
+    def run_many(
+        self, runs: list[RunSpec], force: bool = False, limit: int | None = None
+    ) -> dict[str, int]:
+        counts = {"completed": 0, "skipped": 0, "failed": 0}
+        grouped: dict[tuple[str, str], list[RunSpec]] = defaultdict(list)
+        for run in runs[:limit]:
+            grouped[(run.model.key, run.model.backbone)].append(run)
+        for group in grouped.values():
+            session = ModelSession.load(group[0].model)
+            try:
+                for run in group:
+                    run_dir = self.runs_root / run.run_id
+                    try:
+                        result = self.run_one(session, run, force=force)
+                        counts[result] += 1
+                    except Exception as error:
+                        counts["failed"] += 1
+                        write_json(
+                            run_dir / "status.json",
+                            {
+                                "state": "failed",
+                                "error": repr(error),
+                                "traceback": traceback.format_exc(),
+                                "updated_at": time.time(),
+                            },
+                        )
+                    finally:
+                        if hasattr(session.model, "unload"):
+                            try:
+                                session.unload()
+                            except Exception:
+                                pass
+            finally:
+                del session
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+        return counts
+
+
+def describe_partition(runs: list[RunSpec], shards: int) -> list[dict[str, Any]]:
+    descriptions = []
+    for index, partition in enumerate(partition_runs(runs, shards)):
+        descriptions.append(
+            {
+                "shard": index,
+                "runs": len(partition),
+                "relative_cost": sum(estimate_run_cost(run) for run in partition),
+                "models": sorted({run.model.key for run in partition}),
+            }
+        )
+    return descriptions
