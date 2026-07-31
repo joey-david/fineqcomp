@@ -13,11 +13,15 @@ for module_init in \
     break
   fi
 done
-if ! command -v module >/dev/null 2>&1; then
-  echo 'Jean-Zay module command is unavailable on this node' >&2
+if command -v module >/dev/null 2>&1; then
+  # Login nodes expose the modulefiles; compute images may only receive the
+  # resulting environment through sbatch --export=ALL.
+  module load pytorch-gpu/py3/2.8.0 2>/dev/null || true
+fi
+if ! command -v python >/dev/null 2>&1; then
+  echo 'Jean-Zay Python module was not exported into the job' >&2
   exit 2
 fi
-module load pytorch-gpu/py3/2.8.0
 export PYTHONPATH="${repo_root}/vendor${PYTHONPATH:+:${PYTHONPATH}}"
 export HF_HOME="${HF_HOME:-${repo_root}/.hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
