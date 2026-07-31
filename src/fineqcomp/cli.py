@@ -7,9 +7,10 @@ import json
 import sys
 
 from fineqcomp.analysis import analyze
+from fineqcomp.artifacts import write_json
 from fineqcomp.campaign import expand_campaign, read_manifest, write_manifest
 from fineqcomp.config import load_campaign
-from fineqcomp.data import prepare_all_synthetic
+from fineqcomp.data import prepare_all_controlled, prepare_all_synthetic
 from fineqcomp.preflight import (
     environment_report,
     model_smoke,
@@ -25,13 +26,16 @@ def _prepare(args: argparse.Namespace) -> int:
     runs = expand_campaign(campaign)
     write_manifest(runs, args.manifest)
     datasets = []
+    controlled = []
     if not args.no_data:
         datasets = prepare_all_synthetic(campaign, runs, args.prepared_root)
+        controlled = prepare_all_controlled(campaign, runs, args.prepared_root)
     print(
         json.dumps(
             {
                 "runs": len(runs),
                 "synthetic_datasets": len(datasets),
+                "controlled_datasets": len(controlled),
                 "manifest": str(args.manifest),
             },
             indent=2,
@@ -64,13 +68,23 @@ def _analyze(args: argparse.Namespace) -> int:
     return 0
 
 
+def _screen(args: argparse.Namespace) -> int:
+    campaign = load_campaign(args.config)
+    runs = read_manifest(args.manifest)
+    engine = RunEngine(campaign, args.prepared_root, args.runs_root)
+    records = engine.screen_natural(runs, args.shard, args.shards)
+    write_json(args.out, records)
+    print(json.dumps(records, indent=2))
+    return 0
+
+
 def _preflight(args: argparse.Namespace) -> int:
     campaign = load_campaign(args.config)
     runs = read_manifest(args.manifest)
     report = {
         "environment": environment_report(args.require_gpus),
         "manifest_runs": len(runs),
-        "prepared_synthetic_datasets": validate_prepared(runs, args.prepared_root),
+        "prepared_dataset_cells": validate_prepared(runs, args.prepared_root),
         "partition": describe_partition(runs, 2),
     }
     if args.tokenizers:
@@ -113,6 +127,18 @@ def build_parser() -> argparse.ArgumentParser:
     analysis.add_argument("--root", default="runs")
     analysis.add_argument("--out", default="reports")
     analysis.set_defaults(func=_analyze)
+
+    screen = subparsers.add_parser(
+        "screen", help="measure base-task headroom before natural-task training"
+    )
+    screen.add_argument("--config", default="configs/campaign.yaml")
+    screen.add_argument("--manifest", default="prepared/manifest.jsonl")
+    screen.add_argument("--prepared-root", default="prepared")
+    screen.add_argument("--runs-root", default="runs")
+    screen.add_argument("--out", default="prepared/baseline_screening.json")
+    screen.add_argument("--shard", type=int, default=0)
+    screen.add_argument("--shards", type=int, default=1)
+    screen.set_defaults(func=_screen)
 
     preflight = subparsers.add_parser(
         "preflight", help="check the remote runtime without starting the grid"

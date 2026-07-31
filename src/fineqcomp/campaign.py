@@ -52,11 +52,17 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
         adapters = study["adapters"]
         seeds = list(map(int, study["seeds"]))
         if kind == "synthetic":
-            cells: Iterable[tuple[int | None, str | None]] = (
-                (int(family_count), None) for family_count in study["family_counts"]
+            cells: Iterable[tuple[int | None, int | None, str | None]] = (
+                (int(family_count), None, None)
+                for family_count in study["family_counts"]
+            )
+        elif kind == "controlled":
+            cells = (
+                (None, int(binding_count), None)
+                for binding_count in study["binding_counts"]
             )
         elif kind == "natural":
-            cells = ((None, str(dataset)) for dataset in study["datasets"])
+            cells = ((None, None, str(dataset)) for dataset in study["datasets"])
         else:
             raise ValueError(f"study {study_name}: unknown kind {kind!r}")
 
@@ -66,7 +72,7 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
             for adapter_key in adapters:
                 adapter = _adapter(adapter_key, raw)
                 for seed in seeds:
-                    for family_count, dataset_key in expanded_cells:
+                    for family_count, binding_count, dataset_key in expanded_cells:
                         training_key = study.get("training_by_dataset", {}).get(
                             dataset_key, study["training"]
                         )
@@ -80,11 +86,14 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                             "adapter": adapter.key,
                             "seed": seed,
                             "family_count": family_count,
+                            "binding_count": binding_count,
                             "dataset": dataset_key,
                         }
                         data_name = (
                             f"k{family_count}"
                             if family_count is not None
+                            else f"n{binding_count}"
+                            if binding_count is not None
                             else dataset_key
                         )
                         run_id = _run_id(
@@ -109,6 +118,7 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                                 clip_percentiles=clips,
                                 training=training,
                                 family_count=family_count,
+                                binding_count=binding_count,
                                 dataset_key=dataset_key,
                             )
                         )

@@ -57,17 +57,19 @@ def evaluate_synthetic(
             total_nll += -math.log(max(target_probability, 1e-12))
             confidences.append(confidence)
             correct_flags.append(int(correct))
-            predictions.append(
-                {
-                    "example_id": row.example_id,
-                    "family": int(row.metadata["family"]),
-                    "item": int(row.metadata["item"]),
-                    "target": target,
-                    "prediction": predicted,
-                    "confidence": confidence,
-                    "correct": correct,
-                }
-            )
+            prediction = {
+                "example_id": row.example_id,
+                "target": target,
+                "prediction": predicted,
+                "confidence": confidence,
+                "correct": correct,
+            }
+            if "binding" in row.metadata:
+                prediction["binding"] = int(row.metadata["binding"])
+            else:
+                prediction["family"] = int(row.metadata["family"])
+                prediction["item"] = int(row.metadata["item"])
+            predictions.append(prediction)
     accuracy = sum(correct_flags) / max(len(correct_flags), 1)
     ece = 0.0
     for lower in [index / 10 for index in range(10)]:

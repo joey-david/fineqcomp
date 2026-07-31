@@ -1,7 +1,7 @@
 # Experiments
 
 This file fixes the campaign before remote execution. Every model and dataset
-revision lives in `configs/campaign.yaml`. The manifest contains 96 training
+revision lives in `configs/campaign.yaml`. The manifest contains 105 candidate
 runs; no-adapter evaluations are shared and do not add training jobs.
 
 The adaptation rate always means the size in bits of the complete `.fqcb`
@@ -49,7 +49,36 @@ number of independent bits in the finetuning task?
 
 <!-- Leave empty until the remote artifacts have been pulled and checked. -->
 
-## Experiment 2: Family, scale, and backbone checks
+## Experiment 2: Controlled transfer through real paraphrases
+
+### Question
+
+Does the rate-distortion relation survive when the identifiers are natural
+sentences and test queries are unseen paraphrases?
+
+### Setup
+
+- Source: positive paraphrase pairs from the pinned PAWS training split.
+- Deterministic filtering removes empty, identical, or reused sentences.
+- The first sentence supplies training and clipping-calibration queries under
+  distinct wrappers. Only its paired sentence supplies the transfer test.
+- Each pair receives one independent label from the same fixed 16-token random
+  codebooks as Experiment 1.
+- Binding counts are `{256, 2048, 8192}`, with seeds `{11,22,33}` and 8,192
+  total training rows per cell.
+- Model: Qwen3-8B-Base/NF4 with seeded-B last-four Q/V rank 16.
+
+### Metrics and outputs
+
+- Unseen-paraphrase accuracy, distortion, label NLL, coded bits, and the 16-way
+  Hamming lower bound.
+- Plot: `controlled_transfer.png`.
+
+### Results
+
+<!-- Leave empty until the remote artifacts have been pulled and checked. -->
+
+## Experiment 3: Family, scale, and backbone checks
 
 ### Question
 
@@ -74,7 +103,7 @@ Does the measured relation depend on Qwen3-8B, NF4, or one model size?
 
 <!-- Leave empty until the remote artifacts have been pulled and checked. -->
 
-## Experiment 3: GSM8K and MBPP
+## Experiment 4: Screened GSM8K and MBPP
 
 ### Question
 
@@ -84,6 +113,11 @@ and what instruction-following cost accompanies that gain?
 ### Setup
 
 - Models: Qwen3-8B and Mistral-7B-Instruct-v0.3, both with NF4 backbones.
+- Before training, both models run the complete held-out task evaluations.
+  GSM8K uses a 0.80 exact-match ceiling and MBPP a 0.75 pass@1 ceiling. A cell
+  is marked `too_easy` and receives no finetuning only when the 95% Wilson
+  interval's lower bound exceeds its ceiling. These rules are fixed before
+  results are available.
 - Qwen uses seeds `{11,22,33}`; Mistral uses seed 11 as a family check.
 - Adapters: seeded-B last-four Q/V rank 16, seeded-B all-layer Q/V rank 16,
   and standard full all-linear rank 16.
@@ -100,6 +134,8 @@ and what instruction-following cost accompanies that gain?
 - IFEval: strict and loose prompt and instruction accuracy before and after
   adaptation.
 - Plots: `natural_pareto.png` and `ifeval_retention.png`.
+- Table: `baseline_screening.csv`, including baseline score, headroom, threshold,
+  and the pre-registered screening decision.
 
 Natural dataset byte compression is descriptive only. It is not treated as
 the task's true information content.
@@ -114,3 +150,6 @@ The main claim requires a monotone rise in minimum coded bits with known task
 information across the three mapping seeds. Unreached 70%, 90%, or 99%
 accuracy targets remain censored. The analysis must not remove failed seeds,
 adapter settings, or model checks after seeing their values.
+Natural-task claims use only model-dataset cells marked `usable` by the fixed
+base-score screen. Screened-out cells remain in the baseline audit and cannot
+support either a gain or no-gain claim.

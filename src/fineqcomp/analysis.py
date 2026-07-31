@@ -80,6 +80,7 @@ def collect_rows(
                 "adapter_method": run["adapter_method"],
                 "seed": run["seed"],
                 "family_count": run.get("family_count"),
+                "binding_count": run.get("binding_count"),
                 "dataset_key": run.get("dataset_key"),
                 "quant_bits": bits,
                 "clip_percentile": codec["selected_clip_percentile"],
@@ -103,9 +104,17 @@ def collect_rows(
                 "train_zlib_bits": run.get("data", {}).get("train_zlib_bits"),
                 "training_seconds": run.get("training", {}).get("elapsed_seconds"),
                 "peak_memory_bytes": run.get("training", {}).get("peak_memory_bytes"),
+                "baseline_score": run.get("baseline_screening", {}).get(
+                    "baseline_score"
+                ),
+                "baseline_headroom": run.get("baseline_screening", {}).get("headroom"),
+                "baseline_status": run.get("baseline_screening", {}).get("status"),
             }
-            if row["kind"] == "synthetic" and row["distortion"] is not None:
-                source_symbols = int(row["family_count"]) * 16
+            if (
+                row["kind"] in {"synthetic", "controlled"}
+                and row["distortion"] is not None
+            ):
+                source_symbols = int(run["data"]["source_symbols"])
                 bound = rate_bound(source_symbols, float(row["distortion"]))
                 row["theory_min_bits"] = bound
                 row["rate_over_bound"] = (
@@ -141,7 +150,7 @@ def _save_rate_distortion(rows: list[dict[str, Any]], path: Path) -> None:
             alpha=0.65,
             label=adapter,
         )
-    distortions = np.linspace(0, 15 / 16, 300)
+    distortions = np.linspace(0, 15 / 16 - 1e-6, 300)
     theory = [rate_bound(1, float(value)) for value in distortions]
     ax.plot(theory, distortions, color="black", linewidth=2, label="theory lower bound")
     ax.set_xscale("log")
@@ -315,6 +324,38 @@ def _save_model_checks(rows: list[dict[str, Any]], path: Path) -> None:
     plt.close(fig)
 
 
+def _save_controlled(rows: list[dict[str, Any]], path: Path) -> None:
+    import matplotlib.pyplot as plt
+
+    selected = [row for row in rows if row["kind"] == "controlled"]
+    if not selected:
+        return
+    fig, ax = plt.subplots(figsize=(8, 5.5))
+    for (binding_count,), group in _group(selected, "binding_count").items():
+        ax.scatter(
+            [row["bits_per_source_symbol"] for row in group],
+            [row["distortion"] for row in group],
+            label=f"{binding_count} paraphrase bindings",
+            alpha=0.7,
+        )
+    distortions = np.linspace(0, 15 / 16 - 1e-6, 300)
+    ax.plot(
+        [rate_bound(1, float(value)) for value in distortions],
+        distortions,
+        color="black",
+        linewidth=2,
+        label="theory lower bound",
+    )
+    ax.set_xscale("log")
+    ax.set_xlabel("coded update bits per random binding")
+    ax.set_ylabel("unseen-paraphrase label error")
+    ax.grid(alpha=0.25)
+    ax.legend(fontsize=8)
+    fig.tight_layout()
+    fig.savefig(path, dpi=220)
+    plt.close(fig)
+
+
 def _save_natural(rows: list[dict[str, Any]], path: Path) -> None:
     import matplotlib.pyplot as plt
 
@@ -327,13 +368,19 @@ def _save_natural(rows: list[dict[str, Any]], path: Path) -> None:
     ):
         subset = [row for row in selected if row["dataset_key"] == dataset]
         for key, group in _group(subset, "model", "adapter").items():
-            axis.scatter(
-                [row["file_bits"] for row in group],
-                [row[metric] for row in group],
-                s=24,
-                alpha=0.7,
-                label=f"{str(key[0]).split('/')[-1]} / {key[1]}",
-            )
+            for status, status_group in _group(group, "baseline_status").items():
+                saturated = status[0] == "too_easy"
+                axis.scatter(
+                    [row["file_bits"] for row in status_group],
+                    [row[metric] for row in status_group],
+                    s=24,
+                    marker="x" if saturated else "o",
+                    alpha=0.7,
+                    label=(
+                        f"{str(key[0]).split('/')[-1]} / {key[1]}"
+                        + (" (base saturated)" if saturated else "")
+                    ),
+                )
         axis.set_xscale("log")
         axis.set_title(dataset.upper())
         axis.set_xlabel("coded adapter bits")
@@ -356,10 +403,13 @@ def _save_retention(
             continue
         key = f"{row['model_key']}__{row['backbone']}__{row['dataset_key']}"
         baseline = baselines.get(key)
-        if not baseline:
+        ifeval_baseline = baselines.get(
+            f"ifeval__{row['model_key']}__{row['backbone']}"
+        )
+        if not baseline or not ifeval_baseline:
             continue
         metric = "exact_match" if row["dataset_key"] == "gsm8k" else "pass_at_1"
-        baseline_ifeval = baseline.get("ifeval", {}).get("prompt_level_strict_accuracy")
+        baseline_ifeval = ifeval_baseline.get("prompt_level_strict_accuracy")
         if (
             row[metric] is None
             or baseline.get(metric) is None
@@ -428,9 +478,22 @@ def analyze(root: str | Path = "runs", out: str | Path = "reports") -> dict[str,
     target_rows = _save_bits_targets(rows, output / "bits_vs_information.png")
     _write_csv(output / "accuracy_targets.csv", target_rows)
     _save_allocation(rows, output / "rate_allocation.png")
+    _save_controlled(rows, output / "controlled_transfer.png")
     _save_model_checks(rows, output / "model_checks.png")
     _save_natural(rows, output / "natural_pareto.png")
     _save_retention(rows, baselines, output / "ifeval_retention.png")
+    screening = [
+        {
+            "model": baseline.get("model"),
+            "model_key": baseline.get("model_key"),
+            "backbone": baseline.get("backbone"),
+            "dataset_key": baseline.get("dataset_key"),
+            **baseline.get("screening", {}),
+        }
+        for baseline in baselines.values()
+        if baseline.get("kind") == "natural"
+    ]
+    _write_csv(output / "baseline_screening.csv", screening)
     complete_runs = len({row["run_id"] for row in rows})
     summary = {
         "complete_runs": complete_runs,

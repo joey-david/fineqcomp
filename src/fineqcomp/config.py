@@ -11,7 +11,7 @@ import yaml
 
 Backbone = Literal["nf4", "bf16"]
 AdapterMethod = Literal["seeded_b", "full_lora"]
-RunKind = Literal["synthetic", "natural"]
+RunKind = Literal["synthetic", "controlled", "natural"]
 
 
 @dataclass(frozen=True)
@@ -58,6 +58,7 @@ class RunSpec:
     clip_percentiles: tuple[float, ...]
     training: TrainingSpec
     family_count: int | None = None
+    binding_count: int | None = None
     dataset_key: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -83,6 +84,11 @@ class RunSpec:
             family_count=(
                 int(raw["family_count"])
                 if raw.get("family_count") is not None
+                else None
+            ),
+            binding_count=(
+                int(raw["binding_count"])
+                if raw.get("binding_count") is not None
                 else None
             ),
             dataset_key=raw.get("dataset_key"),

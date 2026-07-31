@@ -37,6 +37,26 @@ stop_workers() {
 }
 trap stop_workers INT TERM
 
+CUDA_VISIBLE_DEVICES=0 "$python_bin" -m fineqcomp screen \
+  --shard 0 --shards 2 --out prepared/baseline_screening_gpu0.json \
+  >remote_logs/baseline_screening_gpu0.log 2>&1 &
+worker_pids+=("$!")
+CUDA_VISIBLE_DEVICES=1 "$python_bin" -m fineqcomp screen \
+  --shard 1 --shards 2 --out prepared/baseline_screening_gpu1.json \
+  >remote_logs/baseline_screening_gpu1.log 2>&1 &
+worker_pids+=("$!")
+screen_status=0
+for pid in "${worker_pids[@]}"; do
+  if ! wait "$pid"; then
+    screen_status=1
+  fi
+done
+worker_pids=()
+if ((screen_status != 0)); then
+  echo "base-model screening failed; natural-task training was not started" >&2
+  exit 1
+fi
+
 (
   set -o pipefail
   CUDA_VISIBLE_DEVICES=0 "$python_bin" -m fineqcomp run --shard 0 --shards 2 \

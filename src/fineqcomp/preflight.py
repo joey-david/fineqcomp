@@ -13,7 +13,13 @@ import torch
 from fineqcomp.adapters import adapter_tensors, apply_adapter_tensors
 from fineqcomp.codec import decode_tensor_map, encode_tensor_map
 from fineqcomp.config import RunSpec, TrainingSpec
-from fineqcomp.data import read_jsonl, synthetic_data_dir, validate_synthetic_dataset
+from fineqcomp.data import (
+    controlled_data_dir,
+    read_jsonl,
+    synthetic_data_dir,
+    validate_controlled_dataset,
+    validate_synthetic_dataset,
+)
 from fineqcomp.modeling import ModelSession, validate_single_token_labels
 from fineqcomp.training import train_adapter
 
@@ -29,8 +35,12 @@ def environment_report(require_gpus: bool = False) -> dict[str, Any]:
         "yaml",
         "instruction_following_eval",
     ):
-        module = importlib.import_module(name)
-        modules[name] = getattr(module, "__version__", "installed")
+        try:
+            module = importlib.import_module(name)
+        except ModuleNotFoundError:
+            modules[name] = "missing"
+        else:
+            modules[name] = getattr(module, "__version__", "installed")
     gpus = []
     if torch.cuda.is_available():
         for index in range(torch.cuda.device_count()):
@@ -43,6 +53,9 @@ def environment_report(require_gpus: bool = False) -> dict[str, Any]:
                 }
             )
     if require_gpus:
+        missing = [name for name, state in modules.items() if state == "missing"]
+        if missing:
+            raise RuntimeError(f"campaign dependencies are missing: {missing}")
         if len(gpus) != 2:
             raise RuntimeError(
                 f"campaign requires exactly two visible GPUs, found {len(gpus)}"
@@ -65,7 +78,14 @@ def validate_prepared(runs: list[RunSpec], root: str | Path) -> int:
     }
     for family_count, seed in cells:
         validate_synthetic_dataset(synthetic_data_dir(root, family_count, seed))
-    return len(cells)
+    controlled = {
+        (int(run.binding_count), run.seed)
+        for run in runs
+        if run.kind == "controlled" and run.binding_count is not None
+    }
+    for binding_count, seed in controlled:
+        validate_controlled_dataset(controlled_data_dir(root, binding_count, seed))
+    return len(cells) + len(controlled)
 
 
 def validate_tokenizers(campaign: dict[str, Any]) -> dict[str, list[int]]:

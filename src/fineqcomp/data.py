@@ -1,4 +1,4 @@
-"""Prepared synthetic data and pinned natural-task loaders."""
+"""Prepared exact-bit tasks and pinned natural-task loaders."""
 
 from __future__ import annotations
 
@@ -54,6 +54,10 @@ def synthetic_data_dir(root: str | Path, family_count: int, seed: int) -> Path:
     return Path(root) / "synthetic_codebook" / f"k{family_count}" / f"seed{seed}"
 
 
+def controlled_data_dir(root: str | Path, binding_count: int, seed: int) -> Path:
+    return Path(root) / "controlled_paws" / f"n{binding_count}" / f"seed{seed}"
+
+
 def _ticket(seed: int, family: int, item: int, instance: int, split: str) -> str:
     payload = f"{seed}:{family}:{item}:{instance}:{split}".encode()
     return hashlib.sha256(payload).hexdigest()[:12].upper()
@@ -83,14 +87,13 @@ def _render_prompt(
 
 
 def _read_codebook(
-    dataset_cfg: dict[str, Any], family_count: int, items: int, seed: int
+    dataset_cfg: dict[str, Any], required: int, seed: int
 ) -> tuple[list[int], str]:
     source = Path(dataset_cfg["codebook_dir"]) / f"seed{seed}.hex"
     try:
         packed = bytes.fromhex("".join(source.read_text().split()))
     except (FileNotFoundError, ValueError) as error:
         raise ValueError(f"invalid codebook asset: {source}") from error
-    required = family_count * items
     if len(packed) * 2 < required:
         raise ValueError(f"{source}: has {len(packed) * 2} symbols, needs {required}")
     symbols = [nibble for byte in packed for nibble in (byte >> 4, byte & 0x0F)]
@@ -116,7 +119,7 @@ def prepare_synthetic_dataset(
             f"train_rows={train_rows} must be divisible by {family_count}*{items}"
         )
     repeats = train_rows // pairs
-    codebook, codebook_sha256 = _read_codebook(dataset_cfg, family_count, items, seed)
+    codebook, codebook_sha256 = _read_codebook(dataset_cfg, pairs, seed)
     mapping = {
         (family, item): codebook[family * items + item]
         for family in range(family_count)
@@ -171,6 +174,7 @@ def prepare_synthetic_dataset(
         "codebook_source_bits": pairs * math.log2(len(labels)),
         "train_rows": train_rows,
         "unique_mappings": pairs,
+        "source_symbols": pairs,
         "task_entropy_bits": pairs * math.log2(len(labels)),
         "repeats_per_mapping": repeats,
         "train_zlib_bits": len(zlib.compress(train_bytes, level=9)) * 8,
@@ -248,6 +252,216 @@ def prepare_all_synthetic(
     return [
         prepare_synthetic_dataset(dataset_cfg, family_count, seed, root)
         for family_count, seed in cells
+    ]
+
+
+def _controlled_pairs(dataset_cfg: dict[str, Any], count: int) -> list[dict[str, Any]]:
+    from datasets import load_dataset
+
+    rows = load_dataset(
+        dataset_cfg["path"],
+        dataset_cfg["name"],
+        revision=dataset_cfg["revision"],
+        split=dataset_cfg["split"],
+    )
+    candidates = []
+    for row in rows:
+        first = " ".join(str(row["sentence1"]).split())
+        second = " ".join(str(row["sentence2"]).split())
+        if int(row["label"]) != 1 or not first or not second or first == second:
+            continue
+        digest = hashlib.sha256(
+            f"{dataset_cfg['revision']}:{row['id']}:{first}:{second}".encode()
+        ).hexdigest()
+        candidates.append(
+            {
+                "source_id": int(row["id"]),
+                "sentence1": first,
+                "sentence2": second,
+                "digest": digest,
+            }
+        )
+    selected = []
+    used_sentences: set[str] = set()
+    for row in sorted(candidates, key=lambda item: item["digest"]):
+        normalized = {row["sentence1"].casefold(), row["sentence2"].casefold()}
+        if normalized & used_sentences:
+            continue
+        selected.append(row)
+        used_sentences.update(normalized)
+        if len(selected) == count:
+            return selected
+    raise ValueError(f"PAWS has only {len(selected)} usable unique paraphrase pairs")
+
+
+def _controlled_prompt(sentence: str, ticket: str, split: str, variant: int) -> str:
+    if split == "train" and variant % 2 == 0:
+        return f"Assign the stored code to this statement.\n{sentence}\nTicket: {ticket}\nCode:"
+    if split == "train":
+        return f"Recall the code for the following text ({ticket}):\n{sentence}\nLabel:"
+    if split == "calibration":
+        return f"Which code belongs to this paraphrased statement?\n{sentence}\nCode:"
+    return f"Return one code for this statement.\n{sentence}\nAnswer:"
+
+
+def prepare_controlled_dataset(
+    dataset_cfg: dict[str, Any],
+    labels: list[str],
+    pairs: list[dict[str, Any]],
+    binding_count: int,
+    seed: int,
+    root: str | Path = "prepared",
+) -> Path:
+    """Bind real paraphrase pairs to an independent fixed random codebook."""
+    train_rows = int(dataset_cfg["train_rows"])
+    if len(labels) != 16 or len(set(labels)) != 16:
+        raise ValueError("controlled task requires 16 unique labels")
+    if binding_count <= 0 or train_rows % binding_count:
+        raise ValueError(
+            f"train_rows={train_rows} must be divisible by {binding_count} bindings"
+        )
+    if len(pairs) < binding_count:
+        raise ValueError(f"need {binding_count} paraphrase pairs, found {len(pairs)}")
+    repeats = train_rows // binding_count
+    codebook, codebook_sha256 = _read_codebook(dataset_cfg, binding_count, seed)
+    splits: dict[str, list[Example]] = {"train": [], "calibration": [], "test": []}
+    for binding, pair in enumerate(pairs[:binding_count]):
+        label_index = codebook[binding]
+        common = {
+            "binding": binding,
+            "source_id": pair["source_id"],
+            "label_index": label_index,
+            "codebook_key": f"seed{seed}",
+        }
+        for instance in range(repeats):
+            ticket = _ticket(seed, binding, 0, instance, "controlled-train")
+            splits["train"].append(
+                Example(
+                    example_id=f"train-b{binding}-n{instance}",
+                    prompt=_controlled_prompt(
+                        pair["sentence1"], ticket, "train", instance
+                    ),
+                    response=labels[label_index],
+                    metadata={**common, "instance": instance, "split": "train"},
+                )
+            )
+        for offset, split in enumerate(("calibration", "test"), start=1):
+            ticket = _ticket(seed, binding, 0, repeats + offset, f"controlled-{split}")
+            sentence = (
+                pair["sentence1"] if split == "calibration" else pair["sentence2"]
+            )
+            splits[split].append(
+                Example(
+                    example_id=f"{split}-b{binding}",
+                    prompt=_controlled_prompt(
+                        sentence, ticket, split, repeats + offset
+                    ),
+                    response=labels[label_index],
+                    metadata={
+                        **common,
+                        "instance": repeats + offset,
+                        "split": split,
+                    },
+                )
+            )
+
+    target = controlled_data_dir(root, binding_count, seed)
+    target.mkdir(parents=True, exist_ok=True)
+    for split, rows in splits.items():
+        _write_jsonl(target / f"{split}.jsonl", rows)
+    pair_digest = hashlib.sha256(
+        "".join(pair["digest"] for pair in pairs[:binding_count]).encode()
+    ).hexdigest()
+    train_bytes = (target / "train.jsonl").read_bytes()
+    metadata = {
+        "version": 1,
+        "dataset": "controlled_paws",
+        "source_revision": dataset_cfg["revision"],
+        "binding_count": binding_count,
+        "source_symbols": binding_count,
+        "label_count": len(labels),
+        "labels": labels,
+        "codebook_key": f"seed{seed}",
+        "codebook_prefix_sha256": codebook_sha256,
+        "pair_prefix_sha256": pair_digest,
+        "codebook_source_bits": binding_count * math.log2(len(labels)),
+        "task_entropy_bits": binding_count * math.log2(len(labels)),
+        "train_rows": train_rows,
+        "repeats_per_binding": repeats,
+        "train_zlib_bits": len(zlib.compress(train_bytes, level=9)) * 8,
+    }
+    (target / "metadata.json").write_text(
+        json.dumps(metadata, indent=2, sort_keys=True)
+    )
+    validate_controlled_dataset(target)
+    return target
+
+
+def validate_controlled_dataset(path: str | Path) -> dict[str, Any]:
+    root = Path(path)
+    metadata = json.loads((root / "metadata.json").read_text())
+    splits = {
+        name: read_jsonl(root / f"{name}.jsonl")
+        for name in ("train", "calibration", "test")
+    }
+    bindings = int(metadata["binding_count"])
+    if len(splits["train"]) != int(metadata["train_rows"]):
+        raise ValueError(f"{root}: wrong training row count")
+    if len(splits["calibration"]) != bindings or len(splits["test"]) != bindings:
+        raise ValueError(f"{root}: calibration/test must cover every binding once")
+    prompt_sets = {name: {row.prompt for row in rows} for name, rows in splits.items()}
+    if any(
+        prompt_sets[left] & prompt_sets[right]
+        for left, right in (
+            ("train", "calibration"),
+            ("train", "test"),
+            ("calibration", "test"),
+        )
+    ):
+        raise ValueError(f"{root}: rendered prompts leak across splits")
+    observed: dict[int, str] = {}
+    for rows in splits.values():
+        for row in rows:
+            binding = int(row.metadata["binding"])
+            previous = observed.setdefault(binding, row.response)
+            if previous != row.response:
+                raise ValueError(f"{root}: binding {binding} changed across splits")
+    if set(observed) != set(range(bindings)):
+        raise ValueError(f"{root}: incomplete binding coverage")
+    labels = list(metadata["labels"])
+    indices = [labels.index(observed[index]) for index in range(bindings)]
+    packed = bytes(
+        (indices[index] << 4) | indices[index + 1]
+        for index in range(0, len(indices), 2)
+    )
+    if hashlib.sha256(packed).hexdigest() != metadata["codebook_prefix_sha256"]:
+        raise ValueError(f"{root}: codebook hash mismatch")
+    return metadata
+
+
+def prepare_all_controlled(
+    raw: dict[str, Any], runs: Iterable[Any], root: str | Path
+) -> list[Path]:
+    cells = sorted(
+        {
+            (int(run.binding_count), int(run.seed))
+            for run in runs
+            if run.kind == "controlled"
+        }
+    )
+    if not cells:
+        return []
+    dataset_cfg = {
+        **raw["datasets"]["controlled_paws"],
+        "codebook_dir": raw["datasets"]["synthetic_codebook"]["codebook_dir"],
+    }
+    pairs = _controlled_pairs(dataset_cfg, max(count for count, _ in cells))
+    labels = list(map(str, raw["datasets"]["synthetic_codebook"]["labels"]))
+    return [
+        prepare_controlled_dataset(
+            dataset_cfg, labels, pairs, binding_count, seed, root
+        )
+        for binding_count, seed in cells
     ]
 
 

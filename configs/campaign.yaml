@@ -69,6 +69,14 @@ training:
     max_length: 96
     warmup_ratio: 0.03
     weight_decay: 0.0
+  controlled:
+    epochs: 3
+    learning_rate: 0.0002
+    effective_batch_size: 128
+    micro_batch_size: 16
+    max_length: 192
+    warmup_ratio: 0.03
+    weight_decay: 0.0
   gsm8k:
     epochs: 3
     learning_rate: 0.0001
@@ -92,6 +100,12 @@ datasets:
     train_rows: 16384
     items_per_family: 16
     labels: [" A", " B", " C", " D", " E", " F", " G", " H", " I", " J", " K", " L", " M", " N", " O", " P"]
+  controlled_paws:
+    path: google-research-datasets/paws
+    name: labeled_final
+    revision: 161ece9501cf0a11f3e48bd356eaa82de46d6a09
+    split: train
+    train_rows: 8192
   gsm8k:
     path: openai/gsm8k
     name: main
@@ -99,6 +113,8 @@ datasets:
     train_split: train
     test_split: test
     validation_rows: 512
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
   mbpp:
     path: google-research-datasets/mbpp
     name: sanitized
@@ -106,6 +122,8 @@ datasets:
     train_split: train
     validation_split: validation
     test_split: test
+    screening_metric: pass_at_1
+    maximum_baseline_score: 0.75
   ifeval:
     path: google/IFEval
     revision: 966cd89545d6b6acfd7638bc708b98261ca58e84
@@ -152,6 +170,14 @@ studies:
     seeds: [11]
     adapters: [seeded_last4_r16]
     training: synthetic
+  controlled_transfer:
+    kind: controlled
+    models: [qwen3_8b_base]
+    backbone: nf4
+    binding_counts: [256, 2048, 8192]
+    seeds: [11, 22, 33]
+    adapters: [seeded_last4_r16]
+    training: controlled
   natural_qwen:
     kind: natural
     models: [qwen3_8b_instruct]

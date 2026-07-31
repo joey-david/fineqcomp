@@ -4,7 +4,11 @@ import json
 
 import pytest
 
-from fineqcomp.data import prepare_synthetic_dataset, read_jsonl
+from fineqcomp.data import (
+    prepare_controlled_dataset,
+    prepare_synthetic_dataset,
+    read_jsonl,
+)
 
 
 LABELS = [f" {chr(ord('A') + index)}" for index in range(16)]
@@ -54,3 +58,35 @@ def test_synthetic_data_rejects_fractional_repeats(tmp_path):
             seed=11,
             root=tmp_path,
         )
+
+
+def test_controlled_data_transfers_labels_across_pair_sides(tmp_path):
+    codebooks = tmp_path / "codebooks"
+    codebooks.mkdir()
+    (codebooks / "seed11.hex").write_text("01234567")
+    pairs = [
+        {
+            "source_id": index,
+            "sentence1": f"Original natural sentence {index}.",
+            "sentence2": f"Natural paraphrase number {index}.",
+            "digest": f"{index:064x}",
+        }
+        for index in range(8)
+    ]
+    target = prepare_controlled_dataset(
+        {"codebook_dir": str(codebooks), "train_rows": 16, "revision": "test"},
+        LABELS,
+        pairs,
+        binding_count=8,
+        seed=11,
+        root=tmp_path,
+    )
+    train = read_jsonl(target / "train.jsonl")
+    test = read_jsonl(target / "test.jsonl")
+
+    assert len(train) == 16
+    assert len(test) == 8
+    assert "Original natural sentence" in train[0].prompt
+    assert "Natural paraphrase" in test[0].prompt
+    answers = {row.metadata["binding"]: row.response for row in train}
+    assert all(answers[row.metadata["binding"]] == row.response for row in test)
