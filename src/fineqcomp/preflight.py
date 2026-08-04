@@ -32,6 +32,7 @@ def environment_report(require_gpus: bool = False) -> dict[str, Any]:
         "peft",
         "datasets",
         "accelerate",
+        "bitsandbytes",
         "yaml",
         "instruction_following_eval",
     ):
