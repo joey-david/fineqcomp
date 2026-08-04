@@ -23,8 +23,9 @@ if [[ ! -x "$python_bin" ]]; then
     exit 2
   }
 fi
-if ! "$python_bin" -c 'import fineqcomp' >/dev/null 2>&1; then
+if ! import_error="$("$python_bin" -c 'import fineqcomp' 2>&1)"; then
   echo "cannot import fineqcomp with $python_bin" >&2
+  printf '%s\n' "$import_error" >&2
   exit 2
 fi
 
@@ -38,7 +39,7 @@ if [[ ! -s prepared/manifest.jsonl ]]; then
 fi
 "$python_bin" -m fineqcomp preflight \
   --require-gpus --tokenizers --model-smoke \
-  >remote_logs/preflight.log 2>&1
+  2>&1 | tee remote_logs/preflight.log
 
 worker_pids=()
 stop_workers() {
