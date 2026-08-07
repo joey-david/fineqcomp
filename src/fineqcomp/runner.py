@@ -66,6 +66,15 @@ def partition_runs(runs: list[RunSpec], shards: int) -> list[list[RunSpec]]:
     return partitions
 
 
+def _wait_for_json(path: Path, timeout_seconds: float = 3600.0) -> dict[str, Any]:
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        if path.is_file():
+            return read_json(path)
+        time.sleep(1.0)
+    raise TimeoutError(f"timed out waiting for shared artifact: {path}")
+
+
 class RunEngine:
     def __init__(
         self,
@@ -107,13 +116,13 @@ class RunEngine:
         key = (run.dataset_key, run.seed)
         if key not in self._data_cache:
             self._data_cache[key] = load_natural_dataset(
-                self.campaign, run.dataset_key, run.seed
+                self.campaign, run.dataset_key, run.seed, self.prepared_root
             )
         return self._data_cache[key], {"dataset_key": run.dataset_key}
 
     def _load_ifeval(self) -> tuple[list[Example], list[dict[str, Any]]]:
         if self._ifeval is None:
-            self._ifeval = load_ifeval(self.campaign)
+            self._ifeval = load_ifeval(self.campaign, self.prepared_root)
         return self._ifeval
 
     def _baseline_key(self, run: RunSpec) -> str:
@@ -168,7 +177,7 @@ class RunEngine:
         try:
             lock.mkdir()
         except FileExistsError:
-            return read_json(baseline_dir / "metrics.json", {})
+            return _wait_for_json(baseline_dir / "metrics.json")
         try:
             baseline_dir.mkdir(parents=True, exist_ok=True)
             if run.kind in {"synthetic", "controlled"}:
@@ -234,7 +243,7 @@ class RunEngine:
         try:
             lock.mkdir()
         except FileExistsError:
-            return read_json(baseline_dir / "metrics.json", {})
+            return _wait_for_json(baseline_dir / "metrics.json")
         try:
             baseline_dir.mkdir(parents=True, exist_ok=True)
             examples, evaluator_rows = self._load_ifeval()

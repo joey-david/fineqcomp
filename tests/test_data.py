@@ -4,7 +4,13 @@ import json
 
 import pytest
 
+import fineqcomp.data as data
 from fineqcomp.data import (
+    Example,
+    load_ifeval,
+    load_natural_dataset,
+    prepare_ifeval,
+    prepare_natural_dataset,
     prepare_controlled_dataset,
     prepare_synthetic_dataset,
     read_jsonl,
@@ -90,3 +96,36 @@ def test_controlled_data_transfers_labels_across_pair_sides(tmp_path):
     assert "Natural paraphrase" in test[0].prompt
     answers = {row.metadata["binding"]: row.response for row in train}
     assert all(answers[row.metadata["binding"]] == row.response for row in test)
+
+
+def test_natural_data_is_staged_and_loaded_without_the_hub(tmp_path, monkeypatch):
+    rows = {
+        "train": [Example("train-0", "train", "answer", {"split": "train"})],
+        "calibration": [
+            Example("calibration-0", "calibration", "answer", {"split": "calibration"})
+        ],
+        "test": [Example("test-0", "test", "answer", {"split": "test"})],
+    }
+    raw = {"datasets": {"gsm8k": {"revision": "revision-test"}}}
+    monkeypatch.setattr(data, "_load_natural_from_hub", lambda *_: rows)
+
+    target = prepare_natural_dataset(raw, "gsm8k", 11, tmp_path)
+    assert target.joinpath("metadata.json").is_file()
+
+    def fail_if_downloaded(*_):
+        raise AssertionError("staged data should avoid a Hub request")
+
+    monkeypatch.setattr(data, "_load_natural_from_hub", fail_if_downloaded)
+    assert load_natural_dataset(raw, "gsm8k", 11, tmp_path) == rows
+
+
+def test_ifeval_is_staged_with_evaluator_rows(tmp_path, monkeypatch):
+    raw_rows = [{"key": 7, "prompt": "Follow this", "instruction_id_list": ["x"]}]
+    raw = {"datasets": {"ifeval": {"revision": "revision-test"}}}
+    monkeypatch.setattr(data, "_ifeval_rows", lambda *_: raw_rows)
+    prepare_ifeval(raw, tmp_path)
+
+    monkeypatch.setattr(data, "_ifeval_rows", lambda *_: (_ for _ in ()).throw(AssertionError()))
+    examples, evaluator_rows = load_ifeval(raw, tmp_path)
+    assert examples[0].example_id == "ifeval-7"
+    assert evaluator_rows == raw_rows

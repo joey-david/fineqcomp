@@ -45,6 +45,13 @@ def _write_jsonl(path: Path, rows: Iterable[Example]) -> None:
     temporary.replace(path)
 
 
+def _write_json(path: Path, value: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
+    temporary.replace(path)
+
+
 def read_jsonl(path: str | Path) -> list[Example]:
     with Path(path).open() as stream:
         return [Example.from_dict(json.loads(line)) for line in stream if line.strip()]
@@ -56,6 +63,14 @@ def synthetic_data_dir(root: str | Path, family_count: int, seed: int) -> Path:
 
 def controlled_data_dir(root: str | Path, binding_count: int, seed: int) -> Path:
     return Path(root) / "controlled_paws" / f"n{binding_count}" / f"seed{seed}"
+
+
+def natural_data_dir(root: str | Path, dataset_key: str, seed: int) -> Path:
+    return Path(root) / "natural" / dataset_key / f"seed{seed}"
+
+
+def ifeval_data_dir(root: str | Path) -> Path:
+    return Path(root) / "ifeval"
 
 
 def _ticket(seed: int, family: int, item: int, instance: int, split: str) -> str:
@@ -465,10 +480,46 @@ def prepare_all_controlled(
     ]
 
 
-def load_natural_dataset(
+def _convert_gsm8k(rows: Any, split: str) -> list[Example]:
+    return [
+        Example(
+            example_id=f"gsm8k-{split}-{index}",
+            prompt=(
+                "Solve the problem. Show concise work and finish with "
+                "'#### ' followed by the answer.\n\n"
+                f"Question: {row['question']}\nAnswer:"
+            ),
+            response=" " + str(row["answer"]),
+            metadata={"split": split},
+        )
+        for index, row in enumerate(rows)
+    ]
+
+
+def _convert_mbpp(rows: Any, split: str) -> list[Example]:
+    converted = []
+    for index, row in enumerate(rows):
+        problem = row.get("prompt") or row.get("text")
+        code = row.get("code") or ""
+        tests = row.get("test_list") or row.get("test") or []
+        converted.append(
+            Example(
+                example_id=f"mbpp-{split}-{index}",
+                prompt=(
+                    "Write a Python function that solves this task. Return only "
+                    f"one Python code block.\n\nTask: {problem}\n\nCode:"
+                ),
+                response=f"\n```python\n{code}\n```",
+                metadata={"split": split, "tests": list(tests)},
+            )
+        )
+    return converted
+
+
+def _load_natural_from_hub(
     raw: dict[str, Any], dataset_key: str, seed: int
 ) -> dict[str, list[Example]]:
-    """Load pinned GSM8K or MBPP and return train/calibration/test records."""
+    """Download one pinned natural dataset and convert it to campaign records."""
     from datasets import load_dataset
 
     spec = raw["datasets"][dataset_key]
@@ -479,26 +530,10 @@ def load_natural_dataset(
         calibration_rows = shuffled.select(range(n_validation))
         train_rows = shuffled.select(range(n_validation, len(shuffled)))
         test_rows = dataset[spec["test_split"]]
-
-        def convert(rows: Any, split: str) -> list[Example]:
-            return [
-                Example(
-                    example_id=f"gsm8k-{split}-{index}",
-                    prompt=(
-                        "Solve the problem. Show concise work and finish with "
-                        "'#### ' followed by the answer.\n\n"
-                        f"Question: {row['question']}\nAnswer:"
-                    ),
-                    response=" " + str(row["answer"]),
-                    metadata={"split": split},
-                )
-                for index, row in enumerate(rows)
-            ]
-
         return {
-            "train": convert(train_rows, "train"),
-            "calibration": convert(calibration_rows, "calibration"),
-            "test": convert(test_rows, "test"),
+            "train": _convert_gsm8k(train_rows, "train"),
+            "calibration": _convert_gsm8k(calibration_rows, "calibration"),
+            "test": _convert_gsm8k(test_rows, "test"),
         }
     if dataset_key == "mbpp":
         split_names = {
@@ -506,41 +541,100 @@ def load_natural_dataset(
             "calibration": spec["validation_split"],
             "test": spec["test_split"],
         }
-
-        def convert_mbpp(rows: Any, split: str) -> list[Example]:
-            converted = []
-            for index, row in enumerate(rows):
-                problem = row.get("prompt") or row.get("text")
-                code = row.get("code") or ""
-                tests = row.get("test_list") or row.get("test") or []
-                converted.append(
-                    Example(
-                        example_id=f"mbpp-{split}-{index}",
-                        prompt=(
-                            "Write a Python function that solves this task. Return only "
-                            f"one Python code block.\n\nTask: {problem}\n\nCode:"
-                        ),
-                        response=f"\n```python\n{code}\n```",
-                        metadata={"split": split, "tests": list(tests)},
-                    )
-                )
-            return converted
-
         return {
-            target: convert_mbpp(dataset[source], target)
+            target: _convert_mbpp(dataset[source], target)
             for target, source in split_names.items()
         }
     raise ValueError(f"unsupported natural dataset: {dataset_key}")
 
 
-def load_ifeval(raw: dict[str, Any]) -> tuple[list[Example], list[dict[str, Any]]]:
-    """Load the pinned IFEval prompts and preserve official evaluator fields."""
+def validate_natural_dataset(
+    path: str | Path, dataset_key: str, seed: int
+) -> dict[str, Any]:
+    root = Path(path)
+    metadata = json.loads((root / "metadata.json").read_text())
+    if metadata.get("dataset_key") != dataset_key or int(metadata.get("seed", -1)) != seed:
+        raise ValueError(f"{root}: natural dataset metadata does not match its path")
+    splits = {
+        name: read_jsonl(root / f"{name}.jsonl")
+        for name in ("train", "calibration", "test")
+    }
+    for split, rows in splits.items():
+        if len(rows) != int(metadata[f"{split}_rows"]):
+            raise ValueError(f"{root}: wrong {split} row count")
+        if any(row.metadata.get("split") != split for row in rows):
+            raise ValueError(f"{root}: {split} rows have the wrong split marker")
+    return metadata
+
+
+def prepare_natural_dataset(
+    raw: dict[str, Any], dataset_key: str, seed: int, root: str | Path = "prepared"
+) -> Path:
+    """Materialize one pinned natural dataset so workers never need the Hub."""
+    rows = _load_natural_from_hub(raw, dataset_key, seed)
+    target = natural_data_dir(root, dataset_key, seed)
+    target.mkdir(parents=True, exist_ok=True)
+    for split, examples in rows.items():
+        _write_jsonl(target / f"{split}.jsonl", examples)
+    spec = raw["datasets"][dataset_key]
+    _write_json(
+        target / "metadata.json",
+        {
+            "version": 1,
+            "dataset_key": dataset_key,
+            "revision": spec["revision"],
+            "seed": seed,
+            **{f"{split}_rows": len(examples) for split, examples in rows.items()},
+        },
+    )
+    validate_natural_dataset(target, dataset_key, seed)
+    return target
+
+
+def prepare_all_natural(
+    raw: dict[str, Any], runs: Iterable[Any], root: str | Path
+) -> list[Path]:
+    cells = sorted(
+        {
+            (str(run.dataset_key), int(run.seed))
+            for run in runs
+            if run.kind == "natural" and run.dataset_key is not None
+        }
+    )
+    return [prepare_natural_dataset(raw, dataset_key, seed, root) for dataset_key, seed in cells]
+
+
+def load_natural_dataset(
+    raw: dict[str, Any],
+    dataset_key: str,
+    seed: int,
+    prepared_root: str | Path | None = None,
+) -> dict[str, list[Example]]:
+    """Read a staged dataset, falling back to the pinned Hub loader if absent."""
+    if prepared_root is not None:
+        root = natural_data_dir(prepared_root, dataset_key, seed)
+        expected = [root / "metadata.json", *(root / f"{split}.jsonl" for split in ("train", "calibration", "test"))]
+        if all(path.is_file() for path in expected):
+            validate_natural_dataset(root, dataset_key, seed)
+            return {
+                split: read_jsonl(root / f"{split}.jsonl")
+                for split in ("train", "calibration", "test")
+            }
+        if any(path.exists() for path in expected):
+            raise FileNotFoundError(f"incomplete prepared natural dataset: {root}")
+    return _load_natural_from_hub(raw, dataset_key, seed)
+
+
+def _ifeval_rows(raw: dict[str, Any]) -> list[dict[str, Any]]:
     from datasets import load_dataset
 
     spec = raw["datasets"]["ifeval"]
     rows = load_dataset(spec["path"], revision=spec["revision"], split=spec["split"])
-    raw_rows = [dict(row) for row in rows]
-    examples = [
+    return [dict(row) for row in rows]
+
+
+def _ifeval_examples(raw_rows: list[dict[str, Any]]) -> list[Example]:
+    return [
         Example(
             example_id=f"ifeval-{row['key']}",
             prompt=str(row["prompt"]),
@@ -549,4 +643,55 @@ def load_ifeval(raw: dict[str, Any]) -> tuple[list[Example], list[dict[str, Any]
         )
         for row in raw_rows
     ]
-    return examples, raw_rows
+
+
+def validate_ifeval_dataset(path: str | Path) -> dict[str, Any]:
+    root = Path(path)
+    metadata = json.loads((root / "metadata.json").read_text())
+    examples = read_jsonl(root / "examples.jsonl")
+    evaluator_rows = json.loads((root / "evaluator_rows.json").read_text())
+    if len(examples) != int(metadata["rows"]) or len(evaluator_rows) != len(examples):
+        raise ValueError(f"{root}: IFEval row count mismatch")
+    if [int(row.metadata["key"]) for row in examples] != [int(row["key"]) for row in evaluator_rows]:
+        raise ValueError(f"{root}: IFEval keys do not align")
+    return metadata
+
+
+def prepare_ifeval(raw: dict[str, Any], root: str | Path = "prepared") -> Path:
+    """Materialize IFEval prompts and official evaluator fields once."""
+    evaluator_rows = _ifeval_rows(raw)
+    target = ifeval_data_dir(root)
+    _write_jsonl(target / "examples.jsonl", _ifeval_examples(evaluator_rows))
+    _write_json(target / "evaluator_rows.json", evaluator_rows)
+    _write_json(
+        target / "metadata.json",
+        {
+            "version": 1,
+            "revision": raw["datasets"]["ifeval"]["revision"],
+            "rows": len(evaluator_rows),
+        },
+    )
+    validate_ifeval_dataset(target)
+    return target
+
+
+def load_ifeval(
+    raw: dict[str, Any], prepared_root: str | Path | None = None
+) -> tuple[list[Example], list[dict[str, Any]]]:
+    """Read staged IFEval data, falling back to the pinned Hub loader if absent."""
+    if prepared_root is not None:
+        root = ifeval_data_dir(prepared_root)
+        expected = [
+            root / "metadata.json",
+            root / "examples.jsonl",
+            root / "evaluator_rows.json",
+        ]
+        if all(path.is_file() for path in expected):
+            validate_ifeval_dataset(root)
+            return read_jsonl(root / "examples.jsonl"), json.loads(
+                (root / "evaluator_rows.json").read_text()
+            )
+        if any(path.exists() for path in expected):
+            raise FileNotFoundError(f"incomplete prepared IFEval dataset: {root}")
+    evaluator_rows = _ifeval_rows(raw)
+    return _ifeval_examples(evaluator_rows), evaluator_rows

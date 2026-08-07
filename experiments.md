@@ -9,6 +9,39 @@ file. It includes packed values, FP16 row scales, tensor names and shapes, the
 seeded-A reconstruction seed, and the file header. The frozen backbone is
 reported separately and never counted as finetuning information.
 
+## Five-worker execution
+
+Run preparation once on a host with access to the pinned Hugging Face snapshots:
+
+```bash
+cd ~/fineQComp
+set -a; source .env; set +a
+"$PYTHON" -m fineqcomp prepare --config configs/campaign.yaml
+```
+
+Make the same checkout, `prepared/`, model cache, and `runs/` directory visible
+on all three hosts. Run one worker per selected GPU, using these fixed global
+shards:
+
+```bash
+# kaisertrot
+CUDA_VISIBLE_DEVICES=0 "$PYTHON" -m fineqcomp run --shard 0 --shards 5
+CUDA_VISIBLE_DEVICES=1 "$PYTHON" -m fineqcomp run --shard 1 --shards 5
+
+# ourasi
+CUDA_VISIBLE_DEVICES=0 "$PYTHON" -m fineqcomp run --shard 2 --shards 5
+CUDA_VISIBLE_DEVICES=1 "$PYTHON" -m fineqcomp run --shard 3 --shards 5
+
+# upnquick; GPU 0 is occupied, so expose only GPU 1
+CUDA_VISIBLE_DEVICES=1 "$PYTHON" -m fineqcomp run --shard 4 --shards 5
+```
+
+Each process screens its own natural cells before training and resumes completed
+runs. After all five workers finish, run `"$PYTHON" -m fineqcomp analyze` once
+from the shared checkout. A one-GPU preflight can use
+`--require-gpus --gpu-count 1 --min-gpu-memory-gib 40`; do not use the old
+two-GPU launcher for this layout.
+
 ## Experiment 1: Known-information rate-distortion law
 
 ### Question

@@ -42,6 +42,16 @@ def test_two_shards_are_disjoint_and_cost_balanced():
     assert max(costs) / min(costs) < 1.02
 
 
+def test_five_shards_match_the_multi_host_layout():
+    runs = expand_campaign(load_campaign("configs/campaign.yaml"))
+    shards = partition_runs(runs, 5)
+
+    assert [len(shard) for shard in shards] == [21] * 5
+    assert len({run.run_id for shard in shards for run in shard}) == len(runs)
+    costs = [sum(estimate_run_cost(run) for run in shard) for shard in shards]
+    assert max(costs) / min(costs) < 1.02
+
+
 def test_natural_screening_uses_fixed_dataset_ceiling(tmp_path):
     campaign = load_campaign("configs/campaign.yaml")
     run = next(

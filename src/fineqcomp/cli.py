@@ -10,7 +10,12 @@ from fineqcomp.analysis import analyze
 from fineqcomp.artifacts import write_json
 from fineqcomp.campaign import expand_campaign, read_manifest, write_manifest
 from fineqcomp.config import load_campaign
-from fineqcomp.data import prepare_all_controlled, prepare_all_synthetic
+from fineqcomp.data import (
+    prepare_all_controlled,
+    prepare_all_natural,
+    prepare_all_synthetic,
+    prepare_ifeval,
+)
 from fineqcomp.preflight import (
     environment_report,
     model_smoke,
@@ -27,15 +32,23 @@ def _prepare(args: argparse.Namespace) -> int:
     write_manifest(runs, args.manifest)
     datasets = []
     controlled = []
+    natural = []
+    ifeval = False
     if not args.no_data:
         datasets = prepare_all_synthetic(campaign, runs, args.prepared_root)
         controlled = prepare_all_controlled(campaign, runs, args.prepared_root)
+        natural = prepare_all_natural(campaign, runs, args.prepared_root)
+        if natural:
+            prepare_ifeval(campaign, args.prepared_root)
+            ifeval = True
     print(
         json.dumps(
             {
                 "runs": len(runs),
                 "synthetic_datasets": len(datasets),
                 "controlled_datasets": len(controlled),
+                "natural_datasets": len(natural),
+                "ifeval": ifeval,
                 "manifest": str(args.manifest),
             },
             indent=2,
@@ -87,10 +100,12 @@ def _preflight(args: argparse.Namespace) -> int:
     campaign = load_campaign(args.config)
     runs = read_manifest(args.manifest)
     report = {
-        "environment": environment_report(args.require_gpus),
+        "environment": environment_report(
+            args.require_gpus, args.gpu_count, args.min_gpu_memory_gib
+        ),
         "manifest_runs": len(runs),
         "prepared_dataset_cells": validate_prepared(runs, args.prepared_root),
-        "partition": describe_partition(runs, 2),
+        "partition": describe_partition(runs, args.shards),
     }
     if args.tokenizers:
         report["label_token_ids"] = validate_tokenizers(campaign)
@@ -153,7 +168,10 @@ def build_parser() -> argparse.ArgumentParser:
     preflight.add_argument("--manifest", default="prepared/manifest.jsonl")
     preflight.add_argument("--prepared-root", default="prepared")
     preflight.add_argument("--report", default="prepared/preflight.json")
+    preflight.add_argument("--shards", type=int, default=5)
     preflight.add_argument("--require-gpus", action="store_true")
+    preflight.add_argument("--gpu-count", type=int, default=2)
+    preflight.add_argument("--min-gpu-memory-gib", type=float, default=75.0)
     preflight.add_argument("--tokenizers", action="store_true")
     preflight.add_argument("--model-smoke", action="store_true")
     preflight.set_defaults(func=_preflight)

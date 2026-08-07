@@ -15,16 +15,24 @@ from fineqcomp.codec import decode_tensor_map, encode_tensor_map
 from fineqcomp.config import RunSpec, TrainingSpec
 from fineqcomp.data import (
     controlled_data_dir,
+    ifeval_data_dir,
+    natural_data_dir,
     read_jsonl,
     synthetic_data_dir,
     validate_controlled_dataset,
+    validate_ifeval_dataset,
+    validate_natural_dataset,
     validate_synthetic_dataset,
 )
 from fineqcomp.modeling import ModelSession, validate_single_token_labels
 from fineqcomp.training import train_adapter
 
 
-def environment_report(require_gpus: bool = False) -> dict[str, Any]:
+def environment_report(
+    require_gpus: bool = False,
+    expected_gpu_count: int | None = 2,
+    min_gpu_memory_gib: float = 75.0,
+) -> dict[str, Any]:
     modules = {}
     for name in (
         "torch",
@@ -57,12 +65,14 @@ def environment_report(require_gpus: bool = False) -> dict[str, Any]:
         missing = [name for name, state in modules.items() if state == "missing"]
         if missing:
             raise RuntimeError(f"campaign dependencies are missing: {missing}")
-        if len(gpus) != 2:
+        if expected_gpu_count is not None and len(gpus) != expected_gpu_count:
             raise RuntimeError(
-                f"campaign requires exactly two visible GPUs, found {len(gpus)}"
+                f"campaign requires {expected_gpu_count} visible GPUs, found {len(gpus)}"
             )
-        if any(gpu["memory_gib"] < 75 for gpu in gpus):
-            raise RuntimeError(f"campaign requires two 80GB-class GPUs: {gpus}")
+        if any(gpu["memory_gib"] < min_gpu_memory_gib for gpu in gpus):
+            raise RuntimeError(
+                f"campaign requires GPUs with at least {min_gpu_memory_gib:g} GiB: {gpus}"
+            )
     return {
         "python": platform.python_version(),
         "platform": platform.platform(),
@@ -86,7 +96,16 @@ def validate_prepared(runs: list[RunSpec], root: str | Path) -> int:
     }
     for binding_count, seed in controlled:
         validate_controlled_dataset(controlled_data_dir(root, binding_count, seed))
-    return len(cells) + len(controlled)
+    natural = {
+        (str(run.dataset_key), run.seed)
+        for run in runs
+        if run.kind == "natural" and run.dataset_key is not None
+    }
+    for dataset_key, seed in natural:
+        validate_natural_dataset(natural_data_dir(root, dataset_key, seed), dataset_key, seed)
+    if natural:
+        validate_ifeval_dataset(ifeval_data_dir(root))
+    return len(cells) + len(controlled) + len(natural) + bool(natural)
 
 
 def validate_tokenizers(campaign: dict[str, Any]) -> dict[str, list[int]]:

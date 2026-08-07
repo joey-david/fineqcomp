@@ -11,13 +11,16 @@ from a short published PRNG seed.
 
 ```bash
 python -m fineqcomp prepare --config configs/campaign.yaml
-python -m fineqcomp screen --manifest prepared/manifest.jsonl
-python -m fineqcomp run --manifest prepared/manifest.jsonl --shard 0 --shards 2
+python -m fineqcomp run --manifest prepared/manifest.jsonl --shard 0 --shards 5
 python -m fineqcomp analyze --root runs --out reports
 ```
 
-The full two-GPU command is `scripts/run_campaign.sh`. It is restart-safe: a
-worker skips only runs whose status and required result files are complete.
-Natural model-dataset cells above the fixed base-score ceiling are screened out
-before training. The two-GPU script runs both model screens in parallel.
-See `experiments.md` for the fixed experiment matrix and result sections.
+`prepare` downloads each pinned natural dataset once and writes the converted
+records and IFEval evaluator rows under `prepared/`. Workers then read those
+files and do not contact the Hub. The restart-safe workers skip only runs whose
+status and required result files are complete. Natural model-dataset cells above
+the fixed base-score ceiling are screened out before training.
+
+For the five-GPU run, use the per-host commands in `experiments.md`: they all
+use the same manifest and `--shards 5`, with one visible GPU per process. The
+old `scripts/run_campaign.sh` remains a two-GPU local convenience script.

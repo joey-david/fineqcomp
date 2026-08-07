@@ -39,6 +39,7 @@ if [[ ! -s prepared/manifest.jsonl ]]; then
 fi
 "$python_bin" -m fineqcomp preflight \
   --require-gpus --tokenizers --model-smoke \
+  --shards 2 \
   2>&1 | tee remote_logs/preflight.log
 
 worker_pids=()
