@@ -21,6 +21,7 @@ files and do not contact the Hub. The restart-safe workers skip only runs whose
 status and required result files are complete. Natural model-dataset cells above
 the fixed base-score ceiling are screened out before training.
 
-For the five-GPU run, use the per-host commands in `experiments.md`: they all
-use the same manifest and `--shards 5`, with one visible GPU per process. The
-old `scripts/run_campaign.sh` remains a two-GPU local convenience script.
+For the five-GPU run, execute `scripts/run_distributed_campaign.sh` once from
+any node that can SSH to `kaisertrot`, `ourasi`, and `upnquick`. It starts one
+tmux session per host with one visible GPU per process and `--shards 5`. The old
+`scripts/run_campaign.sh` remains a two-GPU local convenience script.

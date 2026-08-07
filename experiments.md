@@ -20,8 +20,19 @@ set -a; source .env; set +a
 ```
 
 Make the same checkout, `prepared/`, model cache, and `runs/` directory visible
-on all three hosts. Run one worker per selected GPU, using these fixed global
-shards:
+on all three hosts. From any one node with SSH aliases for the three hosts, start
+the full grid with:
+
+```bash
+./scripts/run_distributed_campaign.sh
+```
+
+Use `./scripts/run_distributed_campaign.sh --prepare` when preparation has not
+been run on the launch node. The script makes one SSH connection per host and
+creates one tmux session per host. It leaves an existing `fineqcomp5` session
+untouched, so rerunning it cannot start duplicate workers.
+
+The fixed global shard mapping is:
 
 ```bash
 # kaisertrot
