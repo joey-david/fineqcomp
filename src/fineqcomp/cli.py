@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from typing import Any
 
 from fineqcomp.analysis import analyze
 from fineqcomp.artifacts import write_json
@@ -24,6 +25,12 @@ from fineqcomp.preflight import (
     write_report,
 )
 from fineqcomp.runner import RunEngine, describe_partition, partition_runs
+
+
+def _unraisable_hook(unraisable: Any) -> None:
+    if isinstance(unraisable.exc_value, BrokenPipeError):
+        return
+    sys.__unraisablehook__(unraisable)
 
 
 def _prepare(args: argparse.Namespace) -> int:
@@ -179,6 +186,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    sys.unraisablehook = _unraisable_hook
     args = build_parser().parse_args(argv)
     try:
         status = args.func(args)

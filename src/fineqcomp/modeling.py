@@ -132,7 +132,7 @@ class ModelSession:
         kwargs: dict[str, Any] = {
             "revision": spec.revision,
             "token": token,
-            "torch_dtype": torch.bfloat16,
+            "dtype": torch.bfloat16,
         }
         if torch.cuda.is_available():
             kwargs["device_map"] = {"": 0}
