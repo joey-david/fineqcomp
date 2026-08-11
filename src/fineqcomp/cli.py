@@ -30,7 +30,7 @@ from fineqcomp.runner import RunEngine, describe_partition, partition_runs
 
 
 def _unraisable_hook(unraisable: Any) -> None:
-    if isinstance(unraisable.exc_value, BrokenPipeError):
+    if unraisable.exc_type is BrokenPipeError:
         return
     sys.__unraisablehook__(unraisable)
 
@@ -72,6 +72,9 @@ def _run(args: argparse.Namespace) -> int:
     if args.models:
         model_keys = set(args.models)
         runs = [run for run in runs if run.model.key in model_keys]
+    if args.adapters:
+        adapter_keys = set(args.adapters)
+        runs = [run for run in runs if run.adapter.key in adapter_keys]
     if args.backbones:
         backbones = set(args.backbones)
         runs = [run for run in runs if run.model.backbone in backbones]
@@ -178,6 +181,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--shard", type=int, required=True)
     run.add_argument("--shards", type=int, default=2)
     run.add_argument("--models", nargs="+")
+    run.add_argument("--adapters", nargs="+")
     run.add_argument("--backbones", nargs="+", choices=("nf4", "bf16"))
     run.add_argument("--max-length", type=int)
     run.add_argument("--micro-batch-size", type=int)

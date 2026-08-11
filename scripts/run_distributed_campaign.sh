@@ -10,7 +10,7 @@ if [[ -f .env ]]; then
   set +a
 fi
 
-python_bin="${PYTHON:-$repo_root/.venv/bin/python}"
+python_bin="${PYTHON:-$repo_root/../reasoning/.venv/bin/python}"
 remote_root="${REMOTE_REPO_ROOT:-/home/lamsade/jdavid/fineQComp}"
 session="${CAMPAIGN_SESSION:-fineqcomp8}"
 
@@ -55,7 +55,10 @@ if [[ -f .env ]]; then
   source .env
   set +a
 fi
-python_bin="${PYTHON:-$repo_root/.venv/bin/python}"
+python_bin="${PYTHON:-$repo_root/../reasoning/.venv/bin/python}"
+export PYTHONPATH="${PYTHONPATH:-$repo_root/src:$repo_root/vendor}"
+export HF_HOME="${HF_HOME:-$repo_root/../fineQComp_hf_cache}"
+export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 "$python_bin" -c 'import bitsandbytes, fineqcomp, torch; assert torch.cuda.device_count() >= 2'
 
 if tmux has-session -t "$session" 2>/dev/null; then
@@ -76,6 +79,7 @@ REMOTE
 
 low_vram=(
   --models qwen3_8b_base mistral_7b_base
+  --adapters seeded_last1_r4 seeded_last4_r4 seeded_last4_r16
   --backbones nf4
   --max-length 192
   --micro-batch-size 1

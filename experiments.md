@@ -37,8 +37,10 @@ All workers read the same manifest and take an exclusive lock before touching a
 run. Completed runs remain skipped, so this layout keeps valid artifacts from
 earlier launches. `upnquick` and `ourasi` run the full grid. The 11 GB cards on
 `boldeagle` and `readycash` run only 7B or 8B NF4 jobs of at most 192 tokens at
-micro-batch 1. Gradient accumulation keeps the effective batch size fixed.
-Those older cards use FP16 compute because they lack native BF16.
+micro-batch 1. They use only the last-one or last-four-layer seeded adapters;
+the high-memory cards retain all-layer and full-LoRA jobs. Gradient accumulation
+keeps the effective batch size fixed. Those older cards use FP16 compute because
+they lack native BF16.
 
 After all eight workers finish, run `"$PYTHON" -m fineqcomp analyze` once from
 the shared checkout.
