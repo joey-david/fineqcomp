@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import os
 import platform
 from pathlib import Path
 from typing import Any
@@ -30,6 +31,7 @@ from fineqcomp.training import train_adapter
 
 def environment_report(
     require_gpus: bool = False,
+    require_dependencies: bool = False,
     expected_gpu_count: int | None = 2,
     min_gpu_memory_gib: float = 75.0,
 ) -> dict[str, Any]:
@@ -43,6 +45,8 @@ def environment_report(
         "bitsandbytes",
         "yaml",
         "instruction_following_eval",
+        "matplotlib",
+        "numpy",
     ):
         try:
             module = importlib.import_module(name)
@@ -61,10 +65,11 @@ def environment_report(
                     "memory_gib": properties.total_memory / 2**30,
                 }
             )
-    if require_gpus:
+    if require_gpus or require_dependencies:
         missing = [name for name, state in modules.items() if state == "missing"]
         if missing:
             raise RuntimeError(f"campaign dependencies are missing: {missing}")
+    if require_gpus:
         if expected_gpu_count is not None and len(gpus) != expected_gpu_count:
             raise RuntimeError(
                 f"campaign requires {expected_gpu_count} visible GPUs, found {len(gpus)}"
@@ -79,6 +84,35 @@ def environment_report(
         "modules": modules,
         "gpus": gpus,
     }
+
+
+def cache_models(campaign: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Download every pinned model snapshot and report its weight files."""
+    from huggingface_hub import snapshot_download
+
+    token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+    cached = {}
+    for key, model in campaign["models"].items():
+        snapshot = Path(
+            snapshot_download(
+                model["name"], revision=model["revision"], token=token
+            )
+        )
+        weights = sorted(
+            path
+            for pattern in ("*.safetensors", "*.bin")
+            for path in snapshot.glob(pattern)
+        )
+        if not weights:
+            raise RuntimeError(f"{model['name']}: snapshot has no model weights")
+        cached[key] = {
+            "model": model["name"],
+            "revision": model["revision"],
+            "snapshot": str(snapshot),
+            "weight_files": len(weights),
+            "weight_bytes": sum(path.stat().st_size for path in weights),
+        }
+    return cached
 
 
 def validate_prepared(runs: list[RunSpec], root: str | Path) -> int:

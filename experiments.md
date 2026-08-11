@@ -53,6 +53,20 @@ from the shared checkout. A one-GPU preflight can use
 `--require-gpus --gpu-count 1 --min-gpu-memory-gib 40`; do not use the old
 two-GPU launcher for this layout.
 
+## Jean-Zay H100 execution
+
+Jean-Zay uses three restart-safe stages. `jean_zay_stage.sbatch` runs on a
+networked pre/post node, creates a system-site virtual environment, installs the
+pinned IFEval evaluator, prepares every dataset, and downloads every pinned
+model snapshot. `jean_zay_smoke.sbatch` then checks one H100 and completes one
+small campaign run. Only after that succeeds should `jean_zay_array.sbatch` be
+submitted: its 16 one-GPU tasks map array indices 0 through 15 to the same 16
+global manifest shards. `jean_zay_analyze.sbatch` runs after the complete array.
+
+The H100 jobs load the managed PyTorch 2.8/CUDA 12.8 module and work offline.
+All jobs share `$WORK/fineQComp/{prepared,.hf_cache,runs,reports}`. Failed or
+preempted array elements may be resubmitted without repeating completed runs.
+
 ## Experiment 1: Known-information rate-distortion law
 
 ### Question

@@ -121,6 +121,7 @@ class ModelSession:
             AutoModelForCausalLM,
             AutoTokenizer,
             BitsAndBytesConfig,
+            __version__ as transformers_version,
         )
 
         token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
@@ -132,8 +133,13 @@ class ModelSession:
         kwargs: dict[str, Any] = {
             "revision": spec.revision,
             "token": token,
-            "dtype": torch.bfloat16,
         }
+        dtype_key = (
+            "dtype"
+            if int(transformers_version.split(".", maxsplit=1)[0]) >= 5
+            else "torch_dtype"
+        )
+        kwargs[dtype_key] = torch.bfloat16
         if torch.cuda.is_available():
             kwargs["device_map"] = {"": 0}
         if spec.backbone == "nf4":

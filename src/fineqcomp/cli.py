@@ -18,6 +18,7 @@ from fineqcomp.data import (
     prepare_ifeval,
 )
 from fineqcomp.preflight import (
+    cache_models,
     environment_report,
     model_smoke,
     validate_prepared,
@@ -108,7 +109,10 @@ def _preflight(args: argparse.Namespace) -> int:
     runs = read_manifest(args.manifest)
     report = {
         "environment": environment_report(
-            args.require_gpus, args.gpu_count, args.min_gpu_memory_gib
+            args.require_gpus,
+            args.require_dependencies,
+            args.gpu_count,
+            args.min_gpu_memory_gib,
         ),
         "manifest_runs": len(runs),
         "prepared_dataset_cells": validate_prepared(runs, args.prepared_root),
@@ -118,6 +122,13 @@ def _preflight(args: argparse.Namespace) -> int:
         report["label_token_ids"] = validate_tokenizers(campaign)
     if args.model_smoke:
         report["model_smoke"] = model_smoke(campaign, runs, args.prepared_root)
+    write_report(args.report, report)
+    print(json.dumps(report, indent=2))
+    return 0
+
+
+def _cache_models(args: argparse.Namespace) -> int:
+    report = cache_models(load_campaign(args.config))
     write_report(args.report, report)
     print(json.dumps(report, indent=2))
     return 0
@@ -177,11 +188,19 @@ def build_parser() -> argparse.ArgumentParser:
     preflight.add_argument("--report", default="prepared/preflight.json")
     preflight.add_argument("--shards", type=int, default=5)
     preflight.add_argument("--require-gpus", action="store_true")
+    preflight.add_argument("--require-dependencies", action="store_true")
     preflight.add_argument("--gpu-count", type=int, default=2)
     preflight.add_argument("--min-gpu-memory-gib", type=float, default=75.0)
     preflight.add_argument("--tokenizers", action="store_true")
     preflight.add_argument("--model-smoke", action="store_true")
     preflight.set_defaults(func=_preflight)
+
+    cache = subparsers.add_parser(
+        "cache-models", help="download and verify every pinned model snapshot"
+    )
+    cache.add_argument("--config", default="configs/campaign.yaml")
+    cache.add_argument("--report", default="prepared/model-cache.json")
+    cache.set_defaults(func=_cache_models)
     return parser
 
 
