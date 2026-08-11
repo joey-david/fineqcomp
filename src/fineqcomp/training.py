@@ -18,6 +18,12 @@ from fineqcomp.data import Example
 from fineqcomp.modeling import CausalExampleDataset, causal_collate, model_device
 
 
+def autocast_dtype(device: torch.device) -> torch.dtype:
+    if device.type == "cuda" and not torch.cuda.is_bf16_supported():
+        return torch.float16
+    return torch.bfloat16
+
+
 @torch.no_grad()
 def causal_nll(
     model: torch.nn.Module,
@@ -108,7 +114,7 @@ def train_adapter(
                 group_start = (batch_index // accumulation) * accumulation
                 group_size = min(accumulation, len(loader) - group_start)
                 amp = (
-                    torch.amp.autocast("cuda", dtype=torch.bfloat16)
+                    torch.amp.autocast("cuda", dtype=autocast_dtype(device))
                     if device.type == "cuda"
                     else nullcontext()
                 )

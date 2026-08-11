@@ -12,7 +12,7 @@ from typing import Any
 import torch
 
 from fineqcomp.adapters import adapter_tensors, apply_adapter_tensors
-from fineqcomp.artifacts import read_json, run_complete, write_json
+from fineqcomp.artifacts import claim_run, read_json, run_complete, write_json
 from fineqcomp.codec import decode_tensor_map, encode_tensor_map
 from fineqcomp.config import RunSpec
 from fineqcomp.data import (
@@ -527,7 +527,11 @@ class RunEngine:
                 for run in group:
                     run_dir = self.runs_root / run.run_id
                     try:
-                        result = self.run_one(session, run, force=force)
+                        with claim_run(run_dir) as claimed:
+                            if not claimed:
+                                counts["skipped"] += 1
+                                continue
+                            result = self.run_one(session, run, force=force)
                         counts[result] += 1
                     except Exception as error:
                         counts["failed"] += 1

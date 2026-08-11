@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from dataclasses import replace
 from typing import Any
 
 from fineqcomp.analysis import analyze
@@ -68,6 +69,28 @@ def _prepare(args: argparse.Namespace) -> int:
 def _run(args: argparse.Namespace) -> int:
     campaign = load_campaign(args.config)
     runs = read_manifest(args.manifest)
+    if args.models:
+        model_keys = set(args.models)
+        runs = [run for run in runs if run.model.key in model_keys]
+    if args.backbones:
+        backbones = set(args.backbones)
+        runs = [run for run in runs if run.model.backbone in backbones]
+    if args.max_length is not None:
+        runs = [run for run in runs if run.training.max_length <= args.max_length]
+    if args.micro_batch_size is not None:
+        if any(
+            run.training.effective_batch_size % args.micro_batch_size for run in runs
+        ):
+            raise ValueError("micro batch size must divide every effective batch size")
+        runs = [
+            replace(
+                run,
+                training=replace(
+                    run.training, micro_batch_size=args.micro_batch_size
+                ),
+            )
+            for run in runs
+        ]
     partitions = partition_runs(runs, args.shards)
     if not 0 <= args.shard < args.shards:
         raise ValueError("shard index must be less than shard count")
@@ -154,6 +177,10 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--runs-root", default="runs")
     run.add_argument("--shard", type=int, required=True)
     run.add_argument("--shards", type=int, default=2)
+    run.add_argument("--models", nargs="+")
+    run.add_argument("--backbones", nargs="+", choices=("nf4", "bf16"))
+    run.add_argument("--max-length", type=int)
+    run.add_argument("--micro-batch-size", type=int)
     run.add_argument("--limit", type=int)
     run.add_argument("--run-id")
     run.add_argument("--force", action="store_true")

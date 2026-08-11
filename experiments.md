@@ -9,7 +9,7 @@ file. It includes packed values, FP16 row scales, tensor names and shapes, the
 seeded-A reconstruction seed, and the file header. The frozen backbone is
 reported separately and never counted as finetuning information.
 
-## Five-worker execution
+## Eight-worker mixed-GPU execution
 
 Run preparation once on a host with access to the pinned Hugging Face snapshots:
 
@@ -20,8 +20,9 @@ set -a; source .env; set +a
 ```
 
 Make the same checkout, `prepared/`, model cache, and `runs/` directory visible
-on all three hosts. From any one node with SSH aliases for the three hosts, start
-the full grid with:
+on all four hosts. Stop older campaign workers first: every live worker must use
+the shared per-run lock in this revision. From one node with SSH aliases for the
+four hosts, start the full grid with:
 
 ```bash
 ./scripts/run_distributed_campaign.sh
@@ -29,29 +30,18 @@ the full grid with:
 
 Use `./scripts/run_distributed_campaign.sh --prepare` when preparation has not
 been run on the launch node. The script makes one SSH connection per host and
-creates one tmux session per host. It leaves an existing `fineqcomp5` session
-untouched, so rerunning it cannot start duplicate workers.
+creates one two-window tmux session per host. It leaves an existing
+`fineqcomp8` session untouched, so rerunning it cannot start duplicate workers.
 
-The fixed global shard mapping is:
+All workers read the same manifest and take an exclusive lock before touching a
+run. Completed runs remain skipped, so this layout keeps valid artifacts from
+earlier launches. `upnquick` and `ourasi` run the full grid. The 11 GB cards on
+`boldeagle` and `readycash` run only 7B or 8B NF4 jobs of at most 192 tokens at
+micro-batch 1. Gradient accumulation keeps the effective batch size fixed.
+Those older cards use FP16 compute because they lack native BF16.
 
-```bash
-# kaisertrot
-CUDA_VISIBLE_DEVICES=0 "$PYTHON" -m fineqcomp run --shard 0 --shards 5
-CUDA_VISIBLE_DEVICES=1 "$PYTHON" -m fineqcomp run --shard 1 --shards 5
-
-# ourasi
-CUDA_VISIBLE_DEVICES=0 "$PYTHON" -m fineqcomp run --shard 2 --shards 5
-CUDA_VISIBLE_DEVICES=1 "$PYTHON" -m fineqcomp run --shard 3 --shards 5
-
-# upnquick; GPU 0 is occupied, so expose only GPU 1
-CUDA_VISIBLE_DEVICES=1 "$PYTHON" -m fineqcomp run --shard 4 --shards 5
-```
-
-Each process screens its own natural cells before training and resumes completed
-runs. After all five workers finish, run `"$PYTHON" -m fineqcomp analyze` once
-from the shared checkout. A one-GPU preflight can use
-`--require-gpus --gpu-count 1 --min-gpu-memory-gib 40`; do not use the old
-two-GPU launcher for this layout.
+After all eight workers finish, run `"$PYTHON" -m fineqcomp analyze` once from
+the shared checkout.
 
 ## Jean-Zay H100 execution
 

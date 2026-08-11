@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
+from fcntl import LOCK_EX, LOCK_NB, LOCK_UN, flock
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 
 def write_json(path: str | Path, value: Any) -> Path:
@@ -32,3 +34,20 @@ def run_complete(run_dir: str | Path, precisions: tuple[int, ...]) -> bool:
         and (root / "predictions" / f"task_b{bits}.jsonl").is_file()
         for bits in precisions
     )
+
+
+@contextmanager
+def claim_run(run_dir: str | Path) -> Iterator[bool]:
+    """Claim one shared run until this process finishes or exits."""
+    lock_path = Path(run_dir) / ".lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+") as stream:
+        try:
+            flock(stream.fileno(), LOCK_EX | LOCK_NB)
+        except BlockingIOError:
+            yield False
+            return
+        try:
+            yield True
+        finally:
+            flock(stream.fileno(), LOCK_UN)

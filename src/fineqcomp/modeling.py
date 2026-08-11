@@ -14,6 +14,13 @@ from fineqcomp.config import AdapterSpec, ModelSpec
 from fineqcomp.data import Example
 
 
+def compute_dtype() -> torch.dtype:
+    """Use BF16 where the GPU supports it and FP16 on older CUDA cards."""
+    if torch.cuda.is_available() and not torch.cuda.is_bf16_supported():
+        return torch.float16
+    return torch.bfloat16
+
+
 def model_device(model: torch.nn.Module) -> torch.device:
     try:
         return model.get_input_embeddings().weight.device  # type: ignore[attr-defined]
@@ -139,7 +146,8 @@ class ModelSession:
             if int(transformers_version.split(".", maxsplit=1)[0]) >= 5
             else "torch_dtype"
         )
-        kwargs[dtype_key] = torch.bfloat16
+        dtype = compute_dtype()
+        kwargs[dtype_key] = dtype
         if torch.cuda.is_available():
             kwargs["device_map"] = {"": 0}
         if spec.backbone == "nf4":
@@ -149,7 +157,7 @@ class ModelSession:
                 load_in_4bit=True,
                 bnb_4bit_quant_type="nf4",
                 bnb_4bit_use_double_quant=True,
-                bnb_4bit_compute_dtype=torch.bfloat16,
+                bnb_4bit_compute_dtype=dtype,
             )
         model = AutoModelForCausalLM.from_pretrained(spec.name, **kwargs)
         if spec.backbone == "nf4":
