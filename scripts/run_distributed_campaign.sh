@@ -78,8 +78,8 @@ REMOTE
 }
 
 low_vram=(
-  --models qwen3_8b_base mistral_7b_base
-  --adapters seeded_last1_r4 seeded_last4_r4 seeded_last4_r16
+  --models qwen3_8b_base
+  --adapters seeded_last1_r4
   --backbones nf4
   --max-length 192
   --micro-batch-size 1
