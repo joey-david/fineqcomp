@@ -10,7 +10,12 @@ from typing import Any
 
 from fineqcomp.analysis import analyze
 from fineqcomp.artifacts import write_json
-from fineqcomp.campaign import expand_campaign, read_manifest, write_manifest
+from fineqcomp.campaign import (
+    expand_campaign,
+    read_manifest,
+    validate_manifest,
+    write_manifest,
+)
 from fineqcomp.config import load_campaign
 from fineqcomp.data import (
     prepare_all_controlled,
@@ -39,12 +44,12 @@ def _prepare(args: argparse.Namespace) -> int:
     campaign = load_campaign(args.config)
     runs = expand_campaign(campaign)
     write_manifest(runs, args.manifest)
-    datasets = []
+    synthetic = []
     controlled = []
     natural = []
     ifeval = False
     if not args.no_data:
-        datasets = prepare_all_synthetic(campaign, runs, args.prepared_root)
+        synthetic = prepare_all_synthetic(campaign, runs, args.prepared_root)
         controlled = prepare_all_controlled(campaign, runs, args.prepared_root)
         natural = prepare_all_natural(campaign, runs, args.prepared_root)
         if natural:
@@ -54,7 +59,7 @@ def _prepare(args: argparse.Namespace) -> int:
         json.dumps(
             {
                 "runs": len(runs),
-                "synthetic_datasets": len(datasets),
+                "synthetic_datasets": len(synthetic),
                 "controlled_datasets": len(controlled),
                 "natural_datasets": len(natural),
                 "ifeval": ifeval,
@@ -69,6 +74,7 @@ def _prepare(args: argparse.Namespace) -> int:
 def _run(args: argparse.Namespace) -> int:
     campaign = load_campaign(args.config)
     runs = read_manifest(args.manifest)
+    validate_manifest(runs, campaign)
     if args.models:
         model_keys = set(args.models)
         runs = [run for run in runs if run.model.key in model_keys]
@@ -123,6 +129,7 @@ def _analyze(args: argparse.Namespace) -> int:
 def _screen(args: argparse.Namespace) -> int:
     campaign = load_campaign(args.config)
     runs = read_manifest(args.manifest)
+    validate_manifest(runs, campaign)
     engine = RunEngine(campaign, args.prepared_root, args.runs_root)
     records = engine.screen_natural(runs, args.shard, args.shards)
     write_json(args.out, records)
@@ -133,6 +140,7 @@ def _screen(args: argparse.Namespace) -> int:
 def _preflight(args: argparse.Namespace) -> int:
     campaign = load_campaign(args.config)
     runs = read_manifest(args.manifest)
+    validate_manifest(runs, campaign)
     report = {
         "environment": environment_report(
             args.require_gpus,
@@ -165,7 +173,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     prepare = subparsers.add_parser(
-        "prepare", help="materialize the fixed manifest and synthetic data"
+        "prepare", help="materialize the fixed manifest and pinned datasets"
     )
     prepare.add_argument("--config", default="configs/campaign.yaml")
     prepare.add_argument("--manifest", default="prepared/manifest.jsonl")

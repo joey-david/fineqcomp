@@ -29,3 +29,20 @@ def test_saturated_natural_cell_stops_before_adapter_training(tmp_path, monkeypa
     status = json.loads((run_dir / "status.json").read_text())
     assert status["state"] == "screened_out"
     assert not (run_dir / "raw_channel.pt").exists()
+
+
+def test_learning_gate_requires_fixed_five_point_calibration_gain(tmp_path):
+    campaign = load_campaign("configs/campaign.yaml")
+    run = next(
+        run
+        for run in expand_campaign(campaign)
+        if run.kind == "natural" and run.dataset_key == "gsm8k"
+    )
+    engine = RunEngine(campaign, runs_root=tmp_path)
+    baseline = {"calibration": {"exact_match": 0.40, "examples": 512}}
+
+    assert engine._learning_gate(run, baseline, {"exact_match": 0.46})["status"] == "usable"
+    assert (
+        engine._learning_gate(run, baseline, {"exact_match": 0.44})["status"]
+        == "no_learning"
+    )

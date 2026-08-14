@@ -256,7 +256,6 @@ def validate_synthetic_dataset(path: str | Path) -> dict[str, Any]:
 def prepare_all_synthetic(
     raw: dict[str, Any], runs: Iterable[Any], root: str | Path
 ) -> list[Path]:
-    dataset_cfg = raw["datasets"]["synthetic_codebook"]
     cells = sorted(
         {
             (int(run.family_count), int(run.seed))
@@ -264,6 +263,9 @@ def prepare_all_synthetic(
             if run.kind == "synthetic"
         }
     )
+    if not cells:
+        return []
+    dataset_cfg = raw["datasets"]["synthetic_codebook"]
     return [
         prepare_synthetic_dataset(dataset_cfg, family_count, seed, root)
         for family_count, seed in cells
@@ -516,6 +518,51 @@ def _convert_mbpp(rows: Any, split: str) -> list[Example]:
     return converted
 
 
+def _convert_multiple_choice(
+    rows: Any,
+    split: str,
+    dataset_key: str,
+    spec: dict[str, Any],
+) -> list[Example]:
+    """Convert standard Hugging Face multiple-choice records to label SFT."""
+    converted = []
+    for index, row in enumerate(rows):
+        choices = row["choices"]
+        source_labels = [str(label) for label in choices["label"]]
+        texts = [" ".join(str(text).split()) for text in choices["text"]]
+        answer = str(row["answerKey"])
+        if not answer or answer not in source_labels:
+            raise ValueError(
+                f"{dataset_key}/{split}/{index}: missing labeled answer"
+            )
+        if not 2 <= len(texts) <= 5 or len(source_labels) != len(texts):
+            raise ValueError(
+                f"{dataset_key}/{split}/{index}: expected 2 to 5 choices"
+            )
+        labels = [chr(ord("A") + offset) for offset in range(len(texts))]
+        question = " ".join(str(row[spec["question_field"]]).split())
+        rendered_choices = "\n".join(
+            f"{label}. {text}" for label, text in zip(labels, texts, strict=True)
+        )
+        target = source_labels.index(answer)
+        converted.append(
+            Example(
+                example_id=f"{dataset_key}-{split}-{index}",
+                prompt=(
+                    "Choose the best answer. Reply with only its letter.\n\n"
+                    f"Question: {question}\n{rendered_choices}\nAnswer:"
+                ),
+                response=f" {labels[target]}",
+                metadata={
+                    "split": split,
+                    "label_index": target,
+                    "choice_count": len(texts),
+                },
+            )
+        )
+    return converted
+
+
 def _load_natural_from_hub(
     raw: dict[str, Any], dataset_key: str, seed: int
 ) -> dict[str, list[Example]]:
@@ -544,6 +591,27 @@ def _load_natural_from_hub(
         return {
             target: _convert_mbpp(dataset[source], target)
             for target, source in split_names.items()
+        }
+    if spec.get("task_type") == "multiple_choice":
+        train = dataset[spec["train_split"]]
+        if "validation_rows" in spec:
+            shuffled = train.shuffle(seed=seed)
+            count = int(spec["validation_rows"])
+            calibration_rows = shuffled.select(range(count))
+            train_rows = shuffled.select(range(count, len(shuffled)))
+        else:
+            train_rows = train
+            calibration_rows = dataset[spec["validation_split"]]
+        return {
+            "train": _convert_multiple_choice(
+                train_rows, "train", dataset_key, spec
+            ),
+            "calibration": _convert_multiple_choice(
+                calibration_rows, "calibration", dataset_key, spec
+            ),
+            "test": _convert_multiple_choice(
+                dataset[spec["test_split"]], "test", dataset_key, spec
+            ),
         }
     raise ValueError(f"unsupported natural dataset: {dataset_key}")
 

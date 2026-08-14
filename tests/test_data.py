@@ -20,6 +20,28 @@ from fineqcomp.data import (
 LABELS = [f" {chr(ord('A') + index)}" for index in range(16)]
 
 
+def test_multiple_choice_conversion_uses_standard_labels_and_no_answer_text():
+    rows = [
+        {
+            "question": "Which answer is right?",
+            "choices": {"label": ["1", "2", "3"], "text": ["one", "two", "three"]},
+            "answerKey": "2",
+        }
+    ]
+
+    converted = data._convert_multiple_choice(
+        rows,
+        "test",
+        "arc_challenge",
+        {"question_field": "question"},
+    )
+
+    assert converted[0].response == " B"
+    assert converted[0].metadata["label_index"] == 1
+    assert converted[0].metadata["choice_count"] == 3
+    assert "B. two" in converted[0].prompt
+
+
 def test_synthetic_data_has_known_entropy_and_no_prompt_leakage(tmp_path):
     codebooks = tmp_path / "codebooks"
     codebooks.mkdir()

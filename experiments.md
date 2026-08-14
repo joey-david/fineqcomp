@@ -1,205 +1,148 @@
 # Experiments
 
-This file fixes the campaign before remote execution. Every model and dataset
-revision lives in `configs/campaign.yaml`. The manifest contains 105 candidate
-runs; no-adapter evaluations are shared and do not add training jobs.
+This protocol tests the project proposal's empirical bit-performance claim on
+public tasks. It does not treat dataset byte size as task information and does
+not use random labels. Dataset, model, and evaluator revisions are fixed in
+`configs/campaign.yaml`.
 
-The adaptation rate always means the size in bits of the complete `.fqcb`
-file. It includes packed values, FP16 row scales, tensor names and shapes, the
-seeded-A reconstruction seed, and the file header. The frozen backbone is
-reported separately and never counted as finetuning information.
+The manifest has 48 candidate runs: two models, four tasks, three seeds, and two
+adapter layouts. A run reaches the quantization sweep only after both fixed
+calibration gates pass. Screened and failed-to-learn cells stay in the audit.
 
-## Eight-worker mixed-GPU execution
+## Shared protocol
 
-Run preparation once on a host with access to the pinned Hugging Face snapshots:
+- Models: `mistralai/Mistral-7B-Instruct-v0.3` and `Qwen/Qwen3-8B`, with frozen
+  NF4 backbones.
+- Tasks: [GSM8K](https://huggingface.co/datasets/openai/gsm8k),
+  [CommonsenseQA](https://huggingface.co/datasets/tau/commonsense_qa),
+  [ARC-Challenge](https://huggingface.co/datasets/allenai/ai2_arc), and
+  [OpenBookQA](https://huggingface.co/datasets/allenai/openbookqa).
+- Seeds: 11, 22, and 33.
+- Adapters: full rank-16 LoRA on all linear projections, and seeded-A rank-16
+  LoRA on all Q/V projections.
+- Stored precisions: 2, 3, 4, 8, and 16 bits. For each precision, clipping is
+  selected from 99.0%, 99.9%, and 100.0% using calibration loss only.
+- Rate: exact bits in the complete `.fqcb` file, including values, scales,
+  shapes, names, reconstruction seed, and header. The frozen model is separate.
+- General-skill check: official IFEval strict and loose prompt and instruction
+  accuracy before and after adaptation.
 
-```bash
-cd ~/fineQComp
-set -a; source .env; set +a
-"$PYTHON" -m fineqcomp prepare --config configs/campaign.yaml
-```
+GSM8K reserves a seeded 512-row slice of training for calibration and keeps its
+test split final. CommonsenseQA has no labeled public test set, so a seeded
+512-row training slice is calibration and the standard validation split is
+final. ARC-Challenge and OpenBookQA use their standard validation and test
+splits. No final test result affects task choice, early stopping, clipping, or
+the learning gate.
 
-Make the same checkout, `prepared/`, model cache, and `runs/` directory visible
-on all four hosts. Stop older campaign workers first: every live worker must use
-the shared per-run lock in this revision. From one node with SSH aliases for the
-four hosts, start the full grid with:
+Two gates run before the bit sweep:
 
-```bash
-./scripts/run_distributed_campaign.sh
-```
+1. Saturation gate: reject a model-task cell only when the lower end of its 95%
+   Wilson interval exceeds 0.80 on calibration accuracy or exact match.
+2. Learning gate: reject an adapter seed when the uncompressed adapter gains
+   less than 0.05 on calibration data over its no-adapter baseline.
 
-Use `./scripts/run_distributed_campaign.sh --prepare` when preparation has not
-been run on the launch node. The script makes one SSH connection per host and
-creates one two-window tmux session per host. It leaves an existing
-`fineqcomp8` session untouched, so rerunning it cannot start duplicate workers.
-
-All workers read the same manifest and take an exclusive lock before touching a
-run. Completed runs remain skipped, so this layout keeps valid artifacts from
-earlier launches. `upnquick` and `ourasi` run the full grid. The 11 GB cards on
-`boldeagle` and `readycash` run only the Qwen3-8B NF4 last-layer rank-4 seeded
-adapter at micro-batch 1. This is the profile measured at 9.92 GB peak on a
-10.90 GiB GTX 1080 Ti; the high-memory cards retain every other job. Gradient
-accumulation keeps the effective batch size fixed. Those older cards use FP16
-compute because they lack native BF16.
-
-After all eight workers finish, run `"$PYTHON" -m fineqcomp analyze` once from
-the shared checkout.
-
-## Jean-Zay H100 execution
-
-Jean-Zay uses three restart-safe stages. `jean_zay_stage.sbatch` runs on a
-networked pre/post node, creates a system-site virtual environment, installs the
-pinned IFEval evaluator, prepares every dataset, and downloads every pinned
-model snapshot. `jean_zay_smoke.sbatch` then checks one H100 and completes one
-small campaign run. Only after that succeeds should `jean_zay_array.sbatch` be
-submitted: its 16 one-GPU tasks map array indices 0 through 15 to the same 16
-global manifest shards. `jean_zay_analyze.sbatch` runs after the complete array.
-
-The H100 jobs load the managed PyTorch 2.8/CUDA 12.8 module and work offline.
-All jobs share `$WORK/fineQComp/{prepared,.hf_cache,runs,reports}`. Failed or
-preempted array elements may be resubmitted without repeating completed runs.
-
-## Experiment 1: Known-information rate-distortion law
+## Experiment 1: Real-task rate-performance curves
 
 ### Question
 
-Does the smallest quantized update needed for a fixed error grow with the
-number of independent bits in the finetuning task?
+How many stored adapter bits are needed to obtain a useful held-out gain on
+standard reasoning and knowledge tasks?
 
-### Setup
+### Measures
 
-- Model: `Qwen/Qwen3-8B-Base`, NF4 backbone, BF16 computation.
-- Data: 16,384 rows at each `K` in `{4, 32, 256, 1024}` and mapping seeds
-  `{11, 22, 33}`.
-- Each family contains 16 independent labels from a 16-token alphabet. The
-  source has `16 K` four-bit symbols and exact entropy `64 K` bits.
-- Three fixed random codebook assets supply the labels. Each asset stores the
-  full 65,536-bit source rather than a short PRNG seed; smaller `K` settings
-  use a hashed prefix of the same source.
-- Training and test use different wording and nuisance IDs. Both query the same
-  family-item mapping.
-- Seeded-B settings: last-layer Q/V rank 4; last-four Q/V rank 4; last-four Q/V
-  rank 16; all-layer Q/V rank 16.
-- Full-LoRA control: all linear projections, rank 16, at `K=32` and `K=1024`.
-- Adapter precisions: 2, 3, 4, 8, and 16 bits. Select clipping from
-  `{99.0, 99.9, 100.0}` using calibration NLL only.
+- GSM8K final-answer exact match.
+- CommonsenseQA, ARC-Challenge, and OpenBookQA constrained-choice accuracy.
+- Test gain over the matched no-adapter model.
+- Exact adapter file bits and raw packed payload bits.
+- Paired bootstrap 95% interval and exact McNemar test against the matched base
+  predictions.
+- Training time and peak GPU memory.
 
-### Metrics and outputs
+### Outputs
 
-- Primary: unique family-item error and the 16-way Hamming lower bound
-  `16 K [4 - h2(D) - D log2(15)]`.
-- Accuracy-target plots show each seed plus the median and seed range. A failed
-  target stays marked as right-censored at the largest tested channel.
-- Secondary: accuracy, label NLL, calibration error, actual file bits, raw
-  payload bits, BF16 nominal bits, training time, and peak memory.
-- Plots: `rate_distortion.png`, `bits_vs_information.png`, and
-  `rate_allocation.png`.
+- `reports/summary.csv`: every seed, adapter, task, and bit width.
+- `reports/natural_pareto.png`: test gain against actual adapter MiB.
+- `reports/baseline_screening.csv` and `reports/learning_gates.csv`: all fixed
+  gate decisions, including rejected cells.
 
 ### Results
 
-<!-- Leave empty until the remote artifacts have been pulled and checked. -->
+<!-- Fill after the new remote artifacts have been pulled and checked. -->
 
-## Experiment 2: Controlled transfer through real paraphrases
+## Experiment 2: Quantization threshold
 
 ### Question
 
-Does the rate-distortion relation survive when the identifiers are natural
-sentences and test queries are unseen paraphrases?
+Where does reducing adapter precision cause a reliable loss relative to the
+same trained 16-bit adapter?
 
-### Setup
+### Measures
 
-- Source: positive paraphrase pairs from the pinned PAWS training split.
-- Deterministic filtering removes empty, identical, or reused sentences.
-- The first sentence supplies training and clipping-calibration queries under
-  distinct wrappers. Only its paired sentence supplies the transfer test.
-- Each pair receives one independent label from the same fixed 16-token random
-  codebooks as Experiment 1.
-- Binding counts are `{256, 2048, 8192}`, with seeds `{11,22,33}` and 8,192
-  total training rows per cell.
-- Model: Qwen3-8B-Base/NF4 with seeded-B last-four Q/V rank 16.
+- Score at 2, 3, 4, and 8 bits divided by the matched 16-bit score.
+- Paired score differences between each low-bit adapter and its matched 16-bit
+  predictions.
+- File-size reduction relative to 16 bits.
+- Median and full seed range; no seed may be removed after the run.
 
-### Metrics and outputs
+### Outputs
 
-- Unseen-paraphrase accuracy, distortion, label NLL, coded bits, and the 16-way
-  Hamming lower bound.
-- Plot: `controlled_transfer.png`.
+- `reports/quantization_retention.png`: median retention and seed range by task,
+  model, and adapter.
+- `reports/summary.csv`: per-run paired statistics and storage fields.
 
 ### Results
 
-<!-- Leave empty until the remote artifacts have been pulled and checked. -->
+<!-- Fill after the new remote artifacts have been pulled and checked. -->
 
-## Experiment 3: Family, scale, and backbone checks
+## Experiment 3: Adapter allocation
 
 ### Question
 
-Does the measured relation depend on Qwen3-8B, NF4, or one model size?
+At a matched stored size, does a full all-linear LoRA or a seeded all-layer Q/V
+LoRA give the better task gain?
 
-### Setup
+### Measures
 
-- Mistral-7B-v0.3/NF4: `K={32,1024}`, three seeds, seeded-B last-four rank 16
-  and full all-linear rank 16.
-- Qwen3-14B-Base/NF4: the same two `K` values and adapter settings, seed 11.
-- Qwen3-8B-Base/BF16: the same two `K` values, seeded-B last-four rank 16,
-  seed 11.
-- All data, prompts, codec settings, and metrics match Experiment 1.
+- Pareto frontier of test gain versus exact file bits for each layout.
+- Best task score under fixed 2, 5, 10, 20, and 50 MiB budgets where covered.
+- Seed consistency across both model families and all tasks that pass both
+  gates.
 
-### Metrics and outputs
+### Outputs
 
-- Compare rate at matched distortion, rate divided by the lower bound, and
-  whether family or scale changes the slope.
-- Plot: `model_checks.png`; table: `efficiency.csv`.
+- `reports/natural_pareto.png` and the adapter fields in
+  `reports/summary.csv`.
 
 ### Results
 
-<!-- Leave empty until the remote artifacts have been pulled and checked. -->
+<!-- Fill after the new remote artifacts have been pulled and checked. -->
 
-## Experiment 4: Screened GSM8K and MBPP
+## Experiment 4: Task gain versus instruction retention
 
 ### Question
 
-Do actual coded adapter bits predict useful task gain on non-synthetic data,
-and what instruction-following cost accompanies that gain?
+Does a smaller coded update retain more of the base model's instruction
+following, and what task gain does that trade buy?
 
-### Setup
+### Measures
 
-- Models: Qwen3-8B and Mistral-7B-Instruct-v0.3, both with NF4 backbones.
-- Before training, both models run the complete held-out task evaluations.
-  GSM8K uses a 0.80 exact-match ceiling and MBPP a 0.75 pass@1 ceiling. A cell
-  is marked `too_easy` and receives no finetuning only when the 95% Wilson
-  interval's lower bound exceeds its ceiling. These rules are fixed before
-  results are available.
-- Qwen uses seeds `{11,22,33}`; Mistral uses seed 11 as a family check.
-- Adapters: seeded-B last-four Q/V rank 16, seeded-B all-layer Q/V rank 16,
-  and standard full all-linear rank 16.
-- GSM8K trains for three epochs and uses final-answer exact match.
-- MBPP trains for ten epochs and uses pass@1 under a bounded Python evaluator.
-- IFEval measures strict and loose prompt- and instruction-level retention.
-- All adapters are evaluated at 2, 3, 4, 8, and 16 coded bits.
+- Test gain over the no-adapter task score.
+- Drop in IFEval strict prompt accuracy from the matched no-adapter model.
+- The same comparison for loose prompt and strict/loose instruction accuracy in
+  `summary.csv`.
 
-### Metrics and outputs
+### Outputs
 
-- GSM8K: exact match, held-out NLL, coded bits, and bootstrap interval.
-- MBPP: pass@1, compile/rejection/timeout/test-failure counts, coded bits, and
-  bootstrap interval.
-- IFEval: strict and loose prompt and instruction accuracy before and after
-  adaptation.
-- Plots: `natural_pareto.png` and `ifeval_retention.png`.
-- Table: `baseline_screening.csv`, including baseline score, headroom, threshold,
-  and the pre-registered screening decision.
-
-Natural dataset byte compression is descriptive only. It is not treated as
-the task's true information content.
+- `reports/ifeval_retention.png`: task gain against strict IFEval drop.
 
 ### Results
 
-<!-- Leave empty until the remote artifacts have been pulled and checked. -->
+<!-- Fill after the new remote artifacts have been pulled and checked. -->
 
-## Fixed claim rule
+## Claim rule
 
-The main claim requires a monotone rise in minimum coded bits with known task
-information across the three mapping seeds. Unreached 70%, 90%, or 99%
-accuracy targets remain censored. The analysis must not remove failed seeds,
-adapter settings, or model checks after seeing their values.
-Natural-task claims use only model-dataset cells marked `usable` by the fixed
-base-score screen. Screened-out cells remain in the baseline audit and cannot
-support either a gain or no-gain claim.
+The main claim needs the same bit-quality trend in at least two tasks and both
+model families, with all three seeds shown. A single successful Mistral-GSM8K
+cell remains a case study. Cells that fail either gate cannot support a
+rate-performance claim. We will report null, harmful, and screened results next
+to successful runs.

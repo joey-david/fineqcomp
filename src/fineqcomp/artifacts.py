@@ -26,6 +26,8 @@ def read_json(path: str | Path, default: Any = None) -> Any:
 def run_complete(run_dir: str | Path, precisions: tuple[int, ...]) -> bool:
     root = Path(run_dir)
     status = read_json(root / "status.json", {})
+    if status.get("state") in {"screened_out", "no_learning"}:
+        return True
     if status.get("state") != "complete" or not (root / "metrics.json").is_file():
         return False
     return all(

@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from fineqcomp.analysis import analyze, rate_bound
+from fineqcomp.analysis import _paired_stats, analyze, rate_bound
 from fineqcomp.artifacts import write_json
 
 
@@ -89,7 +89,10 @@ def _natural_run(root, dataset, metric, value):
     )
     _prediction(run / "predictions" / "task_b4.jsonl", [True, True, False])
     write_json(
-        root / "baselines" / f"qwen3_8b_instruct__nf4__{dataset}" / "metrics.json",
+        root
+        / "baselines"
+        / f"qwen3_8b_instruct__nf4__{dataset}-seed11"
+        / "metrics.json",
         {
             "kind": "natural",
             "model": "Qwen/Qwen3-8B",
@@ -162,6 +165,14 @@ def test_rate_bound_endpoints():
     assert rate_bound(100, 15 / 16) == pytest.approx(0, abs=1e-12)
 
 
+def test_paired_stats_use_matched_predictions():
+    stats = _paired_stats([0, 1, 0, 1], [1, 1, 1, 0])
+
+    assert stats["paired_gain"] == 0.25
+    assert stats["wrong_to_right"] == 2
+    assert stats["right_to_wrong"] == 1
+
+
 def test_analysis_writes_fixed_tables_and_figures(tmp_path):
     runs = tmp_path / "runs"
     reports = tmp_path / "reports"
@@ -173,7 +184,12 @@ def test_analysis_writes_fixed_tables_and_figures(tmp_path):
 
     summary = analyze(runs, reports)
 
-    assert summary == {"complete_runs": 5, "codec_rows": 5, "baselines": 3}
+    assert summary == {
+        "complete_runs": 5,
+        "codec_rows": 5,
+        "baselines": 3,
+        "status_counts": {},
+    }
     for name in (
         "summary.csv",
         "efficiency.csv",
@@ -184,7 +200,9 @@ def test_analysis_writes_fixed_tables_and_figures(tmp_path):
         "controlled_transfer.png",
         "model_checks.png",
         "natural_pareto.png",
+        "quantization_retention.png",
         "ifeval_retention.png",
         "baseline_screening.csv",
+        "learning_gates.csv",
     ):
         assert (reports / name).stat().st_size > 0

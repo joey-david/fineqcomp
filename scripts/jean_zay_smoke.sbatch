@@ -28,11 +28,5 @@ fi
   --gpu-count 1 --min-gpu-memory-gib 75 --shards 16 \
   --report prepared/smoke-preflight.json
 
-run_id="$($python_bin -c 'import json; from pathlib import Path; rows=[json.loads(line) for line in Path("prepared/manifest.jsonl").read_text().splitlines()]; print(next(row["run_id"] for row in rows if row["study"] == "exact_seeded" and row["model"]["key"] == "qwen3_8b_base" and row["family_count"] == 4 and row["adapter"]["key"] == "seeded_last1_r4" and row["seed"] == 11))')"
-
-"$python_bin" -m fineqcomp run --run-id "$run_id" --shard 0 --shards 16
-"$python_bin" -m fineqcomp analyze --root runs --out reports
-test -s "runs/$run_id/metrics.json"
-test -s "runs/$run_id/codecs/adapter_b4.fqcb"
-test -s "reports/summary.json"
-printf 'smoke run complete: %s\n' "$run_id"
+"$python_bin" -c 'import json; report=json.load(open("prepared/smoke-preflight.json")); assert report["model_smoke"]["training"]["optimizer_updates"] > 0; assert report["model_smoke"]["storage"]["file_bits"] > 0'
+printf 'model, training, and codec smoke complete\n'

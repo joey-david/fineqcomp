@@ -2,20 +2,9 @@ version: 1
 
 precisions: [2, 3, 4, 8, 16]
 clip_percentiles: [99.0, 99.9, 100.0]
+multiple_choice_labels: [" A", " B", " C", " D", " E"]
 
 models:
-  qwen3_8b_base:
-    name: Qwen/Qwen3-8B-Base
-    revision: 49e3418fbbbca6ecbdf9608b4d22e5a407081db4
-    backbone: nf4
-  qwen3_14b_base:
-    name: Qwen/Qwen3-14B-Base
-    revision: 0b0bd3732e2c374d483664439ea334928b65f304
-    backbone: nf4
-  mistral_7b_base:
-    name: mistralai/Mistral-7B-v0.3
-    revision: caa1feb0e54d415e2df31207e5f4e273e33509b1
-    backbone: nf4
   qwen3_8b_instruct:
     name: Qwen/Qwen3-8B
     revision: b968826d9c46dd6066d109eabc6255188de91218
@@ -29,24 +18,6 @@ models:
     chat: true
 
 adapters:
-  seeded_last1_r4:
-    method: seeded_b
-    rank: 4
-    target_modules: [q_proj, v_proj]
-    last_n_layers: 1
-    alpha: 8
-  seeded_last4_r4:
-    method: seeded_b
-    rank: 4
-    target_modules: [q_proj, v_proj]
-    last_n_layers: 4
-    alpha: 8
-  seeded_last4_r16:
-    method: seeded_b
-    rank: 16
-    target_modules: [q_proj, v_proj]
-    last_n_layers: 4
-    alpha: 32
   seeded_all_qv_r16:
     method: seeded_b
     rank: 16
@@ -61,22 +32,6 @@ adapters:
     alpha: 32
 
 training:
-  synthetic:
-    epochs: 3
-    learning_rate: 0.0002
-    effective_batch_size: 128
-    micro_batch_size: 32
-    max_length: 96
-    warmup_ratio: 0.03
-    weight_decay: 0.0
-  controlled:
-    epochs: 3
-    learning_rate: 0.0002
-    effective_batch_size: 128
-    micro_batch_size: 16
-    max_length: 192
-    warmup_ratio: 0.03
-    weight_decay: 0.0
   gsm8k:
     epochs: 3
     learning_rate: 0.0001
@@ -85,27 +40,32 @@ training:
     max_length: 1024
     warmup_ratio: 0.03
     weight_decay: 0.0
-  mbpp:
+  commonsense_qa:
+    epochs: 3
+    learning_rate: 0.0001
+    effective_batch_size: 32
+    micro_batch_size: 4
+    max_length: 512
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+  arc_challenge:
     epochs: 10
     learning_rate: 0.0001
     effective_batch_size: 32
     micro_batch_size: 4
-    max_length: 1024
+    max_length: 512
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+  openbookqa:
+    epochs: 5
+    learning_rate: 0.0001
+    effective_batch_size: 32
+    micro_batch_size: 4
+    max_length: 512
     warmup_ratio: 0.03
     weight_decay: 0.0
 
 datasets:
-  synthetic_codebook:
-    codebook_dir: codebooks
-    train_rows: 16384
-    items_per_family: 16
-    labels: [" A", " B", " C", " D", " E", " F", " G", " H", " I", " J", " K", " L", " M", " N", " O", " P"]
-  controlled_paws:
-    path: google-research-datasets/paws
-    name: labeled_final
-    revision: 161ece9501cf0a11f3e48bd356eaa82de46d6a09
-    split: train
-    train_rows: 8192
   gsm8k:
     path: openai/gsm8k
     name: main
@@ -115,82 +75,70 @@ datasets:
     validation_rows: 512
     screening_metric: exact_match
     maximum_baseline_score: 0.80
-  mbpp:
-    path: google-research-datasets/mbpp
-    name: sanitized
-    revision: 4bb6404fdc6cacfda99d4ac4205087b89d32030c
+    minimum_raw_gain: 0.05
+  commonsense_qa:
+    path: tau/commonsense_qa
+    name: default
+    revision: 94630fe30dad47192a8546eb75f094926d47e155
+    task_type: multiple_choice
+    train_split: train
+    test_split: validation
+    validation_rows: 512
+    question_field: question
+    screening_metric: accuracy
+    maximum_baseline_score: 0.80
+    minimum_raw_gain: 0.05
+  arc_challenge:
+    path: allenai/ai2_arc
+    name: ARC-Challenge
+    revision: 210d026faf9955653af8916fad021475a3f00453
+    task_type: multiple_choice
     train_split: train
     validation_split: validation
     test_split: test
-    screening_metric: pass_at_1
-    maximum_baseline_score: 0.75
+    question_field: question
+    screening_metric: accuracy
+    maximum_baseline_score: 0.80
+    minimum_raw_gain: 0.05
+  openbookqa:
+    path: allenai/openbookqa
+    name: main
+    revision: 388097ea7776314e93a529163e0fea805b8a6454
+    task_type: multiple_choice
+    train_split: train
+    validation_split: validation
+    test_split: test
+    question_field: question_stem
+    screening_metric: accuracy
+    maximum_baseline_score: 0.80
+    minimum_raw_gain: 0.05
   ifeval:
     path: google/IFEval
     revision: 966cd89545d6b6acfd7638bc708b98261ca58e84
     split: train
 
 studies:
-  exact_seeded:
-    kind: synthetic
-    models: [qwen3_8b_base]
-    backbone: nf4
-    family_counts: [4, 32, 256, 1024]
-    seeds: [11, 22, 33]
-    adapters: [seeded_last1_r4, seeded_last4_r4, seeded_last4_r16, seeded_all_qv_r16]
-    training: synthetic
-  exact_full:
-    kind: synthetic
-    models: [qwen3_8b_base]
-    backbone: nf4
-    family_counts: [32, 1024]
-    seeds: [11, 22, 33]
-    adapters: [full_all_r16]
-    training: synthetic
-  family_check:
-    kind: synthetic
-    models: [mistral_7b_base]
-    backbone: nf4
-    family_counts: [32, 1024]
-    seeds: [11, 22, 33]
-    adapters: [seeded_last4_r16, full_all_r16]
-    training: synthetic
-  scale_check:
-    kind: synthetic
-    models: [qwen3_14b_base]
-    backbone: nf4
-    family_counts: [32, 1024]
-    seeds: [11]
-    adapters: [seeded_last4_r16, full_all_r16]
-    training: synthetic
-  backbone_check:
-    kind: synthetic
-    models: [qwen3_8b_base]
-    backbone: bf16
-    family_counts: [32, 1024]
-    seeds: [11]
-    adapters: [seeded_last4_r16]
-    training: synthetic
-  controlled_transfer:
-    kind: controlled
-    models: [qwen3_8b_base]
-    backbone: nf4
-    binding_counts: [256, 2048, 8192]
-    seeds: [11, 22, 33]
-    adapters: [seeded_last4_r16]
-    training: controlled
-  natural_qwen:
+  real_tasks_qwen:
     kind: natural
     models: [qwen3_8b_instruct]
-    datasets: [gsm8k, mbpp]
+    datasets: [gsm8k, commonsense_qa, arc_challenge, openbookqa]
     seeds: [11, 22, 33]
-    adapters: [seeded_last4_r16, seeded_all_qv_r16, full_all_r16]
+    adapters: [seeded_all_qv_r16, full_all_r16]
     training: gsm8k
-    training_by_dataset: {gsm8k: gsm8k, mbpp: mbpp}
-  natural_mistral:
+    training_by_dataset:
+      gsm8k: gsm8k
+      commonsense_qa: commonsense_qa
+      arc_challenge: arc_challenge
+      openbookqa: openbookqa
+  real_tasks_mistral:
     kind: natural
     models: [mistral_7b_instruct]
-    datasets: [gsm8k, mbpp]
-    seeds: [11]
-    adapters: [seeded_last4_r16, seeded_all_qv_r16, full_all_r16]
+    datasets: [gsm8k, commonsense_qa, arc_challenge, openbookqa]
+    seeds: [11, 22, 33]
+    adapters: [seeded_all_qv_r16, full_all_r16]
     training: gsm8k
-    training_by_dataset: {gsm8k: gsm8k, mbpp: mbpp}
+    training_by_dataset:
+      gsm8k: gsm8k
+      commonsense_qa: commonsense_qa
+      arc_challenge: arc_challenge
+      openbookqa: openbookqa

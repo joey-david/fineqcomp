@@ -1,4 +1,4 @@
-"""Synthetic classification and deterministic natural-task evaluation."""
+"""Deterministic task evaluation for the campaign."""
 
 from __future__ import annotations
 
@@ -94,6 +94,62 @@ def evaluate_synthetic(
     )
 
 
+@torch.no_grad()
+def evaluate_multiple_choice(
+    model: torch.nn.Module,
+    tokenizer: Any,
+    examples: list[Example],
+    model_spec: ModelSpec,
+    labels: list[str],
+    batch_size: int,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Score standard multiple-choice tasks by constrained answer likelihood."""
+    label_ids = validate_single_token_labels(tokenizer, labels)
+    device = model_device(model)
+    model.eval()
+    predictions = []
+    total_nll = 0.0
+    correct = 0
+    for batch in _batched(examples, batch_size):
+        prompts = [render_prompt(tokenizer, row.prompt, model_spec) for row in batch]
+        encoded = tokenizer(prompts, return_tensors="pt", padding=True)
+        encoded = {key: value.to(device) for key, value in encoded.items()}
+        logits = model(**encoded).logits
+        positions = torch.arange(
+            encoded["attention_mask"].shape[1], device=device
+        ).expand_as(encoded["attention_mask"])
+        final_index = (positions * encoded["attention_mask"]).argmax(dim=1)
+        next_logits = logits[torch.arange(len(batch), device=device), final_index]
+        for row_index, row in enumerate(batch):
+            choice_count = int(row.metadata["choice_count"])
+            target = int(row.metadata["label_index"])
+            probabilities = torch.softmax(
+                next_logits[row_index, label_ids[:choice_count]].float(), dim=-1
+            )
+            predicted = int(probabilities.argmax().item())
+            target_probability = float(probabilities[target].item())
+            is_correct = predicted == target
+            total_nll += -math.log(max(target_probability, 1e-12))
+            correct += int(is_correct)
+            predictions.append(
+                {
+                    "example_id": row.example_id,
+                    "target": target,
+                    "prediction": predicted,
+                    "confidence": float(probabilities[predicted].item()),
+                    "correct": is_correct,
+                }
+            )
+    return (
+        {
+            "examples": len(examples),
+            "accuracy": correct / max(len(examples), 1),
+            "label_nll": total_nll / max(len(examples), 1),
+        },
+        predictions,
+    )
+
+
 def _normalize_number(text: str) -> str | None:
     matches = re.findall(r"[-+]?\d[\d,]*(?:\.\d+)?", text)
     if not matches:
@@ -151,7 +207,19 @@ def evaluate_natural(
     model_spec: ModelSpec,
     dataset_key: str,
     batch_size: int,
+    multiple_choice_labels: list[str] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    if examples and "choice_count" in examples[0].metadata:
+        if not multiple_choice_labels:
+            raise ValueError("multiple-choice evaluation requires answer labels")
+        return evaluate_multiple_choice(
+            model,
+            tokenizer,
+            examples,
+            model_spec,
+            multiple_choice_labels,
+            batch_size,
+        )
     max_tokens = 512 if dataset_key in {"gsm8k", "mbpp"} else 256
     responses = generate_responses(
         model, tokenizer, examples, model_spec, batch_size, max_tokens

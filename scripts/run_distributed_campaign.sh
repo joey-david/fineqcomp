@@ -36,14 +36,14 @@ fi
 
 start_host() {
   local host="$1"
-  shift
+  local first_shard="$2"
   ssh -o BatchMode=yes -o ConnectTimeout=15 "$host" bash -s -- \
-    "$remote_root" "$session" "$@" <<'REMOTE'
+    "$remote_root" "$session" "$first_shard" <<'REMOTE'
 set -euo pipefail
 
 repo_root="$1"
 session="$2"
-shift 2
+first_shard="$3"
 
 cd "$repo_root"
 if [[ ! -s prepared/manifest.jsonl ]]; then
@@ -68,31 +68,19 @@ fi
 
 tmux new-session -d -s "$session" -n gpu0 -c "$repo_root" \
   env CUDA_VISIBLE_DEVICES=0 "$python_bin" -m fineqcomp run \
-    --shard 0 --shards 1 "$@"
+    --shard "$first_shard" --shards 4
 tmux set-option -t "$session" remain-on-exit on
 tmux new-window -d -t "$session:" -n gpu1 -c "$repo_root" \
   env CUDA_VISIBLE_DEVICES=1 "$python_bin" -m fineqcomp run \
-    --shard 0 --shards 1 "$@"
+    --shard "$((first_shard + 1))" --shards 4
 echo "$HOSTNAME: started tmux session $session"
 REMOTE
 }
 
-low_vram=(
-  --models qwen3_8b_base
-  --adapters seeded_last1_r4
-  --backbones nf4
-  --max-length 192
-  --micro-batch-size 1
-)
-
 status=0
-start_host "${UPNQUICK_HOST:-upnquick}" &
+start_host "${UPNQUICK_HOST:-upnquick}" 0 &
 pids=("$!")
-start_host "${OURASI_HOST:-ourasi}" &
-pids+=("$!")
-start_host "${BOLDEAGLE_HOST:-boldeagle}" "${low_vram[@]}" &
-pids+=("$!")
-start_host "${READYCASH_HOST:-readycash}" "${low_vram[@]}" &
+start_host "${OURASI_HOST:-ourasi}" 2 &
 pids+=("$!")
 for pid in "${pids[@]}"; do
   wait "$pid" || status=1

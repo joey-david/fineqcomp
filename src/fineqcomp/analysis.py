@@ -50,6 +50,54 @@ def _binomial_ci(values: list[int], seed: int = 20260731) -> tuple[float, float]
     return float(np.quantile(samples, 0.025)), float(np.quantile(samples, 0.975))
 
 
+def _paired_stats(
+    baseline: list[int], adapted: list[int], seed: int = 20260731
+) -> dict[str, float | int | None]:
+    if not baseline or len(baseline) != len(adapted):
+        return {
+            "paired_gain": None,
+            "paired_ci_low": None,
+            "paired_ci_high": None,
+            "mcnemar_p": None,
+        }
+    delta = np.asarray(adapted, dtype=float) - np.asarray(baseline, dtype=float)
+    rng = np.random.default_rng(seed)
+    indices = rng.integers(0, len(delta), size=(2_000, len(delta)))
+    boot = delta[indices].mean(axis=1)
+    wrong_to_right = sum(
+        before == 0 and after == 1
+        for before, after in zip(baseline, adapted, strict=True)
+    )
+    right_to_wrong = sum(
+        before == 1 and after == 0
+        for before, after in zip(baseline, adapted, strict=True)
+    )
+    discordant = wrong_to_right + right_to_wrong
+    if discordant:
+        tail = sum(
+            math.comb(discordant, index)
+            for index in range(min(wrong_to_right, right_to_wrong) + 1)
+        ) / 2**discordant
+        p_value = min(1.0, 2 * tail)
+    else:
+        p_value = 1.0
+    return {
+        "paired_gain": float(delta.mean()),
+        "paired_ci_low": float(np.quantile(boot, 0.025)),
+        "paired_ci_high": float(np.quantile(boot, 0.975)),
+        "mcnemar_p": p_value,
+        "wrong_to_right": wrong_to_right,
+        "right_to_wrong": right_to_wrong,
+    }
+
+
+def _primary_metric(task: dict[str, Any]) -> str | None:
+    for metric in ("exact_match", "accuracy", "pass_at_1"):
+        if task.get(metric) is not None:
+            return metric
+    return None
+
+
 def collect_rows(
     root: str | Path,
 ) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
@@ -65,10 +113,31 @@ def collect_rows(
         run = _read_json(metrics_path)
         for codec in run.get("codecs", []):
             task = codec["task"]
+            primary_metric = _primary_metric(task)
             bits = int(codec["bits"])
             predictions = metrics_path.parent / "predictions" / f"task_b{bits}.jsonl"
             correct = _read_correct(predictions)
             ci_low, ci_high = _binomial_ci(correct)
+            baseline_key = (
+                f"{run['model_key']}__{run['backbone']}__"
+                f"{run.get('dataset_key')}-seed{run['seed']}"
+            )
+            if baseline_key not in baselines:
+                legacy_key = (
+                    f"{run['model_key']}__{run['backbone']}__"
+                    f"{run.get('dataset_key')}"
+                )
+                if legacy_key in baselines:
+                    baseline_key = legacy_key
+            baseline = baselines.get(baseline_key, {})
+            baseline_predictions = (
+                runs_root / "baselines" / baseline_key / "predictions.jsonl"
+            )
+            paired = _paired_stats(_read_correct(baseline_predictions), correct)
+            task_score = task.get(primary_metric) if primary_metric else None
+            baseline_test_score = (
+                baseline.get(primary_metric) if primary_metric else None
+            )
             row = {
                 "run_id": run["run_id"],
                 "study": run["study"],
@@ -92,8 +161,17 @@ def collect_rows(
                 "exact_match": task.get("exact_match"),
                 "pass_at_1": task.get("pass_at_1"),
                 "heldout_nll": task.get("heldout_nll"),
+                "primary_metric": primary_metric,
+                "task_score": task_score,
+                "baseline_test_score": baseline_test_score,
+                "test_gain": (
+                    float(task_score) - float(baseline_test_score)
+                    if task_score is not None and baseline_test_score is not None
+                    else None
+                ),
                 "ci_low": ci_low,
                 "ci_high": ci_high,
+                **paired,
                 "ifeval_prompt_strict": codec.get("ifeval", {}).get(
                     "prompt_level_strict_accuracy"
                 ),
@@ -109,6 +187,8 @@ def collect_rows(
                 ),
                 "baseline_headroom": run.get("baseline_screening", {}).get("headroom"),
                 "baseline_status": run.get("baseline_screening", {}).get("status"),
+                "raw_calibration_gain": run.get("learning_gate", {}).get("gain"),
+                "learning_status": run.get("learning_gate", {}).get("status"),
             }
             if (
                 row["kind"] in {"synthetic", "controlled"}
@@ -250,7 +330,9 @@ def _save_bits_targets(rows: list[dict[str, Any]], path: Path) -> list[dict[str,
     ax.set_xlabel("known task information (bits)")
     ax.set_ylabel("minimum measured adapter bits")
     ax.grid(alpha=0.25)
-    ax.legend()
+    handles, labels = ax.get_legend_handles_labels()
+    if handles:
+        ax.legend(handles, labels)
     fig.tight_layout()
     fig.savefig(path, dpi=220)
     plt.close(fig)
@@ -362,31 +444,90 @@ def _save_natural(rows: list[dict[str, Any]], path: Path) -> None:
     selected = [row for row in rows if row["kind"] == "natural"]
     if not selected:
         return
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.8))
-    for axis, dataset, metric in zip(
-        axes, ("gsm8k", "mbpp"), ("exact_match", "pass_at_1"), strict=True
-    ):
+    datasets = sorted({str(row["dataset_key"]) for row in selected})
+    columns = min(2, len(datasets))
+    rows_count = math.ceil(len(datasets) / columns)
+    fig, axes = plt.subplots(
+        rows_count, columns, figsize=(6 * columns, 4.6 * rows_count), squeeze=False
+    )
+    for axis, dataset in zip(axes.flat, datasets, strict=False):
         subset = [row for row in selected if row["dataset_key"] == dataset]
         for key, group in _group(subset, "model", "adapter").items():
-            for status, status_group in _group(group, "baseline_status").items():
-                saturated = status[0] == "too_easy"
-                axis.scatter(
-                    [row["file_bits"] for row in status_group],
-                    [row[metric] for row in status_group],
-                    s=24,
-                    marker="x" if saturated else "o",
-                    alpha=0.7,
-                    label=(
-                        f"{str(key[0]).split('/')[-1]} / {key[1]}"
-                        + (" (base saturated)" if saturated else "")
-                    ),
-                )
+            axis.scatter(
+                [row["file_bits"] / 8 / 2**20 for row in group],
+                [row["test_gain"] for row in group],
+                s=24,
+                alpha=0.65,
+                label=f"{str(key[0]).split('/')[-1]} / {key[1]}",
+            )
         axis.set_xscale("log")
-        axis.set_title(dataset.upper())
-        axis.set_xlabel("coded adapter bits")
-        axis.set_ylabel(metric.replace("_", " "))
+        axis.axhline(0, color="black", linewidth=0.8)
+        axis.set_title(dataset.replace("_", " ").upper())
+        axis.set_xlabel("actual adapter file size (MiB)")
+        axis.set_ylabel("test score gain over base model")
         axis.grid(alpha=0.25)
-    axes[1].legend(fontsize=6)
+        axis.legend(fontsize=6)
+    for axis in list(axes.flat)[len(datasets) :]:
+        axis.remove()
+    fig.tight_layout()
+    fig.savefig(path, dpi=220)
+    plt.close(fig)
+
+
+def _save_quantization_retention(rows: list[dict[str, Any]], path: Path) -> None:
+    import matplotlib.pyplot as plt
+
+    selected = [row for row in rows if row["kind"] == "natural"]
+    if not selected:
+        return
+    datasets = sorted({str(row["dataset_key"]) for row in selected})
+    columns = min(2, len(datasets))
+    rows_count = math.ceil(len(datasets) / columns)
+    fig, axes = plt.subplots(
+        rows_count, columns, figsize=(6 * columns, 4.6 * rows_count), squeeze=False
+    )
+    for axis, dataset in zip(axes.flat, datasets, strict=False):
+        subset = [row for row in selected if row["dataset_key"] == dataset]
+        for key, group in _group(subset, "model", "adapter").items():
+            retained: dict[int, list[float]] = defaultdict(list)
+            for _, run_rows in _group(group, "run_id").items():
+                full = next(
+                    (row for row in run_rows if int(row["quant_bits"]) == 16), None
+                )
+                if not full or not full["task_score"]:
+                    continue
+                for row in run_rows:
+                    retained[int(row["quant_bits"])].append(
+                        float(row["task_score"]) / float(full["task_score"])
+                    )
+            if not retained:
+                continue
+            x = sorted(retained)
+            y = [float(np.median(retained[bits])) for bits in x]
+            low = [min(retained[bits]) for bits in x]
+            high = [max(retained[bits]) for bits in x]
+            axis.errorbar(
+                x,
+                y,
+                yerr=[
+                    np.asarray(y) - np.asarray(low),
+                    np.asarray(high) - np.asarray(y),
+                ],
+                marker="o",
+                capsize=3,
+                label=f"{str(key[0]).split('/')[-1]} / {key[1]}",
+            )
+        axis.axhline(1.0, color="black", linewidth=0.8)
+        axis.set_xticks([2, 3, 4, 8, 16])
+        axis.set_title(dataset.replace("_", " ").upper())
+        axis.set_xlabel("adapter value bits")
+        axis.set_ylabel("score divided by 16-bit score")
+        axis.grid(alpha=0.25)
+        handles, labels = axis.get_legend_handles_labels()
+        if handles:
+            axis.legend(handles, labels, fontsize=6)
+    for axis in list(axes.flat)[len(datasets) :]:
+        axis.remove()
     fig.tight_layout()
     fig.savefig(path, dpi=220)
     plt.close(fig)
@@ -401,17 +542,22 @@ def _save_retention(
     for row in rows:
         if row["kind"] != "natural" or row["ifeval_prompt_strict"] is None:
             continue
-        key = f"{row['model_key']}__{row['backbone']}__{row['dataset_key']}"
+        key = (
+            f"{row['model_key']}__{row['backbone']}__"
+            f"{row['dataset_key']}-seed{row['seed']}"
+        )
+        if key not in baselines:
+            key = f"{row['model_key']}__{row['backbone']}__{row['dataset_key']}"
         baseline = baselines.get(key)
         ifeval_baseline = baselines.get(
             f"ifeval__{row['model_key']}__{row['backbone']}"
         )
         if not baseline or not ifeval_baseline:
             continue
-        metric = "exact_match" if row["dataset_key"] == "gsm8k" else "pass_at_1"
+        metric = row["primary_metric"]
         baseline_ifeval = ifeval_baseline.get("prompt_level_strict_accuracy")
         if (
-            row[metric] is None
+            row["task_score"] is None
             or baseline.get(metric) is None
             or baseline_ifeval is None
         ):
@@ -419,7 +565,7 @@ def _save_retention(
         points.append(
             {
                 **row,
-                "task_gain": float(row[metric]) - float(baseline[metric]),
+                "task_gain": float(row["task_score"]) - float(baseline[metric]),
                 "ifeval_drop": float(baseline_ifeval)
                 - float(row["ifeval_prompt_strict"]),
             }
@@ -481,6 +627,7 @@ def analyze(root: str | Path = "runs", out: str | Path = "reports") -> dict[str,
     _save_controlled(rows, output / "controlled_transfer.png")
     _save_model_checks(rows, output / "model_checks.png")
     _save_natural(rows, output / "natural_pareto.png")
+    _save_quantization_retention(rows, output / "quantization_retention.png")
     _save_retention(rows, baselines, output / "ifeval_retention.png")
     screening = [
         {
@@ -488,17 +635,36 @@ def analyze(root: str | Path = "runs", out: str | Path = "reports") -> dict[str,
             "model_key": baseline.get("model_key"),
             "backbone": baseline.get("backbone"),
             "dataset_key": baseline.get("dataset_key"),
+            "seed": baseline.get("seed"),
             **baseline.get("screening", {}),
         }
         for baseline in baselines.values()
         if baseline.get("kind") == "natural"
     ]
     _write_csv(output / "baseline_screening.csv", screening)
+    learning_gates = []
+    for path in sorted(Path(root).glob("*/learning_gate.json")):
+        config = _read_json(path.parent / "config.json")
+        learning_gates.append(
+            {
+                "run_id": config["run_id"],
+                "model": config["model"]["name"],
+                "dataset_key": config.get("dataset_key"),
+                "adapter": config["adapter"]["key"],
+                "seed": config["seed"],
+                **_read_json(path),
+            }
+        )
+    _write_csv(output / "learning_gates.csv", learning_gates)
+    status_counts: dict[str, int] = defaultdict(int)
+    for path in Path(root).glob("*/status.json"):
+        status_counts[str(_read_json(path).get("state", "unknown"))] += 1
     complete_runs = len({row["run_id"] for row in rows})
     summary = {
         "complete_runs": complete_runs,
         "codec_rows": len(rows),
         "baselines": len(baselines),
+        "status_counts": dict(sorted(status_counts.items())),
     }
     (output / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     return summary

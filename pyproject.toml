@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fineqcomp"
 version = "0.1.0"
-description = "Exact rate-distortion experiments for quantized LLM finetuning"
+description = "Real-task rate-performance experiments for quantized LLM finetuning"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

@@ -143,3 +143,9 @@ def write_manifest(runs: list[RunSpec], path: str | Path) -> Path:
 def read_manifest(path: str | Path) -> list[RunSpec]:
     with Path(path).open() as stream:
         return [RunSpec.from_dict(json.loads(line)) for line in stream if line.strip()]
+
+
+def validate_manifest(runs: list[RunSpec], raw: dict[str, Any]) -> None:
+    """Reject a stale manifest before it can mix two campaign definitions."""
+    if runs != expand_campaign(raw):
+        raise ValueError("manifest does not match config; run fineqcomp prepare again")

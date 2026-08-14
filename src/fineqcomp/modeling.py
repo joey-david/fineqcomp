@@ -54,11 +54,11 @@ def validate_single_token_labels(tokenizer: Any, labels: list[str]) -> list[int]
         encoded = tokenizer.encode(label, add_special_tokens=False)
         if len(encoded) != 1:
             raise ValueError(
-                f"synthetic label {label!r} must be one token, got ids={encoded}"
+                f"answer label {label!r} must be one token, got ids={encoded}"
             )
         ids.append(int(encoded[0]))
     if len(ids) != len(set(ids)):
-        raise ValueError("synthetic labels map to duplicate token IDs")
+        raise ValueError("answer labels map to duplicate token IDs")
     return ids
 
 

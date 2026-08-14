@@ -44,10 +44,16 @@ def estimate_run_cost(run: RunSpec) -> float:
     elif run.kind == "controlled":
         examples = 8_192
         evaluation = float(run.binding_count or 1) * len(run.precisions)
-    elif run.dataset_key == "gsm8k":
-        examples, evaluation = 7_000, 1_319 * len(run.precisions)
     else:
-        examples, evaluation = 374, 500 * len(run.precisions)
+        sizes = {
+            "gsm8k": (6_961, 1_319),
+            "commonsense_qa": (9_229, 1_221),
+            "arc_challenge": (1_119, 1_172),
+            "openbookqa": (4_957, 500),
+            "mbpp": (374, 500),
+        }
+        examples, test_rows = sizes.get(str(run.dataset_key), (1_000, 1_000))
+        evaluation = test_rows * len(run.precisions)
     train = examples * run.training.epochs * math.sqrt(run.training.max_length / 96)
     return size * (train + evaluation * 16)
 
@@ -131,8 +137,26 @@ class RunEngine:
         elif run.kind == "controlled":
             data = f"paws-n{run.binding_count}-seed{run.seed}"
         else:
-            data = str(run.dataset_key)
+            data = f"{run.dataset_key}-seed{run.seed}"
         return f"{run.model.key}__{run.model.backbone}__{data}"
+
+    def _evaluate_natural(
+        self,
+        session: ModelSession,
+        run: RunSpec,
+        examples: list[Example],
+    ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+        return evaluate_natural(
+            session.model,
+            session.tokenizer,
+            examples,
+            run.model,
+            str(run.dataset_key),
+            batch_size=run.training.micro_batch_size,
+            multiple_choice_labels=list(
+                map(str, self.campaign.get("multiple_choice_labels", []))
+            ),
+        )
 
     def _screening(self, run: RunSpec, baseline: dict[str, Any]) -> dict[str, Any]:
         if run.kind != "natural" or run.dataset_key is None:
@@ -140,8 +164,9 @@ class RunEngine:
         spec = self.campaign["datasets"][run.dataset_key]
         metric = str(spec["screening_metric"])
         maximum = float(spec["maximum_baseline_score"])
-        score = float(baseline[metric])
-        examples = int(baseline["examples"])
+        calibration = baseline.get("calibration", baseline)
+        score = float(calibration[metric])
+        examples = int(calibration["examples"])
         z = 1.959963984540054
         denominator = 1.0 + z**2 / examples
         center = (score + z**2 / (2 * examples)) / denominator
@@ -160,6 +185,27 @@ class RunEngine:
             "ci_low": ci_low,
             "ci_high": ci_high,
             "status": "too_easy" if ci_low > maximum else "usable",
+        }
+
+    def _learning_gate(
+        self,
+        run: RunSpec,
+        baseline: dict[str, Any],
+        raw_metrics: dict[str, Any],
+    ) -> dict[str, Any]:
+        spec = self.campaign["datasets"][str(run.dataset_key)]
+        metric = str(spec["screening_metric"])
+        baseline_score = float(baseline.get("calibration", baseline)[metric])
+        raw_score = float(raw_metrics[metric])
+        minimum = float(spec["minimum_raw_gain"])
+        gain = raw_score - baseline_score
+        return {
+            "metric": metric,
+            "baseline_calibration_score": baseline_score,
+            "raw_adapter_calibration_score": raw_score,
+            "gain": gain,
+            "minimum_gain": minimum,
+            "status": "usable" if gain + 1e-12 >= minimum else "no_learning",
         }
 
     def ensure_baseline(
@@ -200,22 +246,26 @@ class RunEngine:
                     **metrics,
                 }
             else:
-                metrics, predictions = evaluate_natural(
-                    session.model,
-                    session.tokenizer,
-                    data["test"],
-                    run.model,
-                    str(run.dataset_key),
-                    batch_size=run.training.micro_batch_size,
+                metrics, predictions = self._evaluate_natural(
+                    session, run, data["test"]
                 )
                 write_predictions(baseline_dir / "predictions.jsonl", predictions)
+                calibration_metrics, calibration_predictions = self._evaluate_natural(
+                    session, run, data["calibration"]
+                )
+                write_predictions(
+                    baseline_dir / "calibration_predictions.jsonl",
+                    calibration_predictions,
+                )
                 output = {
                     "kind": "natural",
                     "model": run.model.name,
                     "model_key": run.model.key,
                     "backbone": run.model.backbone,
                     "dataset_key": run.dataset_key,
+                    "seed": run.seed,
                     **metrics,
+                    "calibration": calibration_metrics,
                     "heldout_nll": causal_nll(
                         session.model,
                         session.tokenizer,
@@ -284,6 +334,10 @@ class RunEngine:
                 labels,
                 batch_size=run.training.micro_batch_size * 4,
             )
+            return float(metrics["label_nll"]), metrics
+        dataset_spec = self.campaign["datasets"][str(run.dataset_key)]
+        if dataset_spec.get("task_type") == "multiple_choice":
+            metrics, _ = self._evaluate_natural(session, run, examples)
             return float(metrics["label_nll"]), metrics
         metrics = causal_nll(
             session.model,
@@ -367,13 +421,8 @@ class RunEngine:
             )
             extra: dict[str, Any] = {}
         else:
-            task_metrics, predictions = evaluate_natural(
-                session.model,
-                session.tokenizer,
-                data["test"],
-                run.model,
-                str(run.dataset_key),
-                batch_size=run.training.micro_batch_size,
+            task_metrics, predictions = self._evaluate_natural(
+                session, run, data["test"]
             )
             task_metrics["heldout_nll"] = causal_nll(
                 session.model,
@@ -425,6 +474,13 @@ class RunEngine:
                 session.tokenizer,
                 list(self.campaign["datasets"]["synthetic_codebook"]["labels"]),
             )
+        elif self.campaign["datasets"][str(run.dataset_key)].get(
+            "task_type"
+        ) == "multiple_choice":
+            validate_single_token_labels(
+                session.tokenizer,
+                list(map(str, self.campaign["multiple_choice_labels"])),
+            )
         baseline = self.ensure_baseline(session, run, data, data_metadata)
         screening = self._screening(run, baseline) if baseline else {}
         if screening.get("status") == "too_easy":
@@ -466,6 +522,28 @@ class RunEngine:
             raw_tensors = adapter_tensors(session.model, run.adapter.method)
             torch.save(raw_tensors, raw_path)
             write_json(training_path, training_metrics)
+        if run.kind == "natural":
+            raw_metrics, raw_predictions = self._evaluate_natural(
+                session, run, data["calibration"]
+            )
+            write_predictions(
+                run_dir / "predictions" / "raw_calibration.jsonl", raw_predictions
+            )
+            learning_gate = self._learning_gate(run, baseline, raw_metrics)
+            write_json(run_dir / "learning_gate.json", learning_gate)
+            if learning_gate["status"] == "no_learning":
+                write_json(
+                    run_dir / "status.json",
+                    {
+                        "state": "no_learning",
+                        "stage": "raw_adapter",
+                        "reason": "raw adapter misses the fixed validation-gain gate",
+                        "updated_at": time.time(),
+                    },
+                )
+                return "no_learning"
+        else:
+            learning_gate = {}
         write_json(
             run_dir / "status.json",
             {"state": "running", "stage": "codecs", "updated_at": time.time()},
@@ -496,6 +574,7 @@ class RunEngine:
             "binding_count": run.binding_count,
             "dataset_key": run.dataset_key,
             "baseline_screening": screening,
+            "learning_gate": learning_gate,
             "data": data_metadata,
             "training": training_metrics,
             "nominal_channel_values": sum(
@@ -517,7 +596,13 @@ class RunEngine:
     def run_many(
         self, runs: list[RunSpec], force: bool = False, limit: int | None = None
     ) -> dict[str, int]:
-        counts = {"completed": 0, "skipped": 0, "screened_out": 0, "failed": 0}
+        counts = {
+            "completed": 0,
+            "skipped": 0,
+            "screened_out": 0,
+            "no_learning": 0,
+            "failed": 0,
+        }
         grouped: dict[tuple[str, str], list[RunSpec]] = defaultdict(list)
         for run in runs[:limit]:
             grouped[(run.model.key, run.model.backbone)].append(run)

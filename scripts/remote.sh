@@ -20,6 +20,8 @@ push)
     --exclude prepared/ \
     --exclude runs/ \
     --exclude reports/ \
+    --exclude remote_results/ \
+    --exclude tmp/ \
     --exclude slurm_logs/ \
     --exclude remote_logs/ \
   ./ "$host:$remote_root/"

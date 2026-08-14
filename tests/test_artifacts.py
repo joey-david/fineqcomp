@@ -16,6 +16,12 @@ def test_run_completion_requires_every_reloadable_result(tmp_path):
     assert run_complete(tmp_path, (4,))
 
 
+def test_fixed_gates_are_terminal_results(tmp_path):
+    for state in ("screened_out", "no_learning"):
+        write_json(tmp_path / "status.json", {"state": state})
+        assert run_complete(tmp_path, (2, 3, 4, 8, 16))
+
+
 def test_claim_run_excludes_second_owner(tmp_path):
     with claim_run(tmp_path) as first:
         with claim_run(tmp_path) as second:

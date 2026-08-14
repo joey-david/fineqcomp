@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from collections import Counter
 
-from fineqcomp.campaign import expand_campaign, read_manifest, write_manifest
+import pytest
+
+from fineqcomp.campaign import (
+    expand_campaign,
+    read_manifest,
+    validate_manifest,
+    write_manifest,
+)
 from fineqcomp.config import load_campaign
 from fineqcomp.runner import RunEngine, estimate_run_cost, partition_runs
 
@@ -10,26 +17,27 @@ from fineqcomp.runner import RunEngine, estimate_run_cost, partition_runs
 def test_campaign_expands_to_fixed_grid(tmp_path):
     runs = expand_campaign(load_campaign("configs/campaign.yaml"))
 
-    assert len(runs) == 105
+    assert len(runs) == 48
     assert Counter(run.study for run in runs) == {
-        "exact_seeded": 48,
-        "exact_full": 6,
-        "family_check": 12,
-        "scale_check": 4,
-        "backbone_check": 2,
-        "controlled_transfer": 9,
-        "natural_qwen": 18,
-        "natural_mistral": 6,
+        "real_tasks_qwen": 24,
+        "real_tasks_mistral": 24,
     }
     assert len({run.run_id for run in runs}) == len(runs)
-    assert {run.model.name for run in runs} >= {
-        "Qwen/Qwen3-8B-Base",
-        "Qwen/Qwen3-14B-Base",
-        "mistralai/Mistral-7B-v0.3",
+    assert {run.model.name for run in runs} == {
+        "Qwen/Qwen3-8B",
+        "mistralai/Mistral-7B-Instruct-v0.3",
     }
 
     manifest = write_manifest(runs, tmp_path / "manifest.jsonl")
     assert read_manifest(manifest) == runs
+
+
+def test_stale_manifest_is_rejected():
+    campaign = load_campaign("configs/campaign.yaml")
+    runs = expand_campaign(campaign)
+
+    with pytest.raises(ValueError, match="prepare again"):
+        validate_manifest(runs[:-1], campaign)
 
 
 def test_two_shards_are_disjoint_and_cost_balanced():
@@ -42,11 +50,12 @@ def test_two_shards_are_disjoint_and_cost_balanced():
     assert max(costs) / min(costs) < 1.02
 
 
-def test_five_shards_match_the_multi_host_layout():
+def test_four_shards_match_the_two_host_layout():
     runs = expand_campaign(load_campaign("configs/campaign.yaml"))
-    shards = partition_runs(runs, 5)
+    shards = partition_runs(runs, 4)
 
-    assert [len(shard) for shard in shards] == [21] * 5
+    assert sum(map(len, shards)) == 48
+    assert [len(shard) for shard in shards] == [12] * 4
     assert len({run.run_id for shard in shards for run in shard}) == len(runs)
     costs = [sum(estimate_run_cost(run) for run in shard) for shard in shards]
     assert max(costs) / min(costs) < 1.02
@@ -62,10 +71,16 @@ def test_natural_screening_uses_fixed_dataset_ceiling(tmp_path):
     engine = RunEngine(campaign, runs_root=tmp_path)
 
     assert (
-        engine._screening(run, {"exact_match": 0.90, "examples": 1_319})["status"]
+        engine._screening(
+            run,
+            {"calibration": {"exact_match": 0.90, "examples": 512}},
+        )["status"]
         == "too_easy"
     )
     assert (
-        engine._screening(run, {"exact_match": 0.80, "examples": 1_319})["status"]
+        engine._screening(
+            run,
+            {"calibration": {"exact_match": 0.80, "examples": 512}},
+        )["status"]
         == "usable"
     )

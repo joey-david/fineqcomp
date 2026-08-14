@@ -17,6 +17,7 @@ from fineqcomp.config import RunSpec, TrainingSpec
 from fineqcomp.data import (
     controlled_data_dir,
     ifeval_data_dir,
+    load_natural_dataset,
     natural_data_dir,
     read_jsonl,
     synthetic_data_dir,
@@ -145,7 +146,7 @@ def validate_prepared(runs: list[RunSpec], root: str | Path) -> int:
 def validate_tokenizers(campaign: dict[str, Any]) -> dict[str, list[int]]:
     from transformers import AutoTokenizer
 
-    labels = list(campaign["datasets"]["synthetic_codebook"]["labels"])
+    labels = list(map(str, campaign["multiple_choice_labels"]))
     output = {}
     for key, model in campaign["models"].items():
         tokenizer = AutoTokenizer.from_pretrained(
@@ -158,20 +159,19 @@ def validate_tokenizers(campaign: dict[str, Any]) -> dict[str, list[int]]:
 def model_smoke(
     campaign: dict[str, Any], runs: list[RunSpec], prepared_root: str | Path
 ) -> dict[str, Any]:
-    run = next(
-        item
-        for item in runs
-        if item.study == "exact_seeded"
-        and item.family_count == 4
-        and item.adapter.key == "seeded_last1_r4"
-    )
+    run = next(item for item in runs if item.kind == "natural")
     session = ModelSession.load(run.model)
     try:
-        labels = list(campaign["datasets"]["synthetic_codebook"]["labels"])
-        validate_single_token_labels(session.tokenizer, labels)
-        root = synthetic_data_dir(prepared_root, 4, run.seed)
-        train = read_jsonl(root / "train.jsonl")[:2]
-        calibration = read_jsonl(root / "calibration.jsonl")[:2]
+        if campaign["datasets"][str(run.dataset_key)].get("task_type") == "multiple_choice":
+            validate_single_token_labels(
+                session.tokenizer,
+                list(map(str, campaign["multiple_choice_labels"])),
+            )
+        data = load_natural_dataset(
+            campaign, str(run.dataset_key), run.seed, prepared_root
+        )
+        train = data["train"][:2]
+        calibration = data["calibration"][:2]
         session.attach(run.adapter, run.seed)
         smoke_spec = TrainingSpec(
             epochs=1,
