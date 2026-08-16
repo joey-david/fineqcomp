@@ -79,6 +79,31 @@ def partition_runs(runs: list[RunSpec], shards: int) -> list[list[RunSpec]]:
     return partitions
 
 
+def partition_runs_weighted(
+    runs: list[RunSpec], weights: list[float]
+) -> list[list[RunSpec]]:
+    """Assign costly runs in proportion to fixed worker speed weights."""
+    if not weights or any(weight <= 0 for weight in weights):
+        raise ValueError("worker weights must be positive")
+    partitions: list[list[RunSpec]] = [[] for _ in weights]
+    costs = [0.0] * len(weights)
+    for run in sorted(runs, key=lambda item: (-estimate_run_cost(item), item.run_id)):
+        run_cost = estimate_run_cost(run)
+        target = min(
+            range(len(weights)),
+            key=lambda index: (
+                (costs[index] + run_cost) / weights[index],
+                costs[index] / weights[index],
+                index,
+            ),
+        )
+        partitions[target].append(run)
+        costs[target] += run_cost
+    for partition in partitions:
+        partition.sort(key=lambda run: (run.model.key, run.model.backbone, run.run_id))
+    return partitions
+
+
 def _wait_for_json(path: Path, timeout_seconds: float = 3600.0) -> dict[str, Any]:
     deadline = time.monotonic() + timeout_seconds
     while time.monotonic() < deadline:
@@ -94,12 +119,36 @@ class RunEngine:
         campaign: dict[str, Any],
         prepared_root: str | Path = "prepared",
         runs_root: str | Path = "runs",
+        pilot_rows: int | None = None,
     ) -> None:
         self.campaign = campaign
         self.prepared_root = Path(prepared_root)
         self.runs_root = Path(runs_root)
+        if pilot_rows is not None and pilot_rows < 1:
+            raise ValueError("pilot_rows must be positive")
+        self.pilot_rows = pilot_rows
         self._data_cache: dict[tuple[str, int], dict[str, list[Example]]] = {}
         self._ifeval: tuple[list[Example], list[dict[str, Any]]] | None = None
+
+    def _limit_data(
+        self, data: dict[str, list[Example]]
+    ) -> dict[str, list[Example]]:
+        if self.pilot_rows is None:
+            return data
+        limited = {
+            split: rows[: self.pilot_rows]
+            for split, rows in data.items()
+            if split != "test"
+        }
+        test_groups: dict[str, list[Example]] = defaultdict(list)
+        for example in data["test"]:
+            evaluator = str(example.metadata.get("evaluator", "task"))
+            if len(test_groups[evaluator]) < self.pilot_rows:
+                test_groups[evaluator].append(example)
+        limited["test"] = [
+            example for group in test_groups.values() for example in group
+        ]
+        return limited
 
     def _load_data(
         self, run: RunSpec
@@ -113,7 +162,7 @@ class RunEngine:
                 split: read_jsonl(root / f"{split}.jsonl")
                 for split in ("train", "calibration", "test")
             }
-            return data, metadata
+            return self._limit_data(data), metadata
         if run.kind == "controlled":
             if run.binding_count is None:
                 raise ValueError("controlled run lacks binding_count")
@@ -123,7 +172,7 @@ class RunEngine:
                 split: read_jsonl(root / f"{split}.jsonl")
                 for split in ("train", "calibration", "test")
             }
-            return data, metadata
+            return self._limit_data(data), metadata
         if run.dataset_key is None:
             raise ValueError("natural run lacks dataset_key")
         key = (run.dataset_key, run.seed)
@@ -131,7 +180,9 @@ class RunEngine:
             self._data_cache[key] = load_natural_dataset(
                 self.campaign, run.dataset_key, run.seed, self.prepared_root
             )
-        return self._data_cache[key], {"dataset_key": run.dataset_key}
+        return self._limit_data(self._data_cache[key]), {
+            "dataset_key": run.dataset_key
+        }
 
     def _load_ifeval(self) -> tuple[list[Example], list[dict[str, Any]]]:
         if self._ifeval is None:
@@ -634,7 +685,7 @@ class RunEngine:
             )
         baseline = self.ensure_baseline(session, run, data, data_metadata)
         screening = self._screening(run, baseline) if baseline else {}
-        if screening.get("status") == "too_easy":
+        if screening.get("status") == "too_easy" and self.pilot_rows is None:
             write_json(run_dir / "screening.json", screening)
             write_json(
                 run_dir / "status.json",
@@ -646,6 +697,8 @@ class RunEngine:
                 },
             )
             return "screened_out"
+        if screening.get("status") == "too_easy":
+            screening["pilot_bypassed"] = True
         if (
             run.kind == "natural"
             and self.campaign.get("retention_codec_keys")
@@ -682,7 +735,10 @@ class RunEngine:
             raw_validation = raw_information["heldout"]
             learning_gate = self._learning_gate(run, baseline, raw_validation)
             write_json(run_dir / "learning_gate.json", learning_gate)
-            if learning_gate["status"] == "no_learning":
+            if (
+                learning_gate["status"] == "no_learning"
+                and self.pilot_rows is None
+            ):
                 write_json(
                     run_dir / "status.json",
                     {
@@ -693,6 +749,8 @@ class RunEngine:
                     },
                 )
                 return "no_learning"
+            if learning_gate["status"] == "no_learning":
+                learning_gate["pilot_bypassed"] = True
             raw_task, raw_predictions = self._evaluate_natural(
                 session, run, data["test"]
             )

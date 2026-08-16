@@ -11,7 +11,12 @@ from fineqcomp.campaign import (
     write_manifest,
 )
 from fineqcomp.config import load_campaign
-from fineqcomp.runner import RunEngine, estimate_run_cost, partition_runs
+from fineqcomp.runner import (
+    RunEngine,
+    estimate_run_cost,
+    partition_runs,
+    partition_runs_weighted,
+)
 
 
 def test_campaign_expands_to_fixed_grid(tmp_path):
@@ -58,6 +63,19 @@ def test_four_shards_match_the_two_host_layout():
     assert len({run.run_id for shard in shards for run in shard}) == len(runs)
     costs = [sum(estimate_run_cost(run) for run in shard) for shard in shards]
     assert max(costs) / min(costs) < 1.07
+
+
+def test_weighted_workers_give_a100s_three_times_more_work():
+    runs = expand_campaign(load_campaign("configs/campaign.yaml"))
+    weights = [3.0, 3.0, 1.0, 1.0]
+    partitions = partition_runs_weighted(runs, weights)
+    normalized = [
+        sum(estimate_run_cost(run) for run in partition) / weight
+        for partition, weight in zip(partitions, weights, strict=True)
+    ]
+
+    assert [len(partition) for partition in partitions] == [9, 9, 3, 3]
+    assert max(normalized) / min(normalized) < 1.07
 
 
 def test_natural_screening_uses_fixed_dataset_ceiling(tmp_path):

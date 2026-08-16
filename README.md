@@ -28,3 +28,11 @@ Each stage uses Slurm dependencies, so a failed stage blocks later GPU work.
 Rerunning the array resumes complete run folders and preserves failed status
 records. See [experiments.md](experiments.md) for the full fixed protocol and
 empty result sections.
+
+For the shared LAMSADE nodes, the distributed launcher runs a four-cell pilot,
+then starts the full campaign after all pilots end, even if one fails. It gives
+the two `upnquick` A100 workers three times the work of each `coktailjet` A40:
+
+```bash
+./scripts/run_distributed_campaign.sh --pilot-then-full
+```

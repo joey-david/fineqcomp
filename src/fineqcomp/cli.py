@@ -31,7 +31,13 @@ from fineqcomp.preflight import (
     validate_tokenizers,
     write_report,
 )
-from fineqcomp.runner import RunEngine, describe_partition, partition_runs
+from fineqcomp.runner import (
+    RunEngine,
+    describe_partition,
+    estimate_run_cost,
+    partition_runs,
+    partition_runs_weighted,
+)
 
 
 def _unraisable_hook(unraisable: Any) -> None:
@@ -81,6 +87,9 @@ def _run(args: argparse.Namespace) -> int:
     if args.adapters:
         adapter_keys = set(args.adapters)
         runs = [run for run in runs if run.adapter.key in adapter_keys]
+    if args.datasets:
+        dataset_keys = set(args.datasets)
+        runs = [run for run in runs if run.dataset_key in dataset_keys]
     if args.backbones:
         backbones = set(args.backbones)
         runs = [run for run in runs if run.model.backbone in backbones]
@@ -100,22 +109,77 @@ def _run(args: argparse.Namespace) -> int:
             )
             for run in runs
         ]
-    partitions = partition_runs(runs, args.shards)
-    if not 0 <= args.shard < args.shards:
-        raise ValueError("shard index must be less than shard count")
+    if args.codecs:
+        codec_keys = set(args.codecs)
+        available = {codec.key for run in runs for codec in run.codecs}
+        unknown = sorted(codec_keys - available)
+        if unknown:
+            raise ValueError(f"unknown codec keys: {unknown}")
+        runs = [
+            replace(
+                run,
+                codecs=tuple(
+                    codec for codec in run.codecs if codec.key in codec_keys
+                ),
+            )
+            for run in runs
+        ]
+    if args.pilot_rows is not None:
+        runs = [
+            replace(
+                run,
+                training=replace(
+                    run.training,
+                    epochs=1,
+                    effective_batch_size=1,
+                    micro_batch_size=1,
+                ),
+            )
+            for run in runs
+        ]
+    if args.worker_weights:
+        if args.worker is None:
+            raise ValueError("--worker is required with --worker-weights")
+        partitions = partition_runs_weighted(runs, args.worker_weights)
+        if not 0 <= args.worker < len(partitions):
+            raise ValueError("worker index must be less than the worker count")
+        selected = partitions[args.worker]
+    else:
+        partitions = partition_runs(runs, args.shards)
+        if not 0 <= args.shard < args.shards:
+            raise ValueError("shard index must be less than shard count")
+        selected = partitions[args.shard]
     if args.run_id is not None:
         selected = [run for run in runs if run.run_id == args.run_id]
         if len(selected) != 1:
             raise ValueError(f"unknown run ID: {args.run_id}")
-    else:
-        selected = partitions[args.shard]
     if args.dry_run:
-        print(json.dumps(describe_partition(runs, args.shards), indent=2))
+        if args.worker_weights:
+            descriptions = [
+                {
+                    "worker": index,
+                    "weight": args.worker_weights[index],
+                    "runs": len(partition),
+                    "relative_cost": sum(
+                        estimate_run_cost(run) for run in partition
+                    ),
+                    "models": sorted({run.model.key for run in partition}),
+                }
+                for index, partition in enumerate(partitions)
+            ]
+        else:
+            descriptions = describe_partition(runs, args.shards)
+        print(json.dumps(descriptions, indent=2))
         shown = selected if args.limit is None else selected[: args.limit]
         for run in shown:
             print(run.run_id)
         return 0
-    engine = RunEngine(campaign, args.prepared_root, args.runs_root)
+    engine = RunEngine(
+        campaign,
+        args.prepared_root,
+        args.runs_root,
+        pilot_rows=args.pilot_rows,
+    )
     counts = engine.run_many(selected, force=args.force, limit=args.limit)
     print(json.dumps(counts, indent=2))
     return 1 if counts["failed"] else 0
@@ -186,13 +250,18 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--manifest", default="prepared/manifest.jsonl")
     run.add_argument("--prepared-root", default="prepared")
     run.add_argument("--runs-root", default="runs")
-    run.add_argument("--shard", type=int, required=True)
+    run.add_argument("--shard", type=int, default=0)
     run.add_argument("--shards", type=int, default=2)
+    run.add_argument("--worker", type=int)
+    run.add_argument("--worker-weights", type=float, nargs="+")
     run.add_argument("--models", nargs="+")
     run.add_argument("--adapters", nargs="+")
+    run.add_argument("--datasets", nargs="+")
     run.add_argument("--backbones", nargs="+", choices=("nf4", "bf16"))
     run.add_argument("--max-length", type=int)
     run.add_argument("--micro-batch-size", type=int)
+    run.add_argument("--codecs", nargs="+")
+    run.add_argument("--pilot-rows", type=int)
     run.add_argument("--limit", type=int)
     run.add_argument("--run-id")
     run.add_argument("--force", action="store_true")
