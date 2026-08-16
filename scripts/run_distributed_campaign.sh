@@ -71,6 +71,12 @@ export PYTHONPATH="${PYTHONPATH:-$repo_root/src:$repo_root/vendor}"
 export HF_HOME="${HF_HOME:-$repo_root/../fineQComp_hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 "$python_bin" -c 'import bitsandbytes, fineqcomp, math_verify, rouge_score, torch; assert torch.cuda.device_count() >= 2'
+while read -r used; do
+  if ((used > 4096)); then
+    echo "$HOSTNAME: GPU already has ${used} MiB allocated" >&2
+    exit 2
+  fi
+done < <(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits)
 
 if tmux has-session -t "$session" 2>/dev/null; then
   echo "$HOSTNAME: tmux session $session already exists; leaving it untouched"
