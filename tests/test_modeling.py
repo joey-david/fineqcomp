@@ -1,10 +1,18 @@
 from __future__ import annotations
 
+import sys
+from types import SimpleNamespace
+
 import torch
 
 from fineqcomp.config import ModelSpec
 from fineqcomp.data import Example
-from fineqcomp.modeling import CausalExampleDataset, causal_collate, compute_dtype
+from fineqcomp.modeling import (
+    CausalExampleDataset,
+    causal_collate,
+    compute_dtype,
+    model_source,
+)
 
 
 class Tokenizer:
@@ -40,3 +48,22 @@ def test_compute_dtype_falls_back_on_older_cuda(monkeypatch):
     monkeypatch.setattr("torch.cuda.is_available", lambda: True)
     monkeypatch.setattr("torch.cuda.is_bf16_supported", lambda: False)
     assert compute_dtype() == torch.float16
+
+
+def test_offline_model_source_resolves_the_pinned_snapshot(tmp_path, monkeypatch):
+    calls = []
+
+    def snapshot_download(name, revision, token, local_files_only):
+        calls.append((name, revision, token, local_files_only))
+        return tmp_path
+
+    monkeypatch.setenv("HF_HUB_OFFLINE", "1")
+    monkeypatch.setitem(
+        sys.modules,
+        "huggingface_hub",
+        SimpleNamespace(snapshot_download=snapshot_download),
+    )
+    spec = ModelSpec("key", "org/model", "abc123", "bf16")
+
+    assert model_source(spec, "token") == str(tmp_path)
+    assert calls == [("org/model", "abc123", "token", True)]

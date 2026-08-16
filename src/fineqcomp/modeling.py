@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -12,6 +13,24 @@ from torch.utils.data import Dataset
 from fineqcomp.adapters import attach_adapter, unload_adapter
 from fineqcomp.config import AdapterSpec, ModelSpec
 from fineqcomp.data import Example
+
+
+def model_source(spec: ModelSpec, token: str | None) -> str:
+    """Use the exact local snapshot path when Hub access is disabled."""
+    if os.environ.get("HF_HUB_OFFLINE") != "1":
+        return spec.name
+    from huggingface_hub import snapshot_download
+
+    return str(
+        Path(
+            snapshot_download(
+                spec.name,
+                revision=spec.revision,
+                token=token,
+                local_files_only=True,
+            )
+        )
+    )
 
 
 def compute_dtype() -> torch.dtype:
@@ -132,15 +151,16 @@ class ModelSession:
         )
 
         token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+        source = model_source(spec, token)
+        pinned_kwargs = (
+            {} if source != spec.name else {"revision": spec.revision, "token": token}
+        )
         tokenizer = AutoTokenizer.from_pretrained(
-            spec.name, revision=spec.revision, token=token, use_fast=True
+            source, use_fast=True, **pinned_kwargs
         )
         if tokenizer.pad_token_id is None:
             tokenizer.pad_token = tokenizer.eos_token
-        kwargs: dict[str, Any] = {
-            "revision": spec.revision,
-            "token": token,
-        }
+        kwargs: dict[str, Any] = dict(pinned_kwargs)
         dtype_key = (
             "dtype"
             if int(transformers_version.split(".", maxsplit=1)[0]) >= 5
@@ -159,7 +179,7 @@ class ModelSession:
                 bnb_4bit_use_double_quant=True,
                 bnb_4bit_compute_dtype=dtype,
             )
-        model = AutoModelForCausalLM.from_pretrained(spec.name, **kwargs)
+        model = AutoModelForCausalLM.from_pretrained(source, **kwargs)
         if spec.backbone == "nf4":
             from peft import prepare_model_for_kbit_training
 
