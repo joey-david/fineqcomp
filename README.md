@@ -1,28 +1,30 @@
 # fineQComp
 
-Measure task quality against the exact file size of quantized LoRA updates.
-The fixed campaign finetunes Mistral-7B-Instruct and Qwen3-8B on four public
-benchmarks: GSM8K, CommonsenseQA, ARC-Challenge, and OpenBookQA.
+Measure task gain and behavioral information against the exact file size of a
+quantized LoRA update. The fixed campaign trains rank-16 adapters on MetaMathQA,
+Magicoder, and XSum with Mistral-7B and Qwen2.5-7B, then evaluates GSM8K, MATH,
+HumanEval, and XSum.
 
 ```bash
-python -m fineqcomp prepare
-python -m fineqcomp run --manifest prepared/manifest.jsonl --shard 0 --shards 2
-python -m fineqcomp analyze --root runs --out reports
+./scripts/bootstrap.sh
+.venv/bin/python -m fineqcomp prepare
+.venv/bin/python -m fineqcomp run --shard 0 --shards 2
+.venv/bin/python -m fineqcomp analyze
 ```
 
-`prepare` pins and stages each Hugging Face dataset once. Workers then run
-offline and share restart-safe per-run locks. Before a bit sweep, each cell must
-pass two fixed checks on held-out calibration data:
+The config pins all model and dataset revisions. Each run trains one raw adapter
+and derives ten uniform or LoRAQuant files from it. Reports include full file
+rate, rate components, retained task gain, train and held-out code bits saved,
+paired prediction tests, run time, and peak memory.
 
-1. the no-adapter model must not exceed the task's saturation ceiling;
-2. the raw adapter must gain at least five score points.
+On Jean Zay, this one command submits staging, a one-H100 model/training/codec
+smoke test, the 16-task H100 array only after that smoke succeeds, and analysis:
 
-The final test split affects neither check nor clipping selection. Each usable
-adapter is encoded at 2, 3, 4, 8, and 16 bits. Reports include exact file size,
-test score, paired gain intervals, an exact McNemar test, and IFEval retention.
-The old synthetic readers remain only so prior run folders can still be read;
-the active manifest contains no random-label task.
+```bash
+./scripts/jean_zay_submit.sh campaign
+```
 
-For a local two-GPU node, `./scripts/run_campaign.sh` runs screening, both
-workers, and analysis. See `experiments.md` for the fixed protocol and result
-slots.
+Each stage uses Slurm dependencies, so a failed stage blocks later GPU work.
+Rerunning the array resumes complete run folders and preserves failed status
+records. See [experiments.md](experiments.md) for the full fixed protocol and
+empty result sections.

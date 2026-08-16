@@ -6,7 +6,8 @@ import torch
 
 from fineqcomp.config import ModelSpec
 from fineqcomp.data import Example
-from fineqcomp.evaluation import evaluate_multiple_choice
+import fineqcomp.evaluation as evaluation
+from fineqcomp.evaluation import evaluate_multiple_choice, evaluate_natural
 
 
 class _Tokenizer:
@@ -53,3 +54,36 @@ def test_multiple_choice_evaluation_masks_absent_choices():
 
     assert metrics["accuracy"] == 1.0
     assert [row["prediction"] for row in predictions] == [1, 0]
+
+
+def test_math_and_xsum_share_one_paired_evaluation(monkeypatch):
+    examples = [
+        Example(
+            "math-0",
+            "solve",
+            r"Work. \boxed{2}",
+            {"evaluator": "math", "level": "1", "subject": "Algebra"},
+        ),
+        Example(
+            "xsum-0",
+            "summarize",
+            "The cat slept.",
+            {"evaluator": "xsum"},
+        ),
+    ]
+    answers = {"solve": r"The answer is \boxed{2}.", "summarize": "The cat slept."}
+
+    def fake_generate(unused_model, unused_tokenizer, rows, *unused, **unused_kw):
+        return [answers[row.prompt] for row in rows]
+
+    monkeypatch.setattr(evaluation, "generate_responses", fake_generate)
+    model_spec = ModelSpec("model", "model", "revision", "bf16")
+
+    metrics, predictions = evaluate_natural(
+        object(), object(), examples, model_spec, "mixed", 1
+    )
+
+    assert metrics["evaluations"]["math"]["exact_match"] == 1.0
+    assert metrics["primary_evaluator"] == "math"
+    assert metrics["evaluations"]["xsum"]["rouge_l"] == 1.0
+    assert {row["evaluator"] for row in predictions} == {"math", "xsum"}

@@ -59,7 +59,7 @@ def _natural_run(root, dataset, metric, value):
         run / "metrics.json",
         {
             "run_id": run_id,
-            "study": "natural_qwen",
+            "study": "placement_control",
             "kind": "natural",
             "model": "Qwen/Qwen3-8B",
             "model_key": "qwen3_8b_instruct",
@@ -78,16 +78,24 @@ def _natural_run(root, dataset, metric, value):
             "training": {},
             "codecs": [
                 {
+                    "codec_key": "uniform4",
+                    "codec_method": "uniform",
                     "bits": 4,
                     "selected_clip_percentile": 100.0,
                     "storage": {"file_bits": 12_000, "raw_payload_bits": 10_000},
                     "task": {metric: value, "heldout_nll": 0.5},
+                    "retained_gain": {"retained_gain": 0.8},
+                    "behavioral_write": {
+                        "train_bits_saved": 200.0,
+                        "heldout_bits_saved": 100.0,
+                        "excess_train_bits_per_token": 0.1,
+                    },
                     "ifeval": {"prompt_level_strict_accuracy": 0.75},
                 }
             ],
         },
     )
-    _prediction(run / "predictions" / "task_b4.jsonl", [True, True, False])
+    _prediction(run / "predictions" / "task_uniform4.jsonl", [True, True, False])
     write_json(
         root
         / "baselines"
@@ -201,6 +209,8 @@ def test_analysis_writes_fixed_tables_and_figures(tmp_path):
         "model_checks.png",
         "natural_pareto.png",
         "quantization_retention.png",
+        "behavioral_write.png",
+        "placement_control.png",
         "ifeval_retention.png",
         "baseline_screening.csv",
         "learning_gates.csv",

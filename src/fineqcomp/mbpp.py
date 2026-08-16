@@ -16,6 +16,7 @@ ALLOWED_IMPORTS = {
     "bisect",
     "collections",
     "functools",
+    "hashlib",
     "heapq",
     "itertools",
     "math",
@@ -23,6 +24,7 @@ ALLOWED_IMPORTS = {
     "re",
     "statistics",
     "string",
+    "typing",
 }
 DANGEROUS_NAMES = {
     "__import__",
@@ -47,7 +49,9 @@ def extract_code(text: str) -> str:
     return (match.group(1) if match else text).strip()
 
 
-def validate_generated_code(code: str) -> tuple[bool, str | None]:
+def validate_generated_code(
+    code: str, allow_eval: bool = False
+) -> tuple[bool, str | None]:
     try:
         tree = ast.parse(code)
     except SyntaxError as error:
@@ -61,7 +65,11 @@ def validate_generated_code(code: str) -> tuple[bool, str | None]:
         elif isinstance(node, ast.ImportFrom):
             if not node.module or node.module.split(".")[0] not in ALLOWED_IMPORTS:
                 return False, "unsafe import"
-        elif isinstance(node, ast.Name) and node.id in DANGEROUS_NAMES:
+        elif (
+            isinstance(node, ast.Name)
+            and node.id in DANGEROUS_NAMES
+            and not (allow_eval and node.id == "eval")
+        ):
             return False, f"unsafe name: {node.id}"
         elif isinstance(node, ast.Attribute) and node.attr.startswith("__"):
             return False, "dunder access"
@@ -80,16 +88,15 @@ def _limits() -> None:
         pass
 
 
-def run_mbpp_tests(
-    code_text: str, tests: list[str], timeout: float = 3.0
+def _run_python_tests(
+    code: str, tests: str, timeout: float, allow_eval: bool = False
 ) -> dict[str, Any]:
-    code = extract_code(code_text)
-    safe, reason = validate_generated_code(code)
+    safe, reason = validate_generated_code(code, allow_eval=allow_eval)
     if not safe:
         return {"passed": False, "status": "rejected", "detail": reason}
     with tempfile.TemporaryDirectory(prefix="fineqcomp-mbpp-") as temp_dir:
         script = Path(temp_dir) / "candidate.py"
-        script.write_text(code + "\n\n" + "\n".join(tests) + "\n")
+        script.write_text(code + "\n\n" + tests + "\n")
         try:
             result = subprocess.run(
                 [sys.executable, "-I", "-S", str(script)],
@@ -109,3 +116,31 @@ def run_mbpp_tests(
         "status": "passed" if result.returncode == 0 else "failed_tests",
         "detail": result.stderr[-500:] or None,
     }
+
+
+def run_mbpp_tests(
+    code_text: str, tests: list[str], timeout: float = 3.0
+) -> dict[str, Any]:
+    return _run_python_tests(extract_code(code_text), "\n".join(tests), timeout)
+
+
+def run_humaneval_tests(
+    completion: str,
+    code_prefix: str,
+    tests: str,
+    entry_point: str,
+    timeout: float = 3.0,
+) -> dict[str, Any]:
+    """Run one HumanEval completion in the same bounded subprocess as MBPP."""
+    fenced = re.search(
+        r"```(?:python)?\s*(.*?)```", completion, flags=re.DOTALL | re.IGNORECASE
+    )
+    extracted = fenced.group(1).strip() if fenced else completion.rstrip()
+    code = extracted if f"def {entry_point}" in extracted else code_prefix + extracted
+    test_program = tests + f"\ncheck({entry_point})"
+    return _run_python_tests(
+        code,
+        test_program,
+        timeout,
+        allow_eval=entry_point == "do_algebra",
+    )

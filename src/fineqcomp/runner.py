@@ -13,8 +13,12 @@ import torch
 
 from fineqcomp.adapters import adapter_tensors, apply_adapter_tensors
 from fineqcomp.artifacts import claim_run, read_json, run_complete, write_json
-from fineqcomp.codec import decode_tensor_map, encode_tensor_map
-from fineqcomp.config import RunSpec
+from fineqcomp.codec import (
+    decode_adapter_tensor_map,
+    encode_loraquant_tensor_map,
+    encode_tensor_map,
+)
+from fineqcomp.config import CodecSpec, RunSpec
 from fineqcomp.data import (
     Example,
     controlled_data_dir,
@@ -43,7 +47,7 @@ def estimate_run_cost(run: RunSpec) -> float:
         evaluation = float(run.family_count or 1) * 16
     elif run.kind == "controlled":
         examples = 8_192
-        evaluation = float(run.binding_count or 1) * len(run.precisions)
+        evaluation = float(run.binding_count or 1) * len(run.codecs)
     else:
         sizes = {
             "gsm8k": (6_961, 1_319),
@@ -51,9 +55,12 @@ def estimate_run_cost(run: RunSpec) -> float:
             "arc_challenge": (1_119, 1_172),
             "openbookqa": (4_957, 500),
             "mbpp": (374, 500),
+            "metamath": (395_000, 6_319),
+            "magicoder": (109_500, 164),
+            "xsum": (204_045, 11_334),
         }
         examples, test_rows = sizes.get(str(run.dataset_key), (1_000, 1_000))
-        evaluation = test_rows * len(run.precisions)
+        evaluation = test_rows * len(run.codecs)
     train = examples * run.training.epochs * math.sqrt(run.training.max_length / 96)
     return size * (train + evaluation * 16)
 
@@ -164,19 +171,23 @@ class RunEngine:
         spec = self.campaign["datasets"][run.dataset_key]
         metric = str(spec["screening_metric"])
         maximum = float(spec["maximum_baseline_score"])
-        calibration = baseline.get("calibration", baseline)
-        score = float(calibration[metric])
-        examples = int(calibration["examples"])
-        z = 1.959963984540054
-        denominator = 1.0 + z**2 / examples
-        center = (score + z**2 / (2 * examples)) / denominator
-        radius = (
-            z
-            * math.sqrt(score * (1 - score) / examples + z**2 / (4 * examples**2))
-            / denominator
-        )
-        ci_low = max(0.0, center - radius)
-        ci_high = min(1.0, center + radius)
+        score = float(baseline[metric])
+        examples = int(baseline["examples"])
+        if spec.get("screening_binomial", True):
+            z = 1.959963984540054
+            denominator = 1.0 + z**2 / examples
+            center = (score + z**2 / (2 * examples)) / denominator
+            radius = (
+                z
+                * math.sqrt(
+                    score * (1 - score) / examples + z**2 / (4 * examples**2)
+                )
+                / denominator
+            )
+            ci_low = max(0.0, center - radius)
+            ci_high = min(1.0, center + radius)
+        else:
+            ci_low = ci_high = score
         return {
             "metric": metric,
             "baseline_score": score,
@@ -194,18 +205,110 @@ class RunEngine:
         raw_metrics: dict[str, Any],
     ) -> dict[str, Any]:
         spec = self.campaign["datasets"][str(run.dataset_key)]
-        metric = str(spec["screening_metric"])
-        baseline_score = float(baseline.get("calibration", baseline)[metric])
-        raw_score = float(raw_metrics[metric])
-        minimum = float(spec["minimum_raw_gain"])
-        gain = raw_score - baseline_score
+        if "bits_per_token" in raw_metrics:
+            metric = "validation_bits_per_token"
+            baseline_score = float(
+                baseline["information"]["heldout"]["bits_per_token"]
+            )
+            raw_score = float(raw_metrics["bits_per_token"])
+            minimum = float(spec["minimum_validation_nll_gain_bits_per_token"])
+            gain = baseline_score - raw_score
+        else:
+            metric = str(spec["screening_metric"])
+            baseline_score = float(baseline[metric])
+            raw_score = float(raw_metrics[metric])
+            minimum = float(spec["minimum_raw_gain"])
+            gain = raw_score - baseline_score
         return {
             "metric": metric,
-            "baseline_calibration_score": baseline_score,
-            "raw_adapter_calibration_score": raw_score,
+            "baseline_validation_score": baseline_score,
+            "raw_adapter_validation_score": raw_score,
             "gain": gain,
             "minimum_gain": minimum,
             "status": "usable" if gain + 1e-12 >= minimum else "no_learning",
+        }
+
+    def _information_measure(
+        self,
+        session: ModelSession,
+        run: RunSpec,
+        data: dict[str, list[Example]],
+    ) -> dict[str, Any]:
+        rows = int(self.campaign.get("information_rows", 256))
+        return {
+            "train": causal_nll(
+                session.model,
+                session.tokenizer,
+                data["train"][:rows],
+                run.model,
+                run.training.max_length,
+                run.training.micro_batch_size,
+            ),
+            "heldout": causal_nll(
+                session.model,
+                session.tokenizer,
+                data["calibration"][:rows],
+                run.model,
+                run.training.max_length,
+                run.training.micro_batch_size,
+            ),
+        }
+
+    @staticmethod
+    def _behavioral_write(
+        baseline: dict[str, Any], tuned: dict[str, Any]
+    ) -> dict[str, float]:
+        train_saved = max(
+            0.0,
+            float(baseline["train"]["total_bits"])
+            - float(tuned["train"]["total_bits"]),
+        )
+        heldout_saved = max(
+            0.0,
+            float(baseline["heldout"]["total_bits"])
+            - float(tuned["heldout"]["total_bits"]),
+        )
+        train_rate = max(
+            0.0,
+            float(baseline["train"]["bits_per_token"])
+            - float(tuned["train"]["bits_per_token"]),
+        )
+        heldout_rate = max(
+            0.0,
+            float(baseline["heldout"]["bits_per_token"])
+            - float(tuned["heldout"]["bits_per_token"]),
+        )
+        return {
+            "train_bits_saved": train_saved,
+            "heldout_bits_saved": heldout_saved,
+            "train_bits_saved_per_token": train_rate,
+            "heldout_bits_saved_per_token": heldout_rate,
+            "excess_train_bits_per_token": train_rate - heldout_rate,
+        }
+
+    def _retained_gain(
+        self,
+        run: RunSpec,
+        baseline: dict[str, Any],
+        raw_task: dict[str, Any],
+        codec_task: dict[str, Any],
+    ) -> dict[str, Any]:
+        metric = str(self.campaign["datasets"][str(run.dataset_key)]["screening_metric"])
+        baseline_score = float(baseline[metric])
+        raw_score = float(raw_task[metric])
+        codec_score = float(codec_task[metric])
+        raw_gain = raw_score - baseline_score
+        return {
+            "metric": metric,
+            "baseline_score": baseline_score,
+            "raw_adapter_score": raw_score,
+            "codec_score": codec_score,
+            "raw_gain": raw_gain,
+            "retained_gain": (
+                (codec_score - baseline_score) / raw_gain
+                if abs(raw_gain) > 1e-12
+                else None
+            ),
         }
 
     def ensure_baseline(
@@ -250,13 +353,25 @@ class RunEngine:
                     session, run, data["test"]
                 )
                 write_predictions(baseline_dir / "predictions.jsonl", predictions)
-                calibration_metrics, calibration_predictions = self._evaluate_natural(
-                    session, run, data["calibration"]
-                )
-                write_predictions(
-                    baseline_dir / "calibration_predictions.jsonl",
-                    calibration_predictions,
-                )
+                if self.campaign["datasets"][str(run.dataset_key)].get(
+                    "task_type"
+                ) == "multiple_choice":
+                    calibration_metrics, calibration_predictions = self._evaluate_natural(
+                        session, run, data["calibration"]
+                    )
+                    write_predictions(
+                        baseline_dir / "calibration_predictions.jsonl",
+                        calibration_predictions,
+                    )
+                else:
+                    calibration_metrics = causal_nll(
+                        session.model,
+                        session.tokenizer,
+                        data["calibration"],
+                        run.model,
+                        run.training.max_length,
+                        run.training.micro_batch_size,
+                    )
                 output = {
                     "kind": "natural",
                     "model": run.model.name,
@@ -266,14 +381,7 @@ class RunEngine:
                     "seed": run.seed,
                     **metrics,
                     "calibration": calibration_metrics,
-                    "heldout_nll": causal_nll(
-                        session.model,
-                        session.tokenizer,
-                        data["test"],
-                        run.model,
-                        run.training.max_length,
-                        run.training.micro_batch_size,
-                    )["nll"],
+                    "information": self._information_measure(session, run, data),
                 }
                 output["screening"] = self._screening(run, output)
             write_json(baseline_dir / "metrics.json", output)
@@ -356,59 +464,87 @@ class RunEngine:
         run_dir: Path,
         data: dict[str, list[Example]],
         raw_tensors: dict[str, torch.Tensor],
-        bits: int,
+        codec: CodecSpec,
+        baseline: dict[str, Any],
+        raw_task: dict[str, Any],
     ) -> dict[str, Any]:
-        codec_path = run_dir / "codecs" / f"adapter_b{bits}.fqcb"
-        candidates = (100.0,) if bits == 16 else run.clip_percentiles
+        codec_path = run_dir / "codecs" / f"adapter_{codec.key}.fqcb"
+        metadata = {
+            "run_id": run.run_id,
+            "adapter_method": run.adapter.method,
+            "adapter_seed": run.seed,
+            "adapter_key": run.adapter.key,
+            "codec_key": codec.key,
+            "codec_method": codec.method,
+        }
         trials = []
-        best: tuple[float, int, float] | None = None
-        for clip in candidates:
-            candidate = run_dir / "codecs" / f".candidate_b{bits}_p{clip:g}.fqcb"
+        if codec.method == "loraquant":
+            storage = encode_loraquant_tensor_map(
+                raw_tensors,
+                codec_path,
+                high_bits=int(codec.high_bits or 0),
+                variance_ratio=float(codec.variance_ratio or 0.0),
+                group_size=codec.group_size,
+                optimize_steps=codec.optimize_steps,
+                metadata=metadata,
+            )
+            selected_clip = None
+        else:
+            bits = int(codec.bits or 0)
+            candidates = (100.0,) if bits in {1, 16} else run.clip_percentiles
+            best: tuple[float, int, float] | None = None
+            for clip in candidates:
+                candidate = (
+                    run_dir / "codecs" / f".candidate_{codec.key}_p{clip:g}.fqcb"
+                )
+                storage = encode_tensor_map(
+                    raw_tensors, candidate, bits, clip, metadata=metadata
+                )
+                _, decoded = decode_adapter_tensor_map(candidate)
+                apply_adapter_tensors(session.model, decoded)
+                score, calibration = self._calibration_score(
+                    session, run, data["calibration"]
+                )
+                trials.append(
+                    {
+                        **{
+                            key: value
+                            for key, value in storage.items()
+                            if key != "path"
+                        },
+                        "calibration": calibration,
+                    }
+                )
+                choice = (score, int(storage["file_bits"]), float(clip))
+                if best is None or choice < best:
+                    best = choice
+                candidate.unlink()
+                apply_adapter_tensors(session.model, raw_tensors)
+            if best is None:
+                raise RuntimeError("codec calibration produced no candidate")
+            selected_clip = best[2]
             storage = encode_tensor_map(
                 raw_tensors,
-                candidate,
+                codec_path,
                 bits,
-                clip,
-                metadata={
-                    "run_id": run.run_id,
-                    "adapter_method": run.adapter.method,
-                    "adapter_seed": run.seed,
-                    "adapter_key": run.adapter.key,
-                },
+                selected_clip,
+                metadata=metadata,
             )
-            _, decoded = decode_tensor_map(candidate)
-            apply_adapter_tensors(session.model, decoded)
+        _, decoded = decode_adapter_tensor_map(codec_path)
+        apply_adapter_tensors(session.model, decoded)
+        if codec.method == "loraquant":
             score, calibration = self._calibration_score(
                 session, run, data["calibration"]
             )
             trials.append(
                 {
-                    **{key: value for key, value in storage.items() if key != "path"},
+                    **{
+                        key: value for key, value in storage.items() if key != "path"
+                    },
                     "calibration": calibration,
+                    "score": score,
                 }
             )
-            choice = (score, int(storage["file_bits"]), float(clip))
-            if best is None or choice < best:
-                best = choice
-            candidate.unlink()
-            apply_adapter_tensors(session.model, raw_tensors)
-        if best is None:
-            raise RuntimeError("codec calibration produced no candidate")
-        selected_clip = best[2]
-        storage = encode_tensor_map(
-            raw_tensors,
-            codec_path,
-            bits,
-            selected_clip,
-            metadata={
-                "run_id": run.run_id,
-                "adapter_method": run.adapter.method,
-                "adapter_seed": run.seed,
-                "adapter_key": run.adapter.key,
-            },
-        )
-        _, decoded = decode_tensor_map(codec_path)
-        apply_adapter_tensors(session.model, decoded)
         if run.kind in {"synthetic", "controlled"}:
             labels = list(self.campaign["datasets"]["synthetic_codebook"]["labels"])
             task_metrics, predictions = evaluate_synthetic(
@@ -424,36 +560,50 @@ class RunEngine:
             task_metrics, predictions = self._evaluate_natural(
                 session, run, data["test"]
             )
-            task_metrics["heldout_nll"] = causal_nll(
-                session.model,
-                session.tokenizer,
-                data["test"],
-                run.model,
-                run.training.max_length,
-                run.training.micro_batch_size,
-            )["nll"]
-            ifeval_examples, evaluator_rows = self._load_ifeval()
-            ifeval_metrics, ifeval_predictions = evaluate_ifeval(
-                session.model,
-                session.tokenizer,
-                ifeval_examples,
-                evaluator_rows,
-                run.model,
-                batch_size=run.training.micro_batch_size,
-            )
-            write_predictions(
-                run_dir / "predictions" / f"ifeval_b{bits}.jsonl",
-                ifeval_predictions,
-            )
-            extra = {"ifeval": ifeval_metrics}
-        write_predictions(run_dir / "predictions" / f"task_b{bits}.jsonl", predictions)
+            information = self._information_measure(session, run, data)
+            extra = {}
+            retention_keys = set(self.campaign.get("retention_codec_keys", []))
+            if codec.key in retention_keys and "ifeval" in self.campaign["datasets"]:
+                ifeval_examples, evaluator_rows = self._load_ifeval()
+                ifeval_metrics, ifeval_predictions = evaluate_ifeval(
+                    session.model,
+                    session.tokenizer,
+                    ifeval_examples,
+                    evaluator_rows,
+                    run.model,
+                    batch_size=run.training.micro_batch_size,
+                )
+                write_predictions(
+                    run_dir / "predictions" / f"ifeval_{codec.key}.jsonl",
+                    ifeval_predictions,
+                )
+                extra = {"ifeval": ifeval_metrics}
+        write_predictions(
+            run_dir / "predictions" / f"task_{codec.key}.jsonl", predictions
+        )
         apply_adapter_tensors(session.model, raw_tensors)
         return {
-            "bits": bits,
+            "codec_key": codec.key,
+            "codec_method": codec.method,
+            "bits": codec.bits,
+            "high_bits": codec.high_bits,
+            "low_bits": codec.low_bits,
+            "variance_ratio": codec.variance_ratio,
             "selected_clip_percentile": selected_clip,
             "storage": storage,
             "calibration_trials": trials,
             "task": task_metrics,
+            "retained_gain": (
+                self._retained_gain(run, baseline, raw_task, task_metrics)
+                if run.kind == "natural"
+                else None
+            ),
+            "information": information if run.kind == "natural" else None,
+            "behavioral_write": (
+                self._behavioral_write(baseline["information"], information)
+                if run.kind == "natural"
+                else None
+            ),
             **extra,
         }
 
@@ -464,7 +614,8 @@ class RunEngine:
         force: bool = False,
     ) -> str:
         run_dir = self.runs_root / run.run_id
-        if not force and run_complete(run_dir, run.precisions):
+        codec_keys = tuple(codec.key for codec in run.codecs)
+        if not force and run_complete(run_dir, codec_keys):
             return "skipped"
         run_dir.mkdir(parents=True, exist_ok=True)
         write_json(run_dir / "config.json", run.to_dict())
@@ -495,7 +646,11 @@ class RunEngine:
                 },
             )
             return "screened_out"
-        if run.kind == "natural":
+        if (
+            run.kind == "natural"
+            and self.campaign.get("retention_codec_keys")
+            and "ifeval" in self.campaign["datasets"]
+        ):
             self.ensure_ifeval_baseline(session, run)
         write_json(
             run_dir / "status.json",
@@ -523,13 +678,9 @@ class RunEngine:
             torch.save(raw_tensors, raw_path)
             write_json(training_path, training_metrics)
         if run.kind == "natural":
-            raw_metrics, raw_predictions = self._evaluate_natural(
-                session, run, data["calibration"]
-            )
-            write_predictions(
-                run_dir / "predictions" / "raw_calibration.jsonl", raw_predictions
-            )
-            learning_gate = self._learning_gate(run, baseline, raw_metrics)
+            raw_information = self._information_measure(session, run, data)
+            raw_validation = raw_information["heldout"]
+            learning_gate = self._learning_gate(run, baseline, raw_validation)
             write_json(run_dir / "learning_gate.json", learning_gate)
             if learning_gate["status"] == "no_learning":
                 write_json(
@@ -542,20 +693,35 @@ class RunEngine:
                     },
                 )
                 return "no_learning"
+            raw_task, raw_predictions = self._evaluate_natural(
+                session, run, data["test"]
+            )
+            write_predictions(
+                run_dir / "predictions" / "raw_task.jsonl", raw_predictions
+            )
         else:
             learning_gate = {}
+            raw_task = {}
+            raw_information = {}
         write_json(
             run_dir / "status.json",
             {"state": "running", "stage": "codecs", "updated_at": time.time()},
         )
         codec_metrics = []
-        for bits in run.precisions:
-            metric_path = run_dir / "codec_metrics" / f"b{bits}.json"
+        for codec in run.codecs:
+            metric_path = run_dir / "codec_metrics" / f"{codec.key}.json"
             if metric_path.is_file() and not force:
                 codec_metrics.append(read_json(metric_path))
                 continue
             metrics = self._evaluate_codec(
-                session, run, run_dir, data, raw_tensors, bits
+                session,
+                run,
+                run_dir,
+                data,
+                raw_tensors,
+                codec,
+                baseline,
+                raw_task,
             )
             write_json(metric_path, metrics)
             codec_metrics.append(metrics)
@@ -575,6 +741,13 @@ class RunEngine:
             "dataset_key": run.dataset_key,
             "baseline_screening": screening,
             "learning_gate": learning_gate,
+            "raw_task": raw_task,
+            "raw_information": raw_information,
+            "raw_behavioral_write": (
+                self._behavioral_write(baseline["information"], raw_information)
+                if run.kind == "natural"
+                else None
+            ),
             "data": data_metadata,
             "training": training_metrics,
             "nominal_channel_values": sum(

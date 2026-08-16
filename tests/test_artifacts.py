@@ -6,20 +6,20 @@ from fineqcomp.artifacts import claim_run, run_complete, write_json
 def test_run_completion_requires_every_reloadable_result(tmp_path):
     write_json(tmp_path / "status.json", {"state": "complete"})
     write_json(tmp_path / "metrics.json", {})
-    assert not run_complete(tmp_path, (4,))
+    assert not run_complete(tmp_path, ("uniform4",))
 
-    write_json(tmp_path / "codec_metrics" / "b4.json", {})
+    write_json(tmp_path / "codec_metrics" / "uniform4.json", {})
     (tmp_path / "codecs").mkdir()
-    (tmp_path / "codecs" / "adapter_b4.fqcb").write_bytes(b"x")
+    (tmp_path / "codecs" / "adapter_uniform4.fqcb").write_bytes(b"x")
     (tmp_path / "predictions").mkdir()
-    (tmp_path / "predictions" / "task_b4.jsonl").write_text("{}\n")
-    assert run_complete(tmp_path, (4,))
+    (tmp_path / "predictions" / "task_uniform4.jsonl").write_text("{}\n")
+    assert run_complete(tmp_path, ("uniform4",))
 
 
 def test_fixed_gates_are_terminal_results(tmp_path):
     for state in ("screened_out", "no_learning"):
         write_json(tmp_path / "status.json", {"state": state})
-        assert run_complete(tmp_path, (2, 3, 4, 8, 16))
+        assert run_complete(tmp_path, ("uniform2", "uniform4", "fp16"))
 
 
 def test_claim_run_excludes_second_owner(tmp_path):

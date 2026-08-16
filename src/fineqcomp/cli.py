@@ -52,7 +52,7 @@ def _prepare(args: argparse.Namespace) -> int:
         synthetic = prepare_all_synthetic(campaign, runs, args.prepared_root)
         controlled = prepare_all_controlled(campaign, runs, args.prepared_root)
         natural = prepare_all_natural(campaign, runs, args.prepared_root)
-        if natural:
+        if natural and "ifeval" in campaign["datasets"]:
             prepare_ifeval(campaign, args.prepared_root)
             ifeval = True
     print(

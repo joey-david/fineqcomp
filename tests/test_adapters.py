@@ -6,6 +6,7 @@ from fineqcomp.adapters import (
     adapter_tensors,
     apply_adapter_tensors,
     attach_adapter,
+    effective_adapter_rank,
     resolve_target_modules,
     seeded_a_tensor,
     unload_adapter,
@@ -58,6 +59,22 @@ def test_target_resolution_honors_layer_and_projection_scope():
         "layers.2.q_proj",
         "layers.2.v_proj",
     ]
+
+
+def test_matched_placement_rank_tracks_reference_parameter_budget():
+    model = DummyModel()
+    spec = AdapterSpec(
+        key="attention",
+        method="full_lora",
+        rank=4,
+        target_modules=("q_proj",),
+        last_n_layers=None,
+        alpha=None,
+        reference_target_modules=("q_proj", "k_proj", "v_proj"),
+        reference_rank=4,
+    )
+
+    assert effective_adapter_rank(model, spec) == 12
 
 
 def test_channel_tensor_selection_and_restore():

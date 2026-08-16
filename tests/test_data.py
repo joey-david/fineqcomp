@@ -42,6 +42,28 @@ def test_multiple_choice_conversion_uses_standard_labels_and_no_answer_text():
     assert "B. two" in converted[0].prompt
 
 
+def test_literature_task_converters_keep_train_and_eval_contracts():
+    metamath = data._convert_metamath(
+        [{"query": "What is 2+2?", "response": "Work. \\boxed{4}"}], "train"
+    )
+    magicoder = data._convert_magicoder(
+        [{"instruction": "Write add.", "response": "def add(a,b): return a+b"}],
+        "train",
+    )
+    xsum = data._convert_xsum(
+        [{"document": "A long report.", "summary": "A report."}], "test"
+    )
+    math = data._convert_math(
+        [{"problem": "1+1", "solution": "\\boxed{2}", "level": "1", "type": "Algebra"}],
+        "test",
+    )
+
+    assert "Question: What is 2+2?" in metamath[0].prompt
+    assert magicoder[0].response.startswith("\ndef add")
+    assert xsum[0].metadata["evaluator"] == "xsum"
+    assert math[0].metadata["evaluator"] == "math"
+
+
 def test_synthetic_data_has_known_entropy_and_no_prompt_leakage(tmp_path):
     codebooks = tmp_path / "codebooks"
     codebooks.mkdir()

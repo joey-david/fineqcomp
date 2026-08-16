@@ -17,15 +17,15 @@ from fineqcomp.runner import RunEngine, estimate_run_cost, partition_runs
 def test_campaign_expands_to_fixed_grid(tmp_path):
     runs = expand_campaign(load_campaign("configs/campaign.yaml"))
 
-    assert len(runs) == 48
+    assert len(runs) == 24
     assert Counter(run.study for run in runs) == {
-        "real_tasks_qwen": 24,
-        "real_tasks_mistral": 24,
+        "main_rate_distortion": 18,
+        "placement_control": 6,
     }
     assert len({run.run_id for run in runs}) == len(runs)
     assert {run.model.name for run in runs} == {
-        "Qwen/Qwen3-8B",
-        "mistralai/Mistral-7B-Instruct-v0.3",
+        "Qwen/Qwen2.5-7B",
+        "mistralai/Mistral-7B-v0.1",
     }
 
     manifest = write_manifest(runs, tmp_path / "manifest.jsonl")
@@ -54,11 +54,10 @@ def test_four_shards_match_the_two_host_layout():
     runs = expand_campaign(load_campaign("configs/campaign.yaml"))
     shards = partition_runs(runs, 4)
 
-    assert sum(map(len, shards)) == 48
-    assert [len(shard) for shard in shards] == [12] * 4
+    assert sum(map(len, shards)) == 24
     assert len({run.run_id for shard in shards for run in shard}) == len(runs)
     costs = [sum(estimate_run_cost(run) for run in shard) for shard in shards]
-    assert max(costs) / min(costs) < 1.02
+    assert max(costs) / min(costs) < 1.07
 
 
 def test_natural_screening_uses_fixed_dataset_ceiling(tmp_path):
@@ -66,21 +65,21 @@ def test_natural_screening_uses_fixed_dataset_ceiling(tmp_path):
     run = next(
         run
         for run in expand_campaign(campaign)
-        if run.kind == "natural" and run.dataset_key == "gsm8k"
+        if run.kind == "natural" and run.dataset_key == "metamath"
     )
     engine = RunEngine(campaign, runs_root=tmp_path)
 
     assert (
         engine._screening(
             run,
-            {"calibration": {"exact_match": 0.90, "examples": 512}},
+            {"exact_match": 0.90, "examples": 512},
         )["status"]
         == "too_easy"
     )
     assert (
         engine._screening(
             run,
-            {"calibration": {"exact_match": 0.80, "examples": 512}},
+            {"exact_match": 0.80, "examples": 512},
         )["status"]
         == "usable"
     )

@@ -12,7 +12,11 @@ from typing import Any
 import torch
 
 from fineqcomp.adapters import adapter_tensors, apply_adapter_tensors
-from fineqcomp.codec import decode_tensor_map, encode_tensor_map
+from fineqcomp.codec import (
+    decode_adapter_tensor_map,
+    encode_loraquant_tensor_map,
+    encode_tensor_map,
+)
 from fineqcomp.config import RunSpec, TrainingSpec
 from fineqcomp.data import (
     controlled_data_dir,
@@ -45,7 +49,8 @@ def environment_report(
         "accelerate",
         "bitsandbytes",
         "yaml",
-        "instruction_following_eval",
+        "math_verify",
+        "rouge_score",
         "matplotlib",
         "numpy",
     ):
@@ -138,15 +143,22 @@ def validate_prepared(runs: list[RunSpec], root: str | Path) -> int:
     }
     for dataset_key, seed in natural:
         validate_natural_dataset(natural_data_dir(root, dataset_key, seed), dataset_key, seed)
-    if natural:
+    if natural and "ifeval" in campaign["datasets"]:
         validate_ifeval_dataset(ifeval_data_dir(root))
-    return len(cells) + len(controlled) + len(natural) + bool(natural)
+    return (
+        len(cells)
+        + len(controlled)
+        + len(natural)
+        + bool(natural and "ifeval" in campaign["datasets"])
+    )
 
 
 def validate_tokenizers(campaign: dict[str, Any]) -> dict[str, list[int]]:
     from transformers import AutoTokenizer
 
-    labels = list(map(str, campaign["multiple_choice_labels"]))
+    labels = list(map(str, campaign.get("multiple_choice_labels", [])))
+    if not labels:
+        return {}
     output = {}
     for key, model in campaign["models"].items():
         tokenizer = AutoTokenizer.from_pretrained(
@@ -193,10 +205,27 @@ def model_smoke(
         tensors = adapter_tensors(session.model, run.adapter.method)
         path = Path(prepared_root) / ".preflight_adapter.fqcb"
         storage = encode_tensor_map(tensors, path, 4, metadata={"preflight": True})
-        _, decoded = decode_tensor_map(path)
+        _, decoded = decode_adapter_tensor_map(path)
         apply_adapter_tensors(session.model, decoded)
         path.unlink()
-        return {"training": training, "storage": storage}
+        loraquant_path = Path(prepared_root) / ".preflight_loraquant.fqcb"
+        loraquant_storage = encode_loraquant_tensor_map(
+            tensors,
+            loraquant_path,
+            high_bits=2,
+            variance_ratio=0.8,
+            group_size=128,
+            optimize_steps=2,
+            metadata={"preflight": True},
+        )
+        _, decoded = decode_adapter_tensor_map(loraquant_path)
+        apply_adapter_tensors(session.model, decoded)
+        loraquant_path.unlink()
+        return {
+            "training": training,
+            "storage": storage,
+            "loraquant_storage": loraquant_storage,
+        }
     finally:
         if hasattr(session.model, "unload"):
             session.unload()

@@ -9,7 +9,7 @@
 #SBATCH --gres=gpu:h100:1
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
-#SBATCH --time=36:00:00
+#SBATCH --time=4-04:00:00
 #SBATCH --output=slurm_logs/%x-%A_%a.out
 #SBATCH --error=slurm_logs/%x-%A_%a.err
 

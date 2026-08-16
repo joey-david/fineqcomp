@@ -31,14 +31,17 @@ def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text())
 
 
-def _read_correct(path: Path) -> list[int]:
+def _read_correct(path: Path, evaluator: str | None = None) -> list[int]:
     if not path.is_file():
         return []
     values = []
     with path.open() as stream:
         for line in stream:
             row = json.loads(line)
-            values.append(int(bool(row.get("correct", row.get("passed", False)))))
+            if evaluator is not None and row.get("evaluator") != evaluator:
+                continue
+            if "correct" in row or "passed" in row:
+                values.append(int(bool(row.get("correct", row.get("passed")))))
     return values
 
 
@@ -92,7 +95,7 @@ def _paired_stats(
 
 
 def _primary_metric(task: dict[str, Any]) -> str | None:
-    for metric in ("exact_match", "accuracy", "pass_at_1"):
+    for metric in ("exact_match", "accuracy", "pass_at_1", "rouge_l"):
         if task.get(metric) is not None:
             return metric
     return None
@@ -114,9 +117,19 @@ def collect_rows(
         for codec in run.get("codecs", []):
             task = codec["task"]
             primary_metric = _primary_metric(task)
-            bits = int(codec["bits"])
-            predictions = metrics_path.parent / "predictions" / f"task_b{bits}.jsonl"
-            correct = _read_correct(predictions)
+            primary_evaluator = task.get("primary_evaluator")
+            bits = codec.get("bits")
+            codec_key = str(
+                codec.get("codec_key", f"b{bits}" if bits is not None else "unknown")
+            )
+            predictions = (
+                metrics_path.parent / "predictions" / f"task_{codec_key}.jsonl"
+            )
+            if not predictions.is_file() and bits is not None:
+                predictions = (
+                    metrics_path.parent / "predictions" / f"task_b{bits}.jsonl"
+                )
+            correct = _read_correct(predictions, primary_evaluator)
             ci_low, ci_high = _binomial_ci(correct)
             baseline_key = (
                 f"{run['model_key']}__{run['backbone']}__"
@@ -133,11 +146,17 @@ def collect_rows(
             baseline_predictions = (
                 runs_root / "baselines" / baseline_key / "predictions.jsonl"
             )
-            paired = _paired_stats(_read_correct(baseline_predictions), correct)
+            paired = _paired_stats(
+                _read_correct(baseline_predictions, primary_evaluator), correct
+            )
             task_score = task.get(primary_metric) if primary_metric else None
             baseline_test_score = (
                 baseline.get(primary_metric) if primary_metric else None
             )
+            task_evaluations = task.get("evaluations", {})
+            baseline_evaluations = baseline.get("evaluations", {})
+            raw_task = run.get("raw_task", {})
+            raw_evaluations = raw_task.get("evaluations", {})
             row = {
                 "run_id": run["run_id"],
                 "study": run["study"],
@@ -151,22 +170,54 @@ def collect_rows(
                 "family_count": run.get("family_count"),
                 "binding_count": run.get("binding_count"),
                 "dataset_key": run.get("dataset_key"),
+                "codec_key": codec_key,
+                "codec_method": codec.get("codec_method", "uniform"),
                 "quant_bits": bits,
-                "clip_percentile": codec["selected_clip_percentile"],
+                "high_bits": codec.get("high_bits"),
+                "low_bits": codec.get("low_bits"),
+                "variance_ratio": codec.get("variance_ratio"),
+                "clip_percentile": codec.get("selected_clip_percentile"),
                 "file_bits": codec["storage"]["file_bits"],
                 "raw_payload_bits": codec["storage"]["raw_payload_bits"],
+                "header_bits": codec["storage"].get("header_bits"),
+                "value_bits": codec["storage"].get("value_bits"),
+                "scale_bits": codec["storage"].get("scale_bits"),
+                "padding_bits": codec["storage"].get("padding_bits"),
+                "effective_bits_per_value": codec["storage"].get(
+                    "effective_bits_per_value", bits
+                ),
                 "accuracy": task.get("accuracy"),
                 "distortion": task.get("distortion"),
                 "label_nll": task.get("label_nll"),
                 "exact_match": task.get("exact_match"),
                 "pass_at_1": task.get("pass_at_1"),
+                "rouge_l": task.get("rouge_l"),
+                "math_exact_match": task_evaluations.get("math", {}).get(
+                    "exact_match"
+                ),
+                "baseline_math_exact_match": baseline_evaluations.get(
+                    "math", {}
+                ).get("exact_match"),
+                "raw_math_exact_match": raw_evaluations.get("math", {}).get(
+                    "exact_match"
+                ),
                 "heldout_nll": task.get("heldout_nll"),
                 "primary_metric": primary_metric,
+                "primary_evaluator": primary_evaluator,
                 "task_score": task_score,
                 "baseline_test_score": baseline_test_score,
                 "test_gain": (
                     float(task_score) - float(baseline_test_score)
                     if task_score is not None and baseline_test_score is not None
+                    else None
+                ),
+                "math_gain": (
+                    float(task_evaluations["math"]["exact_match"])
+                    - float(baseline_evaluations["math"]["exact_match"])
+                    if task_evaluations.get("math", {}).get("exact_match")
+                    is not None
+                    and baseline_evaluations.get("math", {}).get("exact_match")
+                    is not None
                     else None
                 ),
                 "ci_low": ci_low,
@@ -189,6 +240,18 @@ def collect_rows(
                 "baseline_status": run.get("baseline_screening", {}).get("status"),
                 "raw_calibration_gain": run.get("learning_gate", {}).get("gain"),
                 "learning_status": run.get("learning_gate", {}).get("status"),
+                "retained_gain": codec.get("retained_gain", {}).get(
+                    "retained_gain"
+                ),
+                "train_bits_saved": codec.get("behavioral_write", {}).get(
+                    "train_bits_saved"
+                ),
+                "heldout_bits_saved": codec.get("behavioral_write", {}).get(
+                    "heldout_bits_saved"
+                ),
+                "excess_train_bits_per_token": codec.get(
+                    "behavioral_write", {}
+                ).get("excess_train_bits_per_token"),
             }
             if (
                 row["kind"] in {"synthetic", "controlled"}
@@ -489,23 +552,22 @@ def _save_quantization_retention(rows: list[dict[str, Any]], path: Path) -> None
     for axis, dataset in zip(axes.flat, datasets, strict=False):
         subset = [row for row in selected if row["dataset_key"] == dataset]
         for key, group in _group(subset, "model", "adapter").items():
-            retained: dict[int, list[float]] = defaultdict(list)
-            for _, run_rows in _group(group, "run_id").items():
-                full = next(
-                    (row for row in run_rows if int(row["quant_bits"]) == 16), None
-                )
-                if not full or not full["task_score"]:
+            retained: dict[str, list[float]] = defaultdict(list)
+            rates: dict[str, list[float]] = defaultdict(list)
+            for row in group:
+                if row["retained_gain"] is None:
                     continue
-                for row in run_rows:
-                    retained[int(row["quant_bits"])].append(
-                        float(row["task_score"]) / float(full["task_score"])
-                    )
-            if not retained:
+                retained[str(row["codec_key"])].append(float(row["retained_gain"]))
+                rates[str(row["codec_key"])].append(
+                    float(row["effective_bits_per_value"])
+                )
+            if not rates:
                 continue
-            x = sorted(retained)
-            y = [float(np.median(retained[bits])) for bits in x]
-            low = [min(retained[bits]) for bits in x]
-            high = [max(retained[bits]) for bits in x]
+            codecs = sorted(rates, key=lambda name: np.median(rates[name]))
+            x = [float(np.median(rates[name])) for name in codecs]
+            y = [float(np.median(retained[name])) for name in codecs]
+            low = [min(retained[name]) for name in codecs]
+            high = [max(retained[name]) for name in codecs]
             axis.errorbar(
                 x,
                 y,
@@ -518,16 +580,68 @@ def _save_quantization_retention(rows: list[dict[str, Any]], path: Path) -> None
                 label=f"{str(key[0]).split('/')[-1]} / {key[1]}",
             )
         axis.axhline(1.0, color="black", linewidth=0.8)
-        axis.set_xticks([2, 3, 4, 8, 16])
         axis.set_title(dataset.replace("_", " ").upper())
-        axis.set_xlabel("adapter value bits")
-        axis.set_ylabel("score divided by 16-bit score")
+        axis.set_xlabel("effective serialized bits per adapter value")
+        axis.set_ylabel("fraction of raw adapter gain retained")
         axis.grid(alpha=0.25)
         handles, labels = axis.get_legend_handles_labels()
         if handles:
             axis.legend(handles, labels, fontsize=6)
     for axis in list(axes.flat)[len(datasets) :]:
         axis.remove()
+    fig.tight_layout()
+    fig.savefig(path, dpi=220)
+    plt.close(fig)
+
+
+def _save_behavioral_write(rows: list[dict[str, Any]], path: Path) -> None:
+    import matplotlib.pyplot as plt
+
+    selected = [
+        row
+        for row in rows
+        if row["kind"] == "natural" and row["heldout_bits_saved"] is not None
+    ]
+    if not selected:
+        return
+    fig, ax = plt.subplots(figsize=(8, 5.5))
+    for (dataset,), group in _group(selected, "dataset_key").items():
+        ax.scatter(
+            [row["file_bits"] for row in group],
+            [row["heldout_bits_saved"] for row in group],
+            label=str(dataset),
+            alpha=0.65,
+        )
+    ax.set_xscale("log")
+    ax.set_xlabel("serialized adapter bits")
+    ax.set_ylabel("held-out code bits saved over the base model")
+    ax.grid(alpha=0.25)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(path, dpi=220)
+    plt.close(fig)
+
+
+def _save_placement(rows: list[dict[str, Any]], path: Path) -> None:
+    import matplotlib.pyplot as plt
+
+    selected = [row for row in rows if row["study"] == "placement_control"]
+    if not selected:
+        return
+    fig, ax = plt.subplots(figsize=(8, 5.5))
+    for (adapter,), group in _group(selected, "adapter").items():
+        ax.scatter(
+            [row["file_bits"] for row in group],
+            [row["test_gain"] for row in group],
+            label=str(adapter),
+            alpha=0.7,
+        )
+    ax.set_xscale("log")
+    ax.axhline(0, color="black", linewidth=0.8)
+    ax.set_xlabel("serialized adapter bits")
+    ax.set_ylabel("test score gain over the base model")
+    ax.grid(alpha=0.25)
+    ax.legend()
     fig.tight_layout()
     fig.savefig(path, dpi=220)
     plt.close(fig)
@@ -628,6 +742,8 @@ def analyze(root: str | Path = "runs", out: str | Path = "reports") -> dict[str,
     _save_model_checks(rows, output / "model_checks.png")
     _save_natural(rows, output / "natural_pareto.png")
     _save_quantization_retention(rows, output / "quantization_retention.png")
+    _save_behavioral_write(rows, output / "behavioral_write.png")
+    _save_placement(rows, output / "placement_control.png")
     _save_retention(rows, baselines, output / "ifeval_retention.png")
     screening = [
         {

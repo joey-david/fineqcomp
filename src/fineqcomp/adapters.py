@@ -16,10 +16,13 @@ from fineqcomp.config import AdapterSpec
 _LAYER_PATTERN = re.compile(r"(?:^|\.)layers\.(\d+)(?:\.|$)")
 
 
-def resolve_target_modules(model: torch.nn.Module, spec: AdapterSpec) -> list[str]:
-    """Resolve exact projection names, optionally within the final N layers."""
+def _resolve_targets(
+    model: torch.nn.Module,
+    target_modules: tuple[str, ...],
+    last_n_layers: int | None,
+) -> list[str]:
     candidates: list[tuple[str, int | None]] = []
-    wanted = set(spec.target_modules)
+    wanted = set(target_modules)
     for name, module in model.named_modules():
         leaf = name.rsplit(".", 1)[-1]
         if leaf not in wanted or not isinstance(module, torch.nn.Linear):
@@ -29,18 +32,47 @@ def resolve_target_modules(model: torch.nn.Module, spec: AdapterSpec) -> list[st
         candidates.append((name, layer))
     if not candidates:
         raise ValueError(f"no linear target modules found for {sorted(wanted)}")
-    if spec.last_n_layers is None:
+    if last_n_layers is None:
         return sorted(name for name, _ in candidates)
     layers = sorted({layer for _, layer in candidates if layer is not None})
     if not layers:
         raise ValueError(
             "last_n_layers requested but transformer layers were not found"
         )
-    selected = set(layers[-spec.last_n_layers :])
+    selected = set(layers[-last_n_layers:])
     names = sorted(name for name, layer in candidates if layer in selected)
     if not names:
         raise ValueError("layer restriction removed every adapter target")
     return names
+
+
+def resolve_target_modules(model: torch.nn.Module, spec: AdapterSpec) -> list[str]:
+    """Resolve exact projection names, optionally within the final N layers."""
+    return _resolve_targets(model, spec.target_modules, spec.last_n_layers)
+
+
+def effective_adapter_rank(
+    model: torch.nn.Module, spec: AdapterSpec, targets: list[str] | None = None
+) -> int:
+    """Match LoRA parameter counts to an optional reference placement."""
+    if not spec.reference_target_modules:
+        return spec.rank
+    if spec.reference_rank is None:
+        raise ValueError("reference_rank is required for a matched adapter budget")
+    selected = targets or resolve_target_modules(model, spec)
+    reference = _resolve_targets(
+        model, spec.reference_target_modules, spec.last_n_layers
+    )
+    modules = dict(model.named_modules())
+
+    def units(names: list[str]) -> int:
+        return sum(
+            modules[name].in_features + modules[name].out_features for name in names
+        )
+
+    target_units = units(selected)
+    reference_units = units(reference)
+    return max(1, round(spec.reference_rank * reference_units / target_units))
 
 
 def _tensor_seed(seed: int, name: str) -> int:
@@ -66,9 +98,10 @@ def attach_adapter(
     from peft import LoraConfig, TaskType, get_peft_model
 
     targets = resolve_target_modules(base_model, spec)
+    rank = effective_adapter_rank(base_model, spec, targets)
     config = LoraConfig(
-        r=spec.rank,
-        lora_alpha=spec.alpha,
+        r=rank,
+        lora_alpha=spec.alpha if spec.alpha is not None else 2 * rank,
         lora_dropout=spec.dropout,
         bias="none",
         task_type=TaskType.CAUSAL_LM,

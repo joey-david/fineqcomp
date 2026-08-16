@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 
-from fineqcomp.config import AdapterSpec, ModelSpec, RunSpec, TrainingSpec
+from fineqcomp.config import AdapterSpec, CodecSpec, ModelSpec, RunSpec, TrainingSpec
 
 
 def _slug(text: str) -> str:
@@ -25,13 +25,24 @@ def _model(key: str, raw: dict[str, Any], backbone: str | None = None) -> ModelS
 def _adapter(key: str, raw: dict[str, Any]) -> AdapterSpec:
     spec = dict(raw["adapters"][key])
     targets = tuple(spec.pop("target_modules"))
+    reference_targets = tuple(spec.pop("reference_target_modules", ()))
     rank = int(spec["rank"])
-    spec.setdefault("alpha", 2 * rank)
-    return AdapterSpec(key=key, target_modules=targets, **spec)
+    if "alpha" not in spec:
+        spec["alpha"] = 2 * rank
+    return AdapterSpec(
+        key=key,
+        target_modules=targets,
+        reference_target_modules=reference_targets,
+        **spec,
+    )
 
 
 def _training(key: str, raw: dict[str, Any]) -> TrainingSpec:
     return TrainingSpec(**raw["training"][key])
+
+
+def _codecs(raw: dict[str, Any], keys: Iterable[str]) -> tuple[CodecSpec, ...]:
+    return tuple(CodecSpec(key=key, **raw["codecs"][key]) for key in keys)
 
 
 def _run_id(parts: list[str], payload: dict[str, Any]) -> str:
@@ -43,13 +54,13 @@ def _run_id(parts: list[str], payload: dict[str, Any]) -> str:
 
 def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
     """Expand all study products and reject duplicate run IDs."""
-    precisions = tuple(map(int, raw["precisions"]))
     clips = tuple(map(float, raw.get("clip_percentiles", [100.0])))
     runs: list[RunSpec] = []
     for study_name, study in raw["studies"].items():
         kind = study["kind"]
         models = study["models"]
         adapters = study["adapters"]
+        codecs = _codecs(raw, study.get("codecs", raw["codecs"]))
         seeds = list(map(int, study["seeds"]))
         if kind == "synthetic":
             cells: Iterable[tuple[int | None, int | None, str | None]] = (
@@ -114,7 +125,7 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                                 model=model,
                                 adapter=adapter,
                                 seed=seed,
-                                precisions=precisions,
+                                codecs=codecs,
                                 clip_percentiles=clips,
                                 training=training,
                                 family_count=family_count,

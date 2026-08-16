@@ -12,11 +12,12 @@ dependencies = [
   "accelerate==1.14.0",
   "bitsandbytes==0.50.0; platform_system == 'Linux'",
   "datasets==5.0.0",
-  "instruction_following_eval @ git+https://github.com/josejg/instruction_following_eval.git@0c495b2f95155e8b10acb919ae283bfb4d5be6e2",
+  "math-verify[antlr4-13-2]==0.9.0",
   "matplotlib==3.11.0",
   "numpy==2.4.6",
   "peft==0.19.1",
   "pyyaml==6.0.3",
+  "rouge-score==0.1.2",
   "torch==2.12.0",
   "transformers==5.10.2",
 ]

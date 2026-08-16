@@ -52,6 +52,8 @@ def causal_nll(
         total_tokens += tokens
     return {
         "nll": total_loss / max(total_tokens, 1),
+        "bits_per_token": total_loss / max(total_tokens, 1) / math.log(2),
+        "total_bits": total_loss / math.log(2),
         "nll_tokens": total_tokens,
     }
 
@@ -86,7 +88,10 @@ def train_adapter(
         parameter for parameter in model.parameters() if parameter.requires_grad
     ]
     optimizer = torch.optim.AdamW(
-        parameters, lr=spec.learning_rate, weight_decay=spec.weight_decay
+        parameters,
+        lr=spec.learning_rate,
+        betas=(spec.adam_beta1, spec.adam_beta2),
+        weight_decay=spec.weight_decay,
     )
     updates_per_epoch = math.ceil(len(loader) / accumulation)
     total_updates = updates_per_epoch * spec.epochs
@@ -126,7 +131,7 @@ def train_adapter(
                 at_boundary = (batch_index + 1) % accumulation == 0
                 at_end = batch_index + 1 == len(loader)
                 if at_boundary or at_end:
-                    torch.nn.utils.clip_grad_norm_(parameters, 1.0)
+                    torch.nn.utils.clip_grad_norm_(parameters, spec.max_grad_norm)
                     optimizer.step()
                     scheduler.step()
                     optimizer.zero_grad(set_to_none=True)
@@ -160,6 +165,9 @@ def train_adapter(
         "optimizer_updates": update,
         "best_validation_nll": best_nll,
         "trainable_parameters": sum(parameter.numel() for parameter in parameters),
+        "adapter_rank": next(iter(model.peft_config.values())).r
+        if hasattr(model, "peft_config")
+        else None,
         "elapsed_seconds": time.perf_counter() - started_at,
         "peak_memory_bytes": (
             torch.cuda.max_memory_allocated(device) if device.type == "cuda" else None

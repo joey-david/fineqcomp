@@ -492,7 +492,7 @@ def _convert_gsm8k(rows: Any, split: str) -> list[Example]:
                 f"Question: {row['question']}\nAnswer:"
             ),
             response=" " + str(row["answer"]),
-            metadata={"split": split},
+            metadata={"split": split, "evaluator": "gsm8k"},
         )
         for index, row in enumerate(rows)
     ]
@@ -512,10 +512,113 @@ def _convert_mbpp(rows: Any, split: str) -> list[Example]:
                     f"one Python code block.\n\nTask: {problem}\n\nCode:"
                 ),
                 response=f"\n```python\n{code}\n```",
-                metadata={"split": split, "tests": list(tests)},
+                metadata={"split": split, "evaluator": "mbpp", "tests": list(tests)},
             )
         )
     return converted
+
+
+def _convert_metamath(rows: Any, split: str) -> list[Example]:
+    return [
+        Example(
+            example_id=f"metamath-{split}-{index}",
+            prompt=(
+                "Solve the problem and put the final answer in \\boxed{}.\n\n"
+                f"Question: {row['query']}\nAnswer:"
+            ),
+            response=" " + str(row["response"]),
+            metadata={"split": split},
+        )
+        for index, row in enumerate(rows)
+    ]
+
+
+def _convert_magicoder(rows: Any, split: str) -> list[Example]:
+    return [
+        Example(
+            example_id=f"magicoder-{split}-{index}",
+            prompt=(
+                "Write a correct response to the programming instruction.\n\n"
+                f"Instruction:\n{row['instruction']}\n\nResponse:"
+            ),
+            response="\n" + str(row["response"]),
+            metadata={"split": split},
+        )
+        for index, row in enumerate(rows)
+    ]
+
+
+def _convert_xsum(rows: Any, split: str) -> list[Example]:
+    return [
+        Example(
+            example_id=f"xsum-{split}-{index}",
+            prompt=(
+                "Write one concise sentence that summarizes the document.\n\n"
+                f"Document: {row['document']}\n\nSummary:"
+            ),
+            response=" " + str(row["summary"]),
+            metadata={"split": split, "evaluator": "xsum"},
+        )
+        for index, row in enumerate(rows)
+    ]
+
+
+def _convert_math(rows: Any, split: str) -> list[Example]:
+    return [
+        Example(
+            example_id=f"math-{split}-{index}",
+            prompt=(
+                "Solve the problem and put the final answer in \\boxed{}.\n\n"
+                f"Problem: {row['problem']}\nAnswer:"
+            ),
+            response=" " + str(row["solution"]),
+            metadata={
+                "split": split,
+                "evaluator": "math",
+                "level": str(row.get("level", "")),
+                "subject": str(row.get("type", "")),
+            },
+        )
+        for index, row in enumerate(rows)
+    ]
+
+
+def _convert_humaneval(rows: Any, split: str) -> list[Example]:
+    return [
+        Example(
+            example_id=str(row.get("task_id", f"humaneval-{split}-{index}")),
+            prompt=(
+                "Complete the Python function. Return only the missing code.\n\n"
+                + str(row["prompt"])
+            ),
+            response=str(row["canonical_solution"]),
+            metadata={
+                "split": split,
+                "evaluator": "humaneval",
+                "code_prefix": str(row["prompt"]),
+                "tests": str(row["test"]),
+                "entry_point": str(row["entry_point"]),
+            },
+        )
+        for index, row in enumerate(rows)
+    ]
+
+
+_NATURAL_CONVERTERS = {
+    "gsm8k": _convert_gsm8k,
+    "magicoder": _convert_magicoder,
+    "math": _convert_math,
+    "metamath": _convert_metamath,
+    "humaneval": _convert_humaneval,
+    "xsum": _convert_xsum,
+}
+
+
+def _convert_natural(rows: Any, split: str, converter: str) -> list[Example]:
+    try:
+        return _NATURAL_CONVERTERS[converter](rows, split)
+    except KeyError as error:
+        raise ValueError(f"unsupported natural converter: {converter}") from error
 
 
 def _convert_multiple_choice(
@@ -570,6 +673,35 @@ def _load_natural_from_hub(
     from datasets import load_dataset
 
     spec = raw["datasets"][dataset_key]
+    if "train_source" in spec:
+        source = spec["train_source"]
+        train_dataset = load_dataset(
+            source["path"], source.get("name"), revision=source["revision"]
+        )
+        shuffled = train_dataset[source["split"]].shuffle(seed=seed)
+        validation_rows = int(spec["validation_rows"])
+        calibration_rows = shuffled.select(range(validation_rows))
+        train_rows = shuffled.select(range(validation_rows, len(shuffled)))
+        tests = []
+        for evaluation in spec["evaluations"]:
+            evaluation_dataset = load_dataset(
+                evaluation["path"],
+                evaluation.get("name"),
+                revision=evaluation["revision"],
+            )
+            converted = _convert_natural(
+                evaluation_dataset[evaluation["split"]],
+                "test",
+                evaluation["converter"],
+            )
+            tests.extend(converted)
+        return {
+            "train": _convert_natural(train_rows, "train", source["converter"]),
+            "calibration": _convert_natural(
+                calibration_rows, "calibration", source["converter"]
+            ),
+            "test": tests,
+        }
     dataset = load_dataset(spec["path"], spec.get("name"), revision=spec["revision"])
     if dataset_key == "gsm8k":
         shuffled = dataset[spec["train_split"]].shuffle(seed=seed)
@@ -645,12 +777,23 @@ def prepare_natural_dataset(
     for split, examples in rows.items():
         _write_jsonl(target / f"{split}.jsonl", examples)
     spec = raw["datasets"][dataset_key]
+    revisions = (
+        {
+            "train": spec["train_source"]["revision"],
+            "evaluations": {
+                evaluation["key"]: evaluation["revision"]
+                for evaluation in spec["evaluations"]
+            },
+        }
+        if "train_source" in spec
+        else spec["revision"]
+    )
     _write_json(
         target / "metadata.json",
         {
             "version": 1,
             "dataset_key": dataset_key,
-            "revision": spec["revision"],
+            "revision": revisions,
             "seed": seed,
             **{f"{split}_rows": len(examples) for split, examples in rows.items()},
         },
@@ -681,7 +824,13 @@ def load_natural_dataset(
     """Read a staged dataset, falling back to the pinned Hub loader if absent."""
     if prepared_root is not None:
         root = natural_data_dir(prepared_root, dataset_key, seed)
-        expected = [root / "metadata.json", *(root / f"{split}.jsonl" for split in ("train", "calibration", "test"))]
+        expected = [
+            root / "metadata.json",
+            *(
+                root / f"{split}.jsonl"
+                for split in ("train", "calibration", "test")
+            ),
+        ]
         if all(path.is_file() for path in expected):
             validate_natural_dataset(root, dataset_key, seed)
             return {
@@ -720,7 +869,9 @@ def validate_ifeval_dataset(path: str | Path) -> dict[str, Any]:
     evaluator_rows = json.loads((root / "evaluator_rows.json").read_text())
     if len(examples) != int(metadata["rows"]) or len(evaluator_rows) != len(examples):
         raise ValueError(f"{root}: IFEval row count mismatch")
-    if [int(row.metadata["key"]) for row in examples] != [int(row["key"]) for row in evaluator_rows]:
+    if [int(row.metadata["key"]) for row in examples] != [
+        int(row["key"]) for row in evaluator_rows
+    ]:
         raise ValueError(f"{root}: IFEval keys do not align")
     return metadata
 

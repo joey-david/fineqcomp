@@ -1,148 +1,181 @@
 # Experiments
 
-This protocol tests the project proposal's empirical bit-performance claim on
-public tasks. It does not treat dataset byte size as task information and does
-not use random labels. Dataset, model, and evaluator revisions are fixed in
-`configs/campaign.yaml`.
+The campaign tests how many serialized adapter bits are needed to retain useful
+fine-tuning gains. It follows the model, data, optimizer, adapter, and codec
+settings in LoRAQuant, then adds the exact rate and behavioral information
+measures called for by *How Many Bits Can an Adapter Write?* All Hub revisions
+and fixed gates live in `configs/campaign.yaml`.
 
-The manifest has 48 candidate runs: two models, four tasks, three seeds, and two
-adapter layouts. A run reaches the quantization sweep only after both fixed
-calibration gates pass. Screened and failed-to-learn cells stay in the audit.
+## Fixed protocol
 
-## Shared protocol
-
-- Models: `mistralai/Mistral-7B-Instruct-v0.3` and `Qwen/Qwen3-8B`, with frozen
-  NF4 backbones.
-- Tasks: [GSM8K](https://huggingface.co/datasets/openai/gsm8k),
-  [CommonsenseQA](https://huggingface.co/datasets/tau/commonsense_qa),
-  [ARC-Challenge](https://huggingface.co/datasets/allenai/ai2_arc), and
-  [OpenBookQA](https://huggingface.co/datasets/allenai/openbookqa).
+- Frozen bases: `mistralai/Mistral-7B-v0.1` and `Qwen/Qwen2.5-7B`, loaded in
+  double-quantized NF4.
+- Main adapter: rank-16 full LoRA on every attention and MLP projection.
 - Seeds: 11, 22, and 33.
-- Adapters: full rank-16 LoRA on all linear projections, and seeded-A rank-16
-  LoRA on all Q/V projections.
-- Stored precisions: 2, 3, 4, 8, and 16 bits. For each precision, clipping is
-  selected from 99.0%, 99.9%, and 100.0% using calibration loss only.
-- Rate: exact bits in the complete `.fqcb` file, including values, scales,
-  shapes, names, reconstruction seed, and header. The frozen model is separate.
-- General-skill check: official IFEval strict and loose prompt and instruction
-  accuracy before and after adaptation.
+- Training: two epochs, AdamW betas `(0.9, 0.95)`, learning rate `2e-4`, cosine
+  decay, 30% warmup, global batch 16, no weight decay, and gradient norm 1.
+- Data: MetaMathQA to GSM8K and MATH; Magicoder to HumanEval; XSum to XSum.
+- Length: 1,024 tokens for math and XSum; 4,096 tokens for code.
+- Standard metrics: exact answer with `math-verify`, HumanEval pass@1 with a
+  bounded Python worker, and ROUGE-L with `rouge-score`.
+- Raw checkpoint rule: train once, save one raw adapter, and derive every coded
+  point from that same checkpoint.
+- Gate rule: stop a cell if the base task score exceeds its fixed ceiling or if
+  the raw adapter reduces held-out NLL by less than 0.02 bits per token.
 
-GSM8K reserves a seeded 512-row slice of training for calibration and keeps its
-test split final. CommonsenseQA has no labeled public test set, so a seeded
-512-row training slice is calibration and the standard validation split is
-final. ARC-Challenge and OpenBookQA use their standard validation and test
-splits. No final test result affects task choice, early stopping, clipping, or
-the learning gate.
+The active manifest has 24 raw training runs: 18 main cells and six placement
+controls. A main run writes ten codecs. A placement run writes three. The final
+test sets never select a checkpoint, clipping threshold, or gate.
 
-Two gates run before the bit sweep:
-
-1. Saturation gate: reject a model-task cell only when the lower end of its 95%
-   Wilson interval exceeds 0.80 on calibration accuracy or exact match.
-2. Learning gate: reject an adapter seed when the uncompressed adapter gains
-   less than 0.05 on calibration data over its no-adapter baseline.
-
-## Experiment 1: Real-task rate-performance curves
+## Experiment 1: Real-task learning and headroom
 
 ### Question
 
-How many stored adapter bits are needed to obtain a useful held-out gain on
-standard reasoning and knowledge tasks?
+Do the two base models have enough headroom, and does each raw adapter learn its
+training task before compression?
 
-### Measures
+### Design and measures
 
-- GSM8K final-answer exact match.
-- CommonsenseQA, ARC-Challenge, and OpenBookQA constrained-choice accuracy.
-- Test gain over the matched no-adapter model.
-- Exact adapter file bits and raw packed payload bits.
-- Paired bootstrap 95% interval and exact McNemar test against the matched base
-  predictions.
-- Training time and peak GPU memory.
+Run all three task families on both models and all three seeds. Record the base
+GSM8K exact match, HumanEval pass@1, or XSum ROUGE-L. Record the raw adapter's
+held-out NLL gain in bits per token and its final task gain. For MetaMath, also
+report MATH exact match as a second held-out measure.
 
 ### Outputs
 
-- `reports/summary.csv`: every seed, adapter, task, and bit width.
-- `reports/natural_pareto.png`: test gain against actual adapter MiB.
-- `reports/baseline_screening.csv` and `reports/learning_gates.csv`: all fixed
-  gate decisions, including rejected cells.
+- `reports/baseline_screening.csv`
+- `reports/learning_gates.csv`
+- raw task predictions in each run's `predictions/raw_task.jsonl`
 
 ### Results
 
-<!-- Fill after the new remote artifacts have been pulled and checked. -->
+<!-- Fill after the campaign artifacts have been checked. -->
 
-## Experiment 2: Quantization threshold
+## Experiment 2: Adapter rate-distortion curve
 
 ### Question
 
-Where does reducing adapter precision cause a reliable loss relative to the
-same trained 16-bit adapter?
+How much of the raw task gain survives at each exact serialized adapter rate?
 
-### Measures
+### Design and measures
 
-- Score at 2, 3, 4, and 8 bits divided by the matched 16-bit score.
-- Paired score differences between each low-bit adapter and its matched 16-bit
-  predictions.
-- File-size reduction relative to 16 bits.
-- Median and full seed range; no seed may be removed after the run.
+Encode every main adapter with uniform FP16, 8-, 4-, 3-, 2-, and 1-bit codes,
+plus LoRAQuant `2@0.8`, `2@0.9`, `3@0.8`, and `3@0.9`. Uniform codes choose
+among 99%, 99.9%, and 100% clipping on calibration NLL. LoRAQuant uses an SVD
+split, group size 128, a one-bit low-energy part, and 100 update-error steps.
+
+Measure exact file bits, effective bits per original adapter value, task score,
+gain over the matched base model, and the fraction of the raw adapter gain that
+the codec retains. Report all seeds, not only the Pareto points.
 
 ### Outputs
 
-- `reports/quantization_retention.png`: median retention and seed range by task,
-  model, and adapter.
-- `reports/summary.csv`: per-run paired statistics and storage fields.
+- `reports/natural_pareto.png`
+- `reports/quantization_retention.png`
+- `reports/summary.csv`
 
 ### Results
 
-<!-- Fill after the new remote artifacts have been pulled and checked. -->
+<!-- Fill after the campaign artifacts have been checked. -->
 
-## Experiment 3: Adapter allocation
+## Experiment 3: Exact rate accounting
 
 ### Question
 
-At a matched stored size, does a full all-linear LoRA or a seeded all-layer Q/V
-LoRA give the better task gain?
+How much does nominal value width understate the complete decoder-visible rate?
 
-### Measures
+### Design and measures
 
-- Pareto frontier of test gain versus exact file bits for each layout.
-- Best task score under fixed 2, 5, 10, 20, and 50 MiB budgets where covered.
-- Seed consistency across both model families and all tasks that pass both
-  gates.
+For every `.fqcb` file, split the rate into header, packed values, FP16 scales,
+byte padding, raw payload, compressed payload, and final file bits. Compare the
+requested width with effective file bits per original LoRA value. This includes
+all tensor names, shapes, split ranks, scales, and reconstruction metadata.
 
 ### Outputs
 
-- `reports/natural_pareto.png` and the adapter fields in
-  `reports/summary.csv`.
+- storage columns in `reports/summary.csv`
+- the reloadable files in each run's `codecs/` directory
 
 ### Results
 
-<!-- Fill after the new remote artifacts have been pulled and checked. -->
+<!-- Fill after the campaign artifacts have been checked. -->
 
-## Experiment 4: Task gain versus instruction retention
+## Experiment 4: Behavioral information
 
 ### Question
 
-Does a smaller coded update retain more of the base model's instruction
-following, and what task gain does that trade buy?
+Does artifact rate track how many prediction bits the adapter writes on train
+and held-out examples?
 
-### Measures
+### Design and measures
 
-- Test gain over the no-adapter task score.
-- Drop in IFEval strict prompt accuracy from the matched no-adapter model.
-- The same comparison for loose prompt and strict/loose instruction accuracy in
-  `summary.csv`.
+On fixed sets of 256 train and 256 held-out examples, compute token NLL under
+the base, raw, and coded adapters. Report train and held-out code bits saved,
+bits saved per token, and the train-minus-held-out excess. Compare held-out bits
+saved with exact artifact bits for each task and codec.
 
 ### Outputs
 
-- `reports/ifeval_retention.png`: task gain against strict IFEval drop.
+- `reports/behavioral_write.png`
+- behavioral information columns in `reports/summary.csv`
 
 ### Results
 
-<!-- Fill after the new remote artifacts have been pulled and checked. -->
+<!-- Fill after the campaign artifacts have been checked. -->
+
+## Experiment 5: Matched-budget placement
+
+### Question
+
+At the same nominal LoRA parameter budget, does attention-only or MLP-only
+placement write task information more efficiently than all-linear placement?
+
+### Design and measures
+
+On Mistral and MetaMath, compute separate attention-only and MLP-only ranks from
+the model's actual projection shapes so each matches the all-linear rank-16
+parameter count at the nearest integer rank. Set LoRA alpha to twice the computed rank. Run three seeds and
+store FP16, LoRAQuant `2@0.8`, and `3@0.9`. Compare actual trainable parameters,
+file bits, task gain, retained gain, and behavioral bits.
+
+### Outputs
+
+- `reports/placement_control.png`
+- adapter rank and trainable parameter fields in each run's metrics
+
+### Results
+
+<!-- Fill after the campaign artifacts have been checked. -->
+
+## Experiment 6: Cost and reproducibility
+
+### Question
+
+Can each result be reloaded and reproduced from its pinned inputs and coded
+artifact, and what compute does it cost?
+
+### Design and measures
+
+Record model and data revisions, run seed, training updates, wall time, peak GPU
+memory, and full codec settings. A run counts as complete only when every coded
+file, metric record, and prediction file exists. Decode each adapter before its
+evaluation. Keep screened, failed, and no-learning cells in the status report.
+
+### Outputs
+
+- `prepared/manifest.jsonl`
+- per-run `config.json`, `training_metrics.json`, `codec_metrics/`, and
+  `status.json`
+- `reports/summary.json`
+
+### Results
+
+<!-- Fill after the campaign artifacts have been checked. -->
 
 ## Claim rule
 
-The main claim needs the same bit-quality trend in at least two tasks and both
-model families, with all three seeds shown. A single successful Mistral-GSM8K
-cell remains a case study. Cells that fail either gate cannot support a
-rate-performance claim. We will report null, harmful, and screened results next
-to successful runs.
+A main rate claim needs the same ordered rate-quality trend on at least two task
+families and both models, with all three seeds shown. A compression method must
+beat the uniform code at a matched exact file rate, not only at a named width.
+Cells stopped by either fixed gate cannot support the main claim. Report null,
+harmful, screened, and failed cells with successful runs.

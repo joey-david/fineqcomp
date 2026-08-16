@@ -28,5 +28,5 @@ fi
   --gpu-count 1 --min-gpu-memory-gib 75 --shards 16 \
   --report prepared/smoke-preflight.json
 
-"$python_bin" -c 'import json; report=json.load(open("prepared/smoke-preflight.json")); assert report["model_smoke"]["training"]["optimizer_updates"] > 0; assert report["model_smoke"]["storage"]["file_bits"] > 0'
+"$python_bin" -c 'import json; report=json.load(open("prepared/smoke-preflight.json")); assert report["model_smoke"]["training"]["optimizer_updates"] > 0; assert report["model_smoke"]["storage"]["file_bits"] > 0; assert report["model_smoke"]["loraquant_storage"]["file_bits"] > 0'
 printf 'model, training, and codec smoke complete\n'

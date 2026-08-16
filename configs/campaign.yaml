@@ -1,144 +1,218 @@
 version: 1
 
-precisions: [2, 3, 4, 8, 16]
+# Every codec reads the same trained adapter checkpoint. File size is measured
+# from the serialized container, including headers, scales, and padding.
 clip_percentiles: [99.0, 99.9, 100.0]
-multiple_choice_labels: [" A", " B", " C", " D", " E"]
+information_rows: 256
+retention_codec_keys: []
+
+codecs:
+  fp16:
+    method: uniform
+    bits: 16
+  uniform8:
+    method: uniform
+    bits: 8
+  uniform4:
+    method: uniform
+    bits: 4
+  uniform3:
+    method: uniform
+    bits: 3
+  uniform2:
+    method: uniform
+    bits: 2
+  binary:
+    method: uniform
+    bits: 1
+  loraquant_2_08:
+    method: loraquant
+    high_bits: 2
+    low_bits: 1
+    variance_ratio: 0.8
+    group_size: 128
+    optimize_steps: 100
+  loraquant_2_09:
+    method: loraquant
+    high_bits: 2
+    low_bits: 1
+    variance_ratio: 0.9
+    group_size: 128
+    optimize_steps: 100
+  loraquant_3_08:
+    method: loraquant
+    high_bits: 3
+    low_bits: 1
+    variance_ratio: 0.8
+    group_size: 128
+    optimize_steps: 100
+  loraquant_3_09:
+    method: loraquant
+    high_bits: 3
+    low_bits: 1
+    variance_ratio: 0.9
+    group_size: 128
+    optimize_steps: 100
 
 models:
-  qwen3_8b_instruct:
-    name: Qwen/Qwen3-8B
-    revision: b968826d9c46dd6066d109eabc6255188de91218
+  mistral_7b_base:
+    name: mistralai/Mistral-7B-v0.1
+    revision: 27d67f1b5f57dc0953326b2601d68371d40ea8da
     backbone: nf4
-    chat: true
-    disable_thinking: true
-  mistral_7b_instruct:
-    name: mistralai/Mistral-7B-Instruct-v0.3
-    revision: c170c708c41dac9275d15a8fff4eca08d52bab71
+    chat: false
+  qwen25_7b_base:
+    name: Qwen/Qwen2.5-7B
+    revision: d149729398750b98c0af14eb82c78cfe92750796
     backbone: nf4
-    chat: true
+    chat: false
 
 adapters:
-  seeded_all_qv_r16:
-    method: seeded_b
-    rank: 16
-    target_modules: [q_proj, v_proj]
-    last_n_layers: null
-    alpha: 32
-  full_all_r16:
+  all_linear_r16:
     method: full_lora
     rank: 16
     target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
     last_n_layers: null
     alpha: 32
+    dropout: 0.0
+  attention_budgeted:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj]
+    reference_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    reference_rank: 16
+    last_n_layers: null
+    alpha: null
+    dropout: 0.0
+  mlp_budgeted:
+    method: full_lora
+    rank: 16
+    target_modules: [gate_proj, up_proj, down_proj]
+    reference_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    reference_rank: 16
+    last_n_layers: null
+    alpha: null
+    dropout: 0.0
 
+# LoRAQuant's released 7B recipe: AdamW (0.9, 0.95), cosine decay,
+# two epochs, global batch 16, 30% warmup, and no weight decay.
 training:
-  gsm8k:
-    epochs: 3
-    learning_rate: 0.0001
-    effective_batch_size: 32
-    micro_batch_size: 4
+  math_1024:
+    epochs: 2
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 2
     max_length: 1024
-    warmup_ratio: 0.03
+    warmup_ratio: 0.30
     weight_decay: 0.0
-  commonsense_qa:
-    epochs: 3
-    learning_rate: 0.0001
-    effective_batch_size: 32
-    micro_batch_size: 4
-    max_length: 512
-    warmup_ratio: 0.03
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+  code_4096:
+    epochs: 2
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 1
+    max_length: 4096
+    warmup_ratio: 0.30
     weight_decay: 0.0
-  arc_challenge:
-    epochs: 10
-    learning_rate: 0.0001
-    effective_batch_size: 32
-    micro_batch_size: 4
-    max_length: 512
-    warmup_ratio: 0.03
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+  summary_1024:
+    epochs: 2
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 2
+    max_length: 1024
+    warmup_ratio: 0.30
     weight_decay: 0.0
-  openbookqa:
-    epochs: 5
-    learning_rate: 0.0001
-    effective_batch_size: 32
-    micro_batch_size: 4
-    max_length: 512
-    warmup_ratio: 0.03
-    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
 
 datasets:
-  gsm8k:
-    path: openai/gsm8k
-    name: main
-    revision: 740312add88f781978c0658806c59bc2815b9866
-    train_split: train
-    test_split: test
+  metamath:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
     validation_rows: 512
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+      - key: math
+        path: DigitalLearningGmbH/MATH-lighteval
+        name: default
+        revision: 0530c78699ea5e8eb5530600900e1f328b48acad
+        split: test
+        converter: math
     screening_metric: exact_match
     maximum_baseline_score: 0.80
-    minimum_raw_gain: 0.05
-  commonsense_qa:
-    path: tau/commonsense_qa
-    name: default
-    revision: 94630fe30dad47192a8546eb75f094926d47e155
-    task_type: multiple_choice
-    train_split: train
-    test_split: validation
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  magicoder:
+    task_type: generative
+    train_source:
+      path: ise-uiuc/Magicoder-Evol-Instruct-110K
+      name: default
+      revision: b0079beaa0361d82412520b873715bee59cc7dd4
+      split: train
+      converter: magicoder
     validation_rows: 512
-    question_field: question
-    screening_metric: accuracy
-    maximum_baseline_score: 0.80
-    minimum_raw_gain: 0.05
-  arc_challenge:
-    path: allenai/ai2_arc
-    name: ARC-Challenge
-    revision: 210d026faf9955653af8916fad021475a3f00453
-    task_type: multiple_choice
-    train_split: train
-    validation_split: validation
-    test_split: test
-    question_field: question
-    screening_metric: accuracy
-    maximum_baseline_score: 0.80
-    minimum_raw_gain: 0.05
-  openbookqa:
-    path: allenai/openbookqa
-    name: main
-    revision: 388097ea7776314e93a529163e0fea805b8a6454
-    task_type: multiple_choice
-    train_split: train
-    validation_split: validation
-    test_split: test
-    question_field: question_stem
-    screening_metric: accuracy
-    maximum_baseline_score: 0.80
-    minimum_raw_gain: 0.05
-  ifeval:
-    path: google/IFEval
-    revision: 966cd89545d6b6acfd7638bc708b98261ca58e84
-    split: train
+    evaluations:
+      - key: humaneval
+        path: openai/openai_humaneval
+        name: openai_humaneval
+        revision: 7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544
+        split: test
+        converter: humaneval
+    screening_metric: pass_at_1
+    maximum_baseline_score: 0.75
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  xsum:
+    task_type: generative
+    screening_binomial: false
+    train_source:
+      path: EdinburghNLP/xsum
+      name: default
+      revision: 7d4d486c2f8ef850b1a11aead99b894ff3dd7da9
+      split: train
+      converter: xsum
+    validation_rows: 512
+    evaluations:
+      - key: xsum
+        path: EdinburghNLP/xsum
+        name: default
+        revision: 7d4d486c2f8ef850b1a11aead99b894ff3dd7da9
+        split: test
+        converter: xsum
+    screening_metric: rouge_l
+    maximum_baseline_score: 0.45
+    minimum_validation_nll_gain_bits_per_token: 0.02
 
 studies:
-  real_tasks_qwen:
+  main_rate_distortion:
     kind: natural
-    models: [qwen3_8b_instruct]
-    datasets: [gsm8k, commonsense_qa, arc_challenge, openbookqa]
+    models: [mistral_7b_base, qwen25_7b_base]
+    datasets: [metamath, magicoder, xsum]
     seeds: [11, 22, 33]
-    adapters: [seeded_all_qv_r16, full_all_r16]
-    training: gsm8k
+    adapters: [all_linear_r16]
+    training: math_1024
     training_by_dataset:
-      gsm8k: gsm8k
-      commonsense_qa: commonsense_qa
-      arc_challenge: arc_challenge
-      openbookqa: openbookqa
-  real_tasks_mistral:
+      metamath: math_1024
+      magicoder: code_4096
+      xsum: summary_1024
+  placement_control:
     kind: natural
-    models: [mistral_7b_instruct]
-    datasets: [gsm8k, commonsense_qa, arc_challenge, openbookqa]
+    models: [mistral_7b_base]
+    datasets: [metamath]
     seeds: [11, 22, 33]
-    adapters: [seeded_all_qv_r16, full_all_r16]
-    training: gsm8k
-    training_by_dataset:
-      gsm8k: gsm8k
-      commonsense_qa: commonsense_qa
-      arc_challenge: arc_challenge
-      openbookqa: openbookqa
+    adapters: [attention_budgeted, mlp_budgeted]
+    codecs: [fp16, loraquant_2_08, loraquant_3_09]
+    training: math_1024

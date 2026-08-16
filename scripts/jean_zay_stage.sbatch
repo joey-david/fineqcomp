@@ -30,7 +30,7 @@ if [[ ! -x .venv/bin/python ]]; then
   uv venv --system-site-packages --python "$module_python" .venv
 fi
 uv pip install --python .venv/bin/python \
-  'instruction_following_eval @ git+https://github.com/josejg/instruction_following_eval.git@0c495b2f95155e8b10acb919ae283bfb4d5be6e2'
+  'math-verify[antlr4_13_2]==0.9.0' 'rouge-score==0.1.2'
 
 export PYTHON="$repo_root/.venv/bin/python"
 "$PYTHON" -m fineqcomp prepare --config configs/campaign.yaml

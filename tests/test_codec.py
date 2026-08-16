@@ -5,6 +5,8 @@ import pytest
 import torch
 
 from fineqcomp.codec import (
+    decode_adapter_tensor_map,
+    encode_loraquant_tensor_map,
     decode_tensor_map,
     encode_tensor_map,
     pack_unsigned,
@@ -12,7 +14,7 @@ from fineqcomp.codec import (
 )
 
 
-@pytest.mark.parametrize("bits", [2, 3, 4, 8])
+@pytest.mark.parametrize("bits", [1, 2, 3, 4, 8])
 @pytest.mark.parametrize("count", [0, 1, 7, 8, 9, 31])
 def test_unsigned_pack_roundtrip(bits, count):
     values = np.arange(count, dtype=np.uint16) % (1 << bits)
@@ -22,7 +24,7 @@ def test_unsigned_pack_roundtrip(bits, count):
     assert len(payload) == (count * bits + 7) // 8
 
 
-@pytest.mark.parametrize("bits", [2, 3, 4, 8, 16])
+@pytest.mark.parametrize("bits", [1, 2, 3, 4, 8, 16])
 def test_tensor_codec_is_reloadable_and_counts_whole_file(tmp_path, bits):
     tensors = {
         "adapter.layer0": torch.tensor(
@@ -37,6 +39,14 @@ def test_tensor_codec_is_reloadable_and_counts_whole_file(tmp_path, bits):
     header, decoded = decode_tensor_map(path)
 
     assert storage["file_bits"] == path.stat().st_size * 8
+    assert storage["file_bits"] == (
+        storage["header_bits"] + storage["compressed_payload_bits"]
+    )
+    assert storage["raw_payload_bits"] == (
+        storage["scale_bits"]
+        + storage["value_bits"]
+        + storage["padding_bits"]
+    )
     assert storage["tensor_values"] == 31
     assert header["metadata"] == {"seed": 11}
     assert set(decoded) == set(tensors)
@@ -55,3 +65,48 @@ def test_codec_rejects_bad_magic(tmp_path):
     path.write_bytes(b"not-a-codec")
     with pytest.raises(ValueError, match="magic"):
         decode_tensor_map(path)
+
+
+@pytest.mark.parametrize("high_bits,ratio", [(2, 0.8), (3, 0.9)])
+def test_loraquant_codec_roundtrips_shapes_and_rate(tmp_path, high_bits, ratio):
+    generator = torch.Generator().manual_seed(7)
+    tensors = {
+        "base.layers.0.q_proj.lora_A.default.weight": torch.randn(
+            4, 9, generator=generator
+        ),
+        "base.layers.0.q_proj.lora_B.default.weight": torch.randn(
+            7, 4, generator=generator
+        ),
+    }
+    original_update = (
+        tensors["base.layers.0.q_proj.lora_B.default.weight"]
+        @ tensors["base.layers.0.q_proj.lora_A.default.weight"]
+    )
+    path = tmp_path / "adapter-loraquant.fqcb"
+
+    storage = encode_loraquant_tensor_map(
+        tensors,
+        path,
+        high_bits=high_bits,
+        variance_ratio=ratio,
+        group_size=4,
+        optimize_steps=2,
+        metadata={"seed": 11},
+    )
+    header, decoded = decode_adapter_tensor_map(path)
+    decoded_update = (
+        decoded["base.layers.0.q_proj.lora_B.default.weight"]
+        @ decoded["base.layers.0.q_proj.lora_A.default.weight"]
+    )
+
+    assert header["codec_method"] == "loraquant"
+    assert header["metadata"] == {"seed": 11}
+    assert {name: tuple(value.shape) for name, value in decoded.items()} == {
+        name: tuple(value.shape) for name, value in tensors.items()
+    }
+    assert torch.isfinite(decoded_update).all()
+    assert torch.linalg.norm(original_update - decoded_update) < torch.linalg.norm(
+        original_update
+    )
+    assert storage["file_bits"] == path.stat().st_size * 8
+    assert storage["effective_bits_per_value"] > 0

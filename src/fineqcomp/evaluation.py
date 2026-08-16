@@ -11,7 +11,7 @@ import torch
 
 from fineqcomp.config import ModelSpec
 from fineqcomp.data import Example
-from fineqcomp.mbpp import run_mbpp_tests
+from fineqcomp.mbpp import run_humaneval_tests, run_mbpp_tests
 from fineqcomp.modeling import model_device, render_prompt, validate_single_token_labels
 
 
@@ -209,6 +209,39 @@ def evaluate_natural(
     batch_size: int,
     multiple_choice_labels: list[str] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    evaluators = []
+    for example in examples:
+        evaluator = str(example.metadata.get("evaluator", dataset_key))
+        if evaluator not in evaluators:
+            evaluators.append(evaluator)
+    if len(evaluators) > 1:
+        all_predictions = []
+        results = {}
+        for evaluator in evaluators:
+            subset = [
+                example
+                for example in examples
+                if str(example.metadata.get("evaluator", dataset_key)) == evaluator
+            ]
+            metrics, predictions = evaluate_natural(
+                model,
+                tokenizer,
+                subset,
+                model_spec,
+                evaluator,
+                batch_size,
+                multiple_choice_labels,
+            )
+            results[evaluator] = metrics
+            all_predictions.extend(
+                {**prediction, "evaluator": evaluator} for prediction in predictions
+            )
+        primary = results[evaluators[0]]
+        return {
+            **primary,
+            "primary_evaluator": evaluators[0],
+            "evaluations": results,
+        }, all_predictions
     if examples and "choice_count" in examples[0].metadata:
         if not multiple_choice_labels:
             raise ValueError("multiple-choice evaluation requires answer labels")
@@ -220,7 +253,7 @@ def evaluate_natural(
             multiple_choice_labels,
             batch_size,
         )
-    max_tokens = 512 if dataset_key in {"gsm8k", "mbpp"} else 256
+    max_tokens = 512 if dataset_key in {"gsm8k", "math", "mbpp", "humaneval"} else 128
     responses = generate_responses(
         model, tokenizer, examples, model_spec, batch_size, max_tokens
     )
@@ -263,6 +296,80 @@ def evaluate_natural(
             "examples": len(examples),
             "pass_at_1": passed / max(len(examples), 1),
             "failure_counts": statuses,
+        }, predictions
+    if dataset_key == "humaneval":
+        passed = 0
+        statuses: dict[str, int] = {}
+        for example, response in zip(examples, responses, strict=True):
+            result = run_humaneval_tests(
+                response,
+                str(example.metadata["code_prefix"]),
+                str(example.metadata["tests"]),
+                str(example.metadata["entry_point"]),
+            )
+            passed += int(result["passed"])
+            statuses[result["status"]] = statuses.get(result["status"], 0) + 1
+            predictions.append(
+                {"example_id": example.example_id, "response": response, **result}
+            )
+        return {
+            "examples": len(examples),
+            "pass_at_1": passed / max(len(examples), 1),
+            "failure_counts": statuses,
+        }, predictions
+    if dataset_key == "math":
+        from math_verify import (
+            ExprExtractionConfig,
+            LatexExtractionConfig,
+            parse,
+            verify,
+        )
+
+        latex = LatexExtractionConfig(boxed_match_priority=0)
+        correct = 0
+        for example, response in zip(examples, responses, strict=True):
+            try:
+                gold = parse(example.response, extraction_config=[latex])
+                answer = parse(
+                    response,
+                    extraction_config=[latex, ExprExtractionConfig()],
+                )
+                is_correct = bool(gold and answer and verify(gold, answer))
+            except (ValueError, TypeError):
+                is_correct = False
+            correct += int(is_correct)
+            predictions.append(
+                {
+                    "example_id": example.example_id,
+                    "response": response,
+                    "correct": is_correct,
+                    "level": example.metadata.get("level"),
+                    "subject": example.metadata.get("subject"),
+                }
+            )
+        return {
+            "examples": len(examples),
+            "exact_match": correct / max(len(examples), 1),
+        }, predictions
+    if dataset_key == "xsum":
+        from rouge_score import rouge_scorer
+
+        scorer = rouge_scorer.RougeScorer(["rougeL"], use_stemmer=True)
+        scores = [
+            scorer.score(example.response.strip(), response.strip())["rougeL"].fmeasure
+            for example, response in zip(examples, responses, strict=True)
+        ]
+        for example, response, score in zip(examples, responses, scores, strict=True):
+            predictions.append(
+                {
+                    "example_id": example.example_id,
+                    "response": response,
+                    "rouge_l": score,
+                }
+            )
+        return {
+            "examples": len(examples),
+            "rouge_l": sum(scores) / max(len(scores), 1),
         }, predictions
     raise ValueError(f"unsupported natural evaluation: {dataset_key}")
 

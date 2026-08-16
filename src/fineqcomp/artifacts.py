@@ -23,7 +23,7 @@ def read_json(path: str | Path, default: Any = None) -> Any:
     return json.loads(source.read_text()) if source.is_file() else default
 
 
-def run_complete(run_dir: str | Path, precisions: tuple[int, ...]) -> bool:
+def run_complete(run_dir: str | Path, codec_keys: tuple[str, ...]) -> bool:
     root = Path(run_dir)
     status = read_json(root / "status.json", {})
     if status.get("state") in {"screened_out", "no_learning"}:
@@ -31,10 +31,10 @@ def run_complete(run_dir: str | Path, precisions: tuple[int, ...]) -> bool:
     if status.get("state") != "complete" or not (root / "metrics.json").is_file():
         return False
     return all(
-        (root / "codec_metrics" / f"b{bits}.json").is_file()
-        and (root / "codecs" / f"adapter_b{bits}.fqcb").is_file()
-        and (root / "predictions" / f"task_b{bits}.jsonl").is_file()
-        for bits in precisions
+        (root / "codec_metrics" / f"{key}.json").is_file()
+        and (root / "codecs" / f"adapter_{key}.fqcb").is_file()
+        and (root / "predictions" / f"task_{key}.jsonl").is_file()
+        for key in codec_keys
     )
 
 
