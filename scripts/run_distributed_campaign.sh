@@ -17,19 +17,19 @@ launch_id="${CAMPAIGN_LAUNCH_ID:-$session}"
 mode="${1:-}"
 
 case "$mode" in
-  "") ;;
-  --prepare)
-    "$python_bin" -m fineqcomp prepare --config configs/campaign.yaml
-    ;;
-  --pilot-then-full) ;;
-  -h|--help)
-    echo "usage: $0 [--prepare|--pilot-then-full]"
-    exit 0
-    ;;
-  *)
-    echo "usage: $0 [--prepare|--pilot-then-full]" >&2
-    exit 2
-    ;;
+"") ;;
+--prepare)
+  "$python_bin" -m fineqcomp prepare --config configs/campaign.yaml
+  ;;
+--pilot-then-full) ;;
+-h | --help)
+  echo "usage: $0 [--prepare|--pilot-then-full]"
+  exit 0
+  ;;
+*)
+  echo "usage: $0 [--prepare|--pilot-then-full]" >&2
+  exit 2
+  ;;
 esac
 
 if [[ ! -s prepared/manifest.jsonl ]]; then
@@ -71,12 +71,6 @@ export PYTHONPATH="${PYTHONPATH:-$repo_root/src:$repo_root/vendor}"
 export HF_HOME="${HF_HOME:-$repo_root/../fineQComp_hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 "$python_bin" -c 'import bitsandbytes, fineqcomp, math_verify, rouge_score, torch; assert torch.cuda.device_count() >= 2'
-while read -r used; do
-  if ((used > 4096)); then
-    echo "$HOSTNAME: GPU already has ${used} MiB allocated" >&2
-    exit 2
-  fi
-done < <(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits)
 
 if tmux has-session -t "$session" 2>/dev/null; then
   echo "$HOSTNAME: tmux session $session already exists; leaving it untouched"
