@@ -242,6 +242,8 @@ def evaluate_natural(
             "primary_evaluator": evaluators[0],
             "evaluations": results,
         }, all_predictions
+    elif len(evaluators) == 1:
+        dataset_key = evaluators[0]
     if examples and "choice_count" in examples[0].metadata:
         if not multiple_choice_labels:
             raise ValueError("multiple-choice evaluation requires answer labels")
