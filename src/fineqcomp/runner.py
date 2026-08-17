@@ -130,9 +130,7 @@ class RunEngine:
         self._data_cache: dict[tuple[str, int], dict[str, list[Example]]] = {}
         self._ifeval: tuple[list[Example], list[dict[str, Any]]] | None = None
 
-    def _limit_data(
-        self, data: dict[str, list[Example]]
-    ) -> dict[str, list[Example]]:
+    def _limit_data(self, data: dict[str, list[Example]]) -> dict[str, list[Example]]:
         if self.pilot_rows is None:
             return data
         limited = {
@@ -180,9 +178,7 @@ class RunEngine:
             self._data_cache[key] = load_natural_dataset(
                 self.campaign, run.dataset_key, run.seed, self.prepared_root
             )
-        return self._limit_data(self._data_cache[key]), {
-            "dataset_key": run.dataset_key
-        }
+        return self._limit_data(self._data_cache[key]), {"dataset_key": run.dataset_key}
 
     def _load_ifeval(self) -> tuple[list[Example], list[dict[str, Any]]]:
         if self._ifeval is None:
@@ -210,7 +206,7 @@ class RunEngine:
             examples,
             run.model,
             str(run.dataset_key),
-            batch_size=run.training.micro_batch_size,
+            batch_size=8,
             multiple_choice_labels=list(
                 map(str, self.campaign.get("multiple_choice_labels", []))
             ),
@@ -230,9 +226,7 @@ class RunEngine:
             center = (score + z**2 / (2 * examples)) / denominator
             radius = (
                 z
-                * math.sqrt(
-                    score * (1 - score) / examples + z**2 / (4 * examples**2)
-                )
+                * math.sqrt(score * (1 - score) / examples + z**2 / (4 * examples**2))
                 / denominator
             )
             ci_low = max(0.0, center - radius)
@@ -258,9 +252,7 @@ class RunEngine:
         spec = self.campaign["datasets"][str(run.dataset_key)]
         if "bits_per_token" in raw_metrics:
             metric = "validation_bits_per_token"
-            baseline_score = float(
-                baseline["information"]["heldout"]["bits_per_token"]
-            )
+            baseline_score = float(baseline["information"]["heldout"]["bits_per_token"])
             raw_score = float(raw_metrics["bits_per_token"])
             minimum = float(spec["minimum_validation_nll_gain_bits_per_token"])
             gain = baseline_score - raw_score
@@ -344,7 +336,9 @@ class RunEngine:
         raw_task: dict[str, Any],
         codec_task: dict[str, Any],
     ) -> dict[str, Any]:
-        metric = str(self.campaign["datasets"][str(run.dataset_key)]["screening_metric"])
+        metric = str(
+            self.campaign["datasets"][str(run.dataset_key)]["screening_metric"]
+        )
         baseline_score = float(baseline[metric])
         raw_score = float(raw_task[metric])
         codec_score = float(codec_task[metric])
@@ -404,11 +398,12 @@ class RunEngine:
                     session, run, data["test"]
                 )
                 write_predictions(baseline_dir / "predictions.jsonl", predictions)
-                if self.campaign["datasets"][str(run.dataset_key)].get(
-                    "task_type"
-                ) == "multiple_choice":
-                    calibration_metrics, calibration_predictions = self._evaluate_natural(
-                        session, run, data["calibration"]
+                if (
+                    self.campaign["datasets"][str(run.dataset_key)].get("task_type")
+                    == "multiple_choice"
+                ):
+                    calibration_metrics, calibration_predictions = (
+                        self._evaluate_natural(session, run, data["calibration"])
                     )
                     write_predictions(
                         baseline_dir / "calibration_predictions.jsonl",
@@ -589,9 +584,7 @@ class RunEngine:
             )
             trials.append(
                 {
-                    **{
-                        key: value for key, value in storage.items() if key != "path"
-                    },
+                    **{key: value for key, value in storage.items() if key != "path"},
                     "calibration": calibration,
                     "score": score,
                 }
@@ -676,9 +669,10 @@ class RunEngine:
                 session.tokenizer,
                 list(self.campaign["datasets"]["synthetic_codebook"]["labels"]),
             )
-        elif self.campaign["datasets"][str(run.dataset_key)].get(
-            "task_type"
-        ) == "multiple_choice":
+        elif (
+            self.campaign["datasets"][str(run.dataset_key)].get("task_type")
+            == "multiple_choice"
+        ):
             validate_single_token_labels(
                 session.tokenizer,
                 list(map(str, self.campaign["multiple_choice_labels"])),
@@ -735,10 +729,7 @@ class RunEngine:
             raw_validation = raw_information["heldout"]
             learning_gate = self._learning_gate(run, baseline, raw_validation)
             write_json(run_dir / "learning_gate.json", learning_gate)
-            if (
-                learning_gate["status"] == "no_learning"
-                and self.pilot_rows is None
-            ):
+            if learning_gate["status"] == "no_learning" and self.pilot_rows is None:
                 write_json(
                     run_dir / "status.json",
                     {

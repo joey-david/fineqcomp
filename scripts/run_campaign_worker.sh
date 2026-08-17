@@ -181,8 +181,11 @@ trap cleanup EXIT
 
 phase="pilot"
 
-if ! wait_for_gpu; then
-  pilot_status=$?
+wait_for_gpu
+gpu_status=$?
+
+if ((gpu_status != 0)); then
+  pilot_status="$gpu_status"
   write_atomic "$pilot_status_file" "$pilot_status"
   mark_done "$pilot_done_file"
 else

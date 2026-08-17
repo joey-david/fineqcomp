@@ -60,6 +60,7 @@ models:
     revision: 27d67f1b5f57dc0953326b2601d68371d40ea8da
     backbone: nf4
     chat: false
+
   qwen25_7b_base:
     name: Qwen/Qwen2.5-7B
     revision: d149729398750b98c0af14eb82c78cfe92750796
@@ -74,6 +75,7 @@ adapters:
     last_n_layers: null
     alpha: 32
     dropout: 0.0
+
   attention_budgeted:
     method: full_lora
     rank: 16
@@ -83,6 +85,7 @@ adapters:
     last_n_layers: null
     alpha: null
     dropout: 0.0
+
   mlp_budgeted:
     method: full_lora
     rank: 16
@@ -95,34 +98,41 @@ adapters:
 
 # LoRAQuant's released 7B recipe: AdamW (0.9, 0.95), cosine decay,
 # two epochs, global batch 16, 30% warmup, and no weight decay.
+#
+# Microbatches are chosen to better utilize the A100/A6000 while preserving
+# the effective/global batch size of 16 through gradient accumulation:
+#   1024-token tasks: micro 4 x accumulation 4
+#   4096-token task:  micro 2 x accumulation 8
 training:
   math_1024:
     epochs: 2
     learning_rate: 0.0002
     effective_batch_size: 16
-    micro_batch_size: 2
+    micro_batch_size: 4
     max_length: 1024
     warmup_ratio: 0.30
     weight_decay: 0.0
     adam_beta1: 0.9
     adam_beta2: 0.95
     max_grad_norm: 1.0
+
   code_4096:
     epochs: 2
     learning_rate: 0.0002
     effective_batch_size: 16
-    micro_batch_size: 1
+    micro_batch_size: 2
     max_length: 4096
     warmup_ratio: 0.30
     weight_decay: 0.0
     adam_beta1: 0.9
     adam_beta2: 0.95
     max_grad_norm: 1.0
+
   summary_1024:
     epochs: 2
     learning_rate: 0.0002
     effective_batch_size: 16
-    micro_batch_size: 2
+    micro_batch_size: 4
     max_length: 1024
     warmup_ratio: 0.30
     weight_decay: 0.0
@@ -156,6 +166,7 @@ datasets:
     screening_metric: exact_match
     maximum_baseline_score: 0.80
     minimum_validation_nll_gain_bits_per_token: 0.02
+
   magicoder:
     task_type: generative
     train_source:
@@ -175,6 +186,7 @@ datasets:
     screening_metric: pass_at_1
     maximum_baseline_score: 0.75
     minimum_validation_nll_gain_bits_per_token: 0.02
+
   xsum:
     task_type: generative
     screening_binomial: false
@@ -208,6 +220,7 @@ studies:
       metamath: math_1024
       magicoder: code_4096
       xsum: summary_1024
+
   placement_control:
     kind: natural
     models: [mistral_7b_base]
