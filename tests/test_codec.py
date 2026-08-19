@@ -12,6 +12,7 @@ from fineqcomp.codec import (
     pack_unsigned,
     unpack_unsigned,
 )
+from fineqcomp.mdl import _allocate, _encode_mdl, _row_candidates, decode_mdl
 
 
 @pytest.mark.parametrize("bits", [1, 2, 3, 4, 8])
@@ -110,3 +111,46 @@ def test_loraquant_codec_roundtrips_shapes_and_rate(tmp_path, high_bits, ratio):
     )
     assert storage["file_bits"] == path.stat().st_size * 8
     assert storage["effective_bits_per_value"] > 0
+
+
+def test_mdl_codec_roundtrips_variable_row_precision(tmp_path):
+    tensors = {
+        "adapter.weight": torch.tensor(
+            [
+                [0.01, -0.01, 0.02, -0.02, 0.01, -0.01, 0.02, -0.02],
+                [1.0, -0.8, 0.6, -0.4, 0.2, -0.1, 0.7, -0.9],
+            ],
+            dtype=torch.float32,
+        )
+    }
+    rows, total_values = _row_candidates(tensors)
+    assignment = [0, 3]
+    allocation = {
+        "penalty": 1.0,
+        "proxy_bits": sum(
+            int(row["candidates"][bits]["proxy_bits"])
+            for row, bits in zip(rows, assignment, strict=True)
+        ),
+        "proxy_bits_per_value": 0.0,
+        "distortion": 0.0,
+    }
+    allocation["proxy_bits_per_value"] = allocation["proxy_bits"] / total_values
+    path = tmp_path / "adapter.fqmdl"
+    storage = _encode_mdl(tensors, rows, assignment, path, allocation)
+    header, decoded = decode_mdl(path)
+
+    assert header["codec"] == "conditional_mdl_row_midrise_v1"
+    assert storage["description_bits"] == path.stat().st_size * 8
+    assert storage["row_bit_histogram"]["0"] == 1
+    assert storage["row_bit_histogram"]["3"] == 1
+    assert decoded["adapter.weight"][0].count_nonzero() == 0
+    assert decoded["adapter.weight"][1].count_nonzero() == 8
+    assert torch.isfinite(decoded["adapter.weight"]).all()
+
+
+def test_mdl_tighter_budget_never_uses_more_proxy_bits():
+    tensors = {"adapter.weight": torch.arange(64, dtype=torch.float32).reshape(8, 8)}
+    rows, total_values = _row_candidates(tensors)
+    _, loose = _allocate(rows, total_values, 4.0)
+    _, tight = _allocate(rows, total_values, 0.5)
+    assert tight["proxy_bits"] <= loose["proxy_bits"]
