@@ -16,12 +16,11 @@ fi
 python_bin=${FINEQCOMP_PYTHON:-$repo_root/../reasoning/.venv/bin/python}
 upnquick=${UPNQUICK_HOST:-upnquick}
 ourasi=${OURASI_HOST:-ourasi}
-session=${PARETO_SESSION:-fineqcomp-pareto-$(date +%m%d-%H%M)}
 out="$run_dir/pareto"
 mkdir -p "$out"
 
-# Optional: stop a previous campaign but keep its artifacts. The Pareto sweep
-# deliberately reuses raw_channel.pt and existing baseline/raw/binary metrics.
+# Stop a previous campaign if requested, but keep its completed artifacts: this
+# sweep reuses raw_channel.pt and the already-measured baseline/raw/binary point.
 if [[ -n "${OLD_SESSION:-}" ]]; then
   for host in "$upnquick" "$ourasi"; do
     echo "stopping $OLD_SESSION on $host"
@@ -92,8 +91,8 @@ for bit in "${bits[@]}"; do
 done
 [[ "$failed" -eq 0 ]] || exit 1
 
-# Merge the four independent outputs only after all workers finish. This avoids
-# concurrent writes to pareto.csv/json/png.
+# Merge only after all workers finish, so the four processes never race on the
+# aggregate CSV/JSON/PNG.
 for bit in "${bits[@]}"; do
   src="$out/worker_b$bit"
   cp "$src/midrise$bit.json" "$out/"
@@ -101,8 +100,7 @@ for bit in "${bits[@]}"; do
   cp "$src/adapter_midrise$bit.fqpm" "$out/"
 done
 
-# All requested files now exist, so this final call only aggregates and plots;
-# it does not load a model or rerun HumanEval.
+# Every requested point now exists, so this call only aggregates and plots.
 PYTHONPATH=src "$python_bin" -m fineqcomp.pareto "$run_dir" \
   --bits 1 2 3 4 8 --out "$out"
 
