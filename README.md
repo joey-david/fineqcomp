@@ -8,30 +8,26 @@ size of LoRA updates.
 
 ## Fast Pareto sweep
 
-Reuse an already-trained run instead of training again:
+Reuse an already-trained run instead of training again. For the LAMSADE setup,
+the distributed launcher evaluates one point on each GPU: 2/3-bit on the two
+`upnquick` A100s and 4/8-bit on the two `ourasi` A6000s. The existing binary
+result supplies the mathematically identical 1-bit point.
 
 ```bash
-.venv/bin/python -m fineqcomp.pareto runs_literature/<run-id>
+RUN=runs_literature/<run-id>
+OLD_SESSION=fineqcomp-lit-0817-1137 bash scripts/run_pareto_distributed.sh "$RUN"
 ```
 
-The default sweep evaluates a single zero-free quantizer family at 1, 2, 3, and
-4 nominal bits. Its reconstruction levels are symmetric odd levels
-(`±1, ±3, ...`) with an MSE-refit scale per row, so small values are never
-rounded to a dedicated zero code. The 1-bit member is exactly the existing
-binary sign × mean-absolute-value quantizer and is reused when its result is
-already present; only 2/3/4-bit need new task evaluations.
+`OLD_SESSION` is optional; when set, that tmux campaign is stopped on both hosts
+but its completed artifacts are kept. The launcher waits for all four workers,
+then merges their outputs and writes `<run>/pareto/pareto.png`, `pareto.csv`, and
+`pareto.json`.
 
-Results go to `<run>/pareto/`:
-
-- `pareto.png` — effective bits/value vs capped retained task gain, with the
-  Pareto frontier highlighted.
-- `pareto.csv` / `pareto.json` — exact rates, task scores, retained gain, and
-  quantization error.
-- `midrise*.json` / predictions — restart-safe per-point artifacts.
-
-Use `--bits 1 2 3 4 8` for the longer sweep or `--force` to recompute points.
-The x-axis is **effective transmitted bits/value**, including scales, headers,
-padding, and zlib compression—not nominal quantizer width.
+The zero-free quantizer uses symmetric odd levels (`±1, ±3, ...`) with an
+MSE-refit scale per row, so small values are never rounded to a dedicated zero
+code. The Pareto x-axis is **effective transmitted bits/value**, including
+scales, headers, padding, and zlib compression; retained task gain is capped at
+the raw-adapter performance.
 
 ## Full campaign
 
