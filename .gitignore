@@ -9,6 +9,7 @@ __pycache__/
 build/
 dist/
 *.egg-info/
+tex/
 
 # Generated locally or on the GPU host.
 prepared/
