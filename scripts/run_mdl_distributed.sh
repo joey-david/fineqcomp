@@ -17,7 +17,15 @@ python_bin=${FINEQCOMP_PYTHON:-$repo_root/../reasoning/.venv/bin/python}
 upnquick=${UPNQUICK_HOST:-upnquick}
 ourasi=${OURASI_HOST:-ourasi}
 out="$run_dir/mdl"
+cache="$out/candidates_v2.pt"
 mkdir -p "$out"
+
+# The rate/error table is CPU-only and shared on the LAMSADE filesystem.
+# Build it once before starting the four GPU workers instead of recomputing it
+# independently on every host.
+echo "precomputing shared MDL candidate table"
+PYTHONPATH=src "$python_bin" -m fineqcomp.mdl "$run_dir" \
+  --prepare-only --cache "$cache" --out "$out"
 
 launch() {
   local host=$1 gpu=$2 worker=$3
@@ -27,45 +35,48 @@ launch() {
   local log="$out/worker_$worker.log"
   local status="$out/worker_$worker.status"
   rm -f "$status"
+  rm -rf "$worker_out"
   mkdir -p "$worker_out"
 
   echo "launching MDL rates ${rates[*]} on $host GPU $gpu"
   ssh "$host" bash -s -- \
-    "$repo_root" "$python_bin" "$run_dir" "$worker_out" "$log" "$status" "$gpu" "${rates[@]}" <<'REMOTE'
+    "$repo_root" "$python_bin" "$run_dir" "$cache" "$worker_out" "$log" "$status" "$gpu" "${rates[@]}" <<'REMOTE'
 set -euo pipefail
 repo_root=$1
 python_bin=$2
 run_dir=$3
-worker_out=$4
-log=$5
-status=$6
-gpu=$7
-shift 7
+cache=$4
+worker_out=$5
+log=$6
+status=$7
+gpu=$8
+shift 8
 rates=("$@")
 mkdir -p "$worker_out" "$(dirname "$log")"
 nohup bash -c '
   repo_root=$1
   python_bin=$2
   run_dir=$3
-  worker_out=$4
-  log=$5
-  status=$6
-  gpu=$7
-  shift 7
+  cache=$4
+  worker_out=$5
+  log=$6
+  status=$7
+  gpu=$8
+  shift 8
   rates=("$@")
   cd "$repo_root"
   set +e
   CUDA_VISIBLE_DEVICES="$gpu" PYTHONPATH=src "$python_bin" -m fineqcomp.mdl "$run_dir" \
-    --target-rates "${rates[@]}" --out "$worker_out" >"$log" 2>&1
+    --cache "$cache" --target-rates "${rates[@]}" --out "$worker_out" >"$log" 2>&1
   rc=$?
   printf "%s\n" "$rc" >"$status"
   exit "$rc"
-' _ "$repo_root" "$python_bin" "$run_dir" "$worker_out" "$log" "$status" "$gpu" "${rates[@]}" \
+' _ "$repo_root" "$python_bin" "$run_dir" "$cache" "$worker_out" "$log" "$status" "$gpu" "${rates[@]}" \
   </dev/null >/dev/null 2>&1 &
 REMOTE
 }
 
-# Eight description-length targets, two full task evaluations per GPU.
+# Eight coarse scouting points, two full HumanEval evaluations per GPU.
 launch "$upnquick" 0 u0 0.15 0.30
 launch "$upnquick" 1 u1 0.50 0.75
 launch "$ourasi" 0 a0 1.00 1.50
@@ -89,7 +100,7 @@ for worker in "${workers[@]}"; do
   rc=$(cat "$out/worker_$worker.status")
   if [[ "$rc" != 0 ]]; then
     echo "MDL worker $worker failed with exit $rc" >&2
-    tail -n 50 "$out/worker_$worker.log" >&2 || true
+    tail -n 80 "$out/worker_$worker.log" >&2 || true
     failed=1
   fi
 done
@@ -102,9 +113,11 @@ for worker in "${workers[@]}"; do
   cp "$src"/adapter_mdl_*.fqmdl "$out/"
 done
 
-# With all eight point files present this is aggregation/plotting only; it does
-# not load the model or rerun evaluation.
+# Every requested point now exists, so this final call aggregates and plots
+# without loading a model or rerunning HumanEval.
 PYTHONPATH=src "$python_bin" -m fineqcomp.mdl "$run_dir" \
-  --target-rates 0.15 0.30 0.50 0.75 1.00 1.50 2.50 4.00 --out "$out"
+  --cache "$cache" \
+  --target-rates 0.15 0.30 0.50 0.75 1.00 1.50 2.50 4.00 \
+  --out "$out"
 
 echo "done: $out/mdl_pareto.png"
