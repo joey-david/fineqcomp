@@ -1,0 +1,47 @@
+version: 1
+
+# Keep the architecture fixed and vary only task information.  The 16 labels
+# contribute exactly four independent source bits whenever a new random mapping
+# must be specified.
+model: mistral_7b_base
+adapter: all_linear_r16
+seeds: [11, 22, 33]
+
+labels:
+  [" A", " B", " C", " D", " E", " F", " G", " H",
+   " I", " J", " K", " L", " M", " N", " O", " P"]
+codebook_dir: codebooks
+items_per_family: 16
+repeats_per_mapping: 4
+prefix_mappings: [16, 32, 64, 128, 256, 512]
+
+# random: every mapping receives a fresh random label -> 4*N source bits.
+# structured_pK: K random 16-item prototype tables are reused across families
+# -> source information saturates at 64*K bits once all prototypes are seen.
+conditions:
+  - name: structured_p1
+    prototype_count: 1
+  - name: structured_p4
+    prototype_count: 4
+  - name: structured_p16
+    prototype_count: 16
+  - name: random
+    prototype_count: null
+
+# Short prompts make this much cheaper than the natural-task campaign.  A fresh
+# adapter is trained from the same deterministic initialization for each prefix.
+training:
+  epochs: 4
+  learning_rate: 0.0002
+  effective_batch_size: 16
+  micro_batch_size: 16
+  max_length: 128
+  warmup_ratio: 0.05
+  weight_decay: 0.0
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  max_grad_norm: 1.0
+
+evaluation_batch_size: 128
+retention_target: 0.90
+mdl_target_rates: [0.15, 0.30, 0.50, 0.75, 1.0, 1.5, 2.5, 4.0, 8.0]
