@@ -241,6 +241,10 @@ def _load_natural_from_hub(
         validation_rows = int(spec["validation_rows"])
         calibration_rows = shuffled.select(range(validation_rows))
         train_rows = shuffled.select(range(validation_rows, len(shuffled)))
+        # `test_rows` caps each evaluation set. The subsample uses a fixed seed,
+        # not the run seed, so every seed and codec is scored on exactly the
+        # same problems and the comparisons stay paired.
+        test_rows = spec.get("test_rows")
         tests = []
         for evaluation in spec["evaluations"]:
             evaluation_dataset = load_dataset(
@@ -248,12 +252,10 @@ def _load_natural_from_hub(
                 evaluation.get("name"),
                 revision=evaluation["revision"],
             )
-            converted = _convert_natural(
-                evaluation_dataset[evaluation["split"]],
-                "test",
-                evaluation["converter"],
-            )
-            tests.extend(converted)
+            rows = evaluation_dataset[evaluation["split"]]
+            if test_rows is not None and int(test_rows) < len(rows):
+                rows = rows.shuffle(seed=0).select(range(int(test_rows)))
+            tests.extend(_convert_natural(rows, "test", evaluation["converter"]))
         return {
             "train": _convert_natural(train_rows, "train", source["converter"]),
             "calibration": _convert_natural(

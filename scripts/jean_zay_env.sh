@@ -2,14 +2,40 @@
 # Load the managed H100 stack and the small project overlay.
 
 set -e
-source /etc/profile.d/z_modules.sh
+
+# Compute nodes do not carry /etc/profile.d/z_modules.sh, which login nodes do.
+# Sourcing it unconditionally is what killed every batch job here inside two
+# seconds, with an error no login-node test could reproduce. Try the known init
+# scripts in turn and only give up if none of them defines `module`.
+if ! command -v module >/dev/null 2>&1 && ! declare -F module >/dev/null 2>&1; then
+  for module_init in \
+    /etc/profile.d/z_modules.sh \
+    /usr/share/lmod/lmod/init/bash \
+    /opt/lmod/lmod/init/bash \
+    /etc/profile.d/modules.sh
+  do
+    if [[ -r "$module_init" ]]; then
+      # shellcheck disable=SC1090
+      source "$module_init" && break
+    fi
+  done
+fi
+if ! command -v module >/dev/null 2>&1 && ! declare -F module >/dev/null 2>&1; then
+  echo "no module system found on $(hostname); cannot load the H100 stack" >&2
+  exit 2
+fi
+
 module purge
 module load arch/h100
 module load pytorch-gpu/py3/2.8.0
 
-python_bin="${repo_root}/.venv/bin/python"
-if [[ ! -x "$python_bin" ]]; then
-  python_bin="$(command -v python)"
+# Prefer the repo venv only if it can actually import torch. A venv that exists
+# but is missing the stack silently shadows the working module python, which is
+# how an earlier batch of jobs died on startup inside a second.
+python_bin="$(command -v python)"
+if [[ -x "${repo_root}/.venv/bin/python" ]] &&
+   "${repo_root}/.venv/bin/python" -c 'import torch' >/dev/null 2>&1; then
+  python_bin="${repo_root}/.venv/bin/python"
 fi
 export PYTHON="$python_bin"
 export PYTHONPATH="${repo_root}/src${PYTHONPATH:+:${PYTHONPATH}}"

@@ -1,0 +1,116 @@
+version: 1
+
+# Directional pilot. One task, one small model, three seeds, the full codec
+# grid. It exists to test the measurement chain and the codec ordering before
+# any multi-day campaign, not to produce a headline number.
+#
+# Every rate point reuses one trained checkpoint, so the comparison is paired.
+# The model comes from Jean-Zay's shared store, so no Hub download is needed on
+# a compute node. `test_rows` keeps each cell inside the 2-hour dev QoS.
+
+information_rows: 256
+
+codecs:
+  fp16:
+    method: uniform
+    bits: 16
+  uniform8:
+    method: uniform
+    bits: 8
+  uniform4:
+    method: uniform
+    bits: 4
+  uniform3:
+    method: uniform
+    bits: 3
+  uniform2:
+    method: uniform
+    bits: 2
+  binary:
+    method: uniform
+    bits: 1
+  midtread3:
+    method: uniform
+    bits: 3
+    quantizer: midtread
+  midtread2:
+    method: uniform
+    bits: 2
+    quantizer: midtread
+  loraquant_2_08:
+    method: loraquant
+    high_bits: 2
+    low_bits: 1
+    variance_ratio: 0.8
+    group_size: 128
+    optimize_steps: 100
+  loraquant_3_09:
+    method: loraquant
+    high_bits: 3
+    low_bits: 1
+    variance_ratio: 0.9
+    group_size: 128
+    optimize_steps: 100
+
+models:
+  qwen25_1_5b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-1.5B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+
+training:
+  gsm8k_1024:
+    epochs: 3
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 8
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+
+datasets:
+  gsm8k_self:
+    task_type: generative
+    train_source:
+      path: openai/gsm8k
+      name: main
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: train
+      converter: gsm8k
+    validation_rows: 256
+    # 400 problems gives roughly a +/-4.5 point binomial interval at p=0.3:
+    # enough to order codecs that differ by 10 points, not enough for fine
+    # distinctions. The full test set is for the real campaign.
+    test_rows: 400
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+
+studies:
+  pilot:
+    kind: natural
+    models: [qwen25_1_5b_base]
+    datasets: [gsm8k_self]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: gsm8k_1024

@@ -293,6 +293,42 @@ Outputs: `runs_information_scaling/<mode>/prequential.csv`,
 
 <!-- Fill after the pilot/full artifacts have been checked. -->
 
+## Directional pilot and its gates
+
+Before any multi-day campaign, one cheap experiment tests whether the
+measurement chain works and whether the codec ordering is real. Config:
+`configs/pilot_gsm8k.yaml`. Qwen2.5-1.5B on an NF4 base, GSM8K's own 7K train
+split, three seeds, the full codec grid plus the adaptive frontier, scored on a
+fixed 400-problem subsample of the GSM8K test set.
+
+These three gates are recorded before the run. They are pass/fail, and a failure
+is a result, not a reason to retune.
+
+- **Gate 1 — is there anything to compress?** The raw adapter must clear the
+  fixed learning gate of 0.02 bits per token of held-out NLL gain, on all three
+  seeds. If it fails, no downstream number means anything.
+- **Gate 2 — does weight error predict behavior?** `midtread2` must retain no
+  more task gain than `binary` at a comparable exact file rate. This follows
+  from the measured reconstruction error, so failing it means task score does
+  not track weight error, and the rate-distortion framing needs rethinking
+  before scale-up.
+- **Gate 3 — does adaptive allocation earn its place?** At least one adaptive
+  MDL point must dominate every fixed-rate point at matched or lower exact file
+  bits, somewhere below 2 bits per learned scalar. If it fails, the honest
+  reading is that per-row weight MSE is the wrong allocation signal, and the
+  behavior-aware allocator should be built before the campaign, not after.
+
+Gate 3 is the one that authorizes the full campaign. Gates 1 and 2 only
+establish that the pilot measured anything at all.
+
+A pilot result does not support any claim about the 7B NF4 regime. The pilot
+model is small and its base is not in the bit-constrained regime the proposal
+is about, so a passing pilot buys one 7B confirmation cell, not the campaign.
+
+### Results
+
+<!-- Fill after the pilot artifacts have been checked. -->
+
 ## Claim rule
 
 A main rate claim needs the same ordered rate-quality trend on at least two task

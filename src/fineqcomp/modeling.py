@@ -16,7 +16,14 @@ from fineqcomp.data import Example
 
 
 def model_source(spec: ModelSpec, token: str | None) -> str:
-    """Use the exact local snapshot path when Hub access is disabled."""
+    """Use the exact local snapshot path when Hub access is disabled.
+
+    A name that is already a directory is taken as the snapshot itself. Shared
+    cluster model stores (Jean-Zay's `$DSDIR`) hold plain directories rather
+    than a Hub cache, so there is nothing for `snapshot_download` to resolve.
+    """
+    if Path(spec.name).is_dir():
+        return spec.name
     if os.environ.get("HF_HUB_OFFLINE") != "1":
         return spec.name
     from huggingface_hub import snapshot_download
@@ -153,7 +160,9 @@ class ModelSession:
         token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
         source = model_source(spec, token)
         pinned_kwargs = (
-            {} if source != spec.name else {"revision": spec.revision, "token": token}
+            {"revision": spec.revision, "token": token}
+            if source == spec.name and not Path(source).is_dir()
+            else {}
         )
         tokenizer = AutoTokenizer.from_pretrained(
             source, use_fast=True, **pinned_kwargs
