@@ -15,6 +15,104 @@ import torch
 
 MAGIC = b"FQCB1\n"
 ALLOWED_BITS = {1, 2, 3, 4, 8, 16}
+QUANTIZER_BITS = {1, 2, 3, 4, 8}
+
+
+def write_container(
+    path: str | Path, magic: bytes, header: Mapping[str, Any], payload: bytes
+) -> int:
+    """Write magic, a JSON header, and the zlib payload; return the file bits."""
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    header_bytes = json.dumps(header, sort_keys=True, separators=(",", ":")).encode()
+    temporary = target.with_suffix(target.suffix + ".tmp")
+    with temporary.open("wb") as stream:
+        stream.write(magic)
+        stream.write(struct.pack("<I", len(header_bytes)))
+        stream.write(header_bytes)
+        stream.write(payload)
+    temporary.replace(target)
+    return target.stat().st_size * 8
+
+
+def read_container(
+    path: str | Path, magic: bytes
+) -> tuple[dict[str, Any], bytes]:
+    """Read back a container written by :func:`write_container`."""
+    source = Path(path)
+    with source.open("rb") as stream:
+        if stream.read(len(magic)) != magic:
+            raise ValueError(f"{source}: invalid adapter bitstream magic")
+        header_size = struct.unpack("<I", stream.read(4))[0]
+        header = json.loads(stream.read(header_size))
+        payload = zlib.decompress(stream.read())
+    return header, payload
+
+
+def container_header_bits(magic: bytes, header: Mapping[str, Any]) -> int:
+    header_bytes = json.dumps(header, sort_keys=True, separators=(",", ":")).encode()
+    return (len(magic) + 4 + len(header_bytes)) * 8
+
+
+@torch.no_grad()
+def midrise_quantize(
+    tensor: torch.Tensor, bits: int, iterations: int = 8
+) -> tuple[np.ndarray, np.ndarray, torch.Tensor]:
+    """Zero-free symmetric row quantization with a least-squares scale refit.
+
+    Positive magnitudes use the odd reconstruction levels 1, 3, ..., 2**bits-1,
+    so no codeword is spent on an exact zero and every codeword is used. At one
+    bit this reduces to sign(w) * mean(abs(w)) per row. The returned scales are
+    already rounded to the transmitted fp16, so the reconstruction matches what
+    the decoder will rebuild.
+    """
+    if bits not in QUANTIZER_BITS:
+        raise ValueError(f"midrise bits must be one of {sorted(QUANTIZER_BITS)}")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    shape = tensor.shape
+    matrix = tensor.detach().reshape(shape[0], -1).to(device=device, dtype=torch.float32)
+    absolute = matrix.abs()
+    positive_levels = 1 << (bits - 1)
+    row_max = absolute.amax(dim=1)
+
+    if bits == 1:
+        # mean(abs(row)) is the exact optimum, so the fixed point is immediate.
+        index = torch.zeros_like(matrix)
+        scale = absolute.mean(dim=1)
+    else:
+        scale = row_max / (2 * positive_levels - 1)
+        for _ in range(iterations + 1):
+            index = torch.round(
+                (absolute / scale.clamp_min(1e-12)[:, None] - 1.0) / 2.0
+            ).clamp(0, positive_levels - 1)
+            level = 2.0 * index + 1.0
+            scale = (absolute * level).sum(dim=1) / level.square().sum(dim=1)
+            scale = torch.where(row_max > 0, scale, torch.zeros_like(scale))
+
+    level = 2.0 * index + 1.0
+    scale16 = scale.to(torch.float16)
+    signed_level = torch.where(matrix >= 0, level, -level)
+    reconstructed = (signed_level * scale16.float()[:, None]).reshape(shape)
+    codes = torch.where(
+        matrix >= 0, index.to(torch.int64) + positive_levels, index.to(torch.int64)
+    )
+    return (
+        scale16.cpu().numpy(),
+        codes.reshape(-1).cpu().numpy().astype(np.uint16, copy=False),
+        reconstructed.cpu(),
+    )
+
+
+def midrise_dequantize(
+    codes: np.ndarray, scales: np.ndarray, bits: int, rows: int, columns: int
+) -> np.ndarray:
+    """Rebuild a mid-rise row block from its codes and fp16 scales."""
+    positive_levels = 1 << (bits - 1)
+    codes = codes.astype(np.int32).reshape(rows, columns)
+    positive = codes >= positive_levels
+    magnitude = np.where(positive, codes - positive_levels, codes)
+    levels = (2 * magnitude + 1).astype(np.float32)
+    return np.where(positive, levels, -levels) * scales.astype(np.float32)[:, None]
 
 
 def pack_unsigned(values: np.ndarray, bits: int) -> bytes:
@@ -55,52 +153,84 @@ def unpack_unsigned(payload: bytes, count: int, bits: int) -> np.ndarray:
     return values & ((1 << bits) - 1)
 
 
-def _quantize_tensor(
-    tensor: torch.Tensor, bits: int, clip_percentile: float
-) -> tuple[np.ndarray, np.ndarray]:
+def _midtread_quantize(
+    tensor: torch.Tensor, bits: int
+) -> tuple[np.ndarray, np.ndarray, torch.Tensor]:
+    """Symmetric row quantization with an exact zero level and an absmax scale.
+
+    This is the geometry most quantization code reaches for by default. It is
+    kept as a named control because it spends one of its 2**bits codewords on an
+    exact zero and clamps at (2**(bits-1))-1, so at two bits it represents only
+    -1, 0, +1. Compare it against :func:`midrise_quantize` at a matched file
+    rate to separate the effect of code geometry from the effect of rate.
+    """
+    if bits not in QUANTIZER_BITS:
+        raise ValueError(f"midtread bits must be one of {sorted(QUANTIZER_BITS)}")
     matrix = tensor.detach().cpu().float().reshape(tensor.shape[0], -1)
     absolute = matrix.abs()
-    if clip_percentile >= 100.0:
-        clip = absolute.amax(dim=1)
-    else:
-        clip = torch.quantile(absolute, clip_percentile / 100.0, dim=1)
     if bits == 1:
         scale = absolute.mean(dim=1)
-        return scale.numpy().astype(np.float16), (matrix >= 0).numpy().astype(
-            np.uint16
-        ).reshape(-1)
-    qmax = (1 << (bits - 1)) - 1
-    scale = torch.where(clip > 0, clip / qmax, torch.ones_like(clip))
-    quantized = torch.round(matrix / scale[:, None]).clamp(-qmax, qmax)
-    unsigned = (quantized.to(torch.int16) + qmax).numpy().astype(np.uint16)
-    return scale.numpy().astype(np.float16), unsigned.reshape(-1)
+        codes = (matrix >= 0).to(torch.int64)
+    else:
+        qmax = (1 << (bits - 1)) - 1
+        clip = absolute.amax(dim=1)
+        scale = torch.where(clip > 0, clip / qmax, torch.ones_like(clip))
+        codes = torch.round(matrix / scale[:, None]).clamp(-qmax, qmax).to(torch.int64)
+        codes = codes + qmax
+    scale16 = scale.to(torch.float16)
+    reconstructed = _midtread_reconstruct(
+        codes.numpy(), scale16.numpy(), bits
+    ).reshape(tensor.shape)
+    return (
+        scale16.numpy(),
+        codes.numpy().astype(np.uint16).reshape(-1),
+        torch.from_numpy(reconstructed),
+    )
+
+
+def _midtread_reconstruct(
+    codes: np.ndarray, scales: np.ndarray, bits: int
+) -> np.ndarray:
+    signed = (
+        codes.astype(np.float32) * 2.0 - 1.0
+        if bits == 1
+        else codes.astype(np.float32) - ((1 << (bits - 1)) - 1)
+    )
+    return signed * scales.astype(np.float32)[:, None]
 
 
 def encode_tensor_map(
     tensors: Mapping[str, torch.Tensor],
     path: str | Path,
     bits: int,
-    clip_percentile: float = 100.0,
+    quantizer: str = "midrise",
     metadata: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Write a complete adapter channel and return exact storage statistics."""
     if bits not in ALLOWED_BITS:
         raise ValueError(f"bits must be one of {sorted(ALLOWED_BITS)}")
-    target = Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
+    if quantizer not in {"midrise", "midtread"}:
+        raise ValueError("quantizer must be 'midrise' or 'midtread'")
     payload = bytearray()
     entries = []
+    squared_error = 0.0
+    squared_norm = 0.0
     for name in sorted(tensors):
-        tensor = tensors[name].detach().cpu().contiguous()
+        tensor = tensors[name].detach().cpu().float().contiguous()
         if tensor.ndim < 1:
             raise ValueError(f"cannot encode scalar tensor {name}")
         if bits == 16:
             scales = b""
-            data = tensor.numpy().astype(np.float16).tobytes()
+            reconstructed = tensor.numpy().astype(np.float16)
+            data = reconstructed.tobytes()
+            reconstructed = torch.from_numpy(reconstructed.astype(np.float32))
         else:
-            scale_values, values = _quantize_tensor(tensor, bits, clip_percentile)
+            encode = midrise_quantize if quantizer == "midrise" else _midtread_quantize
+            scale_values, values, reconstructed = encode(tensor, bits)
             scales = scale_values.tobytes()
             data = pack_unsigned(values, bits)
+        squared_error += float((tensor - reconstructed).square().sum().item())
+        squared_norm += float(tensor.square().sum().item())
         scale_offset = len(payload)
         payload.extend(scales)
         data_offset = len(payload)
@@ -119,61 +249,47 @@ def encode_tensor_map(
     header = {
         "version": 1,
         "bits": bits,
-        "clip_percentile": float(clip_percentile),
-        "quantizer": (
-            "row_binary_mean_v1"
-            if bits == 1
-            else "row_symmetric_zero_exact_v1"
-            if bits < 16
-            else "float16_v1"
-        ),
+        "quantizer": "float16_v1" if bits == 16 else f"row_{quantizer}_v2",
         "compression": "zlib-9",
         "metadata": dict(metadata or {}),
         "tensors": entries,
     }
-    header_bytes = json.dumps(header, sort_keys=True, separators=(",", ":")).encode()
     compressed = zlib.compress(bytes(payload), level=9)
-    temporary = target.with_suffix(target.suffix + ".tmp")
-    with temporary.open("wb") as stream:
-        stream.write(MAGIC)
-        stream.write(struct.pack("<I", len(header_bytes)))
-        stream.write(header_bytes)
-        stream.write(compressed)
-    temporary.replace(target)
-    header_bits = (len(MAGIC) + 4 + len(header_bytes)) * 8
-    value_bits = sum(tensor.numel() for tensor in tensors.values()) * bits
-    scale_bits = sum(entry["scale_nbytes"] for entry in entries) * 8
+    file_bits = write_container(path, MAGIC, header, compressed)
+    total_values = sum(tensor.numel() for tensor in tensors.values())
+    value_bits = total_values * bits
     packed_data_bits = sum(entry["data_nbytes"] for entry in entries) * 8
     return {
-        "path": str(target),
-        "file_bits": target.stat().st_size * 8,
-        "header_bits": header_bits,
+        "path": str(Path(path)),
+        "file_bits": file_bits,
+        "header_bits": container_header_bits(MAGIC, header),
         "compressed_payload_bits": len(compressed) * 8,
         "raw_payload_bits": len(payload) * 8,
         "value_bits": value_bits,
-        "scale_bits": scale_bits,
+        "scale_bits": sum(entry["scale_nbytes"] for entry in entries) * 8,
         "padding_bits": packed_data_bits - value_bits,
-        "tensor_values": sum(tensor.numel() for tensor in tensors.values()),
+        "tensor_values": total_values,
         "bits_per_value": bits,
-        "effective_bits_per_value": (
-            target.stat().st_size * 8
-            / max(sum(tensor.numel() for tensor in tensors.values()), 1)
-        ),
-        "clip_percentile": float(clip_percentile),
+        "quantizer": quantizer,
+        "effective_bits_per_value": file_bits / max(total_values, 1),
+        "relative_rmse": math.sqrt(squared_error / max(squared_norm, 1e-30)),
     }
 
 
 def decode_tensor_map(
     path: str | Path,
 ) -> tuple[dict[str, Any], dict[str, torch.Tensor]]:
-    source = Path(path)
-    with source.open("rb") as stream:
-        if stream.read(len(MAGIC)) != MAGIC:
-            raise ValueError(f"{source}: invalid adapter bitstream magic")
-        header_size = struct.unpack("<I", stream.read(4))[0]
-        header = json.loads(stream.read(header_size))
-        payload = zlib.decompress(stream.read())
+    header, payload = read_container(path, MAGIC)
     bits = int(header["bits"])
+    quantizer = str(header.get("quantizer", ""))
+    # `row_symmetric_zero_exact_v1` is what the mid-tread geometry was called
+    # before the two families were named apart. Decoding one of those files as
+    # mid-rise would silently return the wrong weights, so map it explicitly.
+    # The one-bit codes coincide, so `row_binary_mean_v1` needs no special case.
+    midtread = quantizer in {"row_midtread_v2", "row_symmetric_zero_exact_v1"}
+    if bits != 16 and not midtread and not quantizer.startswith("row_midrise"):
+        if quantizer != "row_binary_mean_v1":
+            raise ValueError(f"{path}: unknown adapter quantizer {quantizer!r}")
     tensors = {}
     for entry in header["tensors"]:
         shape = tuple(map(int, entry["shape"]))
@@ -189,16 +305,12 @@ def decode_tensor_map(
             rows = shape[0]
             scales = np.frombuffer(
                 payload[scale_start:scale_stop], dtype=np.float16, count=rows
-            ).astype(np.float32)
-            unsigned = unpack_unsigned(payload[start:stop], count, bits).astype(
-                np.int16
             )
-            if bits == 1:
-                signed = unsigned.astype(np.float32) * 2.0 - 1.0
+            codes = unpack_unsigned(payload[start:stop], count, bits)
+            if midtread:
+                matrix = _midtread_reconstruct(codes.reshape(rows, -1), scales, bits)
             else:
-                qmax = (1 << (bits - 1)) - 1
-                signed = unsigned.astype(np.float32) - qmax
-            matrix = signed.reshape(rows, -1) * scales[:, None]
+                matrix = midrise_dequantize(codes, scales, bits, rows, count // rows)
             tensor = torch.from_numpy(matrix.copy()).reshape(shape)
         tensors[str(entry["name"])] = tensor
     return header, tensors
@@ -428,25 +540,15 @@ def encode_loraquant_tensor_map(
         "entries": entries,
         "pairs": pair_records,
     }
-    header_bytes = json.dumps(header, sort_keys=True, separators=(",", ":")).encode()
     compressed = zlib.compress(bytes(payload), level=9)
-    target = Path(path)
-    target.parent.mkdir(parents=True, exist_ok=True)
-    temporary = target.with_suffix(target.suffix + ".tmp")
-    with temporary.open("wb") as stream:
-        stream.write(MAGIC)
-        stream.write(struct.pack("<I", len(header_bytes)))
-        stream.write(header_bytes)
-        stream.write(compressed)
-    temporary.replace(target)
+    file_bits = write_container(path, MAGIC, header, compressed)
     value_bits = sum(entry["value_count"] * entry["bits"] for entry in entries)
     packed_data_bits = sum(entry["data_nbytes"] * 8 for entry in entries)
     scale_bits = sum(entry["scale_nbytes"] * 8 for entry in entries)
-    file_bits = target.stat().st_size * 8
     return {
-        "path": str(target),
+        "path": str(Path(path)),
         "file_bits": file_bits,
-        "header_bits": (len(MAGIC) + 4 + len(header_bytes)) * 8,
+        "header_bits": container_header_bits(MAGIC, header),
         "compressed_payload_bits": len(compressed) * 8,
         "raw_payload_bits": len(payload) * 8,
         "value_bits": value_bits,
@@ -501,15 +603,9 @@ def _decode_group_component(
 def decode_loraquant_tensor_map(
     path: str | Path,
 ) -> tuple[dict[str, Any], dict[str, torch.Tensor]]:
-    source = Path(path)
-    with source.open("rb") as stream:
-        if stream.read(len(MAGIC)) != MAGIC:
-            raise ValueError(f"{source}: invalid adapter bitstream magic")
-        header_size = struct.unpack("<I", stream.read(4))[0]
-        header = json.loads(stream.read(header_size))
-        payload = zlib.decompress(stream.read())
+    header, payload = read_container(path, MAGIC)
     if header.get("version") != 2 or header.get("codec_method") != "loraquant":
-        raise ValueError(f"{source}: not a LoRAQuant bitstream")
+        raise ValueError(f"{path}: not a LoRAQuant bitstream")
     components = [
         _decode_group_component(entry, payload) for entry in header["entries"]
     ]
@@ -527,12 +623,7 @@ def decode_adapter_tensor_map(
     path: str | Path,
 ) -> tuple[dict[str, Any], dict[str, torch.Tensor]]:
     """Decode either the uniform v1 or LoRAQuant v2 adapter container."""
-    source = Path(path)
-    with source.open("rb") as stream:
-        if stream.read(len(MAGIC)) != MAGIC:
-            raise ValueError(f"{source}: invalid adapter bitstream magic")
-        header_size = struct.unpack("<I", stream.read(4))[0]
-        header = json.loads(stream.read(header_size))
+    header, _ = read_container(path, MAGIC)
     if header.get("version") == 2:
-        return decode_loraquant_tensor_map(source)
-    return decode_tensor_map(source)
+        return decode_loraquant_tensor_map(path)
+    return decode_tensor_map(path)

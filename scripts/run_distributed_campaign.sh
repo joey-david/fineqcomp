@@ -67,7 +67,7 @@ if [[ -f .env ]]; then
   set +a
 fi
 python_bin="${FINEQCOMP_PYTHON:-$repo_root/../reasoning/.venv/bin/python}"
-export PYTHONPATH="${PYTHONPATH:-$repo_root/src:$repo_root/vendor}"
+export PYTHONPATH="${PYTHONPATH:-$repo_root/src}"
 export HF_HOME="${HF_HOME:-$repo_root/../fineQComp_hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 "$python_bin" -c 'import bitsandbytes, fineqcomp, math_verify, rouge_score, torch; assert torch.cuda.device_count() >= 2'

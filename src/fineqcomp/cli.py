@@ -17,12 +17,7 @@ from fineqcomp.campaign import (
     write_manifest,
 )
 from fineqcomp.config import load_campaign
-from fineqcomp.data import (
-    prepare_all_controlled,
-    prepare_all_natural,
-    prepare_all_synthetic,
-    prepare_ifeval,
-)
+from fineqcomp.data import prepare_all_natural
 from fineqcomp.preflight import (
     cache_models,
     environment_report,
@@ -50,25 +45,14 @@ def _prepare(args: argparse.Namespace) -> int:
     campaign = load_campaign(args.config)
     runs = expand_campaign(campaign)
     write_manifest(runs, args.manifest)
-    synthetic = []
-    controlled = []
     natural = []
-    ifeval = False
     if not args.no_data:
-        synthetic = prepare_all_synthetic(campaign, runs, args.prepared_root)
-        controlled = prepare_all_controlled(campaign, runs, args.prepared_root)
         natural = prepare_all_natural(campaign, runs, args.prepared_root)
-        if natural and "ifeval" in campaign["datasets"]:
-            prepare_ifeval(campaign, args.prepared_root)
-            ifeval = True
     print(
         json.dumps(
             {
                 "runs": len(runs),
-                "synthetic_datasets": len(synthetic),
-                "controlled_datasets": len(controlled),
                 "natural_datasets": len(natural),
-                "ifeval": ifeval,
                 "manifest": str(args.manifest),
             },
             indent=2,

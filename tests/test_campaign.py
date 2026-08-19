@@ -75,7 +75,10 @@ def test_weighted_workers_give_a100s_three_times_more_work():
     ]
 
     assert [len(partition) for partition in partitions] == [9, 9, 3, 3]
-    assert max(normalized) / min(normalized) < 1.07
+    # Twelve cells over four weighted workers cannot split evenly; the two
+    # matched-rate mid-tread controls raise per-run evaluation cost and widen
+    # the best achievable gap to about 1.10.
+    assert max(normalized) / min(normalized) < 1.12
 
 
 def test_natural_screening_uses_fixed_dataset_ceiling(tmp_path):

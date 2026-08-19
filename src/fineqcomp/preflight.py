@@ -19,16 +19,9 @@ from fineqcomp.codec import (
 )
 from fineqcomp.config import RunSpec, TrainingSpec
 from fineqcomp.data import (
-    controlled_data_dir,
-    ifeval_data_dir,
     load_natural_dataset,
     natural_data_dir,
-    read_jsonl,
-    synthetic_data_dir,
-    validate_controlled_dataset,
-    validate_ifeval_dataset,
     validate_natural_dataset,
-    validate_synthetic_dataset,
 )
 from fineqcomp.modeling import ModelSession, validate_single_token_labels
 from fineqcomp.training import train_adapter
@@ -123,34 +116,15 @@ def cache_models(campaign: dict[str, Any]) -> dict[str, dict[str, Any]]:
 
 def validate_prepared(runs: list[RunSpec], root: str | Path) -> int:
     cells = {
-        (int(run.family_count), run.seed)
-        for run in runs
-        if run.kind == "synthetic" and run.family_count is not None
-    }
-    for family_count, seed in cells:
-        validate_synthetic_dataset(synthetic_data_dir(root, family_count, seed))
-    controlled = {
-        (int(run.binding_count), run.seed)
-        for run in runs
-        if run.kind == "controlled" and run.binding_count is not None
-    }
-    for binding_count, seed in controlled:
-        validate_controlled_dataset(controlled_data_dir(root, binding_count, seed))
-    natural = {
         (str(run.dataset_key), run.seed)
         for run in runs
-        if run.kind == "natural" and run.dataset_key is not None
+        if run.dataset_key is not None
     }
-    for dataset_key, seed in natural:
-        validate_natural_dataset(natural_data_dir(root, dataset_key, seed), dataset_key, seed)
-    if natural and "ifeval" in campaign["datasets"]:
-        validate_ifeval_dataset(ifeval_data_dir(root))
-    return (
-        len(cells)
-        + len(controlled)
-        + len(natural)
-        + bool(natural and "ifeval" in campaign["datasets"])
-    )
+    for dataset_key, seed in cells:
+        validate_natural_dataset(
+            natural_data_dir(root, dataset_key, seed), dataset_key, seed
+        )
+    return len(cells)
 
 
 def validate_tokenizers(campaign: dict[str, Any]) -> dict[str, list[int]]:
@@ -171,7 +145,7 @@ def validate_tokenizers(campaign: dict[str, Any]) -> dict[str, list[int]]:
 def model_smoke(
     campaign: dict[str, Any], runs: list[RunSpec], prepared_root: str | Path
 ) -> dict[str, Any]:
-    run = next(item for item in runs if item.kind == "natural")
+    run = runs[0]
     session = ModelSession.load(run.model)
     try:
         if campaign["datasets"][str(run.dataset_key)].get("task_type") == "multiple_choice":

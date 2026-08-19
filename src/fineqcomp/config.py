@@ -12,7 +12,8 @@ import yaml
 Backbone = Literal["nf4", "bf16"]
 AdapterMethod = Literal["seeded_b", "full_lora"]
 CodecMethod = Literal["uniform", "loraquant"]
-RunKind = Literal["synthetic", "controlled", "natural"]
+Quantizer = Literal["midrise", "midtread"]
+RunKind = Literal["natural"]
 
 
 @dataclass(frozen=True)
@@ -57,6 +58,7 @@ class CodecSpec:
     key: str
     method: CodecMethod
     bits: int | None = None
+    quantizer: Quantizer = "midrise"
     high_bits: int | None = None
     low_bits: int | None = None
     variance_ratio: float | None = None
@@ -73,10 +75,7 @@ class RunSpec:
     adapter: AdapterSpec
     seed: int
     codecs: tuple[CodecSpec, ...]
-    clip_percentiles: tuple[float, ...]
     training: TrainingSpec
-    family_count: int | None = None
-    binding_count: int | None = None
     dataset_key: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -100,18 +99,7 @@ class RunSpec:
             ),
             seed=int(raw["seed"]),
             codecs=tuple(CodecSpec(**codec) for codec in raw["codecs"]),
-            clip_percentiles=tuple(map(float, raw["clip_percentiles"])),
             training=TrainingSpec(**raw["training"]),
-            family_count=(
-                int(raw["family_count"])
-                if raw.get("family_count") is not None
-                else None
-            ),
-            binding_count=(
-                int(raw["binding_count"])
-                if raw.get("binding_count") is not None
-                else None
-            ),
             dataset_key=raw.get("dataset_key"),
         )
 
@@ -130,8 +118,14 @@ def load_campaign(path: str | Path) -> dict[str, Any]:
         raise ValueError("codecs must be a non-empty mapping")
     for key, codec in codecs.items():
         if codec.get("method") == "uniform":
-            if int(codec.get("bits", 0)) not in {1, 2, 3, 4, 8, 16}:
+            bits = int(codec.get("bits", 0))
+            if bits not in {1, 2, 3, 4, 8, 16}:
                 raise ValueError(f"codec {key}: unsupported uniform bit width")
+            quantizer = codec.get("quantizer", "midrise")
+            if quantizer not in {"midrise", "midtread"}:
+                raise ValueError(f"codec {key}: unknown quantizer {quantizer!r}")
+            if bits == 16 and quantizer != "midrise":
+                raise ValueError(f"codec {key}: fp16 has no quantizer choice")
         elif codec.get("method") == "loraquant":
             if int(codec.get("high_bits", 0)) not in {2, 3}:
                 raise ValueError(f"codec {key}: high_bits must be 2 or 3")

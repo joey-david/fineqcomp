@@ -17,7 +17,7 @@ if [[ -f .env ]]; then
 fi
 
 python_bin="${FINEQCOMP_PYTHON:-$repo_root/../reasoning/.venv/bin/python}"
-export PYTHONPATH="$repo_root/src:$repo_root/vendor"
+export PYTHONPATH="$repo_root/src"
 export HF_HOME="${HF_HOME:-$repo_root/../fineQComp_hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 

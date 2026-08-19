@@ -71,7 +71,7 @@ if [[ -f .env ]]; then
   source .env
   set +a
 fi
-export PYTHONPATH="${PYTHONPATH:-$repo_root/src:$repo_root/vendor}"
+export PYTHONPATH="${PYTHONPATH:-$repo_root/src}"
 export HF_HOME="${HF_HOME:-$repo_root/../fineQComp_hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 "$python_bin" -c 'import fineqcomp, torch, tqdm; assert torch.cuda.device_count() >= 2'
@@ -100,7 +100,7 @@ launch_worker() {
     conditions=("$@")
     read -ra seeds <<<"$seed_text"
     cd "$repo_root"
-    export PYTHONPATH="${PYTHONPATH:-$repo_root/src:$repo_root/vendor}"
+    export PYTHONPATH="${PYTHONPATH:-$repo_root/src}"
     export HF_HOME="${HF_HOME:-$repo_root/../fineQComp_hf_cache}"
     export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
     CUDA_VISIBLE_DEVICES="$gpu" "$python_bin" -m fineqcomp.information_scaling \
@@ -147,7 +147,7 @@ repo_root=$1
 python_bin=$2
 out=$3
 cd "$repo_root"
-export PYTHONPATH="${PYTHONPATH:-$repo_root/src:$repo_root/vendor}"
+export PYTHONPATH="${PYTHONPATH:-$repo_root/src}"
 "$python_bin" -m fineqcomp.information_scaling --out "$out" --aggregate
 REMOTE
 

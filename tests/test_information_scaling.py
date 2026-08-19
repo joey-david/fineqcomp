@@ -8,7 +8,7 @@ LABELS = [f" {chr(ord('A') + index)}" for index in range(16)]
 
 def _config(tmp_path):
     codebooks = tmp_path / "codebooks"
-    codebooks.mkdir()
+    codebooks.mkdir(exist_ok=True)
     # 64 independent 4-bit symbols: enough for four 16-item families.
     codebooks.joinpath("seed11.hex").write_text(bytes(range(32)).hex())
     return {

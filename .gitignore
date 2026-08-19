@@ -16,5 +16,10 @@ runs/
 runs_information_scaling/
 reports/
 remote_logs/
+remote_results/
 slurm_logs/
 .hf_cache/
+
+# LaTeX build output.
+tex/.latex-build/
+tex/main.pdf

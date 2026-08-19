@@ -54,40 +54,22 @@ def _run_id(parts: list[str], payload: dict[str, Any]) -> str:
 
 def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
     """Expand all study products and reject duplicate run IDs."""
-    clips = tuple(map(float, raw.get("clip_percentiles", [100.0])))
     runs: list[RunSpec] = []
     for study_name, study in raw["studies"].items():
         kind = study["kind"]
-        models = study["models"]
-        adapters = study["adapters"]
+        if kind != "natural":
+            raise ValueError(f"study {study_name}: unknown kind {kind!r}")
         codecs = _codecs(raw, study.get("codecs", raw["codecs"]))
         seeds = list(map(int, study["seeds"]))
-        if kind == "synthetic":
-            cells: Iterable[tuple[int | None, int | None, str | None]] = (
-                (int(family_count), None, None)
-                for family_count in study["family_counts"]
-            )
-        elif kind == "controlled":
-            cells = (
-                (None, int(binding_count), None)
-                for binding_count in study["binding_counts"]
-            )
-        elif kind == "natural":
-            cells = ((None, None, str(dataset)) for dataset in study["datasets"])
-        else:
-            raise ValueError(f"study {study_name}: unknown kind {kind!r}")
-
-        expanded_cells = list(cells)
-        for model_key in models:
+        for model_key in study["models"]:
             model = _model(model_key, raw, study.get("backbone"))
-            for adapter_key in adapters:
+            for adapter_key in study["adapters"]:
                 adapter = _adapter(adapter_key, raw)
                 for seed in seeds:
-                    for family_count, binding_count, dataset_key in expanded_cells:
+                    for dataset_key in study["datasets"]:
                         training_key = study.get("training_by_dataset", {}).get(
                             dataset_key, study["training"]
                         )
-                        training = _training(training_key, raw)
                         payload = {
                             "study": study_name,
                             "kind": kind,
@@ -96,22 +78,13 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                             "backbone": model.backbone,
                             "adapter": adapter.key,
                             "seed": seed,
-                            "family_count": family_count,
-                            "binding_count": binding_count,
                             "dataset": dataset_key,
                         }
-                        data_name = (
-                            f"k{family_count}"
-                            if family_count is not None
-                            else f"n{binding_count}"
-                            if binding_count is not None
-                            else dataset_key
-                        )
                         run_id = _run_id(
                             [
                                 study_name,
                                 model.key,
-                                str(data_name),
+                                str(dataset_key),
                                 adapter.key,
                                 f"s{seed}",
                             ],
@@ -126,11 +99,8 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                                 adapter=adapter,
                                 seed=seed,
                                 codecs=codecs,
-                                clip_percentiles=clips,
-                                training=training,
-                                family_count=family_count,
-                                binding_count=binding_count,
-                                dataset_key=dataset_key,
+                                training=_training(training_key, raw),
+                                dataset_key=str(dataset_key),
                             )
                         )
     ids = [run.run_id for run in runs]

@@ -94,7 +94,9 @@
 \subsection{Code families}
 \begin{itemize}
   \paperidea{Define in plain language, not codec jargon: sign-only representation; four-level sign-preserving representation; progressively finer symmetric representations.}
-  \paperidea{Explain the old 2-bit code with an explicit zero level and why the four-codeword geometry differs from the sign-preserving four-level code.}
+  \paperidea{Main family (mid-rise): zero-free symmetric levels $\pm1,\pm3,\dots$ with a least-squares row scale, so every codeword is used and no clipping percentile has to be tuned. At one bit this is exactly $\mathrm{sign}(w)\cdot\mathrm{mean}(|w|)$ per row.}
+  \paperidea{Control family (mid-tread): absmax scale with an exact zero level, the default geometry in most quantization code. At two bits it represents only $-1,0,+1$, spending a quarter of its codebook on an unused symbol.}
+  \paperidea{Report both at matched \emph{payload} width and at exact file rate; they differ, because a three-symbol alphabet leaves more for the entropy coder to remove. This is itself an argument for exact file accounting.}
   \paperidea{Include FP16 / 8 / 4 / 3 / 2 / 1-bit controls and LoRAQuant controls.}
 \end{itemize}
 
@@ -103,7 +105,9 @@
   \paperidea{Magicoder/Mistral seed-33: raw LoRA improves HumanEval from 11/164 to 26/164.}
   \paperidea{Sign-only adapter retains 23/164 at roughly 1.46 effective bits per learned scalar.}
   \paperidea{A sign-preserving four-level representation reaches approximately raw performance at roughly 2.36 effective bits per learned scalar.}
-  \paperidea{Old 2-bit zero-containing representation collapses despite nearly matching the sign-only file rate; use this as evidence that ``number of bits'' alone does not characterize a code.}
+  \paperidea{Weight-space calibration of the geometry claim, measured directly and independent of any task: at a matched payload width the mid-tread code costs about $2.5\times$ the relative reconstruction error of the mid-rise code at two bits, $1.55\times$ at three, and $1.07\times$ at four. The gap is a low-bit phenomenon and closes as width grows.}
+  \paperidea{The two-bit mid-tread code lands near the one-bit mid-rise file rate yet reconstructs worse, so it is not merely dominated, it is dominated by a code with half its nominal width. This is the cleanest available evidence that ``number of bits'' alone does not characterize a code.}
+  \paperidea{Caution: the earlier campaign used the mid-tread geometry as its \emph{default} uniform codec, which made its 2- and 3-bit points, and hence its reported 2-to-3-bit transition, an artifact of the codec rather than a property of the adapter. Re-derive every fixed-rate point before reusing any of those numbers.}
   \paperidea{Non-monotonic HumanEval results across 2/3/4/8-bit points: do not overinterpret until replicated; compare with held-out NLL and uncertainty across seeds.}
 \end{itemize}
 
@@ -116,7 +120,7 @@
 
 \section{Adaptive Description Length / MDL Experiment}
 \begin{itemize}
-  \paperidea{Each LoRA row chooses among: omit it entirely, or encode it with 1/2/3/4/8-bit sign-preserving quantization.}
+  \paperidea{Each LoRA row chooses among: omit it entirely, or encode it with 1/2/3/4/8-bit sign-preserving quantization. The row quantizer is the same one used for the fixed-rate curves, so the adaptive and fixed families differ only in allocation, not in code geometry.}
   \paperidea{Current allocation objective: per-row reconstruction error $+\lambda\times$ proxy code length. Sweep $\lambda$ / target budgets; plot actual final artifact bits, not proxy rate.}
   \paperidea{Make the conditional-MDL qualification explicit: base model, architecture, and decoder are shared side information; the code is a concrete upper bound, not proof of globally minimal Kolmogorov/MDL description.}
   \paperidea{Main comparison: adaptive allocation vs best fixed-precision codec at matched exact file rate.}

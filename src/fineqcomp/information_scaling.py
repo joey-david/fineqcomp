@@ -19,6 +19,7 @@ serialized size of reloadable adaptive-MDL adapter files at a rate sweep.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import csv
 import json
 import math
@@ -32,7 +33,6 @@ import yaml
 from tqdm.auto import tqdm
 
 import fineqcomp.mdl as mdl
-import fineqcomp.mdl_fast as mdl_fast
 from fineqcomp.adapters import (
     adapter_tensors,
     apply_adapter_tensors,
@@ -41,10 +41,53 @@ from fineqcomp.adapters import (
 )
 from fineqcomp.campaign import _adapter, _model
 from fineqcomp.config import TrainingSpec, load_campaign
-from fineqcomp.data import Example, _read_codebook, _render_prompt, _ticket
-from fineqcomp.evaluation import evaluate_synthetic
+from fineqcomp.data import Example
+from fineqcomp.evaluation import evaluate_constrained_labels
 from fineqcomp.modeling import ModelSession, validate_single_token_labels
 from fineqcomp.training import train_adapter
+
+
+def _ticket(seed: int, family: int, item: int, instance: int, split: str) -> str:
+    payload = f"{seed}:{family}:{item}:{instance}:{split}".encode()
+    return hashlib.sha256(payload).hexdigest()[:12].upper()
+
+
+def _render_prompt(
+    family: int, item: int, ticket: str, split: str, variant: int
+) -> str:
+    family_text = f"F{family:04X}"
+    item_text = f"I{item:X}"
+    if split == "train" and variant % 2 == 0:
+        return (
+            "Registry query\n"
+            f"Family: {family_text}\nItem: {item_text}\nTicket: {ticket}\nLabel:"
+        )
+    if split == "train":
+        return (
+            f"Look up family {family_text}, item {item_text}. "
+            f"Request {ticket}. Return its label:"
+        )
+    if split == "calibration":
+        return f"Code request {ticket}: family={family_text}; item={item_text}.\nCode:"
+    return (
+        "Answer with one registry label.\n"
+        f"ticket={ticket} item={item_text} family={family_text}\nAnswer:"
+    )
+
+
+def _read_codebook(
+    dataset_cfg: dict[str, Any], required: int, seed: int
+) -> tuple[list[int], str]:
+    source = Path(dataset_cfg["codebook_dir"]) / f"seed{seed}.hex"
+    try:
+        packed = bytes.fromhex("".join(source.read_text().split()))
+    except (FileNotFoundError, ValueError) as error:
+        raise ValueError(f"invalid codebook asset: {source}") from error
+    if len(packed) * 2 < required:
+        raise ValueError(f"{source}: has {len(packed) * 2} symbols, needs {required}")
+    symbols = [nibble for byte in packed for nibble in (byte >> 4, byte & 0x0F)]
+    prefix = packed[: (required + 1) // 2]
+    return symbols[:required], hashlib.sha256(prefix).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -267,12 +310,8 @@ def _adapter_rate_curve(
     batch_size: int,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
     """Exact reloadable adapter-rate sweep for one learned checkpoint."""
-    old_midrise = mdl._midrise_tensor
-    mdl._midrise_tensor = mdl_fast._midrise_tensor_fast
     try:
-        cache, total_values = mdl_fast._row_candidates_fast(
-            raw_tensors, show_progress=False
-        )
+        cache, total_values = mdl._row_candidates(raw_tensors, show_progress=False)
         points: list[dict[str, Any]] = []
         for target in target_rates:
             assignment, allocation = mdl._allocate(cache, total_values, target)
@@ -288,7 +327,7 @@ def _adapter_rate_curve(
             )
             _, decoded = mdl.decode_mdl(adapter_path)
             apply_adapter_tensors(session.model, decoded)
-            metrics, _ = evaluate_synthetic(
+            metrics, _ = evaluate_constrained_labels(
                 session.model,
                 session.tokenizer,
                 examples,
@@ -327,7 +366,6 @@ def _adapter_rate_curve(
         )
         return points, r_star
     finally:
-        mdl._midrise_tensor = old_midrise
         apply_adapter_tensors(session.model, raw_tensors)
 
 
@@ -374,7 +412,7 @@ def run_condition(
         base_blocks: list[dict[str, Any]] = []
         for left, right in zip(block_edges[:-1], block_edges[1:], strict=True):
             restore_trainable_state(session.model, initial_state)
-            metrics, _ = evaluate_synthetic(
+            metrics, _ = evaluate_constrained_labels(
                 session.model,
                 session.tokenizer,
                 bundle.prequential[left:right],
@@ -434,7 +472,7 @@ def run_condition(
             torch.save(raw_tensors, prefix_dir / "raw_channel.pt")
 
             restore_trainable_state(session.model, initial_state)
-            base_metrics, _ = evaluate_synthetic(
+            base_metrics, _ = evaluate_constrained_labels(
                 session.model,
                 session.tokenizer,
                 bundle.test[:prefix],
@@ -443,7 +481,7 @@ def run_condition(
                 batch_size=batch_size,
             )
             apply_adapter_tensors(session.model, raw_tensors)
-            raw_metrics, _ = evaluate_synthetic(
+            raw_metrics, _ = evaluate_constrained_labels(
                 session.model,
                 session.tokenizer,
                 bundle.test[:prefix],
@@ -494,7 +532,7 @@ def run_condition(
             if prefix_index + 1 < len(prefixes):
                 next_prefix = prefixes[prefix_index + 1]
                 apply_adapter_tensors(session.model, raw_tensors)
-                next_metrics, _ = evaluate_synthetic(
+                next_metrics, _ = evaluate_constrained_labels(
                     session.model,
                     session.tokenizer,
                     bundle.prequential[prefix:next_prefix],

@@ -2,10 +2,14 @@ version: 1
 
 # Every codec reads the same trained adapter checkpoint. File size is measured
 # from the serialized container, including headers, scales, and padding.
-clip_percentiles: [99.0, 99.9, 100.0]
 information_rows: 256
-retention_codec_keys: []
 
+# The default `midrise` quantizer uses zero-free odd levels with a
+# least-squares row scale, so every codeword is used. `midtread` is the usual
+# absmax quantizer with an exact zero level; it is kept at two and three bits as
+# a matched-rate control, because it spends a codeword on zero and therefore
+# represents only -1, 0, +1 at two bits. The pair separates the effect of code
+# geometry from the effect of rate.
 codecs:
   fp16:
     method: uniform
@@ -25,6 +29,14 @@ codecs:
   binary:
     method: uniform
     bits: 1
+  midtread3:
+    method: uniform
+    bits: 3
+    quantizer: midtread
+  midtread2:
+    method: uniform
+    bits: 2
+    quantizer: midtread
   loraquant_2_08:
     method: loraquant
     high_bits: 2

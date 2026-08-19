@@ -19,22 +19,8 @@ from fineqcomp.codec import (
     encode_tensor_map,
 )
 from fineqcomp.config import CodecSpec, RunSpec
-from fineqcomp.data import (
-    Example,
-    controlled_data_dir,
-    load_ifeval,
-    load_natural_dataset,
-    read_jsonl,
-    synthetic_data_dir,
-    validate_controlled_dataset,
-    validate_synthetic_dataset,
-)
-from fineqcomp.evaluation import (
-    evaluate_ifeval,
-    evaluate_natural,
-    evaluate_synthetic,
-    write_predictions,
-)
+from fineqcomp.data import Example, load_natural_dataset
+from fineqcomp.evaluation import evaluate_natural, write_predictions
 from fineqcomp.modeling import ModelSession, validate_single_token_labels
 from fineqcomp.training import causal_nll, train_adapter
 
@@ -42,25 +28,17 @@ from fineqcomp.training import causal_nll, train_adapter
 def estimate_run_cost(run: RunSpec) -> float:
     """Return a stable relative GPU cost used only for worker partitioning."""
     size = 14.0 if "14b" in run.model.key else 8.0 if "8b" in run.model.key else 7.0
-    if run.kind == "synthetic":
-        examples = 16_384
-        evaluation = float(run.family_count or 1) * 16
-    elif run.kind == "controlled":
-        examples = 8_192
-        evaluation = float(run.binding_count or 1) * len(run.codecs)
-    else:
-        sizes = {
-            "gsm8k": (6_961, 1_319),
-            "commonsense_qa": (9_229, 1_221),
-            "arc_challenge": (1_119, 1_172),
-            "openbookqa": (4_957, 500),
-            "mbpp": (374, 500),
-            "metamath": (395_000, 6_319),
-            "magicoder": (109_500, 164),
-            "xsum": (204_045, 11_334),
-        }
-        examples, test_rows = sizes.get(str(run.dataset_key), (1_000, 1_000))
-        evaluation = test_rows * len(run.codecs)
+    sizes = {
+        "gsm8k": (6_961, 1_319),
+        "commonsense_qa": (9_229, 1_221),
+        "arc_challenge": (1_119, 1_172),
+        "openbookqa": (4_957, 500),
+        "metamath": (395_000, 6_319),
+        "magicoder": (109_500, 164),
+        "xsum": (204_045, 11_334),
+    }
+    examples, test_rows = sizes.get(str(run.dataset_key), (1_000, 1_000))
+    evaluation = test_rows * len(run.codecs)
     train = examples * run.training.epochs * math.sqrt(run.training.max_length / 96)
     return size * (train + evaluation * 16)
 
@@ -128,7 +106,6 @@ class RunEngine:
             raise ValueError("pilot_rows must be positive")
         self.pilot_rows = pilot_rows
         self._data_cache: dict[tuple[str, int], dict[str, list[Example]]] = {}
-        self._ifeval: tuple[list[Example], list[dict[str, Any]]] | None = None
 
     def _limit_data(self, data: dict[str, list[Example]]) -> dict[str, list[Example]]:
         if self.pilot_rows is None:
@@ -151,26 +128,6 @@ class RunEngine:
     def _load_data(
         self, run: RunSpec
     ) -> tuple[dict[str, list[Example]], dict[str, Any]]:
-        if run.kind == "synthetic":
-            if run.family_count is None:
-                raise ValueError("synthetic run lacks family_count")
-            root = synthetic_data_dir(self.prepared_root, run.family_count, run.seed)
-            metadata = validate_synthetic_dataset(root)
-            data = {
-                split: read_jsonl(root / f"{split}.jsonl")
-                for split in ("train", "calibration", "test")
-            }
-            return self._limit_data(data), metadata
-        if run.kind == "controlled":
-            if run.binding_count is None:
-                raise ValueError("controlled run lacks binding_count")
-            root = controlled_data_dir(self.prepared_root, run.binding_count, run.seed)
-            metadata = validate_controlled_dataset(root)
-            data = {
-                split: read_jsonl(root / f"{split}.jsonl")
-                for split in ("train", "calibration", "test")
-            }
-            return self._limit_data(data), metadata
         if run.dataset_key is None:
             raise ValueError("natural run lacks dataset_key")
         key = (run.dataset_key, run.seed)
@@ -180,19 +137,11 @@ class RunEngine:
             )
         return self._limit_data(self._data_cache[key]), {"dataset_key": run.dataset_key}
 
-    def _load_ifeval(self) -> tuple[list[Example], list[dict[str, Any]]]:
-        if self._ifeval is None:
-            self._ifeval = load_ifeval(self.campaign, self.prepared_root)
-        return self._ifeval
-
     def _baseline_key(self, run: RunSpec) -> str:
-        if run.kind == "synthetic":
-            data = f"k{run.family_count}-seed{run.seed}"
-        elif run.kind == "controlled":
-            data = f"paws-n{run.binding_count}-seed{run.seed}"
-        else:
-            data = f"{run.dataset_key}-seed{run.seed}"
-        return f"{run.model.key}__{run.model.backbone}__{data}"
+        return (
+            f"{run.model.key}__{run.model.backbone}__"
+            f"{run.dataset_key}-seed{run.seed}"
+        )
 
     def _evaluate_natural(
         self,
@@ -213,7 +162,7 @@ class RunEngine:
         )
 
     def _screening(self, run: RunSpec, baseline: dict[str, Any]) -> dict[str, Any]:
-        if run.kind != "natural" or run.dataset_key is None:
+        if run.dataset_key is None:
             return {}
         spec = self.campaign["datasets"][run.dataset_key]
         metric = str(spec["screening_metric"])
@@ -374,99 +323,40 @@ class RunEngine:
             return _wait_for_json(baseline_dir / "metrics.json")
         try:
             baseline_dir.mkdir(parents=True, exist_ok=True)
-            if run.kind in {"synthetic", "controlled"}:
-                labels = list(self.campaign["datasets"]["synthetic_codebook"]["labels"])
-                metrics, predictions = evaluate_synthetic(
+            metrics, predictions = self._evaluate_natural(session, run, data["test"])
+            write_predictions(baseline_dir / "predictions.jsonl", predictions)
+            if (
+                self.campaign["datasets"][str(run.dataset_key)].get("task_type")
+                == "multiple_choice"
+            ):
+                calibration_metrics, calibration_predictions = self._evaluate_natural(
+                    session, run, data["calibration"]
+                )
+                write_predictions(
+                    baseline_dir / "calibration_predictions.jsonl",
+                    calibration_predictions,
+                )
+            else:
+                calibration_metrics = causal_nll(
                     session.model,
                     session.tokenizer,
-                    data["test"],
+                    data["calibration"],
                     run.model,
-                    labels,
-                    batch_size=run.training.micro_batch_size * 4,
+                    run.training.max_length,
+                    run.training.micro_batch_size,
                 )
-                write_predictions(baseline_dir / "predictions.jsonl", predictions)
-                output = {
-                    "kind": run.kind,
-                    "model": run.model.name,
-                    "model_key": run.model.key,
-                    "backbone": run.model.backbone,
-                    **data_metadata,
-                    **metrics,
-                }
-            else:
-                metrics, predictions = self._evaluate_natural(
-                    session, run, data["test"]
-                )
-                write_predictions(baseline_dir / "predictions.jsonl", predictions)
-                if (
-                    self.campaign["datasets"][str(run.dataset_key)].get("task_type")
-                    == "multiple_choice"
-                ):
-                    calibration_metrics, calibration_predictions = (
-                        self._evaluate_natural(session, run, data["calibration"])
-                    )
-                    write_predictions(
-                        baseline_dir / "calibration_predictions.jsonl",
-                        calibration_predictions,
-                    )
-                else:
-                    calibration_metrics = causal_nll(
-                        session.model,
-                        session.tokenizer,
-                        data["calibration"],
-                        run.model,
-                        run.training.max_length,
-                        run.training.micro_batch_size,
-                    )
-                output = {
-                    "kind": "natural",
-                    "model": run.model.name,
-                    "model_key": run.model.key,
-                    "backbone": run.model.backbone,
-                    "dataset_key": run.dataset_key,
-                    "seed": run.seed,
-                    **metrics,
-                    "calibration": calibration_metrics,
-                    "information": self._information_measure(session, run, data),
-                }
-                output["screening"] = self._screening(run, output)
-            write_json(baseline_dir / "metrics.json", output)
-            return output
-        finally:
-            lock.rmdir()
-
-    def ensure_ifeval_baseline(
-        self, session: ModelSession, run: RunSpec
-    ) -> dict[str, Any]:
-        key = f"ifeval__{run.model.key}__{run.model.backbone}"
-        baseline_dir = self.runs_root / "baselines" / key
-        if (baseline_dir / "metrics.json").is_file():
-            return read_json(baseline_dir / "metrics.json")
-        lock = baseline_dir.with_name(baseline_dir.name + ".lock")
-        lock.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            lock.mkdir()
-        except FileExistsError:
-            return _wait_for_json(baseline_dir / "metrics.json")
-        try:
-            baseline_dir.mkdir(parents=True, exist_ok=True)
-            examples, evaluator_rows = self._load_ifeval()
-            metrics, predictions = evaluate_ifeval(
-                session.model,
-                session.tokenizer,
-                examples,
-                evaluator_rows,
-                run.model,
-                batch_size=run.training.micro_batch_size,
-            )
-            write_predictions(baseline_dir / "predictions.jsonl", predictions)
             output = {
-                "kind": "ifeval",
+                "kind": "natural",
                 "model": run.model.name,
                 "model_key": run.model.key,
                 "backbone": run.model.backbone,
+                "dataset_key": run.dataset_key,
+                "seed": run.seed,
                 **metrics,
+                "calibration": calibration_metrics,
+                "information": self._information_measure(session, run, data),
             }
+            output["screening"] = self._screening(run, output)
             write_json(baseline_dir / "metrics.json", output)
             return output
         finally:
@@ -478,17 +368,6 @@ class RunEngine:
         run: RunSpec,
         examples: list[Example],
     ) -> tuple[float, dict[str, Any]]:
-        if run.kind in {"synthetic", "controlled"}:
-            labels = list(self.campaign["datasets"]["synthetic_codebook"]["labels"])
-            metrics, _ = evaluate_synthetic(
-                session.model,
-                session.tokenizer,
-                examples,
-                run.model,
-                labels,
-                batch_size=run.training.micro_batch_size * 4,
-            )
-            return float(metrics["label_nll"]), metrics
         dataset_spec = self.campaign["datasets"][str(run.dataset_key)]
         if dataset_spec.get("task_type") == "multiple_choice":
             metrics, _ = self._evaluate_natural(session, run, examples)
@@ -523,7 +402,6 @@ class RunEngine:
             "codec_key": codec.key,
             "codec_method": codec.method,
         }
-        trials = []
         if codec.method == "loraquant":
             storage = encode_loraquant_tensor_map(
                 raw_tensors,
@@ -534,94 +412,28 @@ class RunEngine:
                 optimize_steps=codec.optimize_steps,
                 metadata=metadata,
             )
-            selected_clip = None
         else:
-            bits = int(codec.bits or 0)
-            candidates = (100.0,) if bits in {1, 16} else run.clip_percentiles
-            best: tuple[float, int, float] | None = None
-            for clip in candidates:
-                candidate = (
-                    run_dir / "codecs" / f".candidate_{codec.key}_p{clip:g}.fqcb"
-                )
-                storage = encode_tensor_map(
-                    raw_tensors, candidate, bits, clip, metadata=metadata
-                )
-                _, decoded = decode_adapter_tensor_map(candidate)
-                apply_adapter_tensors(session.model, decoded)
-                score, calibration = self._calibration_score(
-                    session, run, data["calibration"]
-                )
-                trials.append(
-                    {
-                        **{
-                            key: value
-                            for key, value in storage.items()
-                            if key != "path"
-                        },
-                        "calibration": calibration,
-                    }
-                )
-                choice = (score, int(storage["file_bits"]), float(clip))
-                if best is None or choice < best:
-                    best = choice
-                candidate.unlink()
-                apply_adapter_tensors(session.model, raw_tensors)
-            if best is None:
-                raise RuntimeError("codec calibration produced no candidate")
-            selected_clip = best[2]
             storage = encode_tensor_map(
                 raw_tensors,
                 codec_path,
-                bits,
-                selected_clip,
+                int(codec.bits or 0),
+                codec.quantizer,
                 metadata=metadata,
             )
         _, decoded = decode_adapter_tensor_map(codec_path)
         apply_adapter_tensors(session.model, decoded)
-        if codec.method == "loraquant":
-            score, calibration = self._calibration_score(
-                session, run, data["calibration"]
-            )
-            trials.append(
-                {
-                    **{key: value for key, value in storage.items() if key != "path"},
-                    "calibration": calibration,
-                    "score": score,
-                }
-            )
-        if run.kind in {"synthetic", "controlled"}:
-            labels = list(self.campaign["datasets"]["synthetic_codebook"]["labels"])
-            task_metrics, predictions = evaluate_synthetic(
-                session.model,
-                session.tokenizer,
-                data["test"],
-                run.model,
-                labels,
-                batch_size=run.training.micro_batch_size * 4,
-            )
-            extra: dict[str, Any] = {}
-        else:
-            task_metrics, predictions = self._evaluate_natural(
-                session, run, data["test"]
-            )
-            information = self._information_measure(session, run, data)
-            extra = {}
-            retention_keys = set(self.campaign.get("retention_codec_keys", []))
-            if codec.key in retention_keys and "ifeval" in self.campaign["datasets"]:
-                ifeval_examples, evaluator_rows = self._load_ifeval()
-                ifeval_metrics, ifeval_predictions = evaluate_ifeval(
-                    session.model,
-                    session.tokenizer,
-                    ifeval_examples,
-                    evaluator_rows,
-                    run.model,
-                    batch_size=run.training.micro_batch_size,
-                )
-                write_predictions(
-                    run_dir / "predictions" / f"ifeval_{codec.key}.jsonl",
-                    ifeval_predictions,
-                )
-                extra = {"ifeval": ifeval_metrics}
+        score, calibration = self._calibration_score(
+            session, run, data["calibration"]
+        )
+        trials = [
+            {
+                **{key: value for key, value in storage.items() if key != "path"},
+                "calibration": calibration,
+                "score": score,
+            }
+        ]
+        task_metrics, predictions = self._evaluate_natural(session, run, data["test"])
+        information = self._information_measure(session, run, data)
         write_predictions(
             run_dir / "predictions" / f"task_{codec.key}.jsonl", predictions
         )
@@ -633,22 +445,17 @@ class RunEngine:
             "high_bits": codec.high_bits,
             "low_bits": codec.low_bits,
             "variance_ratio": codec.variance_ratio,
-            "selected_clip_percentile": selected_clip,
+            "quantizer": codec.quantizer if codec.method == "uniform" else None,
             "storage": storage,
             "calibration_trials": trials,
             "task": task_metrics,
-            "retained_gain": (
-                self._retained_gain(run, baseline, raw_task, task_metrics)
-                if run.kind == "natural"
-                else None
+            "retained_gain": self._retained_gain(
+                run, baseline, raw_task, task_metrics
             ),
-            "information": information if run.kind == "natural" else None,
-            "behavioral_write": (
-                self._behavioral_write(baseline["information"], information)
-                if run.kind == "natural"
-                else None
+            "information": information,
+            "behavioral_write": self._behavioral_write(
+                baseline["information"], information
             ),
-            **extra,
         }
 
     def run_one(
@@ -664,12 +471,7 @@ class RunEngine:
         run_dir.mkdir(parents=True, exist_ok=True)
         write_json(run_dir / "config.json", run.to_dict())
         data, data_metadata = self._load_data(run)
-        if run.kind in {"synthetic", "controlled"}:
-            validate_single_token_labels(
-                session.tokenizer,
-                list(self.campaign["datasets"]["synthetic_codebook"]["labels"]),
-            )
-        elif (
+        if (
             self.campaign["datasets"][str(run.dataset_key)].get("task_type")
             == "multiple_choice"
         ):
@@ -693,12 +495,6 @@ class RunEngine:
             return "screened_out"
         if screening.get("status") == "too_easy":
             screening["pilot_bypassed"] = True
-        if (
-            run.kind == "natural"
-            and self.campaign.get("retention_codec_keys")
-            and "ifeval" in self.campaign["datasets"]
-        ):
-            self.ensure_ifeval_baseline(session, run)
         write_json(
             run_dir / "status.json",
             {"state": "running", "stage": "adapter", "updated_at": time.time()},
@@ -724,34 +520,24 @@ class RunEngine:
             raw_tensors = adapter_tensors(session.model, run.adapter.method)
             torch.save(raw_tensors, raw_path)
             write_json(training_path, training_metrics)
-        if run.kind == "natural":
-            raw_information = self._information_measure(session, run, data)
-            raw_validation = raw_information["heldout"]
-            learning_gate = self._learning_gate(run, baseline, raw_validation)
-            write_json(run_dir / "learning_gate.json", learning_gate)
-            if learning_gate["status"] == "no_learning" and self.pilot_rows is None:
-                write_json(
-                    run_dir / "status.json",
-                    {
-                        "state": "no_learning",
-                        "stage": "raw_adapter",
-                        "reason": "raw adapter misses the fixed validation-gain gate",
-                        "updated_at": time.time(),
-                    },
-                )
-                return "no_learning"
-            if learning_gate["status"] == "no_learning":
-                learning_gate["pilot_bypassed"] = True
-            raw_task, raw_predictions = self._evaluate_natural(
-                session, run, data["test"]
+        raw_information = self._information_measure(session, run, data)
+        learning_gate = self._learning_gate(run, baseline, raw_information["heldout"])
+        write_json(run_dir / "learning_gate.json", learning_gate)
+        if learning_gate["status"] == "no_learning" and self.pilot_rows is None:
+            write_json(
+                run_dir / "status.json",
+                {
+                    "state": "no_learning",
+                    "stage": "raw_adapter",
+                    "reason": "raw adapter misses the fixed validation-gain gate",
+                    "updated_at": time.time(),
+                },
             )
-            write_predictions(
-                run_dir / "predictions" / "raw_task.jsonl", raw_predictions
-            )
-        else:
-            learning_gate = {}
-            raw_task = {}
-            raw_information = {}
+            return "no_learning"
+        if learning_gate["status"] == "no_learning":
+            learning_gate["pilot_bypassed"] = True
+        raw_task, raw_predictions = self._evaluate_natural(session, run, data["test"])
+        write_predictions(run_dir / "predictions" / "raw_task.jsonl", raw_predictions)
         write_json(
             run_dir / "status.json",
             {"state": "running", "stage": "codecs", "updated_at": time.time()},
@@ -785,17 +571,13 @@ class RunEngine:
             "adapter": run.adapter.key,
             "adapter_method": run.adapter.method,
             "seed": run.seed,
-            "family_count": run.family_count,
-            "binding_count": run.binding_count,
             "dataset_key": run.dataset_key,
             "baseline_screening": screening,
             "learning_gate": learning_gate,
             "raw_task": raw_task,
             "raw_information": raw_information,
-            "raw_behavioral_write": (
-                self._behavioral_write(baseline["information"], raw_information)
-                if run.kind == "natural"
-                else None
+            "raw_behavioral_write": self._behavioral_write(
+                baseline["information"], raw_information
             ),
             "data": data_metadata,
             "training": training_metrics,
@@ -871,7 +653,7 @@ class RunEngine:
             raise ValueError("invalid screening shard")
         unique: dict[tuple[str, str, str], RunSpec] = {}
         for run in runs:
-            if run.kind == "natural" and run.dataset_key is not None:
+            if run.dataset_key is not None:
                 key = (run.model.key, run.model.backbone, run.dataset_key)
                 unique.setdefault(key, run)
         grouped: dict[tuple[str, str], list[RunSpec]] = defaultdict(list)

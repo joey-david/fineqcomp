@@ -11,7 +11,7 @@ import torch
 
 from fineqcomp.config import ModelSpec
 from fineqcomp.data import Example
-from fineqcomp.mbpp import run_humaneval_tests, run_mbpp_tests
+from fineqcomp.sandbox import run_humaneval_tests
 from fineqcomp.modeling import model_device, render_prompt, validate_single_token_labels
 
 
@@ -20,7 +20,7 @@ def _batched(rows: list[Any], size: int) -> list[list[Any]]:
 
 
 @torch.no_grad()
-def evaluate_synthetic(
+def evaluate_constrained_labels(
     model: torch.nn.Module,
     tokenizer: Any,
     examples: list[Example],
@@ -28,6 +28,11 @@ def evaluate_synthetic(
     labels: list[str],
     batch_size: int,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Score a fixed 16-label classification task from next-token logits.
+
+    Used by the information-scaling study, where every prompt has exactly one
+    correct single-token label, so accuracy and label NLL are exact.
+    """
     label_ids = validate_single_token_labels(tokenizer, labels)
     device = model_device(model)
     model.eval()
@@ -64,11 +69,8 @@ def evaluate_synthetic(
                 "confidence": confidence,
                 "correct": correct,
             }
-            if "binding" in row.metadata:
-                prediction["binding"] = int(row.metadata["binding"])
-            else:
-                prediction["family"] = int(row.metadata["family"])
-                prediction["item"] = int(row.metadata["item"])
+            prediction["family"] = int(row.metadata["family"])
+            prediction["item"] = int(row.metadata["item"])
             predictions.append(prediction)
     accuracy = sum(correct_flags) / max(len(correct_flags), 1)
     ece = 0.0
@@ -92,6 +94,7 @@ def evaluate_synthetic(
         },
         predictions,
     )
+
 
 
 @torch.no_grad()
@@ -281,25 +284,6 @@ def evaluate_natural(
             "examples": len(examples),
             "exact_match": correct / max(len(examples), 1),
         }, predictions
-    if dataset_key == "mbpp":
-        passed = 0
-        statuses: dict[str, int] = {}
-        for example, response in zip(examples, responses, strict=True):
-            result = run_mbpp_tests(response, list(example.metadata["tests"]))
-            passed += int(result["passed"])
-            statuses[result["status"]] = statuses.get(result["status"], 0) + 1
-            predictions.append(
-                {
-                    "example_id": example.example_id,
-                    "response": response,
-                    **result,
-                }
-            )
-        return {
-            "examples": len(examples),
-            "pass_at_1": passed / max(len(examples), 1),
-            "failure_counts": statuses,
-        }, predictions
     if dataset_key == "humaneval":
         passed = 0
         statuses: dict[str, int] = {}
@@ -375,33 +359,6 @@ def evaluate_natural(
             "rouge_l": sum(scores) / max(len(scores), 1),
         }, predictions
     raise ValueError(f"unsupported natural evaluation: {dataset_key}")
-
-
-def evaluate_ifeval(
-    model: torch.nn.Module,
-    tokenizer: Any,
-    examples: list[Example],
-    evaluator_rows: list[dict[str, Any]],
-    model_spec: ModelSpec,
-    batch_size: int,
-) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    """Generate IFEval answers and score them with the pinned official port."""
-    from instruction_following_eval.evaluation import evaluate_instruction_following
-
-    responses = generate_responses(
-        model,
-        tokenizer,
-        examples,
-        model_spec,
-        batch_size=batch_size,
-        max_new_tokens=768,
-    )
-    metrics = evaluate_instruction_following(evaluator_rows, responses)
-    predictions = [
-        {"example_id": example.example_id, "response": response}
-        for example, response in zip(examples, responses, strict=True)
-    ]
-    return metrics, predictions
 
 
 def write_predictions(path: str | Path, rows: list[dict[str, Any]]) -> None:

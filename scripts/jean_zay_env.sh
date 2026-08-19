@@ -12,7 +12,7 @@ if [[ ! -x "$python_bin" ]]; then
   python_bin="$(command -v python)"
 fi
 export PYTHON="$python_bin"
-export PYTHONPATH="${repo_root}/src:${repo_root}/vendor${PYTHONPATH:+:${PYTHONPATH}}"
+export PYTHONPATH="${repo_root}/src${PYTHONPATH:+:${PYTHONPATH}}"
 export HF_HOME="${HF_HOME:-${repo_root}/.hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 export TOKENIZERS_PARALLELISM=false

@@ -25,7 +25,15 @@ import torch
 from tqdm.auto import tqdm
 
 from fineqcomp.adapters import apply_adapter_tensors
-from fineqcomp.codec import pack_unsigned, unpack_unsigned
+from fineqcomp.codec import (
+    container_header_bits,
+    midrise_dequantize,
+    midrise_quantize,
+    pack_unsigned,
+    read_container,
+    unpack_unsigned,
+    write_container,
+)
 from fineqcomp.config import RunSpec, load_campaign
 from fineqcomp.evaluation import write_predictions
 from fineqcomp.modeling import ModelSession
@@ -33,7 +41,6 @@ from fineqcomp.pareto import (
     _capped,
     _existing_controls,
     _frontier,
-    _midrise_tensor,
     _reference_scores,
 )
 from fineqcomp.runner import RunEngine
@@ -84,7 +91,7 @@ def _row_candidates(
             distortions[:, 0] = matrix.square().sum(dim=1).double()
             proxies[:, 0] = SELECTOR_BITS
             for option_index, bits in enumerate(BIT_OPTIONS[1:], start=1):
-                _, _, reconstructed = _midrise_tensor(matrix, bits)
+                _, _, reconstructed = midrise_quantize(matrix, bits)
                 distortions[:, option_index] = (
                     (matrix - reconstructed).square().sum(dim=1).double()
                 )
@@ -288,7 +295,7 @@ def _encode_mdl(
                 continue
             row_index = torch.from_numpy(rows_for_bits.astype(np.int64, copy=False))
             submatrix = matrix.index_select(0, row_index)
-            scales, codes, _ = _midrise_tensor(submatrix, bits)
+            scales, codes, _ = midrise_quantize(submatrix, bits)
             scale_bytes = scales.tobytes()
             data_bytes = pack_unsigned(codes, bits)
             scale_offset = len(payload)
@@ -323,18 +330,8 @@ def _encode_mdl(
         "allocation": allocation,
         "tensors": entries,
     }
-    header_bytes = json.dumps(header, sort_keys=True, separators=(",", ":")).encode()
     compressed = zlib.compress(bytes(payload), level=9)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    with temporary.open("wb") as stream:
-        stream.write(MAGIC)
-        stream.write(struct.pack("<I", len(header_bytes)))
-        stream.write(header_bytes)
-        stream.write(compressed)
-    temporary.replace(path)
-
-    file_bits = path.stat().st_size * 8
+    file_bits = write_container(path, MAGIC, header, compressed)
     total_norm = float(cache["total_squared_norm"])
     distortion = float(allocation["distortion"])
     return {
@@ -342,7 +339,7 @@ def _encode_mdl(
         "description_bits": file_bits,
         "effective_bits_per_value": file_bits / max(total_values, 1),
         "tensor_values": total_values,
-        "header_bits": (len(MAGIC) + 4 + len(header_bytes)) * 8,
+        "header_bits": container_header_bits(MAGIC, header),
         "compressed_payload_bits": len(compressed) * 8,
         "raw_payload_bits": len(payload) * 8,
         "relative_rmse": math.sqrt(distortion / max(total_norm, 1e-30)),
@@ -356,14 +353,7 @@ def _encode_mdl(
 
 def decode_mdl(path: str | Path) -> tuple[dict[str, Any], dict[str, torch.Tensor]]:
     """Decode an FQMDL2 file without access to the original learned tensors."""
-    source = Path(path)
-    with source.open("rb") as stream:
-        if stream.read(len(MAGIC)) != MAGIC:
-            raise ValueError(f"{source}: invalid MDL adapter magic")
-        header_size = struct.unpack("<I", stream.read(4))[0]
-        header = json.loads(stream.read(header_size))
-        payload = zlib.decompress(stream.read())
-
+    header, payload = read_container(path, MAGIC)
     bit_options = tuple(map(int, header["bit_options"]))
     selector_bits = int(header["selector_bits"])
     tensors: dict[str, torch.Tensor] = {}
@@ -384,23 +374,20 @@ def decode_mdl(path: str | Path) -> tuple[dict[str, Any], dict[str, torch.Tensor
             row_ids = np.flatnonzero(selectors == bits)
             expected_rows = int(group["rows"])
             if row_ids.size != expected_rows:
-                raise ValueError(f"{source}: corrupt MDL selector/group counts")
+                raise ValueError(f"{path}: corrupt MDL selector/group counts")
             scale_start = int(group["scale_offset"])
             scale_stop = scale_start + int(group["scale_nbytes"])
             scales = np.frombuffer(
                 payload[scale_start:scale_stop], dtype=np.float16, count=expected_rows
-            ).astype(np.float32)
+            )
             data_start = int(group["data_offset"])
             data_stop = data_start + int(group["data_nbytes"])
             codes = unpack_unsigned(
                 payload[data_start:data_stop], expected_rows * columns, bits
-            ).astype(np.int32).reshape(expected_rows, columns)
-            positive_levels = 1 << (bits - 1)
-            positive = codes >= positive_levels
-            magnitude_index = np.where(positive, codes - positive_levels, codes)
-            levels = 2 * magnitude_index + 1
-            signed = np.where(positive, levels, -levels).astype(np.float32)
-            reconstructed = signed * scales[:, None]
+            )
+            reconstructed = midrise_dequantize(
+                codes, scales, bits, expected_rows, columns
+            )
             row_index = torch.from_numpy(row_ids.astype(np.int64, copy=False))
             matrix.index_copy_(0, row_index, torch.from_numpy(reconstructed.copy()))
         tensors[str(entry["name"])] = matrix.reshape(shape)

@@ -15,7 +15,12 @@ import numpy as np
 import torch
 
 from fineqcomp.adapters import apply_adapter_tensors
-from fineqcomp.codec import pack_unsigned
+from fineqcomp.codec import (
+    container_header_bits,
+    midrise_quantize,
+    pack_unsigned,
+    write_container,
+)
 from fineqcomp.config import RunSpec, load_campaign
 from fineqcomp.evaluation import write_predictions
 from fineqcomp.modeling import ModelSession
@@ -85,55 +90,6 @@ def _reference_scores(controls: list[dict[str, Any]]) -> tuple[str, float, float
     return metric, baseline, raw
 
 
-def _midrise_tensor(
-    tensor: torch.Tensor, bits: int, iterations: int = 8
-) -> tuple[np.ndarray, np.ndarray, torch.Tensor]:
-    """Zero-free symmetric quantization with an MSE-refit row scale.
-
-    Positive magnitudes use odd reconstruction levels 1, 3, ..., 2**bits-1.
-    At one bit this reduces exactly to sign(w) * mean(abs(w)) per row.
-    """
-    if bits not in {1, 2, 3, 4, 8}:
-        raise ValueError("midrise bits must be one of 1, 2, 3, 4, 8")
-    matrix = tensor.detach().cpu().float().reshape(tensor.shape[0], -1)
-    absolute = matrix.abs()
-    positive_levels = 1 << (bits - 1)
-    max_level = 2 * positive_levels - 1
-    row_max = absolute.amax(dim=1)
-    scale = row_max / max_level
-
-    for _ in range(iterations):
-        safe_scale = scale.clamp_min(1e-12)
-        index = torch.round((absolute / safe_scale[:, None] - 1.0) / 2.0)
-        index = index.clamp(0, positive_levels - 1)
-        level = 2.0 * index + 1.0
-        scale = (absolute * level).sum(dim=1) / level.square().sum(dim=1)
-        scale = torch.where(row_max > 0, scale, torch.zeros_like(scale))
-
-    safe_scale = scale.clamp_min(1e-12)
-    index = torch.round((absolute / safe_scale[:, None] - 1.0) / 2.0)
-    index = index.clamp(0, positive_levels - 1)
-    level = 2.0 * index + 1.0
-    scale = (absolute * level).sum(dim=1) / level.square().sum(dim=1)
-    scale = torch.where(row_max > 0, scale, torch.zeros_like(scale))
-
-    scale16 = scale.to(torch.float16).cpu().numpy()
-    decoded_scale = torch.from_numpy(scale16.astype(np.float32))
-    signed_level = torch.where(matrix >= 0, level, -level)
-    reconstructed = (signed_level * decoded_scale[:, None]).reshape(tensor.shape)
-
-    code = torch.where(
-        matrix >= 0,
-        index.to(torch.int64) + positive_levels,
-        index.to(torch.int64),
-    )
-    return (
-        scale16,
-        code.numpy().astype(np.uint16).reshape(-1),
-        reconstructed,
-    )
-
-
 def _encode_midrise(
     tensors: dict[str, torch.Tensor], path: Path, bits: int
 ) -> tuple[dict[str, Any], dict[str, torch.Tensor]]:
@@ -149,7 +105,7 @@ def _encode_midrise(
 
     for name in sorted(tensors):
         tensor = tensors[name].detach().cpu().float().contiguous()
-        scales, codes, reconstructed = _midrise_tensor(tensor, bits)
+        scales, codes, reconstructed = midrise_quantize(tensor, bits)
         scales_bytes = scales.tobytes()
         data = pack_unsigned(codes, bits)
         scale_offset = len(payload)
@@ -184,22 +140,12 @@ def _encode_midrise(
         "compression": "zlib-9",
         "tensors": entries,
     }
-    header_bytes = json.dumps(header, sort_keys=True, separators=(",", ":")).encode()
     compressed = zlib.compress(bytes(payload), level=9)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    with temporary.open("wb") as stream:
-        stream.write(MAGIC)
-        stream.write(struct.pack("<I", len(header_bytes)))
-        stream.write(header_bytes)
-        stream.write(compressed)
-    temporary.replace(path)
-
-    file_bits = path.stat().st_size * 8
+    file_bits = write_container(path, MAGIC, header, compressed)
     return (
         {
             "file_bits": file_bits,
-            "header_bits": (len(MAGIC) + 4 + len(header_bytes)) * 8,
+            "header_bits": container_header_bits(MAGIC, header),
             "compressed_payload_bits": len(compressed) * 8,
             "raw_payload_bits": len(payload) * 8,
             "value_bits": value_bits,

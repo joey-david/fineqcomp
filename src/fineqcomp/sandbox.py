@@ -94,7 +94,7 @@ def _run_python_tests(
     safe, reason = validate_generated_code(code, allow_eval=allow_eval)
     if not safe:
         return {"passed": False, "status": "rejected", "detail": reason}
-    with tempfile.TemporaryDirectory(prefix="fineqcomp-mbpp-") as temp_dir:
+    with tempfile.TemporaryDirectory(prefix="fineqcomp-sandbox-") as temp_dir:
         script = Path(temp_dir) / "candidate.py"
         script.write_text(code + "\n\n" + tests + "\n")
         try:
@@ -116,12 +116,6 @@ def _run_python_tests(
         "status": "passed" if result.returncode == 0 else "failed_tests",
         "detail": result.stderr[-500:] or None,
     }
-
-
-def run_mbpp_tests(
-    code_text: str, tests: list[str], timeout: float = 3.0
-) -> dict[str, Any]:
-    return _run_python_tests(extract_code(code_text), "\n".join(tests), timeout)
 
 
 def run_humaneval_tests(

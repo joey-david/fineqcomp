@@ -24,8 +24,8 @@ and fixed gates live in `configs/campaign.yaml`.
   the raw adapter reduces held-out NLL by less than 0.02 bits per token.
 
 The active manifest has 24 raw training runs: 18 main cells and six placement
-controls. A main run writes ten codecs. A placement run writes three. The final
-test sets never select a checkpoint, clipping threshold, or gate.
+controls. A main run writes twelve codecs. A placement run writes three. The
+final test sets never select a checkpoint, quantizer, or gate.
 
 ## Experiment 1: Real-task learning and headroom
 
@@ -59,20 +59,57 @@ How much of the raw task gain survives at each exact serialized adapter rate?
 
 ### Design and measures
 
-Encode every main adapter with uniform FP16, 8-, 4-, 3-, 2-, and 1-bit codes,
-plus LoRAQuant `2@0.8`, `2@0.9`, `3@0.8`, and `3@0.9`. Uniform codes choose
-among 99%, 99.9%, and 100% clipping on calibration NLL. LoRAQuant uses an SVD
-split, group size 128, a one-bit low-energy part, and 100 update-error steps.
+Encode every main adapter at FP16, 8, 4, 3, 2, and 1 bits with the zero-free
+mid-rise quantizer, plus LoRAQuant `2@0.8`, `2@0.9`, `3@0.8`, and `3@0.9`.
+LoRAQuant uses an SVD split, group size 128, a one-bit low-energy part, and 100
+update-error steps.
 
-Measure exact file bits, effective bits per original adapter value, task score,
-gain over the matched base model, and the fraction of the raw adapter gain that
-the codec retains. Report all seeds, not only the Pareto points.
+Also encode `midtread2` and `midtread3`: the same widths under an absmax
+quantizer with an exact zero level. These are matched-payload controls for
+Experiment 2b, not baselines for the main frontier.
+
+The mid-rise scale is fit by least squares per row, so there is no clipping
+percentile to select and no calibration pass is spent choosing one.
+
+Measure exact file bits, effective bits per original adapter value, relative
+weight RMSE, task score, gain over the matched base model, and the fraction of
+the raw adapter gain that the codec retains. Report all seeds, not only the
+Pareto points.
 
 ### Outputs
 
 - `reports/natural_pareto.png`
 - `reports/quantization_retention.png`
 - `reports/summary.csv`
+
+### Results
+
+<!-- Fill after the campaign artifacts have been checked. -->
+
+## Experiment 2b: Code geometry against bit width
+
+### Question
+
+At a matched rate, does the shape of the codebook change retained gain as much
+as the number of bits does?
+
+### Design and measures
+
+Compare `uniform2`/`uniform3` (zero-free mid-rise) against `midtread2`/
+`midtread3` (exact zero level, absmax scale) on the same raw checkpoints. Both
+pack the same payload bits per value. Report exact file bits for each, because
+a code that emits few distinct symbols leaves more for zlib to remove, so the
+two do not land at identical file rates.
+
+The pre-registered expectation, from the reconstruction error alone: mid-tread
+at two bits is worse than mid-rise at one bit, at a comparable file rate. If
+retained task gain follows that ordering, then a bit width does not identify a
+code, and rate-distortion claims stated in nominal bits are underspecified.
+
+### Outputs
+
+- `reports/quantization_retention.png`
+- the `quantizer` and `relative_rmse` columns in `reports/summary.csv`
 
 ### Results
 
@@ -86,10 +123,14 @@ How much does nominal value width understate the complete decoder-visible rate?
 
 ### Design and measures
 
-For every `.fqcb` file, split the rate into header, packed values, FP16 scales,
-byte padding, raw payload, compressed payload, and final file bits. Compare the
-requested width with effective file bits per original LoRA value. This includes
-all tensor names, shapes, split ranks, scales, and reconstruction metadata.
+For every `.fqcb` and `.fqmdl` file, split the rate into header, packed values,
+FP16 scales, byte padding, raw payload, compressed payload, and final file bits.
+Compare the requested width with effective file bits per original LoRA value.
+This includes all tensor names, shapes, split ranks, row selectors, scales, and
+reconstruction metadata.
+
+Every evaluated point is decoded from its stored file before evaluation, and the
+decoded reconstruction error is checked against the error the encoder reported.
 
 ### Outputs
 
