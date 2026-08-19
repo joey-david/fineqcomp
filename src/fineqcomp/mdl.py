@@ -1,9 +1,9 @@
 """Adaptive minimum-description-length sweep for an already-trained LoRA run.
 
 The base model, adapter architecture, and decoder are treated as shared side
-information.  We measure the exact serialized length of the learned adapter.
+information. We measure the exact serialized length of the learned adapter.
 Each LoRA row may be dropped (0 bit) or encoded with the zero-free mid-rise
-family at 1/2/3/4/8 bits.  A Lagrange multiplier chooses the rowwise allocation
+family at 1/2/3/4/8 bits. A Lagrange multiplier chooses the rowwise allocation
 that minimizes weight reconstruction error + lambda * proxy code length.
 """
 
@@ -53,7 +53,7 @@ def _slug(rate: float) -> str:
 def _row_candidates(
     tensors: dict[str, torch.Tensor],
 ) -> tuple[list[dict[str, Any]], int]:
-    """Precompute every row's distortion/rate choices once."""
+    """Precompute only each row's distortion/rate table, not reconstructions."""
     rows: list[dict[str, Any]] = []
     total_values = 0
     for name in sorted(tensors):
@@ -61,33 +61,27 @@ def _row_candidates(
         matrix = tensor.reshape(tensor.shape[0], -1)
         total_values += tensor.numel()
         for row_index, row in enumerate(matrix):
-            row2d = row.reshape(1, -1)
+            count = row.numel()
             candidates: dict[int, dict[str, Any]] = {
                 0: {
                     "distortion": float(row.square().sum().item()),
                     "proxy_bits": SELECTOR_BITS,
-                    "scale": None,
-                    "codes": None,
-                    "reconstructed": torch.zeros_like(row),
                 }
             }
             for bits in BIT_OPTIONS[1:]:
-                scales, codes, reconstructed = _midrise_tensor(row2d, bits)
-                packed_bits = ((row.numel() * bits + 7) // 8) * 8
+                _, _, reconstructed = _midrise_tensor(row.reshape(1, -1), bits)
+                packed_bits = ((count * bits + 7) // 8) * 8
                 candidates[bits] = {
                     "distortion": float(
                         (row - reconstructed.reshape(-1)).square().sum().item()
                     ),
                     "proxy_bits": SELECTOR_BITS + 16 + packed_bits,
-                    "scale": scales,
-                    "codes": codes,
-                    "reconstructed": reconstructed.reshape(-1),
                 }
             rows.append(
                 {
                     "tensor": name,
                     "row": row_index,
-                    "count": row.numel(),
+                    "count": count,
                     "candidates": candidates,
                 }
             )
@@ -123,10 +117,17 @@ def _allocate(
     if target_rate <= 0:
         raise ValueError("target rate must be positive")
     target_bits = target_rate * total_values
-    zero_assignment, minimum_bits, zero_distortion = _assignment(rows, math.inf)
+
+    zero_assignment = [0] * len(rows)
+    minimum_bits = sum(
+        int(row["candidates"][0]["proxy_bits"]) for row in rows
+    )
+    zero_distortion = sum(
+        float(row["candidates"][0]["distortion"]) for row in rows
+    )
     if target_bits <= minimum_bits:
         return zero_assignment, {
-            "penalty": math.inf,
+            "penalty": None,
             "proxy_bits": minimum_bits,
             "proxy_bits_per_value": minimum_bits / max(total_values, 1),
             "distortion": zero_distortion,
@@ -176,7 +177,7 @@ def _encode_mdl(
     assignment: list[int],
     path: Path,
     allocation: dict[str, Any],
-) -> tuple[dict[str, Any], dict[str, torch.Tensor]]:
+) -> dict[str, Any]:
     """Serialize a reloadable variable-rate adapter and return exact file rate."""
     by_tensor: dict[str, list[tuple[dict[str, Any], int]]] = {}
     for row, bits in zip(rows, assignment, strict=True):
@@ -184,7 +185,6 @@ def _encode_mdl(
 
     payload = bytearray()
     entries: list[dict[str, Any]] = []
-    decoded: dict[str, torch.Tensor] = {}
     bit_histogram = {str(bits): 0 for bits in BIT_OPTIONS}
     value_histogram = {str(bits): 0 for bits in BIT_OPTIONS}
     total_values = 0
@@ -205,21 +205,22 @@ def _encode_mdl(
         scale_offset = len(payload)
         scale_buffer = bytearray()
         data_buffer = bytearray()
-        reconstructed_rows: list[torch.Tensor] = []
         for source_row, bits in tensor_rows:
-            candidate = source_row["candidates"][bits]
+            row = matrix[int(source_row["row"])]
             count = int(source_row["count"])
             bit_histogram[str(bits)] += 1
             value_histogram[str(bits)] += count
             total_values += count
-            reconstructed = candidate["reconstructed"].float()
-            reconstructed_rows.append(reconstructed)
-            original = matrix[int(source_row["row"])]
-            squared_error += float((original - reconstructed).square().sum().item())
-            squared_norm += float(original.square().sum().item())
-            if bits:
-                scale_buffer.extend(candidate["scale"].tobytes())
-                data_buffer.extend(pack_unsigned(candidate["codes"], bits))
+            squared_norm += float(row.square().sum().item())
+            if bits == 0:
+                squared_error += float(row.square().sum().item())
+                continue
+            scales, codes, reconstructed = _midrise_tensor(row.reshape(1, -1), bits)
+            squared_error += float(
+                (row - reconstructed.reshape(-1)).square().sum().item()
+            )
+            scale_buffer.extend(scales.tobytes())
+            data_buffer.extend(pack_unsigned(codes, bits))
         payload.extend(scale_buffer)
         data_offset = len(payload)
         payload.extend(data_buffer)
@@ -236,7 +237,6 @@ def _encode_mdl(
                 "data_nbytes": len(data_buffer),
             }
         )
-        decoded[name] = torch.stack(reconstructed_rows).reshape(tensor.shape)
 
     header = {
         "version": 1,
@@ -260,24 +260,21 @@ def _encode_mdl(
     temporary.replace(path)
 
     file_bits = path.stat().st_size * 8
-    return (
-        {
-            "file_bits": file_bits,
-            "description_bits": file_bits,
-            "effective_bits_per_value": file_bits / max(total_values, 1),
-            "tensor_values": total_values,
-            "header_bits": (len(MAGIC) + 4 + len(header_bytes)) * 8,
-            "compressed_payload_bits": len(compressed) * 8,
-            "raw_payload_bits": len(payload) * 8,
-            "relative_rmse": math.sqrt(squared_error / max(squared_norm, 1e-30)),
-            "row_bit_histogram": bit_histogram,
-            "value_bit_histogram": value_histogram,
-            "proxy_bits": int(allocation["proxy_bits"]),
-            "proxy_bits_per_value": float(allocation["proxy_bits_per_value"]),
-            "penalty": allocation["penalty"],
-        },
-        decoded,
-    )
+    return {
+        "file_bits": file_bits,
+        "description_bits": file_bits,
+        "effective_bits_per_value": file_bits / max(total_values, 1),
+        "tensor_values": total_values,
+        "header_bits": (len(MAGIC) + 4 + len(header_bytes)) * 8,
+        "compressed_payload_bits": len(compressed) * 8,
+        "raw_payload_bits": len(payload) * 8,
+        "relative_rmse": math.sqrt(squared_error / max(squared_norm, 1e-30)),
+        "row_bit_histogram": bit_histogram,
+        "value_bit_histogram": value_histogram,
+        "proxy_bits": int(allocation["proxy_bits"]),
+        "proxy_bits_per_value": float(allocation["proxy_bits_per_value"]),
+        "penalty": allocation["penalty"],
+    }
 
 
 def decode_mdl(path: str | Path) -> tuple[dict[str, Any], dict[str, torch.Tensor]]:
@@ -295,12 +292,12 @@ def decode_mdl(path: str | Path) -> tuple[dict[str, Any], dict[str, torch.Tensor
     tensors: dict[str, torch.Tensor] = {}
     for entry in header["tensors"]:
         shape = tuple(map(int, entry["shape"]))
-        rows = shape[0]
+        row_count = shape[0]
         columns = math.prod(shape[1:])
         selector_start = int(entry["selector_offset"])
         selector_stop = selector_start + int(entry["selector_nbytes"])
         selector_ids = unpack_unsigned(
-            payload[selector_start:selector_stop], rows, selector_bits
+            payload[selector_start:selector_stop], row_count, selector_bits
         )
         selectors = [bit_options[int(index)] for index in selector_ids]
 
@@ -458,7 +455,7 @@ def run_sweep(
                 )
                 assignment, allocation = _allocate(candidates, total_values, target)
                 adapter_path = out_dir / f"adapter_mdl_{_slug(target)}.fqmdl"
-                storage, _ = _encode_mdl(
+                storage = _encode_mdl(
                     raw_tensors, candidates, assignment, adapter_path, allocation
                 )
                 _, decoded = decode_mdl(adapter_path)
