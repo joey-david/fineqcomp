@@ -13,6 +13,7 @@ dist/
 # Generated locally or on the GPU host.
 prepared/
 runs/
+runs_information_scaling/
 reports/
 remote_logs/
 slurm_logs/
