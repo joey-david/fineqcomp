@@ -20,11 +20,22 @@ out="$run_dir/mdl"
 cache="$out/candidates_v2.pt"
 mkdir -p "$out"
 
-# The rate/error table is CPU-only and shared on the LAMSADE filesystem.
-# Build it once before starting the four GPU workers instead of recomputing it
-# independently on every host.
-echo "precomputing shared MDL candidate table"
-PYTHONPATH=src "$python_bin" -m fineqcomp.mdl "$run_dir" \
+run_python_on_upnquick() {
+  ssh "$upnquick" bash -s -- "$repo_root" "$python_bin" "$@" <<'REMOTE'
+set -euo pipefail
+repo_root=$1
+python_bin=$2
+shift 2
+cd "$repo_root"
+PYTHONPATH=src "$python_bin" "$@"
+REMOTE
+}
+
+# lamgate currently cannot mmap NumPy's C extension from this shared venv.
+# Do all Python-only orchestration on upnquick, where the exact same venv is
+# already known to work. The run/output paths live on the shared filesystem.
+echo "precomputing shared MDL candidate table on $upnquick"
+run_python_on_upnquick -m fineqcomp.mdl "$run_dir" \
   --prepare-only --cache "$cache" --out "$out"
 
 launch() {
@@ -113,9 +124,9 @@ for worker in "${workers[@]}"; do
   cp "$src"/adapter_mdl_*.fqmdl "$out/"
 done
 
-# Every requested point now exists, so this final call aggregates and plots
-# without loading a model or rerunning HumanEval.
-PYTHONPATH=src "$python_bin" -m fineqcomp.mdl "$run_dir" \
+# Aggregate/plot on upnquick too, so lamgate never imports the Python stack.
+echo "aggregating MDL results on $upnquick"
+run_python_on_upnquick -m fineqcomp.mdl "$run_dir" \
   --cache "$cache" \
   --target-rates 0.15 0.30 0.50 0.75 1.00 1.50 2.50 4.00 \
   --out "$out"
