@@ -17,7 +17,7 @@ python_bin=${FINEQCOMP_PYTHON:-$repo_root/../reasoning/.venv/bin/python}
 upnquick=${UPNQUICK_HOST:-upnquick}
 ourasi=${OURASI_HOST:-ourasi}
 out="$run_dir/mdl"
-cache="$out/candidates_v2.pt"
+cache="$out/candidates_gpu_v2.pt"
 mkdir -p "$out"
 
 run_python_on_upnquick() {
@@ -27,15 +27,15 @@ repo_root=$1
 python_bin=$2
 shift 2
 cd "$repo_root"
-PYTHONPATH=src "$python_bin" "$@"
+CUDA_VISIBLE_DEVICES="${MDL_PREP_GPU:-0}" PYTHONPATH=src "$python_bin" "$@"
 REMOTE
 }
 
-# lamgate currently cannot mmap NumPy's C extension from this shared venv.
-# Do all Python-only orchestration on upnquick, where the exact same venv is
-# already known to work. The run/output paths live on the shared filesystem.
-echo "precomputing shared MDL candidate table on $upnquick"
-run_python_on_upnquick -m fineqcomp.mdl "$run_dir" \
+# Build the row rate/error table exactly once on upnquick GPU 0. The previous
+# CPU implementation spent ~30 minutes here; mdl_fast keeps the same eight-step
+# scale fitting but runs the tensor arithmetic on CUDA.
+echo "precomputing shared MDL candidate table on $upnquick GPU 0"
+run_python_on_upnquick -m fineqcomp.mdl_fast "$run_dir" \
   --prepare-only --cache "$cache" --out "$out"
 
 launch() {
@@ -77,7 +77,7 @@ nohup bash -c '
   rates=("$@")
   cd "$repo_root"
   set +e
-  CUDA_VISIBLE_DEVICES="$gpu" PYTHONPATH=src "$python_bin" -m fineqcomp.mdl "$run_dir" \
+  CUDA_VISIBLE_DEVICES="$gpu" PYTHONPATH=src "$python_bin" -m fineqcomp.mdl_fast "$run_dir" \
     --cache "$cache" --target-rates "${rates[@]}" --out "$worker_out" >"$log" 2>&1
   rc=$?
   printf "%s\n" "$rc" >"$status"
@@ -126,7 +126,7 @@ done
 
 # Aggregate/plot on upnquick too, so lamgate never imports the Python stack.
 echo "aggregating MDL results on $upnquick"
-run_python_on_upnquick -m fineqcomp.mdl "$run_dir" \
+run_python_on_upnquick -m fineqcomp.mdl_fast "$run_dir" \
   --cache "$cache" \
   --target-rates 0.15 0.30 0.50 0.75 1.00 1.50 2.50 4.00 \
   --out "$out"
