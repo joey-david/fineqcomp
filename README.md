@@ -6,6 +6,38 @@ How many transmitted bits of a learned update are actually needed to preserve
 new model behavior? fineQComp measures task gain against the exact serialized
 size of LoRA updates.
 
+## Dataset information scaling
+
+This campaign reconnects adapter compression to the original information-
+theoretic question: does the amount of information in the finetuning data
+predict how many adapter bits are needed to preserve what was learned?
+
+The controlled task keeps prompts, example counts, model, optimizer, and the
+16 answer tokens fixed. `random` assigns a fresh random label to every mapping
+(4 independent source bits per mapping). `structured_pK` samples only `K`
+16-item prototype tables and reuses them across families, so task information
+saturates at `64*K` bits while dataset size keeps growing.
+
+Dataset compressibility is measured with a conditional prequential code: the
+first block is encoded by the shared base model; every later block is encoded by
+a fresh LoRA trained only on the preceding prefix. For each trained prefix we
+also run an exact reloadable adaptive-MDL sweep and report the smallest adapter
+file retaining 90% of the learned accuracy gain.
+
+On the 2xA40 node (`coktailjet` by default):
+
+```bash
+# Cheap sanity check: random vs maximally structured, seed 11.
+bash scripts/run_information_scaling_a40.sh pilot
+
+# Four information levels, seeds 11/22/33.
+bash scripts/run_information_scaling_a40.sh full
+```
+
+Outputs include `prequential.csv`, `adapter_information.csv`, and plots of known
+independent task bits against both prequential code length and required adapter
+description length. Set `A40_HOST` or `INFO_OUT` to override the defaults.
+
 ## Adaptive MDL sweep
 
 The MDL experiment treats the base model, LoRA architecture, and decoder as
