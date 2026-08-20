@@ -65,7 +65,11 @@ summary="$(ssh -o BatchMode=yes "$host" "bash -lc '
     echo \"\$(basename \$d) codecs=\$c raw=\$([ -f \$d/raw_channel.pt ] && echo y || echo n)\"
   done | tail -20
   echo \"---failures---\"
-  grep -l -E \"Traceback|CUDA out of memory|DUE TO TIME LIMIT\" slurm_logs/*.err 2>/dev/null | tail -10
+  # Scoped to this job name and to logs touched in the last day. Grepping the
+  # whole directory reported setup failures from three weeks earlier as if they
+  # belonged to the run that just finished.
+  find slurm_logs -name \"${name:-*}-*.err\" -mtime -1 2>/dev/null \
+    | xargs -r grep -l -E \"Traceback|CUDA out of memory|DUE TO TIME LIMIT\" 2>/dev/null | tail -10
 '" 2>/dev/null)"
 
 printf '%s\n' "$summary" >> "$log"

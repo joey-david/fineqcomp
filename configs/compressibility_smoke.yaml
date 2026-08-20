@@ -1,8 +1,16 @@
 version: 1
 
+# SMOKE of the compressibility experiment. Same shape as the real thing at
+# 1/50th the size: 40 optimizer updates and 640 samples seen per arm, 60 test
+# problems. It checks that the arms really are compute-matched, that the
+# blended rungs land at distinct rates, and that R* is produced — not that
+# the hypothesis holds, which needs the full run.
+#
+# The previous smoke flattened every arm to one epoch, which made steps scale
+# with row count and reintroduced exactly the confound the design removes.
+#
 # Experiment 2: does the adapter bit-budget track dataset information?
 #
-# SMOKE: tiny rows, 60 test problems, one seed. Shape check only.
 # Four arms at fixed compute — 2000 optimizer updates, 32000 samples seen — so
 # tokens, steps and schedule are identical and the only difference is how many
 # of those samples are distinct. Duplication is the axis, not a side control.
@@ -69,7 +77,7 @@ adapters:
 
 training:
   arm_a_8ep:
-    epochs: 1
+    epochs: 8
     learning_rate: 0.0002
     effective_batch_size: 16
     micro_batch_size: 4
@@ -79,9 +87,9 @@ training:
     adam_beta1: 0.9
     adam_beta2: 0.95
     max_grad_norm: 1.0
-    eval_every_updates: 25
+    eval_every_updates: 10
   arm_b_4ep:
-    epochs: 1
+    epochs: 4
     learning_rate: 0.0002
     effective_batch_size: 16
     micro_batch_size: 4
@@ -91,9 +99,9 @@ training:
     adam_beta1: 0.9
     adam_beta2: 0.95
     max_grad_norm: 1.0
-    eval_every_updates: 25
+    eval_every_updates: 10
   arm_c_2ep:
-    epochs: 1
+    epochs: 2
     learning_rate: 0.0002
     effective_batch_size: 16
     micro_batch_size: 4
@@ -103,7 +111,7 @@ training:
     adam_beta1: 0.9
     adam_beta2: 0.95
     max_grad_norm: 1.0
-    eval_every_updates: 25
+    eval_every_updates: 10
   arm_d_1ep:
     epochs: 1
     learning_rate: 0.0002
@@ -115,7 +123,7 @@ training:
     adam_beta1: 0.9
     adam_beta2: 0.95
     max_grad_norm: 1.0
-    eval_every_updates: 25
+    eval_every_updates: 10
 
 datasets:
   arm_a:
@@ -127,7 +135,7 @@ datasets:
       split: train
       converter: metamath
     validation_rows: 256
-    train_rows: 100
+    train_rows: 80
     test_rows: 60
     evaluations:
       - key: gsm8k
@@ -148,7 +156,7 @@ datasets:
       split: train
       converter: metamath
     validation_rows: 256
-    train_rows: 200
+    train_rows: 160
     test_rows: 60
     evaluations:
       - key: gsm8k
@@ -169,7 +177,7 @@ datasets:
       split: train
       converter: metamath
     validation_rows: 256
-    train_rows: 400
+    train_rows: 320
     test_rows: 60
     evaluations:
       - key: gsm8k
@@ -190,7 +198,7 @@ datasets:
       split: train
       converter: metamath
     validation_rows: 256
-    train_rows: 800
+    train_rows: 640
     test_rows: 60
     evaluations:
       - key: gsm8k
