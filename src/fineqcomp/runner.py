@@ -138,14 +138,26 @@ class RunEngine:
         return self._limit_data(self._data_cache[key]), {"dataset_key": run.dataset_key}
 
     def _baseline_key(self, run: RunSpec) -> str:
-        # The test-set size belongs in the key. Without it, changing
-        # `test_rows` reuses a baseline scored on a different set of problems
-        # and every retained-gain number silently compares two populations.
+        """Identify a baseline by what it was scored on, not by the training set.
+
+        The test-set size has to be in the key: without it, changing
+        `test_rows` reuses a baseline scored on different problems and every
+        retained-gain figure silently compares two populations.
+
+        Keying on the evaluation rather than the dataset name lets arms that
+        differ only in training data share one measurement. The compressibility
+        arms are exactly that case, and they also share a calibration split and
+        the same first `information_rows` training rows, so the stored
+        information block is identical too.
+        """
         spec = self.campaign["datasets"][str(run.dataset_key)]
+        evaluations = "-".join(
+            str(item["key"]) for item in spec.get("evaluations", [])
+        ) or str(run.dataset_key)
         rows = spec.get("test_rows", "all")
         return (
             f"{run.model.key}__{run.model.backbone}__"
-            f"{run.dataset_key}-seed{run.seed}-n{rows}"
+            f"{evaluations}-seed{run.seed}-n{rows}"
         )
 
     def _evaluate_natural(
@@ -425,6 +437,7 @@ class RunEngine:
                 int(codec.bits or 0),
                 codec.quantizer,
                 metadata=metadata,
+                blend=codec.blend,
             )
         _, decoded = decode_adapter_tensor_map(codec_path)
         apply_adapter_tensors(session.model, decoded)
@@ -452,6 +465,7 @@ class RunEngine:
             "low_bits": codec.low_bits,
             "variance_ratio": codec.variance_ratio,
             "quantizer": codec.quantizer if codec.method == "uniform" else None,
+            "blend": codec.blend if codec.method == "uniform" else None,
             "storage": storage,
             "calibration_trials": trials,
             "task": task_metrics,
