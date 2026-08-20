@@ -1,0 +1,132 @@
+version: 1
+
+# Directional pilot, second attempt. The first used Qwen2.5-1.5B on GSM8K's own
+# train split and produced a raw-adapter gain of +3.5 points on 400 problems,
+# which is inside sampling noise, so the retained-gain axis was undefined.
+#
+# This is the LoRAQuant recipe instead: Mistral-7B-v0.1 is weak on GSM8K out of
+# the box and MetaMathQA lifts it a long way, so the denominator of retained
+# gain is large and the codec ordering is measurable.
+#
+# Shakeout size: the whole run lands in about an hour so a second pass can
+# fix whatever this one exposes before the overnight campaign. Smaller training
+# set and smaller test set than the full pilot, so treat the numbers as
+# directional ordering rather than as measurements.
+
+information_rows: 256
+# Generation is the whole cost of a codec sweep; 8 rows leaves an
+# 80 GB H100 idle.
+evaluation_batch_size: 32
+
+codecs:
+  fp16:
+    method: uniform
+    bits: 16
+  uniform8:
+    method: uniform
+    bits: 8
+  uniform4:
+    method: uniform
+    bits: 4
+  uniform3:
+    method: uniform
+    bits: 3
+  uniform2:
+    method: uniform
+    bits: 2
+  binary:
+    method: uniform
+    bits: 1
+  midtread3:
+    method: uniform
+    bits: 3
+    quantizer: midtread
+  midtread2:
+    method: uniform
+    bits: 2
+    quantizer: midtread
+  loraquant_2_08:
+    method: loraquant
+    high_bits: 2
+    low_bits: 1
+    variance_ratio: 0.8
+    group_size: 128
+    optimize_steps: 100
+  loraquant_3_09:
+    method: loraquant
+    high_bits: 3
+    low_bits: 1
+    variance_ratio: 0.9
+    group_size: 128
+    optimize_steps: 100
+
+models:
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+
+training:
+  metamath_1024:
+    # One pass over a 24k subsample. The previous pilot's best checkpoint was
+    # the earliest one scored, so extra epochs only bought overfitting.
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    # 500 updates total, so this still scores the held-out split ten times.
+    eval_every_updates: 50
+
+datasets:
+  metamath:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    # 8k of MetaMathQA's 395k, so 500 optimizer updates. Enough for a large
+    # GSM8K move on a base that starts near 14%, small enough to train in about
+    # twenty minutes.
+    train_rows: 8000
+    # 300 GSM8K problems: +/-5.7 points at p=0.5. Coarse, but the gain being
+    # measured should be twenty points or more, and it is what keeps eighteen
+    # evaluations inside the hour.
+    test_rows: 300
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+
+studies:
+  pilot:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [metamath]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: metamath_1024

@@ -1,0 +1,136 @@
+version: 1
+
+# Overnight campaign.
+#
+# The one-hour shakeout established the recipe: Mistral-7B-v0.1 on 8k rows of
+# MetaMathQA moved GSM8K from 7.7% to 62.2%, a 54.5-point gain, so the
+# retained-gain denominator is large and every codec ordering is measurable.
+#
+# What changes here:
+#   - 32k training rows rather than 8k, to sit nearer the published recipe;
+#   - the full 1319-problem GSM8K test set, so a point carries +/-2.7 rather
+#     than +/-5.7, tight enough to separate codecs a few points apart;
+#   - Qwen2.5-7B alongside Mistral, because the claim rule wants two models;
+#   - denser rates below two bits, where the shakeout put the whole frontier.
+
+information_rows: 256
+# Generation is the whole cost of a codec sweep; 8 rows leaves an
+# 80 GB H100 idle.
+evaluation_batch_size: 32
+
+codecs:
+  fp16:
+    method: uniform
+    bits: 16
+  uniform8:
+    method: uniform
+    bits: 8
+  uniform4:
+    method: uniform
+    bits: 4
+  uniform3:
+    method: uniform
+    bits: 3
+  uniform2:
+    method: uniform
+    bits: 2
+  binary:
+    method: uniform
+    bits: 1
+  midtread3:
+    method: uniform
+    bits: 3
+    quantizer: midtread
+  midtread2:
+    method: uniform
+    bits: 2
+    quantizer: midtread
+  loraquant_2_08:
+    method: loraquant
+    high_bits: 2
+    low_bits: 1
+    variance_ratio: 0.8
+    group_size: 128
+    optimize_steps: 100
+  loraquant_3_09:
+    method: loraquant
+    high_bits: 3
+    low_bits: 1
+    variance_ratio: 0.9
+    group_size: 128
+    optimize_steps: 100
+
+models:
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+
+training:
+  metamath_1024:
+    # One pass over a 24k subsample. The previous pilot's best checkpoint was
+    # the earliest one scored, so extra epochs only bought overfitting.
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    # 2000 updates total, so ten held-out scores for the best-state restore.
+    eval_every_updates: 200
+
+datasets:
+  metamath:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    # 32k of MetaMathQA's 395k. 8k already reached 62% GSM8K, so this is well
+    # past the knee; more would buy little and cost hours.
+    train_rows: 32000
+    # The whole GSM8K test split: +/-2.7 points at p=0.5. The shakeout's 300
+    # problems could not separate codecs that differ by five.
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+
+studies:
+  overnight:
+    kind: natural
+    models: [mistral_7b_base, qwen25_7b_base]
+    datasets: [metamath]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: metamath_1024
