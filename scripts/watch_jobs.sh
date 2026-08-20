@@ -1,20 +1,17 @@
 #!/usr/bin/env bash
-# Wait for a set of Jean-Zay jobs to finish, then hand the outcome to Claude.
+# Wait for a set of Jean-Zay jobs to finish, then print what happened.
 #
 # Polls squeue at a low rate, stays silent while jobs run, and on completion
-# calls `claude -p` once with the exit states and a pointer at the artifacts.
-# Cheaper than an in-session monitor: no tokens are spent until there is
-# something to report.
+# writes the exit states, artifact counts and any failing logs to stdout and to
+# slurm_logs/watch_jobs.log. It does not call Claude and does not notify
+# anything: read the log when you want to know, or start a session yourself.
 #
-#   scripts/watch_jobs.sh fqcomp "the compressibility smoke test"
-#   scripts/watch_jobs.sh '' "everything" 600      # any job, 10-minute poll
+#   scripts/watch_jobs.sh fqcomp                   # watch one job name
+#   scripts/watch_jobs.sh '' '' 600                # any job, 10-minute poll
 #
 # Runs in the foreground. To walk away:
-#   nohup scripts/watch_jobs.sh fqcomp "the smoke test" >/dev/null 2>&1 &
-#
-# The Claude it starts inherits no terminal, so it runs with
-# --permission-mode auto and is told not to launch jobs on its own. Set
-# JZ_CLAUDE_MODE=manual if you would rather it stop and wait for you.
+#   nohup scripts/watch_jobs.sh fqcomp >/dev/null 2>&1 &
+#   tail -f slurm_logs/watch_jobs.log
 
 set -uo pipefail
 
@@ -78,15 +75,4 @@ failed=0
 grep -qE '\b(FAILED|TIMEOUT|CANCELLED|OUT_OF_ME)' <<<"$summary" && failed=1
 say "outcome: $([[ $failed -eq 1 ]] && echo 'some jobs did not succeed' || echo 'all jobs succeeded')"
 
-cd "$repo"
-claude -p --permission-mode "${JZ_CLAUDE_MODE:-auto}" "$(cat <<PROMPT
-A Jean-Zay job set has finished: ${what}.
-
-Slurm reported:
-${summary}
-
-Pull the results, check them against what the run was supposed to show, and say
-plainly whether it worked. If anything failed, diagnose the cause from the slurm
-logs rather than guessing. Do not launch new jobs without asking.
-PROMPT
-)" 2>&1 | tee -a "$log"
+say "summary written to $log"
