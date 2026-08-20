@@ -138,9 +138,14 @@ class RunEngine:
         return self._limit_data(self._data_cache[key]), {"dataset_key": run.dataset_key}
 
     def _baseline_key(self, run: RunSpec) -> str:
+        # The test-set size belongs in the key. Without it, changing
+        # `test_rows` reuses a baseline scored on a different set of problems
+        # and every retained-gain number silently compares two populations.
+        spec = self.campaign["datasets"][str(run.dataset_key)]
+        rows = spec.get("test_rows", "all")
         return (
             f"{run.model.key}__{run.model.backbone}__"
-            f"{run.dataset_key}-seed{run.seed}"
+            f"{run.dataset_key}-seed{run.seed}-n{rows}"
         )
 
     def _evaluate_natural(
@@ -155,7 +160,10 @@ class RunEngine:
             examples,
             run.model,
             str(run.dataset_key),
-            batch_size=8,
+            # Generation dominates a codec sweep: one evaluation per codec, and
+            # every batch runs to the longest sequence in it. Eight rows barely
+            # occupies an 80 GB card.
+            batch_size=int(self.campaign.get("evaluation_batch_size", 8)),
             multiple_choice_labels=list(
                 map(str, self.campaign.get("multiple_choice_labels", []))
             ),
@@ -315,13 +323,13 @@ class RunEngine:
         baseline_dir = self.runs_root / "baselines" / self._baseline_key(run)
         if (baseline_dir / "metrics.json").is_file():
             return read_json(baseline_dir / "metrics.json")
-        lock = baseline_dir.with_name(baseline_dir.name + ".lock")
-        lock.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            lock.mkdir()
-        except FileExistsError:
-            return _wait_for_json(baseline_dir / "metrics.json")
-        try:
+        # A directory used as a mutex is not released when the holder is
+        # killed, so one cancelled job leaves every later job waiting an hour
+        # and then failing. `claim_run` holds an flock, which the kernel drops
+        # as soon as the process dies, stale or not.
+        with claim_run(baseline_dir) as claimed:
+            if not claimed:
+                return _wait_for_json(baseline_dir / "metrics.json")
             baseline_dir.mkdir(parents=True, exist_ok=True)
             metrics, predictions = self._evaluate_natural(session, run, data["test"])
             write_predictions(baseline_dir / "predictions.jsonl", predictions)
@@ -359,8 +367,6 @@ class RunEngine:
             output["screening"] = self._screening(run, output)
             write_json(baseline_dir / "metrics.json", output)
             return output
-        finally:
-            lock.rmdir()
 
     def _calibration_score(
         self,

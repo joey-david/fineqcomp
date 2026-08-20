@@ -70,6 +70,12 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                         training_key = study.get("training_by_dataset", {}).get(
                             dataset_key, study["training"]
                         )
+                        # The training and test row caps belong in the run
+                        # identity. Without them two configs that differ only
+                        # in how much data they use produce the same run id,
+                        # and the second silently reuses the first's trained
+                        # adapter and codec metrics instead of recomputing.
+                        dataset_spec = raw["datasets"][str(dataset_key)]
                         payload = {
                             "study": study_name,
                             "kind": kind,
@@ -79,6 +85,9 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                             "adapter": adapter.key,
                             "seed": seed,
                             "dataset": dataset_key,
+                            "train_rows": dataset_spec.get("train_rows"),
+                            "test_rows": dataset_spec.get("test_rows"),
+                            "epochs": training_key,
                         }
                         run_id = _run_id(
                             [

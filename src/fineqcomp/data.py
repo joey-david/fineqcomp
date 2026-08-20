@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
-import math
-import zlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -241,6 +238,12 @@ def _load_natural_from_hub(
         validation_rows = int(spec["validation_rows"])
         calibration_rows = shuffled.select(range(validation_rows))
         train_rows = shuffled.select(range(validation_rows, len(shuffled)))
+        # `train_rows` bounds the training set so one run fits a bounded job.
+        # It reshuffles per seed, unlike the test cap, because seeds should see
+        # different training data.
+        limit = spec.get("train_rows")
+        if limit is not None and int(limit) < len(train_rows):
+            train_rows = train_rows.select(range(int(limit)))
         # `test_rows` caps each evaluation set. The subsample uses a fixed seed,
         # not the run seed, so every seed and codec is scored on exactly the
         # same problems and the comparisons stay paired.

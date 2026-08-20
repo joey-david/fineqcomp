@@ -104,3 +104,25 @@ def test_natural_screening_uses_fixed_dataset_ceiling(tmp_path):
         )["status"]
         == "usable"
     )
+
+
+def test_run_id_tracks_dataset_size_caps(tmp_path):
+    """Two configs differing only in row caps must not share a run id.
+
+    They otherwise collide, and the second config silently reuses the first's
+    trained adapter and codec metrics rather than recomputing them.
+    """
+    def metamath_ids(rows: int) -> set[str]:
+        raw = load_campaign("configs/campaign.yaml")
+        raw["datasets"]["metamath"]["train_rows"] = rows
+        return {
+            run.run_id
+            for run in expand_campaign(raw)
+            if run.dataset_key == "metamath"
+        }
+
+    small, large = metamath_ids(8000), metamath_ids(32000)
+
+    assert small and large
+    assert len(small) == len(large)
+    assert not (small & large)
