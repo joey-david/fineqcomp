@@ -89,16 +89,13 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                             "test_rows": dataset_spec.get("test_rows"),
                             "epochs": training_key,
                         }
-                        run_id = _run_id(
-                            [
-                                study_name,
-                                model.key,
-                                str(dataset_key),
-                                adapter.key,
-                                f"s{seed}",
-                            ],
-                            payload,
-                        )
+                        # A study named after its dataset would otherwise
+                        # repeat the name in every directory.
+                        parts = [study_name, model.key]
+                        if str(dataset_key) != study_name:
+                            parts.append(str(dataset_key))
+                        parts += [adapter.key, f"s{seed}"]
+                        run_id = _run_id(parts, payload)
                         runs.append(
                             RunSpec(
                                 run_id=run_id,

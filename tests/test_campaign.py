@@ -126,3 +126,31 @@ def test_run_id_tracks_dataset_size_caps(tmp_path):
     assert small and large
     assert len(small) == len(large)
     assert not (small & large)
+
+
+def test_compressibility_arms_are_compute_matched():
+    """Every arm must train for the same steps on the same number of samples.
+
+    The arms vary only in how many of those samples are distinct. If steps
+    scale with row count instead, duplication and training volume move
+    together and the experiment cannot separate them — which is what a first
+    smoke config did by flattening every arm to one epoch.
+    """
+    for path in ("configs/compressibility.yaml", "configs/compressibility_smoke.yaml"):
+        raw = load_campaign(path)
+        seen = set()
+        for name, study in raw["studies"].items():
+            dataset = raw["datasets"][study["datasets"][0]]
+            training = raw["training"][study["training"]]
+            rows = int(dataset["train_rows"])
+            steps = rows // int(training["effective_batch_size"]) * int(
+                training["epochs"]
+            )
+            seen.add((steps, rows * int(training["epochs"])))
+        assert len(seen) == 1, f"{path}: arms differ in compute: {sorted(seen)}"
+
+
+def test_run_id_does_not_repeat_a_study_named_after_its_dataset():
+    raw = load_campaign("configs/compressibility.yaml")
+    for run in expand_campaign(raw):
+        assert run.run_id.count(run.study.replace("_", "-")) == 1

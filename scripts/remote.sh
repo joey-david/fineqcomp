@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-usage="usage: scripts/remote.sh push | push-prepared | pull | pull-stats"
+usage="usage: scripts/remote.sh push | push-prepared | pull | pull-stats | pull-logs"
 action="${1:?$usage}"
 host="${SSH_SERVER:-lamgate}"
 remote_root="${REMOTE_REPO_ROOT:-/home/lamsade/jdavid/fineQComp}"
@@ -48,6 +48,11 @@ pull)
     "$host:$remote_root/reports/" reports/ || true
   rsync -avz --prune-empty-dirs \
     "$host:$remote_root/remote_logs/" remote_logs/ || true
+  ;;
+pull-logs)
+  mkdir -p slurm_logs
+  rsync -avz --prune-empty-dirs \
+    "$host:$remote_root/slurm_logs/" slurm_logs/
   ;;
 pull-stats)
   mkdir -p runs remote_logs
