@@ -88,15 +88,48 @@ def validate_single_token_labels(tokenizer: Any, labels: list[str]) -> list[int]
     return ids
 
 
+LABEL_SPANS = ("all", "reasoning", "answer")
+
+
+def response_boundary(tokenizer: Any, response: str, marker: str) -> int | None:
+    """Token offset inside a response where the final answer begins.
+
+    The marker is looked up from the right because a rationale may well quote
+    the phrase on its way to the conclusion, and it is the last occurrence that
+    starts the answer. Tokenizing the text before the marker and taking its
+    length puts the boundary on a token edge without re-tokenizing the whole
+    response two different ways.
+    """
+    cut = response.rfind(marker)
+    if cut < 0:
+        return None
+    return len(tokenizer.encode(response[:cut], add_special_tokens=False))
+
+
 class CausalExampleDataset(Dataset[dict[str, torch.Tensor]]):
+    """Tokenized prompt-masked SFT rows, optionally masked further by span.
+
+    `label_span` narrows the loss to one part of the response: `reasoning` for
+    the working that precedes the final answer, `answer` for the answer itself.
+    A row whose response does not contain `answer_marker` has no boundary and
+    is dropped, so a span measure never silently scores the wrong tokens.
+    """
+
     def __init__(
         self,
         tokenizer: Any,
         examples: list[Example],
         model_spec: ModelSpec,
         max_length: int,
+        label_span: str = "all",
+        answer_marker: str | None = None,
     ) -> None:
+        if label_span not in LABEL_SPANS:
+            raise ValueError(f"label span must be one of {LABEL_SPANS}")
+        if label_span != "all" and not answer_marker:
+            raise ValueError(f"the {label_span} span needs an answer marker")
         self.rows = []
+        self.dropped_without_marker = 0
         eos = tokenizer.eos_token_id
         for example in examples:
             prompt = render_prompt(tokenizer, example.prompt, model_spec)
@@ -109,6 +142,21 @@ class CausalExampleDataset(Dataset[dict[str, torch.Tensor]]):
             input_ids = (prompt_ids + response_ids)[:max_length]
             prompt_length = min(len(prompt_ids), len(input_ids))
             labels = [-100] * prompt_length + input_ids[prompt_length:]
+            if label_span != "all":
+                boundary = response_boundary(
+                    tokenizer, example.response, str(answer_marker)
+                )
+                if boundary is None:
+                    self.dropped_without_marker += 1
+                    continue
+                split = min(prompt_length + boundary, len(labels))
+                span = (
+                    range(split, len(labels))
+                    if label_span == "reasoning"
+                    else range(prompt_length, split)
+                )
+                for position in span:
+                    labels[position] = -100
             if not any(label != -100 for label in labels):
                 continue
             self.rows.append(
@@ -118,6 +166,11 @@ class CausalExampleDataset(Dataset[dict[str, torch.Tensor]]):
                 }
             )
         if not self.rows:
+            if self.dropped_without_marker:
+                raise ValueError(
+                    f"no response contained {answer_marker!r}, so the"
+                    f" {label_span} span scored nothing"
+                )
             raise ValueError("tokenization removed every training example")
 
     def __len__(self) -> int:

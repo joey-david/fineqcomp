@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from types import SimpleNamespace
 
+import pytest
 import torch
 
 from fineqcomp.config import ModelSpec
@@ -67,3 +68,40 @@ def test_offline_model_source_resolves_the_pinned_snapshot(tmp_path, monkeypatch
 
     assert model_source(spec, "token") == str(tmp_path)
     assert calls == [("org/model", "abc123", "token", True)]
+
+
+def _span_dataset(span, response=" work here The answer is: 42"):
+    return CausalExampleDataset(
+        Tokenizer(),
+        [Example("x", "abc", response, {})],
+        ModelSpec("m", "model", "revision", "bf16"),
+        max_length=64,
+        label_span=span,
+        answer_marker="The answer is:",
+    )
+
+
+def test_label_spans_partition_the_response():
+    """The two spans together cover exactly what the full span covers.
+
+    Bits spent on the working and bits spent on the answer are only separable
+    if the split is clean, so neither span may leak a token of the other.
+    """
+    full = _span_dataset("all")[0]["labels"]
+    reasoning = _span_dataset("reasoning")[0]["labels"]
+    answer = _span_dataset("answer")[0]["labels"]
+
+    scored = full != -100
+    assert ((reasoning != -100) & (answer != -100)).sum().item() == 0
+    assert torch.equal((reasoning != -100) | (answer != -100), scored)
+    assert reasoning[reasoning != -100].tolist() + answer[answer != -100].tolist() == (
+        full[scored].tolist()
+    )
+    # " work here " is eleven characters, so eleven tokens of working.
+    assert (reasoning != -100).sum().item() == 11
+
+
+def test_a_missing_marker_fails_loudly():
+    """A span that matches nothing must stop the run, not score zero tokens."""
+    with pytest.raises(ValueError, match="The answer is:"):
+        _span_dataset("answer", response=" no marker at all")
