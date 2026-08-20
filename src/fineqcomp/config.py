@@ -54,6 +54,10 @@ class TrainingSpec:
     # Score the held-out split every N optimizer updates as well as at each
     # epoch end, so best-state restore has fine-grained candidates.
     eval_every_updates: int | None = None
+    # Which part of the response carries the loss: the whole thing, the working
+    # that leads to the answer, or the answer alone. Anything but "all" needs
+    # the dataset to name its answer marker.
+    label_span: str = "all"
 
 
 @dataclass(frozen=True)
@@ -153,4 +157,25 @@ def load_campaign(path: str | Path) -> dict[str, Any]:
                 raise ValueError(f"codec {key}: invalid variance_ratio")
         else:
             raise ValueError(f"codec {key}: unknown method")
+    for key, training in raw["training"].items():
+        span = str(training.get("label_span", "all"))
+        if span not in {"all", "reasoning", "answer"}:
+            raise ValueError(f"training {key}: unknown label span {span!r}")
+        if span == "all":
+            continue
+        # A split span is meaningless without the string that starts the
+        # answer, and a study that trains on one must not reach the GPU
+        # before that is checked.
+        users = [
+            study
+            for study, spec in raw["studies"].items()
+            if spec.get("training") == key
+        ]
+        for study in users:
+            for dataset_key in raw["studies"][study]["datasets"]:
+                if not raw["datasets"][str(dataset_key)].get("answer_marker"):
+                    raise ValueError(
+                        f"dataset {dataset_key}: the {span} span needs an"
+                        " answer_marker"
+                    )
     return raw

@@ -91,6 +91,11 @@ def _wait_for_json(path: Path, timeout_seconds: float = 3600.0) -> dict[str, Any
     raise TimeoutError(f"timed out waiting for shared artifact: {path}")
 
 
+def _span_key(part: str, span: str) -> str:
+    """Where a span's numbers live inside an information record."""
+    return part if span == "all" else f"{part}_{span}"
+
+
 class RunEngine:
     def __init__(
         self,
@@ -155,9 +160,14 @@ class RunEngine:
             str(item["key"]) for item in spec.get("evaluations", [])
         ) or str(run.dataset_key)
         rows = spec.get("test_rows", "all")
+        # A study that splits the response by span needs baseline numbers for
+        # each span. Those go in a key of their own rather than growing the
+        # shared record in place, so a half-written rewrite can never be
+        # handed to a job already waiting on the old file.
+        split = "-split" if self._split_spans(run) else ""
         return (
             f"{run.model.key}__{run.model.backbone}__"
-            f"{evaluations}-seed{run.seed}-n{rows}"
+            f"{evaluations}-seed{run.seed}-n{rows}{split}"
         )
 
     def _evaluate_natural(
@@ -217,11 +227,17 @@ class RunEngine:
         run: RunSpec,
         baseline: dict[str, Any],
         raw_metrics: dict[str, Any],
+        span: str = "all",
     ) -> dict[str, Any]:
         spec = self.campaign["datasets"][str(run.dataset_key)]
         if "bits_per_token" in raw_metrics:
             metric = "validation_bits_per_token"
-            baseline_score = float(baseline["information"]["heldout"]["bits_per_token"])
+            # An arm taught only the final answer barely moves the NLL of the
+            # working, so its gate has to read the span it was trained on or
+            # it would be thrown out for learning nothing.
+            baseline_score = float(
+                baseline["information"][_span_key("heldout", span)]["bits_per_token"]
+            )
             raw_score = float(raw_metrics["bits_per_token"])
             minimum = float(spec["minimum_validation_nll_gain_bits_per_token"])
             gain = baseline_score - raw_score
@@ -233,6 +249,7 @@ class RunEngine:
             gain = raw_score - baseline_score
         return {
             "metric": metric,
+            "span": span,
             "baseline_validation_score": baseline_score,
             "raw_adapter_validation_score": raw_score,
             "gain": gain,
@@ -247,23 +264,54 @@ class RunEngine:
         data: dict[str, list[Example]],
     ) -> dict[str, Any]:
         rows = int(self.campaign.get("information_rows", 256))
+        marker = self._answer_marker(run)
+
+        def measure(split: str, span: str) -> dict[str, Any]:
+            return causal_nll(
+                session.model,
+                session.tokenizer,
+                data[split][:rows],
+                run.model,
+                run.training.max_length,
+                run.training.micro_batch_size,
+                span,
+                marker,
+            )
+
+        measured = {
+            "train": measure("train", "all"),
+            "heldout": measure("calibration", "all"),
+        }
+        # With a marker the same rows are scored again on each half of the
+        # response, which is what separates bits spent on the working from
+        # bits spent on the answer.
+        for span in self._split_spans(run):
+            measured[f"train_{span}"] = measure("train", span)
+            measured[f"heldout_{span}"] = measure("calibration", span)
+            if not measured[f"heldout_{span}"]["nll_tokens"]:
+                raise ValueError(
+                    f"{run.run_id}: the {span} span scored no tokens; check the"
+                    " dataset answer_marker"
+                )
+        return measured
+
+    def _answer_marker(self, run: RunSpec) -> str | None:
+        marker = self.campaign["datasets"][str(run.dataset_key)].get("answer_marker")
+        return str(marker) if marker else None
+
+    def _split_spans(self, run: RunSpec) -> tuple[str, ...]:
+        return ("reasoning", "answer") if self._answer_marker(run) else ()
+
+    def _span_writes(
+        self, run: RunSpec, baseline: dict[str, Any], tuned: dict[str, Any]
+    ) -> dict[str, dict[str, float]]:
+        """Bits saved on each half of the response, measured separately."""
         return {
-            "train": causal_nll(
-                session.model,
-                session.tokenizer,
-                data["train"][:rows],
-                run.model,
-                run.training.max_length,
-                run.training.micro_batch_size,
-            ),
-            "heldout": causal_nll(
-                session.model,
-                session.tokenizer,
-                data["calibration"][:rows],
-                run.model,
-                run.training.max_length,
-                run.training.micro_batch_size,
-            ),
+            span: self._behavioral_write(
+                {part: baseline[_span_key(part, span)] for part in ("train", "heldout")},
+                {part: tuned[_span_key(part, span)] for part in ("train", "heldout")},
+            )
+            for span in self._split_spans(run)
         }
 
     @staticmethod
@@ -482,6 +530,9 @@ class RunEngine:
             "behavioral_write": self._behavioral_write(
                 baseline["information"], information
             ),
+            "behavioral_write_spans": self._span_writes(
+                run, baseline["information"], information
+            ),
         }
 
     def run_one(
@@ -542,12 +593,19 @@ class RunEngine:
                 run.training,
                 run.seed,
                 run_dir / "logs" / "training.jsonl",
+                self._answer_marker(run),
             )
             raw_tensors = adapter_tensors(session.model, run.adapter.method)
             torch.save(raw_tensors, raw_path)
             write_json(training_path, training_metrics)
         raw_information = self._information_measure(session, run, data)
-        learning_gate = self._learning_gate(run, baseline, raw_information["heldout"])
+        gate_span = run.training.label_span
+        learning_gate = self._learning_gate(
+            run,
+            baseline,
+            raw_information[_span_key("heldout", gate_span)],
+            gate_span,
+        )
         write_json(run_dir / "learning_gate.json", learning_gate)
         if learning_gate["status"] == "no_learning" and self.pilot_rows is None:
             write_json(
@@ -602,6 +660,9 @@ class RunEngine:
             "learning_gate": learning_gate,
             "raw_task": raw_task,
             "raw_information": raw_information,
+            "raw_behavioral_write_spans": self._span_writes(
+                run, baseline["information"], raw_information
+            ),
             "raw_behavioral_write": self._behavioral_write(
                 baseline["information"], raw_information
             ),

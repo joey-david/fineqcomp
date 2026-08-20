@@ -32,8 +32,13 @@ def causal_nll(
     model_spec: ModelSpec,
     max_length: int,
     batch_size: int,
+    label_span: str = "all",
+    answer_marker: str | None = None,
 ) -> dict[str, float | int]:
-    dataset = CausalExampleDataset(tokenizer, examples, model_spec, max_length)
+    """Mean NLL over the scored tokens, which `label_span` can narrow."""
+    dataset = CausalExampleDataset(
+        tokenizer, examples, model_spec, max_length, label_span, answer_marker
+    )
     loader = DataLoader(
         dataset,
         batch_size=batch_size,
@@ -67,13 +72,24 @@ def train_adapter(
     spec: TrainingSpec,
     seed: int,
     log_path: str | Path,
+    answer_marker: str | None = None,
 ) -> dict[str, Any]:
-    """Train only marked adapter tensors and restore the best validation state."""
+    """Train only marked adapter tensors and restore the best validation state.
+
+    `spec.label_span` decides which part of the response carries the loss, and
+    validation is scored on the same span, so an arm that is only taught the
+    final answer is also selected on the final answer.
+    """
     if spec.effective_batch_size % spec.micro_batch_size:
         raise ValueError("effective batch size must divide by micro batch size")
     accumulation = spec.effective_batch_size // spec.micro_batch_size
     dataset = CausalExampleDataset(
-        tokenizer, train_examples, model_spec, spec.max_length
+        tokenizer,
+        train_examples,
+        model_spec,
+        spec.max_length,
+        spec.label_span,
+        answer_marker,
     )
     generator = torch.Generator(device="cpu")
     generator.manual_seed(seed)
@@ -118,6 +134,8 @@ def train_adapter(
             model_spec,
             spec.max_length,
             spec.micro_batch_size,
+            spec.label_span,
+            answer_marker,
         )
         record = {
             "epoch": epoch,
