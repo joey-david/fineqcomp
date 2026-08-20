@@ -51,6 +51,9 @@ class TrainingSpec:
     adam_beta1: float = 0.9
     adam_beta2: float = 0.95
     max_grad_norm: float = 1.0
+    # Score the held-out split every N optimizer updates as well as at each
+    # epoch end, so best-state restore has fine-grained candidates.
+    eval_every_updates: int | None = None
 
 
 @dataclass(frozen=True)

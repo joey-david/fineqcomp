@@ -3,6 +3,9 @@ version: 1
 # Every codec reads the same trained adapter checkpoint. File size is measured
 # from the serialized container, including headers, scales, and padding.
 information_rows: 256
+# Generation is the whole cost of a codec sweep; 8 rows leaves an
+# 80 GB H100 idle.
+evaluation_batch_size: 32
 
 # The default `midrise` quantizer uses zero-free odd levels with a
 # least-squares row scale, so every codeword is used. `midtread` is the usual

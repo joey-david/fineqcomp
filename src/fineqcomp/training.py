@@ -108,6 +108,31 @@ def train_adapter(
     update = 0
     log_target = Path(log_path)
     log_target.parent.mkdir(parents=True, exist_ok=True)
+    def checkpoint(epoch: int, train_loss: float, log) -> None:
+        """Score the held-out split and keep the best adapter state seen."""
+        nonlocal best_nll, best_state
+        validation = causal_nll(
+            model,
+            tokenizer,
+            calibration_examples,
+            model_spec,
+            spec.max_length,
+            spec.micro_batch_size,
+        )
+        record = {
+            "epoch": epoch,
+            "updates": update,
+            "train_loss": train_loss,
+            "validation_nll": validation["nll"],
+            "learning_rate": scheduler.get_last_lr()[0],
+        }
+        log.write(json.dumps(record, sort_keys=True) + "\n")
+        log.flush()
+        if float(validation["nll"]) < best_nll:
+            best_nll = float(validation["nll"])
+            best_state = trainable_state(model)
+        model.train()
+
     with log_target.open("a") as log:
         for epoch in range(spec.epochs):
             model.train()
@@ -136,26 +161,17 @@ def train_adapter(
                     scheduler.step()
                     optimizer.zero_grad(set_to_none=True)
                     update += 1
-            validation = causal_nll(
-                model,
-                tokenizer,
-                calibration_examples,
-                model_spec,
-                spec.max_length,
-                spec.micro_batch_size,
-            )
-            record = {
-                "epoch": epoch + 1,
-                "updates": update,
-                "train_loss": running_loss / max(micro_steps, 1),
-                "validation_nll": validation["nll"],
-                "learning_rate": scheduler.get_last_lr()[0],
-            }
-            log.write(json.dumps(record, sort_keys=True) + "\n")
-            log.flush()
-            if float(validation["nll"]) < best_nll:
-                best_nll = float(validation["nll"])
-                best_state = trainable_state(model)
+                    # Scoring only at epoch ends gives the best-state restore
+                    # very few candidates, so a run that overfits inside its
+                    # first epoch has nothing good to fall back to.
+                    if (
+                        spec.eval_every_updates
+                        and update % spec.eval_every_updates == 0
+                    ):
+                        checkpoint(
+                            epoch + 1, running_loss / max(micro_steps, 1), log
+                        )
+            checkpoint(epoch + 1, running_loss / max(micro_steps, 1), log)
     if best_state is None:
         raise RuntimeError("training did not produce a validation state")
     restore_trainable_state(model, best_state)
