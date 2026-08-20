@@ -63,7 +63,12 @@ class CodecSpec:
     bits: int | None = None
     quantizer: Quantizer = "midrise"
     # Fraction of rows written one bit wider, for rates between the rungs.
+    # At bits = 0 it is the fraction kept at one bit, for rates below one.
     blend: float = 0.0
+    # Held-out bits saved costs a forward pass over a few hundred rows; the
+    # task score costs a full test pass. Rungs that only have to place the
+    # crossing turn the task score off and keep the cheap axis.
+    score_task: bool = True
     high_bits: int | None = None
     low_bits: int | None = None
     variance_ratio: float | None = None
@@ -124,7 +129,7 @@ def load_campaign(path: str | Path) -> dict[str, Any]:
     for key, codec in codecs.items():
         if codec.get("method") == "uniform":
             bits = int(codec.get("bits", 0))
-            if bits not in {1, 2, 3, 4, 8, 16}:
+            if bits not in {0, 1, 2, 3, 4, 8, 16}:
                 raise ValueError(f"codec {key}: unsupported uniform bit width")
             quantizer = codec.get("quantizer", "midrise")
             if quantizer not in {"midrise", "midtread"}:
@@ -134,8 +139,10 @@ def load_campaign(path: str | Path) -> dict[str, Any]:
             blend = float(codec.get("blend", 0.0))
             if not 0.0 <= blend < 1.0:
                 raise ValueError(f"codec {key}: blend must be in [0, 1)")
-            if blend and bits not in {1, 2, 3}:
+            if blend and bits not in {0, 1, 2, 3}:
                 raise ValueError(f"codec {key}: cannot blend {bits} bits upward")
+            if bits == 0 and not blend:
+                raise ValueError(f"codec {key}: a zero-bit code needs a blend")
         elif codec.get("method") == "loraquant":
             if int(codec.get("high_bits", 0)) not in {2, 3}:
                 raise ValueError(f"codec {key}: high_bits must be 2 or 3")

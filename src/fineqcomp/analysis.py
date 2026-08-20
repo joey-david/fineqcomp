@@ -100,6 +100,9 @@ def collect_rows(
             continue
         run = _read_json(metrics_path)
         for codec in run.get("codecs", []):
+            # Rungs scored on held-out bits alone have no task row to report.
+            if not codec.get("task"):
+                continue
             task = codec["task"]
             primary_metric = _primary_metric(task)
             primary_evaluator = task.get("primary_evaluator")

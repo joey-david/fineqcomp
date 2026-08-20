@@ -213,3 +213,39 @@ def test_blended_widths_hit_intermediate_rates(tmp_path, blend):
         float((tensors[n] - decoded[n]).square().sum()) for n in tensors
     ) ** 0.5 / sum(float(t.square().sum()) for t in tensors.values()) ** 0.5
     assert abs(error - mixed["relative_rmse"]) < 1e-6
+
+
+@pytest.mark.parametrize("blend", [0.125, 0.5, 0.875])
+def test_zero_bit_blend_reaches_below_one_bit(tmp_path, blend):
+    """Below one bit the blend drops rows instead of widening them.
+
+    A rank-16 LoRA factor has sixteen rows, so the kept fraction is the mean
+    rate, and both factors of a pair must keep the same rank directions or the
+    kept rows multiply against dropped partners and buy nothing.
+    """
+    generator = torch.Generator().manual_seed(5)
+    tensors = {
+        "m.q_proj.lora_A.default.weight": torch.randn(16, 512, generator=generator),
+        "m.q_proj.lora_B.default.weight": torch.randn(512, 16, generator=generator),
+    }
+    whole = encode_tensor_map(tensors, tmp_path / "one.fqcb", 1)
+    partial = encode_tensor_map(tensors, tmp_path / "sub.fqcb", 0, blend=blend)
+
+    assert abs(partial["value_bits"] / partial["tensor_values"] - blend) < 1e-9
+    assert partial["bits_per_value"] == pytest.approx(blend)
+    assert partial["file_bits"] < whole["file_bits"]
+    assert partial["relative_rmse"] > whole["relative_rmse"]
+
+    _, decoded = decode_tensor_map(tmp_path / "sub.fqcb")
+    assert {n: tuple(v.shape) for n, v in decoded.items()} == {
+        n: tuple(v.shape) for n, v in tensors.items()
+    }
+    error = sum(
+        float((tensors[n] - decoded[n]).square().sum()) for n in tensors
+    ) ** 0.5 / sum(float(t.square().sum()) for t in tensors.values()) ** 0.5
+    assert abs(error - partial["relative_rmse"]) < 1e-6
+
+    kept_a = decoded["m.q_proj.lora_A.default.weight"].abs().sum(dim=1) > 0
+    kept_b = decoded["m.q_proj.lora_B.default.weight"].abs().sum(dim=0) > 0
+    assert torch.equal(kept_a, kept_b)
+    assert int(kept_a.sum()) == round(16 * blend)
