@@ -62,3 +62,30 @@ def test_training_runs_partial_accumulation_group_and_records_cost(tmp_path):
     assert metrics["elapsed_seconds"] > 0
     assert metrics["peak_memory_bytes"] is None
     assert (tmp_path / "training.jsonl").read_text().count("\n") == 1
+
+
+def test_checkpoint_count_does_not_depend_on_epoch_count():
+    """Arms reaching the same updates by different epoch counts must tie.
+
+    Best-state restore takes the minimum validation loss over candidates, so an
+    arm scored twelve times beats one scored five purely by sampling. The
+    compressibility arms differ in epochs by construction, so the cadence has
+    to be counted in updates only.
+    """
+    from fineqcomp.config import TrainingSpec
+
+    def candidates(epochs: int, rows: int, cadence: int) -> int:
+        spec = TrainingSpec(
+            epochs=epochs, learning_rate=2e-4, effective_batch_size=16,
+            micro_batch_size=4, max_length=1024, eval_every_updates=cadence,
+        )
+        total = rows // spec.effective_batch_size * spec.epochs
+        # One score every `cadence` updates, plus one at the final update.
+        scheduled = total // cadence
+        return scheduled + (0 if total % cadence == 0 else 1)
+
+    counts = {
+        candidates(epochs, rows, 10)
+        for epochs, rows in ((8, 80), (4, 160), (2, 320), (1, 640))
+    }
+    assert counts == {4}, f"arms get different candidate counts: {counts}"

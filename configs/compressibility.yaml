@@ -14,17 +14,11 @@ evaluation_batch_size: 32
 
 # Rungs at 1.0/1.25/1.5/1.75/2.0 because R*(0.90) fell in the whole-bit gap
 # between 85.7% and 98.6% retention, which no whole-bit ladder can resolve.
-# fp16 anchors the raw reference; 3 and 4 bits close the top of the curve.
+# Nothing above two bits: the overnight run put retention at 99% there, so
+# those rungs cost 19 minutes each and carry no information about the
+# crossing. The raw adapter is scored anyway and supplies the denominator.
+# Add them later from the cached checkpoint if the full curve is wanted.
 codecs:
-  fp16:
-    method: uniform
-    bits: 16
-  uniform4:
-    method: uniform
-    bits: 4
-  uniform3:
-    method: uniform
-    bits: 3
   uniform2:
     method: uniform
     bits: 2
@@ -67,6 +61,18 @@ adapters:
     dropout: 0.0
 
 training:
+  arm_e_16ep:
+    epochs: 16
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
   arm_a_8ep:
     epochs: 8
     learning_rate: 0.0002
@@ -117,6 +123,27 @@ training:
     eval_every_updates: 200
 
 datasets:
+  arm_e:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 2000
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
   arm_a:
     task_type: generative
     train_source:
@@ -203,6 +230,13 @@ datasets:
     minimum_validation_nll_gain_bits_per_token: 0.02
 
 studies:
+  arm_e:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [arm_e]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_e_16ep
   arm_a:
     kind: natural
     models: [mistral_7b_base]
