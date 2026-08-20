@@ -62,6 +62,8 @@ class CodecSpec:
     method: CodecMethod
     bits: int | None = None
     quantizer: Quantizer = "midrise"
+    # Fraction of rows written one bit wider, for rates between the rungs.
+    blend: float = 0.0
     high_bits: int | None = None
     low_bits: int | None = None
     variance_ratio: float | None = None
@@ -129,6 +131,11 @@ def load_campaign(path: str | Path) -> dict[str, Any]:
                 raise ValueError(f"codec {key}: unknown quantizer {quantizer!r}")
             if bits == 16 and quantizer != "midrise":
                 raise ValueError(f"codec {key}: fp16 has no quantizer choice")
+            blend = float(codec.get("blend", 0.0))
+            if not 0.0 <= blend < 1.0:
+                raise ValueError(f"codec {key}: blend must be in [0, 1)")
+            if blend and bits not in {1, 2, 3}:
+                raise ValueError(f"codec {key}: cannot blend {bits} bits upward")
         elif codec.get("method") == "loraquant":
             if int(codec.get("high_bits", 0)) not in {2, 3}:
                 raise ValueError(f"codec {key}: high_bits must be 2 or 3")
