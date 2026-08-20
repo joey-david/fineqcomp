@@ -6,18 +6,17 @@ import argparse
 import csv
 import json
 import math
-import struct
 import zlib
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import torch
 
 from fineqcomp.adapters import apply_adapter_tensors
 from fineqcomp.codec import (
     container_header_bits,
     midrise_quantize,
+    orient_for_scales,
     pack_unsigned,
     write_container,
 )
@@ -62,6 +61,10 @@ def _existing_controls(run_dir: Path) -> list[dict[str, Any]]:
                 "raw_adapter_score": float(retained["raw_adapter_score"]),
                 "task_score": float(retained["codec_score"]),
                 "retained_gain": float(retained["retained_gain"]),
+                "examples": int((metric.get("task") or {}).get("examples") or 0),
+                "heldout_bits_saved_per_token": (
+                    metric.get("behavioral_write") or {}
+                ).get("heldout_bits_saved_per_token"),
                 "source": "existing",
             }
         )
@@ -105,7 +108,9 @@ def _encode_midrise(
 
     for name in sorted(tensors):
         tensor = tensors[name].detach().cpu().float().contiguous()
-        scales, codes, reconstructed = midrise_quantize(tensor, bits)
+        matrix, transposed = orient_for_scales(name, tensor)
+        scales, codes, oriented = midrise_quantize(matrix, bits)
+        reconstructed = (oriented.T if transposed else oriented).reshape(tensor.shape)
         scales_bytes = scales.tobytes()
         data = pack_unsigned(codes, bits)
         scale_offset = len(payload)
@@ -118,6 +123,7 @@ def _encode_midrise(
             {
                 "name": name,
                 "shape": list(tensor.shape),
+                "transposed": transposed,
                 "count": count,
                 "scale_offset": scale_offset,
                 "scale_nbytes": len(scales_bytes),
@@ -161,6 +167,25 @@ def _encode_midrise(
 
 def _capped(value: float) -> float:
     return min(1.0, max(0.0, value))
+
+
+def resolvable_gain(
+    baseline: float, raw: float, examples: int, sigmas: float = 2.0
+) -> tuple[bool, float]:
+    """Is the raw adapter's gain large enough to divide by?
+
+    Retained gain is (codec - base) / (raw - base). When the denominator is
+    within sampling noise the ratio is meaningless, and because the plots clamp
+    it to [0, 1] a broken measurement renders as a flawless 100%. Compare the
+    gain against the standard error of a paired difference in proportions and
+    report the margin so callers can say why an axis was suppressed.
+    """
+    gain = raw - baseline
+    if examples <= 0:
+        return False, gain
+    spread = max(baseline * (1.0 - baseline), 1e-9)
+    standard_error = math.sqrt(2.0 * spread / examples)
+    return gain > sigmas * standard_error, gain
 
 
 def _frontier(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -228,6 +253,24 @@ def _save_plot(
             linewidth=2,
             alpha=0.8,
             label="Pareto frontier",
+        )
+
+    examples = max((int(row.get("examples") or 0) for row in rows), default=0)
+    resolvable, gain = resolvable_gain(baseline, raw, examples)
+    if not resolvable:
+        ax.text(
+            0.5,
+            0.5,
+            "retained gain is not resolvable\n"
+            f"raw adapter beats base by only {100 * gain:+.1f} points "
+            f"on {examples} examples\n"
+            "read the behavioural-bits panel instead",
+            transform=ax.transAxes,
+            ha="center",
+            va="center",
+            fontsize=11,
+            color="crimson",
+            bbox=dict(boxstyle="round", facecolor="white", alpha=0.85),
         )
 
     ax.axhline(100, linestyle="--", linewidth=1, alpha=0.55)

@@ -54,6 +54,24 @@ def container_header_bits(magic: bytes, header: Mapping[str, Any]) -> int:
     return (len(magic) + 4 + len(header_bytes)) * 8
 
 
+def orient_for_scales(name: str, tensor: torch.Tensor) -> tuple[torch.Tensor, bool]:
+    """Put the rank axis on rows so one fp16 scale covers many values.
+
+    A LoRA-B factor has shape (out_features, rank). Scaling per output row
+    spends one fp16 scale per `rank` values, which at one bit per value doubles
+    the file. Scaling along the rank axis instead costs `rank` scales for the
+    whole tensor, and because rank directions carry very different magnitudes
+    it also reconstructs better below four bits. LoRA-A is already (rank, in),
+    so it is left alone.
+
+    Returns the matrix to quantize and whether it was transposed.
+    """
+    matrix = tensor.reshape(tensor.shape[0], -1)
+    if ".lora_B." in name and matrix.shape[0] > matrix.shape[1]:
+        return matrix.T.contiguous(), True
+    return matrix, False
+
+
 @torch.no_grad()
 def midrise_quantize(
     tensor: torch.Tensor, bits: int, iterations: int = 8
@@ -219,6 +237,7 @@ def encode_tensor_map(
         tensor = tensors[name].detach().cpu().float().contiguous()
         if tensor.ndim < 1:
             raise ValueError(f"cannot encode scalar tensor {name}")
+        transposed = False
         if bits == 16:
             scales = b""
             reconstructed = tensor.numpy().astype(np.float16)
@@ -226,7 +245,11 @@ def encode_tensor_map(
             reconstructed = torch.from_numpy(reconstructed.astype(np.float32))
         else:
             encode = midrise_quantize if quantizer == "midrise" else _midtread_quantize
-            scale_values, values, reconstructed = encode(tensor, bits)
+            matrix, transposed = orient_for_scales(name, tensor)
+            scale_values, values, oriented = encode(matrix, bits)
+            reconstructed = (oriented.T if transposed else oriented).reshape(
+                tensor.shape
+            )
             scales = scale_values.tobytes()
             data = pack_unsigned(values, bits)
         squared_error += float((tensor - reconstructed).square().sum().item())
@@ -240,6 +263,7 @@ def encode_tensor_map(
                 "name": name,
                 "shape": list(tensor.shape),
                 "count": tensor.numel(),
+                "transposed": transposed,
                 "scale_offset": scale_offset,
                 "scale_nbytes": len(scales),
                 "data_offset": data_offset,
@@ -300,9 +324,10 @@ def decode_tensor_map(
             array = np.frombuffer(payload[start:stop], dtype=np.float16, count=count)
             tensor = torch.from_numpy(array.copy()).float().reshape(shape)
         else:
+            transposed = bool(entry.get("transposed", False))
+            rows = count // shape[0] if transposed else shape[0]
             scale_start = int(entry["scale_offset"])
             scale_stop = scale_start + int(entry["scale_nbytes"])
-            rows = shape[0]
             scales = np.frombuffer(
                 payload[scale_start:scale_stop], dtype=np.float16, count=rows
             )
@@ -311,7 +336,8 @@ def decode_tensor_map(
                 matrix = _midtread_reconstruct(codes.reshape(rows, -1), scales, bits)
             else:
                 matrix = midrise_dequantize(codes, scales, bits, rows, count // rows)
-            tensor = torch.from_numpy(matrix.copy()).reshape(shape)
+            oriented = torch.from_numpy(matrix.copy())
+            tensor = (oriented.T if transposed else oriented).reshape(shape)
         tensors[str(entry["name"])] = tensor
     return header, tensors
 
