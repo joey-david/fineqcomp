@@ -54,6 +54,51 @@ def container_header_bits(magic: bytes, header: Mapping[str, Any]) -> int:
     return (len(magic) + 4 + len(header_bytes)) * 8
 
 
+BLEND_SEED = 20260820
+
+
+def blend_widths(rows: int, bits: int, blend: float, tensor_index: int) -> np.ndarray:
+    """Split `rows` between `bits` and `bits + 1` so the mean rate is bits+blend.
+
+    The uniform ladder only has rungs at whole bit widths, and on this task the
+    interesting region — where a code stops holding 90% of the learned gain —
+    falls between one and two bits. This fills that gap without introducing an
+    allocator: the choice of which rows get the extra bit is drawn from a fixed
+    seed, so it carries no information about the weights. The MDL result says
+    an information-bearing allocation buys nothing here anyway.
+    """
+    if not 0.0 <= blend < 1.0:
+        raise ValueError("blend must be in [0, 1)")
+    generator = np.random.default_rng(BLEND_SEED + tensor_index)
+    widths = np.full(rows, bits, dtype=np.int64)
+    upgrades = int(round(rows * blend))
+    if upgrades:
+        widths[generator.choice(rows, size=upgrades, replace=False)] = bits + 1
+    return widths
+
+
+def _encode_blended(
+    matrix: torch.Tensor, widths: np.ndarray, quantizer: str
+) -> tuple[bytes, bytes, torch.Tensor, int]:
+    """Encode each row group at its own width; return scales, codes, recon, bits."""
+    encode = midrise_quantize if quantizer == "midrise" else _midtread_quantize
+    reconstructed = torch.empty_like(matrix)
+    scale_parts: list[bytes] = []
+    code_parts: list[bytes] = []
+    value_bits = 0
+    # Groups are emitted in ascending width so the decoder can rebuild the
+    # order from the width vector alone.
+    for width in sorted(set(int(w) for w in widths)):
+        index = np.flatnonzero(widths == width)
+        block = matrix[torch.from_numpy(index)]
+        scales, codes, recon = encode(block, width)
+        reconstructed[torch.from_numpy(index)] = recon
+        scale_parts.append(scales.tobytes())
+        code_parts.append(pack_unsigned(codes, width))
+        value_bits += int(block.numel()) * width
+    return b"".join(scale_parts), b"".join(code_parts), reconstructed, value_bits
+
+
 def orient_for_scales(name: str, tensor: torch.Tensor) -> tuple[torch.Tensor, bool]:
     """Put the rank axis on rows so one fp16 scale covers many values.
 
@@ -223,14 +268,23 @@ def encode_tensor_map(
     bits: int,
     quantizer: str = "midrise",
     metadata: Mapping[str, Any] | None = None,
+    blend: float = 0.0,
 ) -> dict[str, Any]:
-    """Write a complete adapter channel and return exact storage statistics."""
+    """Write a complete adapter channel and return exact storage statistics.
+
+    `blend` in (0, 1) puts that fraction of rows at `bits + 1` and the rest at
+    `bits`, giving intermediate rates between the whole-bit rungs.
+    """
     if bits not in ALLOWED_BITS:
         raise ValueError(f"bits must be one of {sorted(ALLOWED_BITS)}")
     if quantizer not in {"midrise", "midtread"}:
         raise ValueError("quantizer must be 'midrise' or 'midtread'")
+    if blend and (bits == 16 or bits + 1 not in QUANTIZER_BITS):
+        raise ValueError(f"cannot blend {bits} bits upward")
     payload = bytearray()
     entries = []
+    row_widths: list[np.ndarray] = []
+    value_bits_total = 0
     squared_error = 0.0
     squared_norm = 0.0
     for name in sorted(tensors):
@@ -243,6 +297,17 @@ def encode_tensor_map(
             reconstructed = tensor.numpy().astype(np.float16)
             data = reconstructed.tobytes()
             reconstructed = torch.from_numpy(reconstructed.astype(np.float32))
+        elif blend:
+            matrix, transposed = orient_for_scales(name, tensor)
+            widths = blend_widths(matrix.shape[0], bits, blend, len(entries))
+            scales, data, oriented, blended_bits = _encode_blended(
+                matrix, widths, quantizer
+            )
+            reconstructed = (oriented.T if transposed else oriented).reshape(
+                tensor.shape
+            )
+            row_widths.append(widths)
+            value_bits_total += blended_bits
         else:
             encode = midrise_quantize if quantizer == "midrise" else _midtread_quantize
             matrix, transposed = orient_for_scales(name, tensor)
@@ -264,6 +329,9 @@ def encode_tensor_map(
                 "shape": list(tensor.shape),
                 "count": tensor.numel(),
                 "transposed": transposed,
+                "widths": (
+                    [int(w) for w in row_widths[-1]] if blend else None
+                ),
                 "scale_offset": scale_offset,
                 "scale_nbytes": len(scales),
                 "data_offset": data_offset,
@@ -274,6 +342,7 @@ def encode_tensor_map(
         "version": 1,
         "bits": bits,
         "quantizer": "float16_v1" if bits == 16 else f"row_{quantizer}_v2",
+        "blend": blend,
         "compression": "zlib-9",
         "metadata": dict(metadata or {}),
         "tensors": entries,
@@ -281,7 +350,7 @@ def encode_tensor_map(
     compressed = zlib.compress(bytes(payload), level=9)
     file_bits = write_container(path, MAGIC, header, compressed)
     total_values = sum(tensor.numel() for tensor in tensors.values())
-    value_bits = total_values * bits
+    value_bits = value_bits_total if blend else total_values * bits
     packed_data_bits = sum(entry["data_nbytes"] for entry in entries) * 8
     return {
         "path": str(Path(path)),
@@ -293,11 +362,42 @@ def encode_tensor_map(
         "scale_bits": sum(entry["scale_nbytes"] for entry in entries) * 8,
         "padding_bits": packed_data_bits - value_bits,
         "tensor_values": total_values,
-        "bits_per_value": bits,
+        "bits_per_value": bits + blend,
         "quantizer": quantizer,
+        "blend": blend,
         "effective_bits_per_value": file_bits / max(total_values, 1),
         "relative_rmse": math.sqrt(squared_error / max(squared_norm, 1e-30)),
     }
+
+
+def _decode_blended(
+    payload: bytes,
+    entry: Mapping[str, Any],
+    widths: np.ndarray,
+    rows: int,
+    columns: int,
+    midtread: bool,
+) -> np.ndarray:
+    """Rebuild rows written at mixed widths, in ascending-width group order."""
+    matrix = np.zeros((rows, columns), dtype=np.float32)
+    scale_at = int(entry["scale_offset"])
+    data_at = int(entry["data_offset"])
+    for width in sorted(set(int(w) for w in widths)):
+        index = np.flatnonzero(widths == width)
+        n = index.size
+        scales = np.frombuffer(
+            payload[scale_at:scale_at + n * 2], dtype=np.float16, count=n
+        )
+        scale_at += n * 2
+        nbytes = (n * columns * width + 7) // 8
+        codes = unpack_unsigned(payload[data_at:data_at + nbytes], n * columns, width)
+        data_at += nbytes
+        if midtread:
+            block = _midtread_reconstruct(codes.reshape(n, columns), scales, width)
+        else:
+            block = midrise_dequantize(codes, scales, width, n, columns)
+        matrix[index] = block
+    return matrix
 
 
 def decode_tensor_map(
@@ -331,11 +431,22 @@ def decode_tensor_map(
             scales = np.frombuffer(
                 payload[scale_start:scale_stop], dtype=np.float16, count=rows
             )
-            codes = unpack_unsigned(payload[start:stop], count, bits)
-            if midtread:
-                matrix = _midtread_reconstruct(codes.reshape(rows, -1), scales, bits)
+            widths = entry.get("widths")
+            if widths:
+                matrix = _decode_blended(
+                    payload, entry, np.asarray(widths, dtype=np.int64),
+                    rows, count // rows, midtread,
+                )
             else:
-                matrix = midrise_dequantize(codes, scales, bits, rows, count // rows)
+                codes = unpack_unsigned(payload[start:stop], count, bits)
+                if midtread:
+                    matrix = _midtread_reconstruct(
+                        codes.reshape(rows, -1), scales, bits
+                    )
+                else:
+                    matrix = midrise_dequantize(
+                        codes, scales, bits, rows, count // rows
+                    )
             oriented = torch.from_numpy(matrix.copy())
             tensor = (oriented.T if transposed else oriented).reshape(shape)
         tensors[str(entry["name"])] = tensor

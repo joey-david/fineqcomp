@@ -182,3 +182,34 @@ def test_loraquant_codec_roundtrips_shapes_and_rate(tmp_path, high_bits, ratio):
     )
     assert storage["file_bits"] == path.stat().st_size * 8
     assert storage["effective_bits_per_value"] > 0
+
+
+@pytest.mark.parametrize("blend", [0.25, 0.5, 0.75])
+def test_blended_widths_hit_intermediate_rates(tmp_path, blend):
+    """The ladder has no rung between one and two bits; blending makes one.
+
+    A fraction of rows is written one bit wider than the rest, so the mean
+    payload rate is `bits + blend`. The split is drawn from a fixed seed, not
+    from the weights, so the code carries no allocation information.
+    """
+    generator = torch.Generator().manual_seed(3)
+    tensors = {
+        "m.q_proj.lora_A.default.weight": torch.randn(16, 512, generator=generator),
+        "m.q_proj.lora_B.default.weight": torch.randn(512, 16, generator=generator),
+    }
+    plain = encode_tensor_map(tensors, tmp_path / "plain.fqcb", 1)
+    mixed = encode_tensor_map(tensors, tmp_path / "mixed.fqcb", 1, blend=blend)
+    wider = encode_tensor_map(tensors, tmp_path / "wider.fqcb", 2)
+
+    rate = mixed["value_bits"] / mixed["tensor_values"]
+    assert abs(rate - (1 + blend)) < 0.02
+    assert plain["relative_rmse"] > mixed["relative_rmse"] > wider["relative_rmse"]
+
+    _, decoded = decode_tensor_map(tmp_path / "mixed.fqcb")
+    assert {n: tuple(v.shape) for n, v in decoded.items()} == {
+        n: tuple(v.shape) for n, v in tensors.items()
+    }
+    error = sum(
+        float((tensors[n] - decoded[n]).square().sum()) for n in tensors
+    ) ** 0.5 / sum(float(t.square().sum()) for t in tensors.values()) ** 0.5
+    assert abs(error - mixed["relative_rmse"]) < 1e-6
