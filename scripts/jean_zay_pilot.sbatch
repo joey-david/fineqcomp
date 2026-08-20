@@ -1,12 +1,23 @@
 #!/usr/bin/env bash
-# One pilot seed: train, then every codec point, then the MDL frontier.
+# One stage of one pilot seed.
 #
-# Targets qos_gpu_h100-dev deliberately. It caps walltime at 2h but carries
-# priority 80 against t3's 50, and allows 10 concurrent jobs, so three seeds
-# run in parallel and land in roughly the time of one.
+# Split into three stages that each fit the 2-hour dev QoS. Dev carries
+# priority 80 against t3's 50 and has started every job here in under ten
+# seconds, so three chained instant stages finish sooner than one long job
+# sitting in the 260-deep t3 queue.
 #
-# Submit with: sbatch --export=ALL,SEED=11 scripts/jean_zay_pilot.sbatch
-#SBATCH --job-name=fineqcomp-pilot
+#   STAGE=train   train the adapter, score base and raw, write the fp16 point
+#   STAGE=codecs  every remaining fixed-rate codec for one seed
+#   STAGE=mdl     a slice of the adaptive sweep, set by RATES
+#   STAGE=report  collect all seeds into one figure and table
+#
+# `fineqcomp run` takes an exclusive lock on a run directory, so only one codec
+# job per seed can make progress. The MDL sweep takes no such lock and only
+# needs the saved checkpoint, so its slices run beside the codec job and beside
+# each other, one model instance per H100.
+#
+# Submit with: sbatch --export=ALL,SEED=11,STAGE=train scripts/jean_zay_pilot.sbatch
+#SBATCH --job-name=fqpilot
 #SBATCH --account=fas@h100
 #SBATCH --partition=gpu_p6
 #SBATCH --constraint=h100
@@ -27,18 +38,16 @@ cd "$repo_root"
 mkdir -p slurm_logs
 
 seed="${SEED:?set SEED=11|22|33}"
-config=configs/pilot_gsm8k.yaml
-manifest=prepared/pilot-manifest.jsonl
+stage="${STAGE:?set STAGE=train|codecs|frontier}"
+config=${CONFIG:-configs/pilot_metamath.yaml}
+manifest=${MANIFEST:-prepared/pilot-metamath-manifest.jsonl}
 
 source "$repo_root/scripts/jean_zay_env.sh"
-echo "python:  $PYTHON"
-echo "seed:    $seed"
-nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
+export PYTHONUNBUFFERED=1
+export FINEQCOMP_PROGRESS=1
 
-if [[ ! -s "$manifest" ]]; then
-  echo "missing $manifest; run the staging step on a login node first" >&2
-  exit 2
-fi
+echo "stage=$stage seed=$seed python=$PYTHON"
+nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 
 run_id="$("$PYTHON" - "$manifest" "$seed" <<'PY'
 import json, sys
@@ -50,16 +59,33 @@ for line in open(manifest):
         break
 PY
 )"
-echo "run_id:  $run_id"
+echo "run_id=$run_id"
 
-# Train once, then derive every fixed-rate codec point from that checkpoint.
-"$PYTHON" -m fineqcomp run \
-  --config "$config" --manifest "$manifest" \
-  --runs-root runs --run-id "$run_id" --shards 1
+case "$stage" in
+train)
+  # fp16 is the cheapest point and forces the base and raw evaluations, so the
+  # learning gate is decided in this stage rather than the next one.
+  "$PYTHON" -m fineqcomp run --config "$config" --manifest "$manifest" \
+    --runs-root runs --run-id "$run_id" --shards 1 --codecs fp16
+  ;;
+codecs)
+  "$PYTHON" -m fineqcomp run --config "$config" --manifest "$manifest" \
+    --runs-root runs --run-id "$run_id" --shards 1 \
+    --codecs fp16 uniform8 uniform4 uniform3 uniform2 binary \
+             midtread3 midtread2 loraquant_2_08 loraquant_3_09
+  ;;
+mdl)
+  PYTHONPATH="$repo_root/src:$repo_root/archive/mdl" "$PYTHON" -m mdl "runs/$run_id" \
+    --config "$config" --prepared-root prepared \
+    --target-rates ${RATES:?set RATES="0.25 0.5"}
+  ;;
+report)
+  "$PYTHON" -m fineqcomp.pilot_report --runs-root runs --out reports/pilot
+  ;;
+*)
+  echo "unknown STAGE=$stage" >&2
+  exit 2
+  ;;
+esac
 
-# The adaptive frontier reuses the same checkpoint; no retraining.
-"$PYTHON" -m fineqcomp.mdl "runs/$run_id" \
-  --config "$config" --prepared-root prepared \
-  --target-rates 0.15 0.3 0.5 0.75 1.0 1.5 2.5 4.0
-
-echo "pilot seed $seed complete"
+echo "stage $stage seed $seed complete"
