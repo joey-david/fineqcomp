@@ -18,6 +18,19 @@ evaluation_batch_size: 32
 # those rungs cost 19 minutes each and carry no information about the
 # crossing. The raw adapter is scored anyway and supplies the denominator.
 # Add them later from the cached checkpoint if the full curve is wanted.
+#
+# The first pass then found the opposite problem. One bit still held 90% of the
+# gain in every arm on held-out bits saved, and in three of five on accuracy,
+# so R*(0.90) was pinned to the bottom rung and reported the same 1.02 bits for
+# every arm — a censored measurement, not a flat result. The rungs below one
+# bit keep `blend` of the sixteen rank directions at one bit and drop the rest,
+# so the rate is the fraction kept. Sixteen rows means the reachable rates are
+# multiples of 1/16, and these are k = 14, 12, 10, 8, 6, 4, 3, 2, 1.
+#
+# Only the 0.5-bit rung is scored on the test set. The others measure held-out
+# bits saved, which is a forward pass over 256 rows instead of 1,319 generated
+# answers, and that is the axis the arms are compared on; the anchor is there
+# to check the two axes still order the arms the same way this far down.
 codecs:
   uniform2:
     method: uniform
@@ -37,6 +50,50 @@ codecs:
   binary:
     method: uniform
     bits: 1
+  sub0_875:
+    method: uniform
+    bits: 0
+    blend: 0.875
+    score_task: false
+  sub0_750:
+    method: uniform
+    bits: 0
+    blend: 0.75
+    score_task: false
+  sub0_625:
+    method: uniform
+    bits: 0
+    blend: 0.625
+    score_task: false
+  sub0_500:
+    method: uniform
+    bits: 0
+    blend: 0.5
+  sub0_375:
+    method: uniform
+    bits: 0
+    blend: 0.375
+    score_task: false
+  sub0_250:
+    method: uniform
+    bits: 0
+    blend: 0.25
+    score_task: false
+  sub0_1875:
+    method: uniform
+    bits: 0
+    blend: 0.1875
+    score_task: false
+  sub0_125:
+    method: uniform
+    bits: 0
+    blend: 0.125
+    score_task: false
+  sub0_0625:
+    method: uniform
+    bits: 0
+    blend: 0.0625
+    score_task: false
 
 models:
   mistral_7b_base:

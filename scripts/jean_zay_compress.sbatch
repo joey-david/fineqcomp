@@ -27,7 +27,7 @@ repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 cd "$repo_root"
 mkdir -p slurm_logs reports
 
-arm="${ARM:?set ARM=arm_a|arm_b|arm_c|arm_d}"
+arm="${ARM:?set ARM=arm_a|arm_b|arm_c|arm_d|arm_e}"
 seed="${SEED:?set SEED}"
 config="${CONFIG:-configs/compressibility.yaml}"
 manifest="${MANIFEST:-prepared/compressibility-manifest.jsonl}"

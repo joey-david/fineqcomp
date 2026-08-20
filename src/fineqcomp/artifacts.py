@@ -30,12 +30,19 @@ def run_complete(run_dir: str | Path, codec_keys: tuple[str, ...]) -> bool:
         return True
     if status.get("state") != "complete" or not (root / "metrics.json").is_file():
         return False
-    return all(
-        (root / "codec_metrics" / f"{key}.json").is_file()
-        and (root / "codecs" / f"adapter_{key}.fqcb").is_file()
-        and (root / "predictions" / f"task_{key}.jsonl").is_file()
-        for key in codec_keys
-    )
+    for key in codec_keys:
+        metric = root / "codec_metrics" / f"{key}.json"
+        if not metric.is_file():
+            return False
+        if not (root / "codecs" / f"adapter_{key}.fqcb").is_file():
+            return False
+        # A rung scored on held-out bits alone never generates test answers,
+        # so requiring its predictions would leave the run forever unfinished.
+        if read_json(metric, {}).get("task") is None:
+            continue
+        if not (root / "predictions" / f"task_{key}.jsonl").is_file():
+            return False
+    return True
 
 
 @contextmanager

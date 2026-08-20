@@ -451,11 +451,15 @@ class RunEngine:
                 "score": score,
             }
         ]
-        task_metrics, predictions = self._evaluate_natural(session, run, data["test"])
+        task_metrics = None
+        if codec.score_task:
+            task_metrics, predictions = self._evaluate_natural(
+                session, run, data["test"]
+            )
+            write_predictions(
+                run_dir / "predictions" / f"task_{codec.key}.jsonl", predictions
+            )
         information = self._information_measure(session, run, data)
-        write_predictions(
-            run_dir / "predictions" / f"task_{codec.key}.jsonl", predictions
-        )
         apply_adapter_tensors(session.model, raw_tensors)
         return {
             "codec_key": codec.key,
@@ -469,8 +473,10 @@ class RunEngine:
             "storage": storage,
             "calibration_trials": trials,
             "task": task_metrics,
-            "retained_gain": self._retained_gain(
-                run, baseline, raw_task, task_metrics
+            "retained_gain": (
+                self._retained_gain(run, baseline, raw_task, task_metrics)
+                if task_metrics is not None
+                else None
             ),
             "information": information,
             "behavioral_write": self._behavioral_write(

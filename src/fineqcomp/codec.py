@@ -14,7 +14,7 @@ import torch
 
 
 MAGIC = b"FQCB1\n"
-ALLOWED_BITS = {1, 2, 3, 4, 8, 16}
+ALLOWED_BITS = {0, 1, 2, 3, 4, 8, 16}
 QUANTIZER_BITS = {1, 2, 3, 4, 8}
 
 
@@ -57,7 +57,7 @@ def container_header_bits(magic: bytes, header: Mapping[str, Any]) -> int:
 BLEND_SEED = 20260820
 
 
-def blend_widths(rows: int, bits: int, blend: float, tensor_index: int) -> np.ndarray:
+def blend_widths(rows: int, bits: int, blend: float, draw_key: int) -> np.ndarray:
     """Split `rows` between `bits` and `bits + 1` so the mean rate is bits+blend.
 
     The uniform ladder only has rungs at whole bit widths, and on this task the
@@ -66,15 +66,38 @@ def blend_widths(rows: int, bits: int, blend: float, tensor_index: int) -> np.nd
     allocator: the choice of which rows get the extra bit is drawn from a fixed
     seed, so it carries no information about the weights. The MDL result says
     an information-bearing allocation buys nothing here anyway.
+
+    At `bits = 0` the same split reaches below one bit: the `blend` fraction of
+    rows is written at one bit and the rest is dropped, so the mean rate is the
+    fraction kept. `draw_key` seeds the choice. Callers below one bit key it on
+    the LoRA pair rather than the tensor, so a rank direction survives in both
+    factors or in neither; drawing the two independently would leave most kept
+    rows multiplied by a dropped partner, which spends rate on nothing. The key
+    is the pair name, so this stays an allocation that knows no weights.
     """
     if not 0.0 <= blend < 1.0:
         raise ValueError("blend must be in [0, 1)")
-    generator = np.random.default_rng(BLEND_SEED + tensor_index)
+    generator = np.random.default_rng(BLEND_SEED + draw_key)
     widths = np.full(rows, bits, dtype=np.int64)
     upgrades = int(round(rows * blend))
     if upgrades:
         widths[generator.choice(rows, size=upgrades, replace=False)] = bits + 1
     return widths
+
+
+def _draw_key(name: str, bits: int, tensor_index: int) -> int:
+    """Seed offset for the row draw: per tensor above one bit, per pair below.
+
+    Above one bit every row is written and the draw only decides which rows get
+    the extra bit, so the per-tensor counter is kept exactly as it was and the
+    already-measured rungs stay bit-identical. At zero bits the draw decides
+    which rank directions survive at all, and LoRA multiplies its two factors
+    together, so both factors have to keep the same directions.
+    """
+    if bits > 0:
+        return tensor_index
+    pair = name.replace(".lora_A.", ".lora.").replace(".lora_B.", ".lora.")
+    return zlib.crc32(pair.encode())
 
 
 def _encode_blended(
@@ -91,6 +114,10 @@ def _encode_blended(
     for width in sorted(set(int(w) for w in widths)):
         index = np.flatnonzero(widths == width)
         block = matrix[torch.from_numpy(index)]
+        if width == 0:
+            # A dropped row costs nothing and decodes to zero.
+            reconstructed[torch.from_numpy(index)] = 0.0
+            continue
         scales, codes, recon = encode(block, width)
         reconstructed[torch.from_numpy(index)] = recon
         scale_parts.append(scales.tobytes())
@@ -273,7 +300,8 @@ def encode_tensor_map(
     """Write a complete adapter channel and return exact storage statistics.
 
     `blend` in (0, 1) puts that fraction of rows at `bits + 1` and the rest at
-    `bits`, giving intermediate rates between the whole-bit rungs.
+    `bits`, giving intermediate rates between the whole-bit rungs. With
+    `bits = 0` the rest is dropped instead, which reaches below one bit.
     """
     if bits not in ALLOWED_BITS:
         raise ValueError(f"bits must be one of {sorted(ALLOWED_BITS)}")
@@ -281,6 +309,8 @@ def encode_tensor_map(
         raise ValueError("quantizer must be 'midrise' or 'midtread'")
     if blend and (bits == 16 or bits + 1 not in QUANTIZER_BITS):
         raise ValueError(f"cannot blend {bits} bits upward")
+    if bits == 0 and not blend:
+        raise ValueError("a zero-bit code needs a blend fraction to carry rows")
     payload = bytearray()
     entries = []
     row_widths: list[np.ndarray] = []
@@ -299,7 +329,9 @@ def encode_tensor_map(
             reconstructed = torch.from_numpy(reconstructed.astype(np.float32))
         elif blend:
             matrix, transposed = orient_for_scales(name, tensor)
-            widths = blend_widths(matrix.shape[0], bits, blend, len(entries))
+            widths = blend_widths(
+                matrix.shape[0], bits, blend, _draw_key(name, bits, len(entries))
+            )
             scales, data, oriented, blended_bits = _encode_blended(
                 matrix, widths, quantizer
             )
@@ -362,7 +394,9 @@ def encode_tensor_map(
         "scale_bits": sum(entry["scale_nbytes"] for entry in entries) * 8,
         "padding_bits": packed_data_bits - value_bits,
         "tensor_values": total_values,
-        "bits_per_value": bits + blend,
+        "bits_per_value": (
+            value_bits / max(total_values, 1) if blend else float(bits)
+        ),
         "quantizer": quantizer,
         "blend": blend,
         "effective_bits_per_value": file_bits / max(total_values, 1),
@@ -383,6 +417,9 @@ def _decode_blended(
     scale_at = int(entry["scale_offset"])
     data_at = int(entry["data_offset"])
     for width in sorted(set(int(w) for w in widths)):
+        if width == 0:
+            # Dropped rows were never written, so nothing to read or advance.
+            continue
         index = np.flatnonzero(widths == width)
         n = index.size
         scales = np.frombuffer(
@@ -426,18 +463,21 @@ def decode_tensor_map(
         else:
             transposed = bool(entry.get("transposed", False))
             rows = count // shape[0] if transposed else shape[0]
-            scale_start = int(entry["scale_offset"])
-            scale_stop = scale_start + int(entry["scale_nbytes"])
-            scales = np.frombuffer(
-                payload[scale_start:scale_stop], dtype=np.float16, count=rows
-            )
             widths = entry.get("widths")
             if widths:
+                # A blended entry carries one scale per written row, which is
+                # fewer than `rows` once dropped rows appear, so the group
+                # decoder reads its own scales rather than one flat block.
                 matrix = _decode_blended(
                     payload, entry, np.asarray(widths, dtype=np.int64),
                     rows, count // rows, midtread,
                 )
             else:
+                scale_start = int(entry["scale_offset"])
+                scale_stop = scale_start + int(entry["scale_nbytes"])
+                scales = np.frombuffer(
+                    payload[scale_start:scale_stop], dtype=np.float16, count=rows
+                )
                 codes = unpack_unsigned(payload[start:stop], count, bits)
                 if midtread:
                     matrix = _midtread_reconstruct(

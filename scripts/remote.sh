@@ -58,6 +58,7 @@ pull-stats)
   mkdir -p runs remote_logs
   rsync -avz --prune-empty-dirs \
     --include '*/' \
+    --include 'config.json' \
     --include 'status.json' \
     --include 'metrics.json' \
     --include 'training_metrics.json' \
