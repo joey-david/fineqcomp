@@ -1,0 +1,14 @@
+{
+  "model": "Mistral-7B-v0.1, NF4 base, rank-16 LoRA on all linear projections",
+  "train_data": "MetaMathQA, 32000 rows, 1 epoch",
+  "eval": "GSM8K test, all 1319 problems, greedy decoding",
+  "seeds": [
+    11,
+    22,
+    33
+  ],
+  "base_score": 0.0637,
+  "raw_adapter_score": 0.679,
+  "raw_gain_points": 61.54,
+  "rmse_correction": "mdl_nodrop relative_rmse multiplied by the binary codec's relative rmse to undo a wrong normalisation in the no-drop sweep"
+}

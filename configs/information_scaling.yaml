@@ -44,4 +44,4 @@ training:
 
 evaluation_batch_size: 128
 retention_target: 0.90
-mdl_target_rates: [0.15, 0.30, 0.50, 0.75, 1.0, 1.5, 2.5, 4.0, 8.0]
+adapter_widths: [1, 2, 3, 4, 8]

@@ -32,7 +32,6 @@ import torch
 import yaml
 from tqdm.auto import tqdm
 
-import fineqcomp.mdl as mdl
 from fineqcomp.adapters import (
     adapter_tensors,
     apply_adapter_tensors,
@@ -40,6 +39,7 @@ from fineqcomp.adapters import (
     trainable_state,
 )
 from fineqcomp.campaign import _adapter, _model
+from fineqcomp.codec import decode_adapter_tensor_map, encode_tensor_map
 from fineqcomp.config import TrainingSpec, load_campaign
 from fineqcomp.data import Example
 from fineqcomp.evaluation import evaluate_constrained_labels
@@ -304,28 +304,25 @@ def _adapter_rate_curve(
     raw_tensors: dict[str, torch.Tensor],
     base_accuracy: float,
     raw_accuracy: float,
-    target_rates: list[float],
+    widths: tuple[int, ...],
     retention_target: float,
     out_dir: Path,
     batch_size: int,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
-    """Exact reloadable adapter-rate sweep for one learned checkpoint."""
+    """Exact reloadable adapter-rate sweep for one learned checkpoint.
+
+    Sweeps the zero-free uniform ladder rather than the adaptive MDL allocator.
+    On Mistral/MetaMathQA the allocator never beat this ladder at a matched file
+    rate and collapsed below it whenever it was allowed to drop rows; see
+    results/rmse_mdl_lora_vs_quantized_lora. The ladder is also cheaper, since
+    it needs no rate/distortion table and no penalty search.
+    """
     try:
-        cache, total_values = mdl._row_candidates(raw_tensors, show_progress=False)
         points: list[dict[str, Any]] = []
-        for target in target_rates:
-            assignment, allocation = mdl._allocate(cache, total_values, target)
-            slug = f"{target:g}".replace(".", "p")
-            adapter_path = out_dir / f"adapter_mdl_{slug}.fqmdl"
-            storage = mdl._encode_mdl(
-                raw_tensors,
-                cache,
-                assignment,
-                adapter_path,
-                allocation,
-                show_progress=False,
-            )
-            _, decoded = mdl.decode_mdl(adapter_path)
+        for bits in widths:
+            adapter_path = out_dir / f"adapter_u{bits}.fqcb"
+            storage = encode_tensor_map(raw_tensors, adapter_path, bits)
+            _, decoded = decode_adapter_tensor_map(adapter_path)
             apply_adapter_tensors(session.model, decoded)
             metrics, _ = evaluate_constrained_labels(
                 session.model,
@@ -338,21 +335,15 @@ def _adapter_rate_curve(
             coded_accuracy = float(metrics["accuracy"])
             retained = _retained_gain(base_accuracy, raw_accuracy, coded_accuracy)
             point = {
-                "target_rate": target,
-                "description_bits": int(storage["description_bits"]),
+                "bits": bits,
+                "description_bits": int(storage["file_bits"]),
                 "effective_bits_per_value": float(storage["effective_bits_per_value"]),
-                "proxy_bits_per_value": float(storage["proxy_bits_per_value"]),
                 "relative_rmse": float(storage["relative_rmse"]),
                 "accuracy": coded_accuracy,
                 "label_nll": float(metrics["label_nll"]),
                 "retained_gain": retained,
-                "row_bit_histogram": storage["row_bit_histogram"],
-                "value_bit_histogram": storage["value_bit_histogram"],
                 "path": str(adapter_path),
             }
-            points.append(point)
-            apply_adapter_tensors(session.model, raw_tensors)
-
         eligible = [
             point
             for point in points
@@ -395,7 +386,7 @@ def run_condition(
     prefixes = sorted(set(map(int, info["prefix_mappings"])))
     if not prefixes or prefixes[0] < 1:
         raise ValueError("prefix_mappings must contain positive integers")
-    target_rates = list(map(float, info["mdl_target_rates"]))
+    widths = tuple(int(b) for b in info.get("adapter_widths", (1, 2, 3, 4, 8)))
     retention_target = float(info.get("retention_target", 0.9))
     batch_size = int(info.get("evaluation_batch_size", 64))
 
@@ -498,9 +489,9 @@ def run_condition(
                 raw_tensors=raw_tensors,
                 base_accuracy=float(base_metrics["accuracy"]),
                 raw_accuracy=float(raw_metrics["accuracy"]),
-                target_rates=target_rates,
+                widths=widths,
                 retention_target=retention_target,
-                out_dir=prefix_dir / "mdl",
+                out_dir=prefix_dir / "codecs",
                 batch_size=batch_size,
             )
 
@@ -573,7 +564,7 @@ def run_condition(
             "repeats_per_mapping": int(info.get("repeats_per_mapping", 4)),
             "prefix_mappings": prefixes,
             "retention_target": retention_target,
-            "mdl_target_rates": target_rates,
+            "adapter_widths": list(widths),
             "prequential": prequential_rows,
             "checkpoints": checkpoints,
             "finished_at": time.time(),
