@@ -7,17 +7,22 @@
 # and the same leading training rows.
 #
 # Submit: sbatch --export=ALL,ARM=arm_a,SEED=11 scripts/jean_zay_compress.sbatch
+#
+# A full cell trains for about 53 minutes and then spends roughly 19 more on
+# every rung it scores on the test set, so it does not fit the two-hour dev
+# limit these defaults used to carry and every real submission had to override
+# them on the command line.
 #SBATCH --job-name=fqcomp
 #SBATCH --account=fas@h100
 #SBATCH --partition=gpu_p6
 #SBATCH --constraint=h100
-#SBATCH --qos=qos_gpu_h100-dev
+#SBATCH --qos=qos_gpu_h100-t3
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:h100:1
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
-#SBATCH --time=02:00:00
+#SBATCH --time=04:00:00
 #SBATCH --output=slurm_logs/%x-%j.out
 #SBATCH --error=slurm_logs/%x-%j.err
 

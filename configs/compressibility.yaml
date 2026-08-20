@@ -30,7 +30,9 @@ evaluation_batch_size: 32
 # Only the 0.5-bit rung is scored on the test set. The others measure held-out
 # bits saved, which is a forward pass over 256 rows instead of 1,319 generated
 # answers, and that is the axis the arms are compared on; the anchor is there
-# to check the two axes still order the arms the same way this far down.
+# to check the two axes still order the arms the same way this far down. It
+# is written last so a job that runs out of time still leaves a whole
+# bits-saved ladder behind.
 codecs:
   uniform2:
     method: uniform
@@ -65,10 +67,6 @@ codecs:
     bits: 0
     blend: 0.625
     score_task: false
-  sub0_500:
-    method: uniform
-    bits: 0
-    blend: 0.5
   sub0_375:
     method: uniform
     bits: 0
@@ -94,6 +92,10 @@ codecs:
     bits: 0
     blend: 0.0625
     score_task: false
+  sub0_500:
+    method: uniform
+    bits: 0
+    blend: 0.5
 
 models:
   mistral_7b_base:
