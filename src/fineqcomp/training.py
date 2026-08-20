@@ -161,17 +161,18 @@ def train_adapter(
                     scheduler.step()
                     optimizer.zero_grad(set_to_none=True)
                     update += 1
-                    # Scoring only at epoch ends gives the best-state restore
-                    # very few candidates, so a run that overfits inside its
-                    # first epoch has nothing good to fall back to.
-                    if (
-                        spec.eval_every_updates
-                        and update % spec.eval_every_updates == 0
-                    ):
+                    # Score on a fixed update cadence and at the very last
+                    # update, never at epoch ends. Arms that reach the same
+                    # update count through different epoch counts must get the
+                    # same number of candidates: best-state restore is a
+                    # maximum over them, so more epochs would otherwise hand
+                    # the duplicated arms a better checkpoint for free, biased
+                    # along the axis the experiment is testing.
+                    cadence = spec.eval_every_updates
+                    if (cadence and update % cadence == 0) or update == total_updates:
                         checkpoint(
                             epoch + 1, running_loss / max(micro_steps, 1), log
                         )
-            checkpoint(epoch + 1, running_loss / max(micro_steps, 1), log)
     if best_state is None:
         raise RuntimeError("training did not produce a validation state")
     restore_trainable_state(model, best_state)
