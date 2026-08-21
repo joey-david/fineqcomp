@@ -171,7 +171,12 @@ def _mapping_labels(
     return labels, keys, prototypes
 
 
-def _prompt(family: int, item: int, prototype: int | None) -> str:
+PROMPT_LAYOUTS = ("fields", "key_last")
+
+
+def _prompt(
+    family: int, item: int, prototype: int | None, layout: str = "fields"
+) -> str:
     """One canonical template for every split, condition and mapping.
 
     The first pass gave each split its own wording and a random per-row ticket,
@@ -179,8 +184,23 @@ def _prompt(family: int, item: int, prototype: int | None) -> str:
     forms and made the hardest condition the one with least to transfer from.
     The table line is always present so revealing a prototype changes one token
     and nothing else about the prompt.
+
+    `key_last` puts the discriminative digits next to the answer position. In
+    the `fields` layout the base model's output barely moves with the key --
+    across 512 prompts its label probabilities shift by a few percent -- so an
+    adapter has to build the routing from the key to the readout before it can
+    store anything keyed on it. Shortening that distance is the cheapest test
+    of whether the binding, rather than the storage, is what fails.
     """
     table = "T?" if prototype is None else f"T{prototype:02d}"
+    if layout == "key_last":
+        return (
+            "Registry lookup.\n"
+            f"Table: {table}\n"
+            f"F{family:04d} I{item:02d} ="
+        )
+    if layout != "fields":
+        raise ValueError(f"prompt layout must be one of {PROMPT_LAYOUTS}")
     return (
         "Registry lookup.\n"
         f"Family: F{family:04d}\n"
@@ -202,6 +222,9 @@ def build_dataset(raw: dict[str, Any], condition: Condition, seed: int) -> Datas
     required = mappings
     if condition.prototype_count is not None:
         required = max(required, condition.prototype_count * items)
+    layout = str(raw.get("prompt_layout", "fields"))
+    if layout not in PROMPT_LAYOUTS:
+        raise ValueError(f"prompt layout must be one of {PROMPT_LAYOUTS}")
     symbols, digest = _read_codebook(
         Path(raw.get("codebook_dir", "codebooks")), seed, required
     )
@@ -216,7 +239,7 @@ def build_dataset(raw: dict[str, Any], condition: Condition, seed: int) -> Datas
         examples.append(
             Example(
                 example_id=f"m{mapping:05d}",
-                prompt=_prompt(family, item, shown),
+                prompt=_prompt(family, item, shown, layout),
                 response=labels[label_index],
                 metadata={
                     "mapping": mapping,
@@ -726,6 +749,8 @@ def run_cell(
             "codebook_digest": dataset.codebook_digest,
             "mappings": mappings,
             "items_per_family": int(info.get("items_per_family", 16)),
+            "prompt_layout": str(info.get("prompt_layout", "fields")),
+            "learning_rate": training.learning_rate,
             "prefixes": prefixes,
             "optimizer_updates": updates,
             "retention_target": target,
@@ -1134,6 +1159,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--seeds", nargs="+", type=int)
     parser.add_argument("--prefixes", nargs="+", type=int)
     parser.add_argument("--updates", type=int, help="override the update budget")
+    parser.add_argument(
+        "--learning-rate", type=float, help="override the training learning rate"
+    )
+    parser.add_argument(
+        "--layout", choices=PROMPT_LAYOUTS, help="override the prompt layout"
+    )
     parser.add_argument("--shard", type=int, default=0)
     parser.add_argument("--shards", type=int, default=1)
     parser.add_argument("--keep-codecs", action="store_true")
@@ -1169,6 +1200,13 @@ def main(argv: list[str] | None = None) -> None:
     info = load_info_config(args.config)
     if args.updates is not None:
         info = {**info, "optimizer_updates": int(args.updates)}
+    if args.learning_rate is not None:
+        info = {
+            **info,
+            "training": {**info["training"], "learning_rate": args.learning_rate},
+        }
+    if args.layout is not None:
+        info = {**info, "prompt_layout": args.layout}
     campaign = load_campaign(args.campaign)
     cells = selected_cells(info, args)
     if args.dry_run:

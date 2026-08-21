@@ -11,6 +11,12 @@
 #            sbatch --array=0-1%2 --export=ALL,MODE=smoke \
 #              scripts/jean_zay_information.sbatch
 #
+#   probe  learnability diagnostic, one cell per array task. Run this when the
+#          smoke fails G1: it separates storage capacity, optimization, and the
+#          key-to-readout binding instead of guessing which one broke.
+#            sbatch --array=0-12%13 --export=ALL,MODE=probe \
+#              scripts/jean_zay_information.sbatch
+#
 #   full   all 51 cells across twelve shards.
 #            sbatch --array=0-11%12 --export=ALL,MODE=full \
 #              scripts/jean_zay_information.sbatch
@@ -62,12 +68,51 @@ smoke)
   command+=(--studies main --conditions "${conditions[$task]}"
     --seeds 11 --prefixes 512)
   ;;
+probe)
+  # condition:prefix:learning_rate:updates:layout
+  #
+  # Rows 1-2 ask whether the model can read the key fields at all, at 16 and
+  # 64 associations. Rows 3-6 walk the number of arbitrary associations to
+  # find where storage stops. Rows 7-9 vary the learning rate and budget at
+  # the size that already failed. Rows 10-13 shorten the distance from the key
+  # to the answer position, alone and combined with the other levers.
+  cells=(
+    p1:512:2e-4:2048:fields
+    p4:512:2e-4:2048:fields
+    random:32:2e-4:2048:fields
+    random:64:2e-4:2048:fields
+    random:128:2e-4:2048:fields
+    random:256:2e-4:2048:fields
+    random:512:1e-3:2048:fields
+    random:512:3e-3:2048:fields
+    random:512:1e-3:8192:fields
+    random:512:2e-4:2048:key_last
+    random:512:1e-3:2048:key_last
+    random:512:3e-3:8192:key_last
+    p1:512:1e-3:2048:key_last
+  )
+  if ((task < 0 || task >= ${#cells[@]})); then
+    echo "array task $task is outside MODE=probe (0-$((${#cells[@]} - 1)))" >&2
+    exit 2
+  fi
+  IFS=: read -r condition prefix rate updates layout <<<"${cells[$task]}"
+  # Cells differ in more than the run identity covers, so each gets its own
+  # output root rather than silently reusing a neighbour's result.json.
+  tag="${condition}_n${prefix}_lr${rate//./}_u${updates}_${layout}"
+  out="${INFO_OUT:-runs_information_scaling/probe/$tag}"
+  command=(python -m fineqcomp.information_scaling
+    --config "$config" --campaign "$campaign" --out "$out"
+    --studies main --conditions "$condition" --seeds 11
+    --prefixes "$prefix" --learning-rate "$rate" --updates "$updates"
+    --layout "$layout")
+  printf 'probe cell: %s\n' "${cells[$task]}"
+  ;;
 full)
   shards="${INFO_SHARDS:-12}"
   command+=(--shard "$task" --shards "$shards")
   ;;
 *)
-  echo "unknown MODE=$mode; expected smoke or full" >&2
+  echo "unknown MODE=$mode; expected smoke, probe or full" >&2
   exit 2
   ;;
 esac
