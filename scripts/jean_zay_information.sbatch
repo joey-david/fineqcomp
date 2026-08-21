@@ -45,6 +45,11 @@ out="${INFO_OUT:-runs_information_scaling/$mode}"
 
 command=(python -m fineqcomp.information_scaling
   --config "$config" --campaign "$campaign" --out "$out")
+# Retry lever: if G1 fails because the learner never reached the taught map,
+# raise the update budget here rather than editing the config.
+if [[ -n "${INFO_UPDATES:-}" ]]; then
+  command+=(--updates "$INFO_UPDATES")
+fi
 case "$mode" in
 smoke)
   # One cell per array task: the zero-information anchor and the hardest
