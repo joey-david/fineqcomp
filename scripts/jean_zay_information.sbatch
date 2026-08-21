@@ -4,6 +4,7 @@
 # pilot:  random/p1 at seed 11                    --array=0-1%2
 # repeat: random/p1 at seeds 22 and 33            --array=0-3%4
 # full:   all four conditions at all three seeds  --array=0-11%12, t3 QoS
+# training: random/p1 x three seeds x 8/16/32 epochs --array=0-17%18, t3
 #
 # Submit, for example:
 #   sbatch --array=0-1%2 --export=ALL,MODE=pilot \
@@ -52,8 +53,21 @@ full)
     done
   done
   ;;
+training)
+  conditions=(random structured_p1)
+  seeds=(11 22 33)
+  epoch_grid=(8 16 32)
+  cells=()
+  for epochs in "${epoch_grid[@]}"; do
+    for condition in "${conditions[@]}"; do
+      for seed in "${seeds[@]}"; do
+        cells+=("$condition:$seed:$epochs")
+      done
+    done
+  done
+  ;;
 *)
-  echo "unknown MODE=$mode; expected pilot, repeat, or full" >&2
+  echo "unknown MODE=$mode; expected pilot, repeat, full, or training" >&2
   exit 2
   ;;
 esac
@@ -62,17 +76,24 @@ if ((task < 0 || task >= ${#cells[@]})); then
   echo "array task $task is outside MODE=$mode (0-$((${#cells[@]} - 1)))" >&2
   exit 2
 fi
-IFS=: read -r condition seed <<<"${cells[$task]}"
+IFS=: read -r condition seed epochs <<<"${cells[$task]}"
 
 config="${INFO_CONFIG:-configs/information_scaling.yaml}"
 campaign="${INFO_CAMPAIGN:-configs/compressibility.yaml}"
-out="${INFO_OUT:-runs_information_scaling/$mode}"
+if [[ -n "${epochs:-}" ]]; then
+  out="${INFO_OUT:-runs_information_scaling/training/e$epochs}"
+else
+  out="${INFO_OUT:-runs_information_scaling/$mode}"
+fi
 command=(python -m fineqcomp.information_scaling
   --config "$config" --campaign "$campaign" --out "$out"
   --conditions "$condition" --seeds "$seed")
+if [[ -n "${epochs:-}" ]]; then
+  command+=(--epochs "$epochs" --prefixes 512)
+fi
 
-printf 'mode=%s task=%s condition=%s seed=%s out=%s\n' \
-  "$mode" "$task" "$condition" "$seed" "$out"
+printf 'mode=%s task=%s condition=%s seed=%s epochs=%s out=%s\n' \
+  "$mode" "$task" "$condition" "$seed" "${epochs:-config}" "$out"
 if [[ "${INFO_DRY_RUN:-0}" == 1 ]]; then
   printf '%q ' "${command[@]}"
   printf '\n'
