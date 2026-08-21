@@ -73,12 +73,13 @@ while dataset size keeps growing.
 
 Dataset compressibility uses a conditional prequential code: the first block is
 encoded by the shared base model, and every later block by a fresh LoRA trained
-only on the preceding prefix. For each trained prefix we also run the MDL sweep
-and report the smallest adapter file retaining 90% of the learned accuracy gain.
+only on the preceding prefix. For each trained prefix we also run a dense
+decoded-file rate sweep and report the smallest adapter file retaining 90% of
+the best decoded held-out gain.
 
 ```bash
-bash scripts/run_information_scaling_a40.sh pilot   # random vs structured, seed 11
-bash scripts/run_information_scaling_a40.sh full    # four levels, seeds 11/22/33
+sbatch --array=0-1%2 --export=ALL,MODE=pilot scripts/jean_zay_information.sbatch
+sbatch --array=0-11%12 --export=ALL,MODE=full scripts/jean_zay_information.sbatch
 ```
 
 ## Full campaign
