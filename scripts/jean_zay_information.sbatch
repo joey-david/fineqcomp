@@ -17,6 +17,12 @@
 #            sbatch --array=0-12%13 --export=ALL,MODE=probe \
 #              scripts/jean_zay_information.sbatch
 #
+#   validate  certify the measurement inside the range the probe found usable:
+#             five conditions spanning 4 to 512 known source bits, three seeds,
+#             one cell per task, about half an hour.
+#               sbatch --array=0-14%15 --export=ALL,MODE=validate \
+#                 scripts/jean_zay_information.sbatch
+#
 #   full   all 51 cells across twelve shards.
 #            sbatch --array=0-11%12 --export=ALL,MODE=full \
 #              scripts/jean_zay_information.sbatch
@@ -107,12 +113,19 @@ probe)
     --layout "$layout")
   printf 'probe cell: %s\n' "${cells[$task]}"
   ;;
+validate)
+  config="${INFO_CONFIG:-configs/information_validation.yaml}"
+  out="${INFO_OUT:-runs_information_scaling/validate}"
+  command=(python -m fineqcomp.information_scaling
+    --config "$config" --campaign "$campaign" --out "$out"
+    --shard "$task" --shards 15)
+  ;;
 full)
   shards="${INFO_SHARDS:-12}"
   command+=(--shard "$task" --shards "$shards")
   ;;
 *)
-  echo "unknown MODE=$mode; expected smoke, probe or full" >&2
+  echo "unknown MODE=$mode; expected smoke, probe, validate or full" >&2
   exit 2
   ;;
 esac

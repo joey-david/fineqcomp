@@ -1,0 +1,79 @@
+version: 2
+
+# Does the measured code recover information we already know the size of?
+#
+# This certifies the instrument, not the hypothesis. The natural campaign has
+# to measure how much information a dataset adds to a base model; here that
+# number is fixed by construction, so a measurement can be checked against it.
+#
+# The probe (runs_information_scaling/probe) found the working range: a rank-16
+# LoRA on Mistral-7B memorises arbitrary pairs perfectly to 128 and collapses
+# at 256, with learning rate, a 4x budget and prompt layout all making no
+# difference. So the largest prefix here is 128, inside the range, and the
+# information axis is carried by the prototype count instead of by scale.
+#
+# Known source bits at 128 mappings, eight families of sixteen items:
+#   constant   4     p1   64     p2  128     p4  256     p8  512
+#
+# Pass: the conditional prequential code orders the conditions by source bits
+# and lands within a small factor of them. Fail: it does not, and no natural
+# measurement built on it should be believed.
+
+model: mistral_7b_base
+seeds: [11, 22, 33]
+
+labels:
+  ["A", "B", "C", "D", "E", "F", "G", "H",
+   "I", "J", "K", "L", "M", "N", "O", "P"]
+
+codebook_dir: codebooks
+mappings: 192
+items_per_family: 16
+prompt_layout: fields
+
+# 32 rows -> 512 epochs, 64 -> 256, 128 -> 128. Same updates at every prefix.
+optimizer_updates: 2048
+
+learning_gate_bits_per_mapping: 1.0
+retention_target: 0.90
+evaluation_batch_size: 128
+
+conditions:
+  - {name: constant, constant: true}
+  - {name: p1, prototype_count: 1}
+  - {name: p2, prototype_count: 2}
+  - {name: p4, prototype_count: 4}
+  - {name: p8, prototype_count: 8}
+
+training:
+  epochs: 1
+  learning_rate: 0.0002
+  effective_batch_size: 16
+  micro_batch_size: 16
+  max_length: 64
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  max_grad_norm: 1.0
+  eval_every_updates: 128
+  restore_best: false
+
+# Nine rungs rather than thirteen: the probe put every crossing below one bit,
+# so the rungs above it only cost time. The empty adapter anchors the bottom.
+adapter_codecs:
+  - {key: sub0_0625, bits: 0, blend: 0.0625}
+  - {key: sub0_125, bits: 0, blend: 0.125}
+  - {key: sub0_250, bits: 0, blend: 0.25}
+  - {key: sub0_375, bits: 0, blend: 0.375}
+  - {key: sub0_500, bits: 0, blend: 0.5}
+  - {key: sub0_750, bits: 0, blend: 0.75}
+  - {key: binary, bits: 1}
+  - {key: blend1_50, bits: 1, blend: 0.5}
+  - {key: uniform2, bits: 2}
+
+grid:
+  - study: validate
+    conditions: [constant, p1, p2, p4, p8]
+    adapters: [all_linear_r16]
+    prefixes: [32, 64, 128]

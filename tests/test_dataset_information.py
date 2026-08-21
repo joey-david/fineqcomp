@@ -115,3 +115,106 @@ def test_the_fit_reports_bits_per_doubling():
     assert fit["r_squared"] == pytest.approx(1.0)
     assert _fit([1.0, 1.0, 1.0], [1.0, 2.0, 3.0])["reason"]
     assert _fit([1.0], [1.0])["n"] == 1
+
+
+class _Rows:
+    """Enough of a Hugging Face dataset for the diversity lever."""
+
+    def __init__(self, problems: list[str]) -> None:
+        self.problems = problems
+
+    def __getitem__(self, field: str) -> list[str]:
+        assert field == "original_question"
+        return self.problems
+
+    def select(self, indices):
+        return _Rows([self.problems[index] for index in indices])
+
+
+def test_the_diversity_lever_holds_rows_fixed_and_varies_content():
+    from fineqcomp.data import limit_source_problems
+
+    # Twelve rows spread over four source problems, three augmentations each.
+    problems = [f"problem-{index % 4}" for index in range(12)]
+
+    narrow, groups = limit_source_problems(_Rows(problems), "original_question", 2, 6)
+    assert groups == 2
+    assert len(narrow.problems) == 6
+    assert set(narrow.problems) == {"problem-0", "problem-1"}
+
+    broad, groups = limit_source_problems(_Rows(problems), "original_question", 4, 6)
+    assert groups == 4
+    assert len(broad.problems) == 6
+    # Same row count, twice the content. That is the whole lever.
+    assert len(set(broad.problems)) > len(set(narrow.problems))
+
+
+def test_an_arm_that_cannot_reach_its_row_count_fails_loudly():
+    from fineqcomp.data import limit_source_problems
+
+    problems = [f"problem-{index % 4}" for index in range(12)]
+    # One problem carries three rows; an arm asking for eight is not
+    # compute-matched to its neighbours and must not run.
+    with pytest.raises(ValueError, match="short of the 8"):
+        limit_source_problems(_Rows(problems), "original_question", 1, 8)
+
+
+def test_the_prequential_code_prices_what_the_dataset_adds():
+    from fineqcomp.dataset_info import prequential_code
+
+    # A learner that never improves codes every block at the base rate, so the
+    # dataset is measured as carrying nothing.
+    flat = prequential_code([(1000, 10.0)], base_bits_per_row=10.0, rows=4000)
+    assert flat["information_bits"] == pytest.approx(0.0)
+
+    # Diminishing returns: later blocks are cheaper, and the saving against the
+    # free base code is the information, in the same unit as the adapter file.
+    curve = [(1000, 8.0), (2000, 6.0)]
+    measured = prequential_code(curve, base_bits_per_row=10.0, rows=4000)
+    assert measured["base_code_bits"] == pytest.approx(40000.0)
+    # 1000*10 (base) + 1000*8 + 2000*6 = 30000
+    assert measured["prequential_code_bits"] == pytest.approx(30000.0)
+    assert measured["information_bits"] == pytest.approx(10000.0)
+    assert [s["right"] for s in measured["segments"]] == [2000, 4000]
+
+
+def test_the_diversity_lever_is_part_of_a_run_identity():
+    from fineqcomp.campaign import expand_campaign
+
+    def campaign(problems):
+        dataset = {"train_rows": 8000, "test_rows": 1319}
+        if problems is not None:
+            dataset["distinct_source_problems"] = problems
+        return {
+            "models": {"m": {"name": "m", "revision": "r", "backbone": "nf4"}},
+            "adapters": {
+                "a": {
+                    "method": "full_lora", "rank": 16, "target_modules": ["q_proj"],
+                    "last_n_layers": None, "alpha": 32,
+                }
+            },
+            "training": {
+                "t": {
+                    "epochs": 1, "learning_rate": 1e-4, "effective_batch_size": 16,
+                    "micro_batch_size": 4, "max_length": 128,
+                }
+            },
+            "codecs": {"binary": {"method": "uniform", "bits": 1}},
+            "datasets": {"d": dataset},
+            "studies": {
+                "s": {
+                    "kind": "natural", "models": ["m"], "datasets": ["d"],
+                    "seeds": [11], "adapters": ["a"], "training": "t",
+                }
+            },
+        }
+
+    plain = expand_campaign(campaign(None))[0].run_id
+    narrow = expand_campaign(campaign(400))[0].run_id
+    broad = expand_campaign(campaign(3600))[0].run_id
+
+    # Arms differing only in content diversity must not share a checkpoint.
+    assert narrow != broad != plain
+    # And an identity minted before the lever existed keeps its name, so the
+    # runs already on disk are not orphaned by adding the field.
+    assert expand_campaign(campaign(None))[0].run_id == plain

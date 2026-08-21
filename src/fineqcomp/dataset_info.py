@@ -43,9 +43,18 @@ def corpus_bits(rows: list[Example]) -> dict[str, Any]:
     long_range = lzma.compress(text, preset=6)
     short_range = zlib.compress(text, level=9)
     distinct = len({(row.prompt, row.response) for row in rows})
+    # The controlled diversity lever: how many distinct source problems the
+    # rows cover. Two arms can hold the same row count and differ several fold
+    # here, which is the only way to separate content from volume.
+    problems = {
+        str(row.metadata.get("source_problem", ""))
+        for row in rows
+        if row.metadata.get("source_problem")
+    }
     return {
         "rows": len(rows),
         "distinct_rows": distinct,
+        "distinct_source_problems": len(problems) or None,
         "raw_bits": len(text) * 8,
         "lzma_bits": len(long_range) * 8,
         "lzma_bits_per_row": len(long_range) * 8 / max(len(rows), 1),
@@ -81,6 +90,62 @@ def base_model_bits(
         "base_bits_per_token": float(measured["bits_per_token"]),
         "base_bits_per_row": float(measured["total_bits"]) / max(len(rows), 1),
         "tokens": int(measured["nll_tokens"]),
+    }
+
+
+def prequential_code(
+    curve: list[tuple[int, float]], base_bits_per_row: float, rows: int
+) -> dict[str, Any]:
+    """Bits the dataset adds to the frozen base, coded as it is read.
+
+    Compressed text size is model-blind: it prices content the base model
+    already predicts perfectly, which for a math corpus and a 7B base is most
+    of it. The quantity that matters is model-relative -- how many bits the
+    fine-tune actually has to write -- and the standard estimator is a
+    prequential code. Read the stream in blocks; code each block with the model
+    trained on the blocks before it; the first block is coded by the base,
+    which is free side information.
+
+    `curve` is (rows trained on, held-out bits per row) for the nested arms,
+    which already tile the stream, so this costs no extra training. The saving
+    against the base code is the information the dataset carries, in bits --
+    the same unit as the adapter file, so R* against it is a ratio and not a
+    correlation.
+    """
+    ordered = sorted(curve)
+    if not ordered:
+        raise ValueError("the learning curve needs at least one arm")
+    if ordered[-1][0] > rows:
+        raise ValueError("an arm trained on more rows than the stream holds")
+    # The leading block is coded by the base model and saves nothing.
+    total = ordered[0][0] * base_bits_per_row
+    segments = []
+    edges = [*(n for n, _ in ordered), rows]
+    for index, (left, tuned) in enumerate(
+        (edges[index], ordered[index][1]) for index in range(len(ordered))
+    ):
+        right = edges[index + 1]
+        span = right - left
+        if span < 0:
+            raise ValueError("the arms are not ordered")
+        total += span * tuned
+        segments.append(
+            {
+                "left": left,
+                "right": right,
+                "encoder_trained_on": left,
+                "bits_per_row": tuned,
+                "block_bits": span * tuned,
+            }
+        )
+    base_total = rows * base_bits_per_row
+    return {
+        "rows": rows,
+        "base_code_bits": base_total,
+        "prequential_code_bits": total,
+        "information_bits": base_total - total,
+        "base_bits_per_row": base_bits_per_row,
+        "segments": segments,
     }
 
 
