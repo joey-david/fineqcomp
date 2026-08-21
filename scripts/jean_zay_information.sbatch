@@ -77,23 +77,27 @@ if ((task < 0 || task >= ${#cells[@]})); then
   exit 2
 fi
 IFS=: read -r condition seed epochs <<<"${cells[$task]}"
+run_epochs="${epochs:-${INFO_EPOCHS:-}}"
 
 config="${INFO_CONFIG:-configs/information_scaling.yaml}"
 campaign="${INFO_CAMPAIGN:-configs/compressibility.yaml}"
-if [[ -n "${epochs:-}" ]]; then
-  out="${INFO_OUT:-runs_information_scaling/training/e$epochs}"
+if [[ "$mode" == training ]]; then
+  out="${INFO_OUT:-runs_information_scaling/training/e$run_epochs}"
 else
   out="${INFO_OUT:-runs_information_scaling/$mode}"
 fi
 command=(python -m fineqcomp.information_scaling
   --config "$config" --campaign "$campaign" --out "$out"
   --conditions "$condition" --seeds "$seed")
-if [[ -n "${epochs:-}" ]]; then
-  command+=(--epochs "$epochs" --prefixes 512)
+if [[ -n "$run_epochs" ]]; then
+  command+=(--epochs "$run_epochs")
+fi
+if [[ "$mode" == training ]]; then
+  command+=(--prefixes 512)
 fi
 
 printf 'mode=%s task=%s condition=%s seed=%s epochs=%s out=%s\n' \
-  "$mode" "$task" "$condition" "$seed" "${epochs:-config}" "$out"
+  "$mode" "$task" "$condition" "$seed" "${run_epochs:-config}" "$out"
 if [[ "${INFO_DRY_RUN:-0}" == 1 ]]; then
   printf '%q ' "${command[@]}"
   printf '\n'
