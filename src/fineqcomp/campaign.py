@@ -89,6 +89,16 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                             "test_rows": dataset_spec.get("test_rows"),
                             "epochs": training_key,
                         }
+                        # Two arms that differ only in how many distinct source
+                        # problems their rows cover are different runs; without
+                        # this they hash alike and the second silently reuses
+                        # the first's adapter. The key is added only when a
+                        # dataset sets it, so every identity minted before the
+                        # lever existed stays exactly what it was.
+                        if dataset_spec.get("distinct_source_problems") is not None:
+                            payload["distinct_source_problems"] = int(
+                                dataset_spec["distinct_source_problems"]
+                            )
                         # A study named after its dataset would otherwise
                         # repeat the name in every directory.
                         parts = [study_name, model.key]

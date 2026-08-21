@@ -83,7 +83,15 @@ def _convert_metamath(rows: Any, split: str) -> list[Example]:
                 f"Question: {row['query']}\nAnswer:"
             ),
             response=" " + str(row["response"]),
-            metadata={"split": split},
+            metadata={
+                "split": split,
+                # MetaMathQA's 395k rows are augmentations of 13,929 seed
+                # problems. Keeping the seed problem is what lets an arm hold
+                # its row count fixed and vary how much distinct content those
+                # rows cover.
+                "source_problem": str(row.get("original_question", "")),
+                "augmentation": str(row.get("type", "")),
+            },
         )
         for index, row in enumerate(rows)
     ]
@@ -222,6 +230,42 @@ def _convert_multiple_choice(
     return converted
 
 
+def limit_source_problems(
+    rows: Any, field: str, groups: int, needed: int | None
+) -> tuple[Any, int]:
+    """Keep rows drawn from at most `groups` distinct values of `field`.
+
+    Row count and content diversity are confounded in a nested draw: more rows
+    always means more distinct problems, so no fit can tell which one an
+    adapter is paying for. This holds the row count fixed and varies the number
+    of distinct source problems behind it, which is the only way to separate
+    them. The rows stay textually distinct -- they are different augmentations
+    of the same problem, not duplicates.
+
+    Falling short of `needed` is an error: an arm that quietly trained on fewer
+    rows would no longer be compute-matched to its neighbours.
+    """
+    if groups < 1:
+        raise ValueError("distinct_source_problems must be positive")
+    values = rows[field]
+    accepted: set[str] = set()
+    keep: list[int] = []
+    for index, value in enumerate(values):
+        if value not in accepted:
+            if len(accepted) >= groups:
+                continue
+            accepted.add(value)
+        keep.append(index)
+        if needed is not None and len(keep) >= needed:
+            break
+    if needed is not None and len(keep) < needed:
+        raise ValueError(
+            f"{groups} distinct values of {field!r} yield only {len(keep)} rows,"
+            f" short of the {needed} the arm needs"
+        )
+    return rows.select(keep), len(accepted)
+
+
 def _load_natural_from_hub(
     raw: dict[str, Any], dataset_key: str, seed: int
 ) -> dict[str, list[Example]]:
@@ -242,6 +286,16 @@ def _load_natural_from_hub(
         # It reshuffles per seed, unlike the test cap, because seeds should see
         # different training data.
         limit = spec.get("train_rows")
+        # The diversity lever runs before the row cap, so the cap still decides
+        # the row count and only the content behind it changes.
+        groups = spec.get("distinct_source_problems")
+        if groups is not None:
+            train_rows, _ = limit_source_problems(
+                train_rows,
+                str(source.get("group_field", "original_question")),
+                int(groups),
+                int(limit) if limit is not None else None,
+            )
         if limit is not None and int(limit) < len(train_rows):
             train_rows = train_rows.select(range(int(limit)))
         # `test_rows` caps each evaluation set. The subsample uses a fixed seed,
