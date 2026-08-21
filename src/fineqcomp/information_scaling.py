@@ -448,6 +448,7 @@ def _adapter_rate_curve(
                 ),
                 "path": str(adapter_path),
             }
+            points.append(point)
         return _summarize_rate_curve(
             points,
             _bits_saved_per_mapping(base_metrics, raw_metrics),
