@@ -1,37 +1,67 @@
-"""Controlled dataset-information vs adapter-description-length experiment.
+"""Does an adapter's description length track the information in its task?
 
-The experiment keeps prompts, example counts, labels, model, adapter, and
-optimizer fixed while changing only how many independent label bits the task
-contains.
+The natural campaign in `results/adapter_bits_track_unique_data` found R*(0.90)
+rising with the number of distinct training rows at fixed compute. Distinct
+rows are a proxy: nothing in that run measured how much information the rows
+carried. This study swaps the proxy for a task whose information content is
+known exactly, and asks whether a *measured* code length recovers it.
 
-``random`` assigns an independent one-of-16 label to every mapping (4 source
-bits/mapping). ``structured_pK`` samples K hidden item->label prototype tables
-and reuses them periodically across families.  With 16 items/family this gives
-at most 64*K independent task bits even as the number of examples grows.
+Every prompt names a family and an item and asks for one of sixteen
+single-token labels. Rows, prompts, model, adapter, optimizer, and optimizer
+updates are identical across conditions. Only the labels change:
 
-Dataset compressibility is measured with a conditional prequential code: the
-pretrained model is shared side information, the first block is coded by the
-base model, and each later block is coded by a fresh LoRA trained only on the
-preceding prefix. Adapter complexity is measured independently by the exact
-serialized size of reloadable uniform-code adapter files over a dense rate
-sweep.
+    constant   one label for every mapping              4 source bits
+    pK         K hidden 16-item prototype tables        64*K source bits
+    random     an independent label per mapping         4*mappings source bits
+
+Each cell produces three quantities:
+
+    source bits       known by construction
+    prequential bits  a conditional code for the labels, with the frozen base
+                      as side information and every block coded by an adapter
+                      trained only on the blocks before it
+    R*                the smallest adapter file that still reproduces the
+                      taught map at the retention target
+
+R* against source bits is the claim. The prequential code is what makes the
+claim portable: if it recovers the known source bits here, the same measurement
+can be run on a natural dataset, where the source bits are unknown.
+
+Three deliberate choices, each fixing something the first pass got wrong.
+
+The label code is a *mixture*, not the model's raw distribution. A model that
+is confidently wrong on an unseen mapping costs an unbounded number of bits
+under its own probabilities, so the code length ends up set by the numerical
+floor in the scorer rather than by the data. Mixing a uniform 1/16 in at weight
+`MIXTURE_WEIGHT` caps the cost per symbol at log2(16/weight) bits and adds at
+most log2(1/(1-weight)) when the model is right. This is fixed before the run,
+not tuned to it.
+
+Optimizer updates are held fixed across prefixes, so a longer prefix does not
+also buy more gradient steps. Epochs are derived, and a prefix that cannot hit
+the update budget exactly is an error rather than a rounding.
+
+R* is undefined, and reported as undefined, unless the raw adapter clears an
+absolute learning gate. A learner that saved a hundredth of a bit still has a
+well-formed retention curve, and every rung of it will look like it retains
+ninety percent of nothing.
 """
 
 from __future__ import annotations
 
 import argparse
-import hashlib
 import csv
+import hashlib
 import json
 import math
+import statistics
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable, Sequence
 
 import torch
 import yaml
-from tqdm.auto import tqdm
 
 from fineqcomp.adapters import (
     adapter_tensors,
@@ -49,38 +79,51 @@ from fineqcomp.rstar import r_star
 from fineqcomp.training import train_adapter
 
 
-def _ticket(seed: int, family: int, item: int, instance: int, split: str) -> str:
-    payload = f"{seed}:{family}:{item}:{instance}:{split}".encode()
-    return hashlib.sha256(payload).hexdigest()[:12].upper()
+# The label alphabet, and the pre-registered weight on the uniform component of
+# the coding distribution. Both are fixed here rather than in the config so a
+# reported code length cannot be moved by editing YAML after seeing a result.
+ALPHABET = 16
+MIXTURE_WEIGHT = 1 / 16
+# Worst case per symbol, in bits: log2(ALPHABET / MIXTURE_WEIGHT).
+MAX_SYMBOL_BITS = math.log2(ALPHABET / MIXTURE_WEIGHT)
 
 
-def _render_prompt(
-    family: int, item: int, ticket: str, split: str, variant: int
-) -> str:
-    family_text = f"F{family:04X}"
-    item_text = f"I{item:X}"
-    if split == "train" and variant % 2 == 0:
-        return (
-            "Registry query\n"
-            f"Family: {family_text}\nItem: {item_text}\nTicket: {ticket}\nLabel:"
-        )
-    if split == "train":
-        return (
-            f"Look up family {family_text}, item {item_text}. "
-            f"Request {ticket}. Return its label:"
-        )
-    if split == "calibration":
-        return f"Code request {ticket}: family={family_text}; item={item_text}.\nCode:"
-    return (
-        "Answer with one registry label.\n"
-        f"ticket={ticket} item={item_text} family={family_text}\nAnswer:"
-    )
+def symbol_bits(target_probability: float) -> float:
+    """Code length for one label under the pre-registered mixture."""
+    mixed = (
+        1 - MIXTURE_WEIGHT
+    ) * target_probability + MIXTURE_WEIGHT / ALPHABET
+    return -math.log2(mixed)
 
 
-def _read_codebook(
-    dataset_cfg: dict[str, Any], required: int, seed: int
-) -> tuple[list[int], str]:
-    source = Path(dataset_cfg["codebook_dir"]) / f"seed{seed}.hex"
+# ---------------------------------------------------------------- the dataset
+
+
+@dataclass(frozen=True)
+class Condition:
+    """One label-generating rule. Prompts are identical across conditions."""
+
+    name: str
+    # None draws a fresh label for every mapping; an integer reuses that many
+    # hidden prototype tables; `constant` gives every mapping the same label.
+    prototype_count: int | None = None
+    constant: bool = False
+    # Name the prototype in the prompt. The source bits are unchanged; what
+    # changes is whether the learner has to discover the sharing rule itself.
+    reveal_prototype: bool = False
+
+
+@dataclass
+class Dataset:
+    examples: list[Example]
+    label_indices: list[int]
+    source_keys: list[tuple[Any, ...]]
+    codebook_digest: str
+
+
+def _read_codebook(directory: Path, seed: int, required: int) -> tuple[list[int], str]:
+    """Read 4-bit symbols, and the digest of exactly the prefix that is used."""
+    source = directory / f"seed{seed}.hex"
     try:
         packed = bytes.fromhex("".join(source.read_text().split()))
     except (FileNotFoundError, ValueError) as error:
@@ -88,24 +131,153 @@ def _read_codebook(
     if len(packed) * 2 < required:
         raise ValueError(f"{source}: has {len(packed) * 2} symbols, needs {required}")
     symbols = [nibble for byte in packed for nibble in (byte >> 4, byte & 0x0F)]
-    prefix = packed[: (required + 1) // 2]
-    return symbols[:required], hashlib.sha256(prefix).hexdigest()
+    digest = hashlib.sha256(packed[: (required + 1) // 2]).hexdigest()[:16]
+    return symbols[:required], digest
 
 
-@dataclass(frozen=True)
-class Condition:
-    name: str
-    prototype_count: int | None
+def _mapping_labels(
+    condition: Condition, symbols: list[int], mappings: int, items_per_family: int
+) -> tuple[list[int], list[tuple[Any, ...]], list[int | None]]:
+    """Label index, source key, and prototype id for every mapping.
+
+    The source key names the sampled symbol a mapping's label comes from, so
+    counting distinct keys counts independent draws and nothing else.
+    """
+    if condition.constant:
+        return (
+            [symbols[0]] * mappings,
+            [("constant",)] * mappings,
+            [None] * mappings,
+        )
+    if condition.prototype_count is None:
+        return (
+            symbols[:mappings],
+            [("random", index) for index in range(mappings)],
+            [None] * mappings,
+        )
+    count = condition.prototype_count
+    if count < 1:
+        raise ValueError("prototype_count must be positive")
+    table = symbols[: count * items_per_family]
+    labels: list[int] = []
+    keys: list[tuple[Any, ...]] = []
+    prototypes: list[int | None] = []
+    for mapping in range(mappings):
+        family, item = divmod(mapping, items_per_family)
+        prototype = family % count
+        labels.append(table[prototype * items_per_family + item])
+        keys.append((prototype, item))
+        prototypes.append(prototype)
+    return labels, keys, prototypes
+
+
+def _prompt(family: int, item: int, prototype: int | None) -> str:
+    """One canonical template for every split, condition and mapping.
+
+    The first pass gave each split its own wording and a random per-row ticket,
+    which turned a memory measurement into a test of transfer across surface
+    forms and made the hardest condition the one with least to transfer from.
+    The table line is always present so revealing a prototype changes one token
+    and nothing else about the prompt.
+    """
+    table = "T?" if prototype is None else f"T{prototype:02d}"
+    return (
+        "Registry lookup.\n"
+        f"Family: F{family:04d}\n"
+        f"Item: I{item:02d}\n"
+        f"Table: {table}\n"
+        "Label:"
+    )
+
+
+def build_dataset(raw: dict[str, Any], condition: Condition, seed: int) -> Dataset:
+    """One example per mapping. Mappings are the source symbols."""
+    labels = list(map(str, raw["labels"]))
+    if len(labels) != ALPHABET or len(set(labels)) != ALPHABET:
+        raise ValueError(f"this study needs exactly {ALPHABET} distinct labels")
+    mappings = int(raw["mappings"])
+    items = int(raw.get("items_per_family", 16))
+    if mappings < 1 or items < 1:
+        raise ValueError("mappings and items_per_family must be positive")
+    required = mappings
+    if condition.prototype_count is not None:
+        required = max(required, condition.prototype_count * items)
+    symbols, digest = _read_codebook(
+        Path(raw.get("codebook_dir", "codebooks")), seed, required
+    )
+    label_indices, keys, prototypes = _mapping_labels(
+        condition, symbols, mappings, items
+    )
+
+    examples = []
+    for mapping, label_index in enumerate(label_indices):
+        family, item = divmod(mapping, items)
+        shown = prototypes[mapping] if condition.reveal_prototype else None
+        examples.append(
+            Example(
+                example_id=f"m{mapping:05d}",
+                prompt=_prompt(family, item, shown),
+                response=labels[label_index],
+                metadata={
+                    "mapping": mapping,
+                    "family": family,
+                    "item": item,
+                    "label_index": label_index,
+                },
+            )
+        )
+    return Dataset(
+        examples=examples,
+        label_indices=label_indices,
+        source_keys=keys,
+        codebook_digest=digest,
+    )
+
+
+def source_bits(dataset: Dataset, mappings: int) -> int:
+    """Independent 4-bit draws needed to specify the first `mappings` labels."""
+    return 4 * len(set(dataset.source_keys[:mappings]))
+
+
+def epochs_for(updates: int, rows: int, batch: int) -> int:
+    """Epochs that spend exactly `updates` optimizer steps on `rows` rows.
+
+    Every prefix must get the same number of updates, otherwise a longer prefix
+    buys more gradient steps as well as more information and the two cannot be
+    told apart. An inexact budget is an error, not a rounding.
+    """
+    per_epoch, remainder = divmod(rows, batch)
+    if remainder or per_epoch < 1:
+        raise ValueError(f"{rows} rows do not divide into batches of {batch}")
+    epochs, remainder = divmod(updates, per_epoch)
+    if remainder or epochs < 1:
+        raise ValueError(
+            f"{updates} updates are not reachable from {rows} rows at batch {batch}"
+        )
+    return epochs
+
+
+# ---------------------------------------------------------------- measurement
 
 
 @dataclass
-class DatasetBundle:
-    train_by_mapping: list[list[Example]]
-    calibration: list[Example]
-    prequential: list[Example]
-    test: list[Example]
-    label_indices: list[int]
-    source_keys: list[tuple[int, int] | tuple[str, int]]
+class Scores:
+    """Per-example code length and correctness, so any slice can be summed."""
+
+    bits: list[float]
+    unmixed_bits: list[float]
+    correct: list[int]
+
+    def summary(self, left: int = 0, right: int | None = None) -> dict[str, Any]:
+        stop = len(self.bits) if right is None else right
+        count = max(stop - left, 1)
+        return {
+            "examples": stop - left,
+            "accuracy": sum(self.correct[left:stop]) / count,
+            "code_bits": sum(self.bits[left:stop]),
+            "code_bits_per_mapping": sum(self.bits[left:stop]) / count,
+            "unmixed_code_bits": sum(self.unmixed_bits[left:stop]),
+        }
 
 
 def _write_json(path: Path, value: Any) -> None:
@@ -115,27 +287,239 @@ def _write_json(path: Path, value: Any) -> None:
     temporary.replace(path)
 
 
-def _load_info_config(path: Path) -> dict[str, Any]:
-    raw = yaml.safe_load(path.read_text())
-    if not isinstance(raw, dict) or int(raw.get("version", 0)) != 1:
-        raise ValueError(f"{path}: expected information-scaling config version 1")
-    return raw
+def _write_jsonl(path: Path, rows: Iterable[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("w") as stream:
+        for row in rows:
+            stream.write(json.dumps(row, sort_keys=True) + "\n")
+    temporary.replace(path)
 
 
-def _override_run_config(
-    raw: dict[str, Any], *, epochs: int | None, prefixes: list[int] | None
+def score(
+    session: ModelSession,
+    model_spec: Any,
+    examples: Sequence[Example],
+    labels: list[str],
+    batch_size: int,
+    predictions_path: Path | None = None,
+) -> Scores:
+    """Score labels and keep every per-example probability.
+
+    The previous version of this study discarded its predictions, so ten
+    H100-hours produced aggregates that could not be recalibrated, re-coded, or
+    broken down by family. Writing them costs a few megabytes.
+    """
+    if not examples:
+        raise ValueError("nothing to score")
+    _, predictions = evaluate_constrained_labels(
+        session.model,
+        session.tokenizer,
+        list(examples),
+        model_spec,
+        labels,
+        batch_size=batch_size,
+    )
+    if predictions_path is not None:
+        _write_jsonl(predictions_path, predictions)
+    probabilities = [float(row["target_probability"]) for row in predictions]
+    return Scores(
+        bits=[symbol_bits(value) for value in probabilities],
+        unmixed_bits=[-math.log2(max(value, 1e-12)) for value in probabilities],
+        correct=[int(row["correct"]) for row in predictions],
+    )
+
+
+def rate_codecs(raw: dict[str, Any]) -> tuple[dict[str, Any], ...]:
+    codecs: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for entry in raw["adapter_codecs"]:
+        codec = {
+            "key": str(entry["key"]),
+            "bits": int(entry["bits"]),
+            "blend": float(entry.get("blend", 0.0)),
+        }
+        if codec["key"] in seen:
+            raise ValueError(f"duplicate adapter codec {codec['key']!r}")
+        if codec["bits"] not in {0, 1, 2, 3, 4, 8, 16}:
+            raise ValueError(f"unsupported adapter codec width: {codec['bits']}")
+        if not 0.0 <= codec["blend"] < 1.0:
+            raise ValueError(f"adapter codec {codec['key']}: blend must be in [0, 1)")
+        if codec["bits"] == 0 and codec["blend"] <= 0:
+            raise ValueError(f"adapter codec {codec['key']}: zero bits needs a blend")
+        seen.add(codec["key"])
+        codecs.append(codec)
+    if not codecs:
+        raise ValueError("adapter_codecs must not be empty")
+    return tuple(codecs)
+
+
+def summarize_rate_curve(
+    points: list[dict[str, Any]],
+    raw_saved: float,
+    target: float,
+    gate: float,
 ) -> dict[str, Any]:
-    """Apply small launch-time overrides without making one YAML per sweep cell."""
-    updated = dict(raw)
-    if epochs is not None:
-        if epochs < 1:
-            raise ValueError("epochs must be positive")
-        updated["training"] = {**raw["training"], "epochs": epochs}
-    if prefixes is not None:
-        if not prefixes or any(prefix < 1 for prefix in prefixes):
-            raise ValueError("prefixes must be positive")
-        updated["prefix_mappings"] = sorted(set(prefixes))
-    return updated
+    """R* against the raw adapter's own gain, with the learning gate applied.
+
+    The reference is the raw adapter, not the best point on the curve. Coded
+    adapters can beat the raw one when quantization strips overfit, and that is
+    a finding worth keeping visible rather than a nuisance to normalise away;
+    `best_decoded_bits_saved_per_mapping` records it.
+
+    Below the gate there is no gain to retain and every rung retains ninety
+    percent of nothing, so R* is reported as undefined with its reason.
+    """
+    measured = [float(point["bits_saved_per_mapping"]) for point in points]
+    best = max([raw_saved, *measured]) if measured else raw_saved
+    enriched = [
+        {
+            **point,
+            "retained_gain": (
+                float(point["bits_saved_per_mapping"]) / raw_saved
+                if raw_saved > 0
+                else None
+            ),
+        }
+        for point in points
+    ]
+    if raw_saved < gate:
+        blocked = {
+            "target": target,
+            "r_star": None,
+            "reason": f"raw gain {raw_saved:.4f} below the {gate} bit gate",
+        }
+        by_rate, by_file = dict(blocked), dict(blocked)
+    else:
+        by_rate = r_star(
+            enriched,
+            target=target,
+            value_key="bits_saved_per_mapping",
+            reference=raw_saved,
+        )
+        by_file = r_star(
+            enriched,
+            target=target,
+            rate_key="description_bits",
+            value_key="bits_saved_per_mapping",
+            reference=raw_saved,
+        )
+    eligible = [
+        point
+        for point in enriched
+        if point["retained_gain"] is not None
+        and float(point["retained_gain"]) >= target
+    ]
+    selected = (
+        min(eligible, key=lambda point: int(point["description_bits"]))
+        if eligible and raw_saved >= gate
+        else None
+    )
+    return {
+        "reference": "raw_adapter",
+        "learning_gate_bits_per_mapping": gate,
+        "learning_gate_passed": raw_saved >= gate,
+        "raw_bits_saved_per_mapping": raw_saved,
+        "best_decoded_bits_saved_per_mapping": best,
+        "points": enriched,
+        "r_star_effective_bits_per_value": by_rate,
+        "r_star_description_bits": by_file,
+        "selected_codec": selected["codec"] if selected is not None else None,
+    }
+
+
+def _rate_curve(
+    *,
+    session: ModelSession,
+    model_spec: Any,
+    labels: list[str],
+    examples: Sequence[Example],
+    raw_tensors: dict[str, torch.Tensor],
+    base_bits_per_mapping: float,
+    base_accuracy: float,
+    raw_saved: float,
+    codecs: tuple[dict[str, Any], ...],
+    target: float,
+    gate: float,
+    out_dir: Path,
+    batch_size: int,
+    keep_files: bool,
+) -> dict[str, Any]:
+    """Encode, decode, and score the whole ladder on the taught mappings.
+
+    Sweeps the uniform ladder rather than the adaptive MDL allocator: on
+    Mistral/MetaMathQA the allocator never beat this ladder at a matched file
+    rate, and it collapsed whenever it was allowed to drop rows. See
+    results/rmse_mdl_lora_vs_quantized_lora.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    points: list[dict[str, Any]] = [
+        {
+            "codec": "none",
+            "bits": 0,
+            "blend": 0.0,
+            "description_bits": 0,
+            "effective_bits_per_value": 0.0,
+            "relative_rmse": 1.0,
+            "accuracy": base_accuracy,
+            "code_bits_per_mapping": base_bits_per_mapping,
+            "bits_saved_per_mapping": 0.0,
+        }
+    ]
+    try:
+        for codec in codecs:
+            path = out_dir / f"adapter_{codec['key']}.fqcb"
+            storage = encode_tensor_map(
+                raw_tensors, path, codec["bits"], blend=codec["blend"]
+            )
+            _, decoded = decode_adapter_tensor_map(path)
+            apply_adapter_tensors(session.model, decoded)
+            scored = score(
+                session, model_spec, examples, labels, batch_size
+            ).summary()
+            points.append(
+                {
+                    "codec": codec["key"],
+                    "bits": codec["bits"],
+                    "blend": codec["blend"],
+                    "description_bits": int(storage["file_bits"]),
+                    "effective_bits_per_value": float(
+                        storage["effective_bits_per_value"]
+                    ),
+                    "relative_rmse": float(storage["relative_rmse"]),
+                    "accuracy": scored["accuracy"],
+                    "code_bits_per_mapping": scored["code_bits_per_mapping"],
+                    "bits_saved_per_mapping": base_bits_per_mapping
+                    - scored["code_bits_per_mapping"],
+                }
+            )
+    finally:
+        apply_adapter_tensors(session.model, raw_tensors)
+    curve = summarize_rate_curve(points, raw_saved, target, gate)
+    if not keep_files:
+        # Every coded file is a deterministic function of the saved raw
+        # checkpoint, so only the selected one is worth keeping on a shared
+        # filesystem.
+        for codec in codecs:
+            if codec["key"] != curve["selected_codec"]:
+                (out_dir / f"adapter_{codec['key']}.fqcb").unlink(missing_ok=True)
+    return curve
+
+
+# ------------------------------------------------------------------ one cell
+
+
+@dataclass(frozen=True)
+class Cell:
+    study: str
+    condition: str
+    adapter: str
+    seed: int
+    prefixes: tuple[int, ...]
+
+    @property
+    def slug(self) -> str:
+        return f"{self.study}/{self.condition}/{self.adapter}/seed{self.seed}"
 
 
 def _condition(raw: dict[str, Any], name: str) -> Condition:
@@ -145,749 +529,635 @@ def _condition(raw: dict[str, Any], name: str) -> Condition:
             return Condition(
                 name=name,
                 prototype_count=int(prototype) if prototype is not None else None,
+                constant=bool(entry.get("constant", False)),
+                reveal_prototype=bool(entry.get("reveal_prototype", False)),
             )
     raise KeyError(f"unknown condition {name!r}")
 
 
-def _mapping_label_indices(
-    condition: Condition,
-    symbols: list[int],
-    max_mappings: int,
-    items_per_family: int,
-) -> tuple[list[int], list[tuple[int, int] | tuple[str, int]]]:
-    if condition.prototype_count is None:
-        return (
-            symbols[:max_mappings],
-            [("random", index) for index in range(max_mappings)],
-        )
-
-    prototype_count = condition.prototype_count
-    if prototype_count < 1:
-        raise ValueError("prototype_count must be positive")
-    required = prototype_count * items_per_family
-    prototypes = symbols[:required]
-    labels: list[int] = []
-    keys: list[tuple[int, int]] = []
-    for mapping in range(max_mappings):
-        family, item = divmod(mapping, items_per_family)
-        prototype = family % prototype_count
-        key = (prototype, item)
-        keys.append(key)
-        labels.append(prototypes[prototype * items_per_family + item])
-    return labels, keys
-
-
-def _example(
-    *,
-    mapping: int,
-    label_index: int,
-    labels: list[str],
-    items_per_family: int,
-    seed: int,
-    split: str,
-    instance: int,
-) -> Example:
-    family, item = divmod(mapping, items_per_family)
-    ticket = _ticket(seed, family, item, instance, f"info-{split}")
-    render_split = split if split in {"train", "calibration"} else "test"
-    return Example(
-        example_id=f"{split}-m{mapping}-n{instance}",
-        prompt=_render_prompt(family, item, ticket, render_split, instance),
-        response=labels[label_index],
-        metadata={
-            "split": split,
-            "mapping": mapping,
-            "family": family,
-            "item": item,
-            "label_index": label_index,
-        },
-    )
-
-
-def build_dataset(
-    raw: dict[str, Any], condition: Condition, seed: int
-) -> DatasetBundle:
-    labels = list(map(str, raw["labels"]))
-    if len(labels) != 16 or len(set(labels)) != 16:
-        raise ValueError("information scaling requires exactly 16 unique labels")
-    max_mappings = max(map(int, raw["prefix_mappings"]))
-    items = int(raw.get("items_per_family", 16))
-    repeats = int(raw.get("repeats_per_mapping", 4))
-    if items < 1 or repeats < 1:
-        raise ValueError("items_per_family and repeats_per_mapping must be positive")
-
-    needed_symbols = max_mappings
-    if condition.prototype_count is not None:
-        needed_symbols = max(
-            needed_symbols, condition.prototype_count * items
-        )
-    symbols, _ = _read_codebook(
-        {"codebook_dir": str(raw.get("codebook_dir", "codebooks"))},
-        needed_symbols,
-        seed,
-    )
-    label_indices, source_keys = _mapping_label_indices(
-        condition, symbols, max_mappings, items
-    )
-
-    train_by_mapping: list[list[Example]] = []
-    calibration: list[Example] = []
-    prequential: list[Example] = []
-    test: list[Example] = []
-    for mapping, label_index in enumerate(label_indices):
-        train_by_mapping.append(
-            [
-                _example(
-                    mapping=mapping,
-                    label_index=label_index,
-                    labels=labels,
-                    items_per_family=items,
-                    seed=seed,
-                    split="train",
-                    instance=instance,
-                )
-                for instance in range(repeats)
-            ]
-        )
-        calibration.append(
-            _example(
-                mapping=mapping,
-                label_index=label_index,
-                labels=labels,
-                items_per_family=items,
-                seed=seed,
-                split="calibration",
-                instance=repeats,
-            )
-        )
-        prequential.append(
-            _example(
-                mapping=mapping,
-                label_index=label_index,
-                labels=labels,
-                items_per_family=items,
-                seed=seed,
-                split="prequential",
-                instance=repeats + 1,
-            )
-        )
-        test.append(
-            _example(
-                mapping=mapping,
-                label_index=label_index,
-                labels=labels,
-                items_per_family=items,
-                seed=seed,
-                split="test",
-                instance=repeats + 2,
-            )
-        )
-
-    return DatasetBundle(
-        train_by_mapping=train_by_mapping,
-        calibration=calibration,
-        prequential=prequential,
-        test=test,
-        label_indices=label_indices,
-        source_keys=source_keys,
-    )
-
-
-def _flatten_prefix(groups: list[list[Example]], mappings: int) -> list[Example]:
-    return [row for group in groups[:mappings] for row in group]
-
-
-def _source_bits(bundle: DatasetBundle, mappings: int) -> int:
-    # Each independently sampled source symbol is one of 16 equiprobable labels.
-    return 4 * len(set(bundle.source_keys[:mappings]))
-
-
-def _label_code_bits(metrics: dict[str, Any]) -> float:
-    return float(metrics["label_nll"]) * int(metrics["examples"]) / math.log(2)
-
-
-def _bits_saved_per_mapping(
-    base_metrics: dict[str, Any], tuned_metrics: dict[str, Any]
-) -> float:
-    """Response-code bits saved against the shared frozen base."""
-    return (
-        float(base_metrics["label_nll"]) - float(tuned_metrics["label_nll"])
-    ) / math.log(2)
-
-
-def _rate_codecs(raw: dict[str, Any]) -> tuple[dict[str, Any], ...]:
-    """Read the compact uniform-code list used by the controlled study."""
-    configured = raw.get("adapter_codecs")
-    if configured is None:
-        configured = [
-            {"key": f"uniform{int(bits)}", "bits": int(bits)}
-            for bits in raw.get("adapter_widths", (1, 2, 3, 4, 8))
-        ]
-    codecs: list[dict[str, Any]] = []
-    keys: set[str] = set()
-    for entry in configured:
-        codec = {
-            "key": str(entry["key"]),
-            "bits": int(entry["bits"]),
-            "blend": float(entry.get("blend", 0.0)),
-        }
-        if codec["key"] in keys:
-            raise ValueError(f"duplicate adapter codec {codec['key']!r}")
-        if codec["bits"] not in {0, 1, 2, 3, 4, 8, 16}:
-            raise ValueError(f"unsupported adapter codec width: {codec['bits']}")
-        if not 0.0 <= codec["blend"] < 1.0:
-            raise ValueError(f"adapter codec {codec['key']}: blend must be in [0, 1)")
-        if codec["bits"] == 0 and codec["blend"] <= 0:
-            raise ValueError(f"adapter codec {codec['key']}: zero bits needs a blend")
-        keys.add(codec["key"])
-        codecs.append(codec)
-    if not codecs:
-        raise ValueError("adapter_codecs must not be empty")
-    return tuple(codecs)
-
-
-def _summarize_rate_curve(
-    points: list[dict[str, Any]], raw_saved: float, target: float
-) -> dict[str, Any]:
-    """Set the utility ceiling from the best decoded candidate.
-
-    Quantization can improve held-out code length by removing overfit. Treating
-    the raw adapter as the ceiling then creates retention above one. The
-    operational rate-distortion curve instead uses the best member of the
-    declared code family, including the uncompressed adapter.
-    """
-    ceiling = max(
-        [
-            raw_saved,
-            *(float(point["bits_saved_per_mapping"]) for point in points),
-        ]
-    )
-    enriched = [
-        {
-            **point,
-            "retained_gain": (
-                float(point["bits_saved_per_mapping"]) / ceiling
-                if ceiling > 0
-                else None
-            ),
-        }
-        for point in points
-    ]
-    by_rate = r_star(
-        enriched,
-        target=target,
-        value_key="bits_saved_per_mapping",
-        reference=ceiling,
-    )
-    by_file = r_star(
-        enriched,
-        target=target,
-        rate_key="description_bits",
-        value_key="bits_saved_per_mapping",
-        reference=ceiling,
-    )
-    eligible = [
-        point
-        for point in enriched
-        if point["retained_gain"] is not None
-        and float(point["retained_gain"]) >= target
-    ]
-    selected = (
-        min(eligible, key=lambda point: int(point["description_bits"]))
-        if eligible
-        else None
-    )
-    return {
-        "reference": "best_decoded_selection_utility",
-        "ceiling_bits_saved_per_mapping": ceiling,
-        "raw_retained_gain": raw_saved / ceiling if ceiling > 0 else None,
-        "points": enriched,
-        "r_star_effective_bits_per_value": by_rate,
-        "r_star_description_bits": by_file,
-        "selected_codec": selected["codec"] if selected is not None else None,
-    }
-
-
-def _adapter_rate_curve(
-    *,
-    session: ModelSession,
-    model_spec: Any,
-    labels: list[str],
-    selection_examples: list[Example],
-    raw_tensors: dict[str, torch.Tensor],
-    base_metrics: dict[str, Any],
-    raw_metrics: dict[str, Any],
-    codecs: tuple[dict[str, Any], ...],
-    retention_target: float,
-    out_dir: Path,
-    batch_size: int,
-) -> dict[str, Any]:
-    """Exact reloadable adapter-rate sweep for one learned checkpoint.
-
-    Sweeps the zero-free uniform ladder rather than the adaptive MDL allocator.
-    On Mistral/MetaMathQA the allocator never beat this ladder at a matched file
-    rate and collapsed below it whenever it was allowed to drop rows; see
-    results/rmse_mdl_lora_vs_quantized_lora. The ladder is also cheaper, since
-    it needs no rate/distortion table and no penalty search.
-    """
-    try:
-        points: list[dict[str, Any]] = []
-        for codec in codecs:
-            key = str(codec["key"])
-            bits = int(codec["bits"])
-            blend = float(codec["blend"])
-            adapter_path = out_dir / f"adapter_{key}.fqcb"
-            storage = encode_tensor_map(
-                raw_tensors, adapter_path, bits, blend=blend
-            )
-            _, decoded = decode_adapter_tensor_map(adapter_path)
-            apply_adapter_tensors(session.model, decoded)
-            metrics, _ = evaluate_constrained_labels(
-                session.model,
-                session.tokenizer,
-                selection_examples,
-                model_spec,
-                labels,
-                batch_size=batch_size,
-            )
-            point = {
-                "codec": key,
-                "bits": bits,
-                "blend": blend,
-                "description_bits": int(storage["file_bits"]),
-                "effective_bits_per_value": float(storage["effective_bits_per_value"]),
-                "relative_rmse": float(storage["relative_rmse"]),
-                "accuracy": float(metrics["accuracy"]),
-                "label_nll": float(metrics["label_nll"]),
-                "bits_saved_per_mapping": _bits_saved_per_mapping(
-                    base_metrics, metrics
-                ),
-                "path": str(adapter_path),
-            }
-            points.append(point)
-        return _summarize_rate_curve(
-            points,
-            _bits_saved_per_mapping(base_metrics, raw_metrics),
-            retention_target,
-        )
-    finally:
-        apply_adapter_tensors(session.model, raw_tensors)
-
-
-def _training_spec(raw: dict[str, Any]) -> TrainingSpec:
-    return TrainingSpec(**raw["training"])
-
-
-def run_condition(
+def run_cell(
     *,
     info: dict[str, Any],
     campaign: dict[str, Any],
-    condition: Condition,
-    seed: int,
+    session: ModelSession,
+    cell: Cell,
     out_root: Path,
     force: bool = False,
+    keep_codecs: bool = False,
 ) -> dict[str, Any]:
-    out_dir = out_root / condition.name / f"seed{seed}"
+    out_dir = out_root / cell.study / cell.condition / cell.adapter / f"seed{cell.seed}"
     result_path = out_dir / "result.json"
     if result_path.is_file() and not force:
         return json.loads(result_path.read_text())
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    model_spec = _model(str(info["model"]), campaign)
-    adapter_spec = _adapter(str(info["adapter"]), campaign)
-    training = _training_spec(info)
+    condition = _condition(info, cell.condition)
+    model_spec = session.spec
+    adapter_spec = _adapter(cell.adapter, campaign)
+    training = TrainingSpec(**info["training"])
     labels = list(map(str, info["labels"]))
-    prefixes = sorted(set(map(int, info["prefix_mappings"])))
-    if not prefixes or prefixes[0] < 1:
-        raise ValueError("prefix_mappings must contain positive integers")
-    codecs = _rate_codecs(info)
-    retention_target = float(info.get("retention_target", 0.9))
-    batch_size = int(info.get("evaluation_batch_size", 64))
+    codecs = rate_codecs(info)
+    target = float(info.get("retention_target", 0.90))
+    gate = float(info["learning_gate_bits_per_mapping"])
+    updates = int(info["optimizer_updates"])
+    batch_size = int(info.get("evaluation_batch_size", 128))
+    mappings = int(info["mappings"])
+    prefixes = sorted(set(cell.prefixes))
+    if prefixes[-1] >= mappings:
+        raise ValueError("the largest prefix must leave a block of unseen mappings")
 
-    bundle = build_dataset(info, condition, seed)
-    session = ModelSession.load(model_spec)
+    dataset = build_dataset(info, condition, cell.seed)
+    started_at = time.perf_counter()
+    session.attach(adapter_spec, cell.seed)
     try:
-        session.attach(adapter_spec, seed)
         validate_single_token_labels(session.tokenizer, labels)
         initial_state = trainable_state(session.model)
 
-        # Base-model code for each block.  The attached LoRA is still exactly at
-        # its shared deterministic initialization, so its update is zero.
-        block_edges = [0, *prefixes]
-        base_blocks: list[dict[str, Any]] = []
-        for left, right in zip(block_edges[:-1], block_edges[1:], strict=True):
-            restore_trainable_state(session.model, initial_state)
-            metrics, _ = evaluate_constrained_labels(
-                session.model,
-                session.tokenizer,
-                bundle.prequential[left:right],
-                model_spec,
-                labels,
-                batch_size=batch_size,
-            )
-            base_blocks.append(
-                {
-                    "left": left,
-                    "right": right,
-                    "bits": _label_code_bits(metrics),
-                    "bits_per_mapping": _label_code_bits(metrics) / (right - left),
-                }
-            )
-
-        # Conditional prequential code: first block under the base model; every
-        # subsequent block under a fresh adapter trained only on the preceding
-        # prefix.  Training is reset to the same initialization at every prefix.
-        cumulative_preq = float(base_blocks[0]["bits"])
-        prequential_rows: list[dict[str, Any]] = [
-            {
-                "mappings": prefixes[0],
-                "source_bits": _source_bits(bundle, prefixes[0]),
-                "base_code_bits": float(base_blocks[0]["bits"]),
-                "prequential_code_bits": cumulative_preq,
-                "prequential_bits_per_mapping": cumulative_preq / prefixes[0],
-                "encoder": "base",
-            }
-        ]
-        checkpoints: list[dict[str, Any]] = []
-
-        iterator = tqdm(
-            prefixes,
-            desc=f"{condition.name} seed{seed}",
-            unit="prefix",
-            dynamic_ncols=True,
+        # The frozen base is the shared side information. Score it once over
+        # every mapping; each block and prefix is then a slice of that.
+        base = score(
+            session,
+            model_spec,
+            dataset.examples,
+            labels,
+            batch_size,
+            out_dir / "predictions" / "base.jsonl",
         )
-        for prefix_index, prefix in enumerate(iterator):
-            iterator.set_postfix_str(f"n={prefix}")
-            restore_trainable_state(session.model, initial_state)
-            train_rows = _flatten_prefix(bundle.train_by_mapping, prefix)
-            calibration_rows = bundle.calibration[:prefix]
+
+        block_edges = [0, *prefixes, mappings]
+        blocks = [
+            {
+                "left": left,
+                "right": right,
+                "encoder": "base" if index == 0 else f"adapter-trained-on-{left}",
+            }
+            for index, (left, right) in enumerate(
+                zip(block_edges[:-1], block_edges[1:], strict=True)
+            )
+        ]
+        blocks[0]["bits"] = base.summary(0, prefixes[0])["code_bits"]
+
+        checkpoints: list[dict[str, Any]] = []
+        for index, prefix in enumerate(prefixes):
             prefix_dir = out_dir / f"n{prefix}"
             prefix_dir.mkdir(parents=True, exist_ok=True)
+            taught = dataset.examples[:prefix]
+            epochs = epochs_for(updates, prefix, training.effective_batch_size)
+
+            restore_trainable_state(session.model, initial_state)
             train_metrics = train_adapter(
                 session.model,
                 session.tokenizer,
-                train_rows,
-                calibration_rows,
+                taught,
+                taught,
                 model_spec,
-                training,
-                seed + prefix,
+                replace(training, epochs=epochs),
+                cell.seed * 1000 + prefix,
                 prefix_dir / "training.jsonl",
             )
+            if int(train_metrics["optimizer_updates"]) != updates:
+                raise RuntimeError(
+                    f"prefix {prefix} spent {train_metrics['optimizer_updates']}"
+                    f" updates, not {updates}"
+                )
             raw_tensors = adapter_tensors(session.model, adapter_spec.method)
-            torch.save(raw_tensors, prefix_dir / "raw_channel.pt")
-
-            restore_trainable_state(session.model, initial_state)
-            base_selection, _ = evaluate_constrained_labels(
-                session.model,
-                session.tokenizer,
-                bundle.calibration[:prefix],
-                model_spec,
-                labels,
-                batch_size=batch_size,
-            )
-            apply_adapter_tensors(session.model, raw_tensors)
-            raw_selection, _ = evaluate_constrained_labels(
-                session.model,
-                session.tokenizer,
-                bundle.calibration[:prefix],
-                model_spec,
-                labels,
-                batch_size=batch_size,
+            torch.save(
+                {name: value.half() for name, value in raw_tensors.items()},
+                prefix_dir / "raw_channel.pt",
             )
 
-            rate_curve = _adapter_rate_curve(
+            taught_scores = score(
+                session,
+                model_spec,
+                taught,
+                labels,
+                batch_size,
+                prefix_dir / "predictions_taught.jsonl",
+            ).summary()
+            base_taught = base.summary(0, prefix)
+            raw_saved = (
+                base_taught["code_bits_per_mapping"]
+                - taught_scores["code_bits_per_mapping"]
+            )
+
+            # The block this checkpoint encodes for the prequential code: the
+            # mappings it has never seen. No future block trains or selects it.
+            left, right = prefix, block_edges[index + 2]
+            unseen = score(
+                session,
+                model_spec,
+                dataset.examples[left:right],
+                labels,
+                batch_size,
+                prefix_dir / "predictions_unseen.jsonl",
+            ).summary()
+            blocks[index + 1]["bits"] = unseen["code_bits"]
+
+            curve = _rate_curve(
                 session=session,
                 model_spec=model_spec,
                 labels=labels,
-                selection_examples=bundle.calibration[:prefix],
+                examples=taught,
                 raw_tensors=raw_tensors,
-                base_metrics=base_selection,
-                raw_metrics=raw_selection,
+                base_bits_per_mapping=base_taught["code_bits_per_mapping"],
+                base_accuracy=base_taught["accuracy"],
+                raw_saved=raw_saved,
                 codecs=codecs,
-                retention_target=retention_target,
+                target=target,
+                gate=gate,
                 out_dir=prefix_dir / "codecs",
                 batch_size=batch_size,
+                keep_files=keep_codecs,
             )
-
-            restore_trainable_state(session.model, initial_state)
-            base_report, _ = evaluate_constrained_labels(
-                session.model,
-                session.tokenizer,
-                bundle.test[:prefix],
-                model_spec,
-                labels,
-                batch_size=batch_size,
-            )
-            apply_adapter_tensors(session.model, raw_tensors)
-            raw_report, _ = evaluate_constrained_labels(
-                session.model,
-                session.tokenizer,
-                bundle.test[:prefix],
-                model_spec,
-                labels,
-                batch_size=batch_size,
-            )
-            selected_report = None
-            selected_key = rate_curve["selected_codec"]
-            if selected_key is not None:
-                selected_point = next(
-                    point
-                    for point in rate_curve["points"]
-                    if point["codec"] == selected_key
-                )
-                _, decoded = decode_adapter_tensor_map(selected_point["path"])
-                apply_adapter_tensors(session.model, decoded)
-                selected_metrics, _ = evaluate_constrained_labels(
-                    session.model,
-                    session.tokenizer,
-                    bundle.test[:prefix],
-                    model_spec,
-                    labels,
-                    batch_size=batch_size,
-                )
-                selected_report = {
-                    "codec": selected_key,
-                    "accuracy": float(selected_metrics["accuracy"]),
-                    "label_nll": float(selected_metrics["label_nll"]),
-                    "bits_saved_per_mapping": _bits_saved_per_mapping(
-                        base_report, selected_metrics
-                    ),
-                }
-            apply_adapter_tensors(session.model, raw_tensors)
-
             checkpoint = {
                 "mappings": prefix,
-                "training_rows": len(train_rows),
-                "source_bits": _source_bits(bundle, prefix),
-                "naive_independent_label_bits": 4 * prefix,
-                "selection": {
-                    "base_accuracy": float(base_selection["accuracy"]),
-                    "raw_accuracy": float(raw_selection["accuracy"]),
-                    "base_label_nll": float(base_selection["label_nll"]),
-                    "raw_label_nll": float(raw_selection["label_nll"]),
-                    "raw_bits_saved_per_mapping": _bits_saved_per_mapping(
-                        base_selection, raw_selection
-                    ),
+                "source_bits": source_bits(dataset, prefix),
+                "epochs": epochs,
+                "optimizer_updates": updates,
+                "taught": {"base": base_taught, "raw": taught_scores},
+                "unseen": {
+                    "left": left,
+                    "right": right,
+                    "base": base.summary(left, right),
+                    "raw": unseen,
                 },
-                "report": {
-                    "base_accuracy": float(base_report["accuracy"]),
-                    "raw_accuracy": float(raw_report["accuracy"]),
-                    "base_label_nll": float(base_report["label_nll"]),
-                    "raw_label_nll": float(raw_report["label_nll"]),
-                    "raw_bits_saved_per_mapping": _bits_saved_per_mapping(
-                        base_report, raw_report
-                    ),
-                    "selected": selected_report,
-                },
-                # Kept at the top level for the aggregate table.
-                "base_accuracy": float(base_report["accuracy"]),
-                "raw_accuracy": float(raw_report["accuracy"]),
-                "raw_label_nll": float(raw_report["label_nll"]),
-                "raw_gain": float(raw_report["accuracy"])
-                - float(base_report["accuracy"]),
+                "raw_bits_saved_per_mapping": raw_saved,
                 "training": train_metrics,
-                "rate_curve": rate_curve["points"],
-                "rate_reference": {
-                    key: value for key, value in rate_curve.items() if key != "points"
+                "rate_curve": curve["points"],
+                "rate_summary": {
+                    key: value for key, value in curve.items() if key != "points"
                 },
-                "r_star_description_bits": rate_curve[
-                    "r_star_description_bits"
-                ]["r_star"],
-                "r_star_effective_bits_per_value": rate_curve[
-                    "r_star_effective_bits_per_value"
-                ]["r_star"],
             }
             _write_json(prefix_dir / "metrics.json", checkpoint)
             checkpoints.append(checkpoint)
 
-            if prefix_index + 1 < len(prefixes):
-                next_prefix = prefixes[prefix_index + 1]
-                apply_adapter_tensors(session.model, raw_tensors)
-                next_metrics, _ = evaluate_constrained_labels(
-                    session.model,
-                    session.tokenizer,
-                    bundle.prequential[prefix:next_prefix],
-                    model_spec,
-                    labels,
-                    batch_size=batch_size,
-                )
-                block_bits = _label_code_bits(next_metrics)
-                cumulative_preq += block_bits
-                cumulative_base = sum(
-                    float(block["bits"])
-                    for block in base_blocks[: prefix_index + 2]
-                )
-                prequential_rows.append(
-                    {
-                        "mappings": next_prefix,
-                        "source_bits": _source_bits(bundle, next_prefix),
-                        "base_code_bits": cumulative_base,
-                        "prequential_code_bits": cumulative_preq,
-                        "prequential_bits_per_mapping": cumulative_preq
-                        / next_prefix,
-                        "last_block_bits": block_bits,
-                        "last_block_bits_per_mapping": block_bits
-                        / (next_prefix - prefix),
-                        "encoder": f"adapter-trained-on-{prefix}",
-                    }
-                )
+        cumulative = 0.0
+        prequential: list[dict[str, Any]] = []
+        for block in blocks:
+            cumulative += float(block["bits"])
+            span = block["right"] - block["left"]
+            prequential.append(
+                {
+                    **block,
+                    "bits_per_mapping": float(block["bits"]) / span,
+                    "cumulative_code_bits": cumulative,
+                    "cumulative_base_code_bits": base.summary(0, block["right"])[
+                        "code_bits"
+                    ],
+                    "source_bits": source_bits(dataset, block["right"]),
+                }
+            )
 
         result = {
-            "version": 1,
-            "condition": condition.name,
+            "version": 2,
+            "study": cell.study,
+            "condition": cell.condition,
             "prototype_count": condition.prototype_count,
-            "seed": seed,
+            "constant": condition.constant,
+            "reveal_prototype": condition.reveal_prototype,
+            "seed": cell.seed,
             "model": model_spec.key,
             "adapter": adapter_spec.key,
+            "adapter_rank": checkpoints[0]["training"]["adapter_rank"],
+            "trainable_parameters": checkpoints[0]["training"][
+                "trainable_parameters"
+            ],
             "labels": labels,
+            "codebook_digest": dataset.codebook_digest,
+            "mappings": mappings,
             "items_per_family": int(info.get("items_per_family", 16)),
-            "repeats_per_mapping": int(info.get("repeats_per_mapping", 4)),
-            "prefix_mappings": prefixes,
-            "retention_target": retention_target,
+            "prefixes": prefixes,
+            "optimizer_updates": updates,
+            "retention_target": target,
+            "learning_gate_bits_per_mapping": gate,
+            "mixture_weight": MIXTURE_WEIGHT,
+            "max_symbol_bits": MAX_SYMBOL_BITS,
             "adapter_codecs": list(codecs),
-            "prequential": prequential_rows,
+            "prequential": prequential,
             "checkpoints": checkpoints,
+            "elapsed_seconds": time.perf_counter() - started_at,
             "finished_at": time.time(),
         }
         _write_json(result_path, result)
         return result
     finally:
-        try:
-            session.unload()
-        except Exception:
-            pass
+        session.unload()
 
 
-def _collect_results(root: Path) -> list[dict[str, Any]]:
-    results = []
-    for path in sorted(root.glob("*/seed*/result.json")):
-        results.append(json.loads(path.read_text()))
-    return results
+# -------------------------------------------------------------------- the grid
+
+
+def expand_grid(info: dict[str, Any]) -> list[Cell]:
+    """Every cell the config asks for, in a stable order."""
+    seeds = list(map(int, info["seeds"]))
+    known = {str(entry["name"]) for entry in info["conditions"]}
+    cells: list[Cell] = []
+    for study in info["grid"]:
+        name = str(study["study"])
+        prefixes = tuple(sorted(set(map(int, study["prefixes"]))))
+        for condition in study["conditions"]:
+            if str(condition) not in known:
+                raise KeyError(f"study {name}: unknown condition {condition!r}")
+            for adapter in study["adapters"]:
+                for seed in seeds:
+                    cells.append(
+                        Cell(
+                            study=name,
+                            condition=str(condition),
+                            adapter=str(adapter),
+                            seed=seed,
+                            prefixes=prefixes,
+                        )
+                    )
+    slugs = [cell.slug for cell in cells]
+    if len(slugs) != len(set(slugs)):
+        raise ValueError("the grid produced duplicate cells")
+    return cells
+
+
+def shard(cells: list[Cell], index: int, count: int) -> list[Cell]:
+    """Stripe the grid so every shard gets a mix of long and short cells."""
+    if count < 1 or not 0 <= index < count:
+        raise ValueError(f"shard {index} is outside 0-{count - 1}")
+    return [cell for position, cell in enumerate(cells) if position % count == index]
+
+
+# ------------------------------------------------------------------ aggregate
+
+
+def _collect(root: Path) -> list[dict[str, Any]]:
+    return [
+        json.loads(path.read_text())
+        for path in sorted(root.glob("*/*/*/seed*/result.json"))
+    ]
+
+
+def _cell_rows(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    rows = []
+    for result in results:
+        for checkpoint in result["checkpoints"]:
+            summary = checkpoint["rate_summary"]
+            rows.append(
+                {
+                    "study": result["study"],
+                    "condition": result["condition"],
+                    "adapter": result["adapter"],
+                    "adapter_rank": result["adapter_rank"],
+                    "trainable_parameters": result["trainable_parameters"],
+                    "seed": result["seed"],
+                    "mappings": checkpoint["mappings"],
+                    "source_bits": checkpoint["source_bits"],
+                    "epochs": checkpoint["epochs"],
+                    "base_accuracy": checkpoint["taught"]["base"]["accuracy"],
+                    "raw_accuracy": checkpoint["taught"]["raw"]["accuracy"],
+                    "unseen_accuracy": checkpoint["unseen"]["raw"]["accuracy"],
+                    "unseen_bits_per_mapping": checkpoint["unseen"]["raw"][
+                        "code_bits"
+                    ]
+                    / max(
+                        checkpoint["unseen"]["right"] - checkpoint["unseen"]["left"], 1
+                    ),
+                    "raw_bits_saved_per_mapping": checkpoint[
+                        "raw_bits_saved_per_mapping"
+                    ],
+                    "learning_gate_passed": summary["learning_gate_passed"],
+                    "best_decoded_bits_saved_per_mapping": summary[
+                        "best_decoded_bits_saved_per_mapping"
+                    ],
+                    "r_star_bits_per_value": summary[
+                        "r_star_effective_bits_per_value"
+                    ]["r_star"],
+                    "r_star_bracketed": summary["r_star_effective_bits_per_value"].get(
+                        "bracketed"
+                    ),
+                    "r_star_description_bits": summary["r_star_description_bits"][
+                        "r_star"
+                    ],
+                    "selected_codec": summary["selected_codec"],
+                }
+            )
+    return rows
+
+
+def _prequential_rows(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    rows = []
+    for result in results:
+        for block in result["prequential"]:
+            rows.append(
+                {
+                    "study": result["study"],
+                    "condition": result["condition"],
+                    "adapter": result["adapter"],
+                    "seed": result["seed"],
+                    "left": block["left"],
+                    "right": block["right"],
+                    "encoder": block["encoder"],
+                    "source_bits": block["source_bits"],
+                    "block_bits": block["bits"],
+                    "bits_per_mapping": block["bits_per_mapping"],
+                    "cumulative_code_bits": block["cumulative_code_bits"],
+                    "cumulative_base_code_bits": block["cumulative_base_code_bits"],
+                }
+            )
+    return rows
+
+
+def _spread(values: list[float]) -> dict[str, Any]:
+    clean = [value for value in values if value is not None]
+    if not clean:
+        return {"n": 0}
+    return {
+        "n": len(clean),
+        "mean": statistics.fmean(clean),
+        "low": min(clean),
+        "high": max(clean),
+    }
+
+
+def check_gates(
+    cell_rows: list[dict[str, Any]], preq_rows: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """The pre-registered checks. Each is pass/fail; a failure is a result."""
+    learned = [row for row in cell_rows if row["study"] == "main"]
+    gates: dict[str, Any] = {}
+
+    gates["G1_learner_reaches_the_taught_map"] = {
+        "rule": "raw accuracy on the taught mappings >= 0.95 in every main cell",
+        "worst": min((row["raw_accuracy"] for row in learned), default=None),
+        "failures": sorted(
+            f"{row['condition']}/n{row['mappings']}/s{row['seed']}"
+            for row in learned
+            if row["raw_accuracy"] < 0.95
+        ),
+    }
+    gates["G1_learner_reaches_the_taught_map"]["passed"] = not gates[
+        "G1_learner_reaches_the_taught_map"
+    ]["failures"]
+
+    over_base = [
+        f"{row['condition']}/s{row['seed']}/{row['right']}"
+        for row in preq_rows
+        if row["cumulative_code_bits"] > row["cumulative_base_code_bits"]
+    ]
+    gates["G2_the_code_never_costs_more_than_the_base"] = {
+        "rule": "cumulative prequential bits <= cumulative base bits, always",
+        "failures": sorted(over_base),
+        "passed": not over_base,
+    }
+
+    tail = {}
+    for row in preq_rows:
+        if row["encoder"] == "base":
+            continue
+        tail.setdefault(row["condition"], []).append(row["bits_per_mapping"])
+    gates["G3_the_code_separates_learnable_from_random"] = {
+        "rule": (
+            "on unseen mappings the random condition costs near 4 bits each"
+            " while constant and p1 cost far less"
+        ),
+        "bits_per_unseen_mapping": {
+            name: _spread(values) for name, values in sorted(tail.items())
+        },
+    }
+
+    null = [
+        row
+        for row in cell_rows
+        if row["study"] == "main"
+        and row["condition"] in {"p4", "p8", "p16", "random"}
+        and row["mappings"] == 64
+    ]
+    gates["G4_equal_information_gives_equal_R_star"] = {
+        "rule": (
+            "at 64 mappings p4, p8, p16 and random are the same task, so their"
+            " R* must agree within seed spread"
+        ),
+        "source_bits": sorted({row["source_bits"] for row in null}),
+        "by_condition": {
+            name: _spread(
+                [row["r_star_bits_per_value"] for row in null if row["condition"] == name]
+            )
+            for name in sorted({row["condition"] for row in null})
+        },
+    }
+
+    largest = max((row["mappings"] for row in learned), default=0)
+    final = [row for row in learned if row["mappings"] == largest]
+    by_condition: dict[str, list[float]] = {}
+    order: dict[str, int] = {}
+    for row in final:
+        by_condition.setdefault(row["condition"], []).append(
+            row["r_star_bits_per_value"]
+        )
+        order[row["condition"]] = row["source_bits"]
+    ranked = sorted(order, key=lambda name: order[name])
+    means = [
+        statistics.fmean([v for v in by_condition[name] if v is not None])
+        if any(v is not None for v in by_condition[name])
+        else None
+        for name in ranked
+    ]
+    monotone = all(
+        left is not None and right is not None and left <= right
+        for left, right in zip(means[:-1], means[1:])
+    )
+    gates["G5_R_star_rises_with_source_bits"] = {
+        "rule": (
+            "at the largest prefix R* is monotone in source bits and the"
+            " extreme conditions do not overlap across seeds"
+        ),
+        "mappings": largest,
+        "by_condition": {
+            name: {"source_bits": order[name], **_spread(by_condition[name])}
+            for name in ranked
+        },
+        "monotone": monotone,
+    }
+    if len(ranked) >= 2:
+        low = _spread(by_condition[ranked[0]])
+        high = _spread(by_condition[ranked[-1]])
+        gates["G5_R_star_rises_with_source_bits"]["extremes_separated"] = bool(
+            low.get("n") and high.get("n") and low["high"] < high["low"]
+        )
+    return gates
+
+
+def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
+    if not rows:
+        return
+    with path.open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+# One ordinal ramp, reused from results/adapter_bits_track_unique_data, where
+# it passed the sequential palette checks. Rank is an ordered quantity.
+RANK_COLOURS = ("#86b6ef", "#2a78d6", "#0d366b")
+
+
+def _figures(root: Path, cell_rows: list[dict[str, Any]], preq: list[dict[str, Any]]) -> None:
+    import matplotlib.pyplot as plt
+
+    ranks = sorted({row["adapter_rank"] for row in cell_rows})
+    largest = max((row["mappings"] for row in cell_rows), default=0)
+    figure, axes = plt.subplots(1, 2, figsize=(11.5, 4.6))
+
+    left = axes[0]
+    for position, rank in enumerate(ranks):
+        selected = [
+            row
+            for row in cell_rows
+            if row["adapter_rank"] == rank
+            and row["mappings"] == largest
+            # A log axis cannot show the empty-adapter anchor at zero bits.
+            and (row["r_star_description_bits"] or 0) > 0
+        ]
+        grouped: dict[int, list[float]] = {}
+        for row in selected:
+            grouped.setdefault(row["source_bits"], []).append(
+                row["r_star_description_bits"]
+            )
+        if not grouped:
+            continue
+        xs = sorted(grouped)
+        left.plot(
+            xs,
+            [statistics.fmean(grouped[x]) for x in xs],
+            marker="o",
+            color=RANK_COLOURS[position % len(RANK_COLOURS)],
+            label=f"rank {rank}",
+        )
+        left.fill_between(
+            xs,
+            [min(grouped[x]) for x in xs],
+            [max(grouped[x]) for x in xs],
+            color=RANK_COLOURS[position % len(RANK_COLOURS)],
+            alpha=0.18,
+            linewidth=0,
+        )
+    left.set_xscale("log", base=2)
+    left.set_yscale("log", base=2)
+    left.set_xlabel("known source bits in the task")
+    left.set_ylabel("R* adapter file bits")
+    left.set_title(f"adapter description length at {largest} mappings")
+    left.grid(alpha=0.2)
+    left.legend(frameon=False)
+
+    right = axes[1]
+    final: dict[tuple[str, int], dict[str, Any]] = {}
+    for row in preq:
+        key = (row["condition"], row["seed"])
+        if key not in final or row["right"] > final[key]["right"]:
+            final[key] = row
+    grouped_preq: dict[int, list[float]] = {}
+    for row in final.values():
+        grouped_preq.setdefault(row["source_bits"], []).append(
+            row["cumulative_code_bits"]
+        )
+    xs = sorted(grouped_preq)
+    if xs:
+        right.plot(
+            xs,
+            [statistics.fmean(grouped_preq[x]) for x in xs],
+            marker="o",
+            color=RANK_COLOURS[1],
+            label="measured code",
+        )
+        limits = [min(xs), max(xs)]
+        right.plot(limits, limits, linestyle="--", color="#6b7280", label="source bits")
+    right.set_xscale("log", base=2)
+    right.set_yscale("log", base=2)
+    right.set_xlabel("known source bits in the task")
+    right.set_ylabel("conditional prequential code bits")
+    right.set_title("does the measured code recover the known bits?")
+    right.grid(alpha=0.2)
+    right.legend(frameon=False)
+
+    figure.tight_layout()
+    figure.savefig(root / "information_scaling.png", dpi=220)
+    plt.close(figure)
 
 
 def aggregate(root: Path) -> dict[str, Any]:
-    results = _collect_results(root)
+    results = _collect(root)
     if not results:
         raise FileNotFoundError(f"no information-scaling results under {root}")
-
-    rows: list[dict[str, Any]] = []
-    preq_rows: list[dict[str, Any]] = []
-    for result in results:
-        common = {
-            "condition": result["condition"],
-            "prototype_count": result["prototype_count"],
-            "seed": result["seed"],
-        }
-        for checkpoint in result["checkpoints"]:
-            rows.append(
-                {
-                    **common,
-                    "mappings": checkpoint["mappings"],
-                    "source_bits": checkpoint["source_bits"],
-                    "training_rows": checkpoint["training_rows"],
-                    "base_accuracy": checkpoint["base_accuracy"],
-                    "raw_accuracy": checkpoint["raw_accuracy"],
-                    "r_star_description_bits": checkpoint[
-                        "r_star_description_bits"
-                    ],
-                    "r_star_effective_bits_per_value": checkpoint[
-                        "r_star_effective_bits_per_value"
-                    ],
-                }
-            )
-        for preq in result["prequential"]:
-            preq_rows.append({**common, **preq})
-
+    cell_rows = _cell_rows(results)
+    preq_rows = _prequential_rows(results)
     root.mkdir(parents=True, exist_ok=True)
-    fields = list(rows[0])
-    with (root / "adapter_information.csv").open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fields)
-        writer.writeheader()
-        writer.writerows(rows)
-    fields = list(preq_rows[0])
-    with (root / "prequential.csv").open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=fields, extrasaction="ignore")
-        writer.writeheader()
-        writer.writerows(preq_rows)
-
-    # Two deliberately simple diagnostic figures.  Do not fit scaling laws at
-    # this stage; first establish that known task bits and prequential code order
-    # the conditions in the expected direction.
-    import matplotlib.pyplot as plt
-
-    valid = [row for row in rows if row["r_star_description_bits"] is not None]
-    if valid:
-        fig, ax = plt.subplots(figsize=(7.2, 5.0))
-        for condition in sorted({str(row["condition"]) for row in valid}):
-            selected = [row for row in valid if row["condition"] == condition]
-            selected.sort(key=lambda row: int(row["source_bits"]))
-            ax.plot(
-                [float(row["source_bits"]) for row in selected],
-                [float(row["r_star_description_bits"]) for row in selected],
-                marker="o",
-                label=condition,
-            )
-        ax.set_xscale("log", base=2)
-        ax.set_yscale("log", base=2)
-        ax.set_xlabel("Known independent task bits")
-        ax.set_ylabel("Minimum adapter description bits retaining target gain")
-        ax.grid(alpha=0.2)
-        ax.legend(frameon=False)
-        fig.tight_layout()
-        fig.savefig(root / "source_bits_vs_adapter_bits.png", dpi=220)
-        plt.close(fig)
-
-    final_preq: list[dict[str, Any]] = []
-    by_key: dict[tuple[str, int], list[dict[str, Any]]] = {}
-    for row in preq_rows:
-        by_key.setdefault((str(row["condition"]), int(row["seed"])), []).append(row)
-    for group in by_key.values():
-        final_preq.append(max(group, key=lambda row: int(row["mappings"])))
-    if final_preq:
-        fig, ax = plt.subplots(figsize=(7.2, 5.0))
-        for row in final_preq:
-            ax.scatter(
-                float(row["source_bits"]),
-                float(row["prequential_code_bits"]),
-                label=f"{row['condition']}/s{row['seed']}",
-            )
-        ax.set_xscale("log", base=2)
-        ax.set_yscale("log", base=2)
-        ax.set_xlabel("Known independent task bits")
-        ax.set_ylabel("Conditional prequential code bits")
-        ax.grid(alpha=0.2)
-        ax.legend(frameon=False, fontsize=8)
-        fig.tight_layout()
-        fig.savefig(root / "source_bits_vs_prequential_bits.png", dpi=220)
-        plt.close(fig)
-
+    _write_csv(root / "cells.csv", cell_rows)
+    _write_csv(root / "prequential.csv", preq_rows)
+    gates = check_gates(cell_rows, preq_rows)
+    _write_json(root / "gates.json", gates)
+    try:
+        _figures(root, cell_rows, preq_rows)
+    except Exception as error:  # a missing display backend must not lose data
+        print(f"figures skipped: {error}")
     summary = {
-        "results": len(results),
-        "adapter_rows": len(rows),
-        "prequential_rows": len(preq_rows),
-        "adapter_csv": str(root / "adapter_information.csv"),
-        "prequential_csv": str(root / "prequential.csv"),
+        "cells": len(results),
+        "checkpoints": len(cell_rows),
+        "prequential_blocks": len(preq_rows),
+        "gates": {
+            name: value.get("passed")
+            for name, value in gates.items()
+            if "passed" in value
+        },
     }
     _write_json(root / "summary.json", summary)
     return summary
 
 
+# ------------------------------------------------------------------------ CLI
+
+
+def load_info_config(path: Path) -> dict[str, Any]:
+    raw = yaml.safe_load(path.read_text())
+    if not isinstance(raw, dict) or int(raw.get("version", 0)) != 2:
+        raise ValueError(f"{path}: expected information-scaling config version 2")
+    return raw
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Controlled dataset information vs adapter description length."
+        description="Controlled task information against adapter description length."
     )
     parser.add_argument(
         "--config", type=Path, default=Path("configs/information_scaling.yaml")
     )
-    parser.add_argument("--campaign", type=Path, default=Path("configs/campaign.yaml"))
+    parser.add_argument(
+        "--campaign", type=Path, default=Path("configs/compressibility.yaml")
+    )
     parser.add_argument("--out", type=Path, default=Path("runs_information_scaling"))
+    parser.add_argument("--studies", nargs="+", help="restrict to these grid studies")
     parser.add_argument("--conditions", nargs="+")
     parser.add_argument("--seeds", nargs="+", type=int)
-    parser.add_argument("--epochs", type=int)
     parser.add_argument("--prefixes", nargs="+", type=int)
+    parser.add_argument("--updates", type=int, help="override the update budget")
+    parser.add_argument("--shard", type=int, default=0)
+    parser.add_argument("--shards", type=int, default=1)
+    parser.add_argument("--keep-codecs", action="store_true")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--aggregate", action="store_true")
     return parser
+
+
+def selected_cells(info: dict[str, Any], args: argparse.Namespace) -> list[Cell]:
+    cells = expand_grid(info)
+    if args.studies:
+        wanted = set(args.studies)
+        cells = [cell for cell in cells if cell.study in wanted]
+    if args.conditions:
+        wanted = set(args.conditions)
+        cells = [cell for cell in cells if cell.condition in wanted]
+    if args.seeds:
+        wanted = set(args.seeds)
+        cells = [cell for cell in cells if cell.seed in wanted]
+    if args.prefixes:
+        prefixes = tuple(sorted(set(args.prefixes)))
+        cells = [replace(cell, prefixes=prefixes) for cell in cells]
+    return shard(cells, args.shard, args.shards)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -896,35 +1166,51 @@ def main(argv: list[str] | None = None) -> None:
         print(json.dumps(aggregate(args.out), indent=2, sort_keys=True))
         return
 
-    info = _override_run_config(
-        _load_info_config(args.config), epochs=args.epochs, prefixes=args.prefixes
-    )
+    info = load_info_config(args.config)
+    if args.updates is not None:
+        info = {**info, "optimizer_updates": int(args.updates)}
     campaign = load_campaign(args.campaign)
-    conditions = args.conditions or [str(row["name"]) for row in info["conditions"]]
-    seeds = args.seeds or list(map(int, info.get("seeds", [11])))
-    for seed in seeds:
-        for name in conditions:
-            result = run_condition(
+    cells = selected_cells(info, args)
+    if args.dry_run:
+        for cell in cells:
+            print(f"{cell.slug} prefixes={list(cell.prefixes)}")
+        print(f"{len(cells)} cells")
+        return
+    if not cells:
+        raise SystemExit("shard selected no cells")
+
+    # One model load for the whole shard. The previous version reloaded the
+    # base for every cell, which spent about a quarter of its GPU time
+    # re-quantizing weights it already had.
+    session = ModelSession.load(_model(str(info["model"]), campaign))
+    try:
+        for cell in cells:
+            result = run_cell(
                 info=info,
                 campaign=campaign,
-                condition=_condition(info, name),
-                seed=seed,
+                session=session,
+                cell=cell,
                 out_root=args.out,
                 force=args.force,
+                keep_codecs=args.keep_codecs,
             )
             print(
                 json.dumps(
                     {
-                        "condition": result["condition"],
-                        "seed": result["seed"],
-                        "result": str(
-                            args.out / result["condition"] / f"seed{seed}" / "result.json"
+                        "cell": cell.slug,
+                        "elapsed_seconds": round(
+                            float(result.get("elapsed_seconds", 0.0)), 1
                         ),
                     },
                     sort_keys=True,
                 ),
                 flush=True,
             )
+    finally:
+        try:
+            session.unload()
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":

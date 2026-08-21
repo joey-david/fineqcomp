@@ -213,89 +213,142 @@ evaluation. Keep screened, failed, and no-learning cells in the status report.
 
 <!-- Fill after the campaign artifacts have been checked. -->
 
-## Experiment 7: Dataset information vs learned adapter information
+## Experiment 7: Known task information against adapter description length
 
 ### Question
 
-Holding dataset size and the training protocol fixed, does the amount of
-independent information in the finetuning task predict (1) its conditional
-prequential code length and (2) the minimum serialized adapter description
-needed to retain the learned behavior?
+At identical prompts, rows, and optimizer updates, does the smallest adapter
+file that still reproduces a learned map grow with the information that map
+contains?
+
+Experiment 2 answered a weaker question. It showed R*(0.90) rising with the
+number of distinct training rows at fixed compute, but never measured what
+those rows contained, so "unique information" stayed a proxy for "unique rows".
+Here the information is known by construction and a second, measured quantity
+is checked against it.
 
 ### Controlled task
 
-Every prompt identifies a family and one of 16 items and asks for one of 16
-single-token labels. The visible prompts, number of rows, model, adapter, and
-optimizer are matched between conditions. Only the source of the labels changes.
+Every prompt names a family and an item and asks for one of sixteen
+single-token labels, under one canonical template. There is one example per
+mapping, so distinct rows and source symbols are the same thing. Rows, prompts,
+model, adapter, optimizer, and optimizer updates are identical across
+conditions. Only the labels change.
 
-- `random`: every family-item mapping receives an independent random label,
-  contributing exactly 4 new source bits per mapping.
-- `structured_p1`: one random 16-item prototype table is reused by every family;
-  task information saturates at 64 bits.
-- `structured_p4`: four prototype tables repeat; task information saturates at
-  256 bits.
-- `structured_p16`: sixteen prototype tables repeat; task information saturates
-  at 1,024 bits.
+| condition | rule | source bits at 512 mappings |
+|---|---|---:|
+| `constant` | one label everywhere | 4 |
+| `p1` … `p16` | K hidden 16-item prototype tables, reused across families | 64·K |
+| `random` | an independent label per mapping | 2,048 |
 
-The nested mapping prefixes are 32, 128, and 512. This produces
-conditions with identical example counts but very different known source
-information. The prototype reuse rule is shared side information; only sampled
-prototype labels count as task-specific source bits.
+`constant` is the zero-information anchor. Whatever R* costs there is the price
+of addressing a behaviour at all, and every other condition is read against it.
+Without that intercept a positive slope through points that all sit far above
+zero is not evidence of anything.
 
-### Conditional prequential code
+The prefixes are 64, 128, 256 and 512 mappings, out of 768. Each prefix spends
+the same 2,048 optimizer updates, with epochs derived, so a longer prefix buys
+more information and not more gradient steps. A prefix that cannot hit the
+budget exactly is an error rather than a rounding.
 
-Use the frozen pretrained model as shared side information. Encode the first
-block from its constrained 16-label probabilities. For every later block,
-reset a rank-16 LoRA to the same deterministic initialization, train only on the
-preceding prefix, and encode the unseen next block using the trained model's
-16-label probabilities. Sum `-log2 p(label | prompt)` over blocks. No future
-block is used for training or checkpoint selection.
+### What one cell measures
 
-This code intentionally scores one label per independent mapping rather than
-all duplicated training rows, so repeated prompt scaffolding does not dominate
-the dataset-compressibility measure.
+- **Source bits**, known by construction: four times the number of independent
+  symbol draws the labels required.
+- **A conditional prequential code**. The frozen base is shared side
+  information and codes the first block. Every later block is coded by an
+  adapter trained only on the blocks before it. No future block trains or
+  selects any encoder.
+- **R\*(0.90)**, the smallest adapter file that still reproduces the taught map,
+  on a dense uniform ladder from an empty file through 2 bits per value.
 
-### Adapter description length
+The label code is a mixture, `(1-w)·p_model + w/16` at a pre-registered
+`w = 1/16`, not the model's own renormalized distribution. A model that is
+confidently wrong on an unseen mapping costs an unbounded number of bits under
+its own probabilities, so the reported code length ends up set by the numerical
+floor in the scorer rather than by the data. The mixture caps the cost per
+symbol at 8 bits and adds at most 0.09 bits when the model is right.
 
-For every trained prefix, save the raw LoRA and run one dense uniform-code
-family from 0.0625 to 2 nominal bits per value. Decode every `.fqcb` file before
-evaluation. Select the curve on a calibration split and report its chosen real
-file on a separate test split. The utility ceiling is the best decoded
-calibration point, including the raw adapter, so regularizing compression cannot
-produce retention above 100%. Define `R*(0.90)` by interpolation on the upper
-curve of response-code bits saved against the frozen base.
+The ladder carries an explicit empty-adapter point at zero file bits and zero
+gain, so the crossing is always bracketed from below. R* is undefined, and
+reported as undefined, unless the raw adapter clears an absolute gate of one
+bit saved per mapping out of a maximum of four: below that every rung retains
+ninety percent of nothing.
 
-Primary plots:
+Every per-example probability is written to `predictions/*.jsonl`. A finished
+run can then be recalibrated, re-coded, or broken down by family without
+training anything again.
 
-1. known independent task bits vs conditional prequential code bits;
-2. known independent task bits vs `R*(0.90)`;
-3. conditional prequential code bits vs `R*(0.90)`.
+### Pre-registered gates
 
-The decisive pattern is not merely that larger datasets require larger
-adapters: at the same mapping count, structured conditions should become cheap
-once their prototype table has been learned, while the random condition should
-continue to grow with its genuinely new source bits.
+These are recorded before the run. They are pass/fail, and a failure is a
+result rather than a reason to retune.
+
+- **G1 — did the learner reach the map?** Raw recall on the taught mappings is
+  at least 0.95 in every main cell. Below that R* is a ratio of noise.
+- **G2 — is the code a code?** The cumulative prequential code never exceeds
+  the cumulative base-model code. The base code is free, so a valid code cannot
+  be worse; a violation is a bug in the measurement.
+- **G3 — does the code see the source?** On unseen mappings the `random`
+  condition costs near four bits each while `constant` and `p1` cost far less.
+  This is what makes the code a measure of source information rather than of
+  the base model's letter prior.
+- **G4 — what is the noise floor?** At 64 mappings only four families exist, so
+  `p4`, `p8`, `p16` and `random` are the same task: 64 arbitrary labels, 256
+  source bits. Their R* must agree. Any slope claimed in G5 has to clear this
+  spread.
+- **G5 — the claim.** At 512 mappings R* is monotone in source bits and the
+  extreme conditions do not overlap across seeds.
+
+A failure of G5 with G1–G4 passing is a real negative, and an informative one:
+it would say the adapter file is dominated by the cost of naming a point in
+weight space rather than by task content, and it would reframe Experiment 2's
+slope as something other than information.
+
+### Studies
+
+| study | question | cells |
+|---|---|---:|
+| `main` | R* against known source bits, four prefixes, rank 16 | 21 |
+| `rank` | is R* task content or addressing cost? ranks 4 and 64 at 512 mappings | 24 |
+| `cue` | does naming the shared structure in the prompt change what must be stored? | 6 |
+
+The rank study is the sharpest test in the design. A GSM8K adapter needed about
+one bit per value over 42M values — 42 megabits — for a task whose genuine
+information content is plausibly kilobits. Almost none of that file is task
+content. If R* in total file bits is flat in rank, the adapter stores task
+information and the container adapts to it; if it scales with parameter count,
+R* is measuring the cost of addressing a point in weight space, and the natural
+campaign cannot mean what it appears to mean.
+
+The cue study pairs `p4` and `p16` with versions whose prompt names the
+prototype. Source bits are unchanged; what changes is whether the learner has
+to discover the sharing rule itself. The gap is how much reusable structure the
+optimizer fails to exploit when it is not told.
 
 ### Run
 
 ```bash
-# Two-cell H100 check: random vs 64-bit structured task, seed 11.
-sbatch --array=0-1%2 --export=ALL,MODE=pilot \
+# Two cells: the zero-information anchor and the hardest condition, seed 11,
+# largest prefix. Gate: raw recall >= 0.95 on both, and R* defined on both.
+sbatch --array=0-1%2 --export=ALL,MODE=smoke \
   scripts/jean_zay_information.sbatch
 
-# Repeat only the two endpoint conditions on seeds 22 and 33.
-sbatch --array=0-3%4 --export=ALL,MODE=repeat \
+# All 51 cells across twelve shards, about 45 minutes each.
+sbatch --array=0-11%12 --export=ALL,MODE=full \
   scripts/jean_zay_information.sbatch
 
-# Expand to four information levels only after checking the two short stages.
-sbatch --qos=qos_gpu_h100-t3 --array=0-11%12 --export=ALL,MODE=full \
-  scripts/jean_zay_information.sbatch
+python -m fineqcomp.information_scaling --out runs_information_scaling/full --aggregate
 ```
 
-Configuration: `configs/information_scaling.yaml`.
-Outputs: `runs_information_scaling/<mode>/prequential.csv`,
-`adapter_information.csv`, per-prefix raw adapters and `.fqcb` files, plus
-`source_bits_vs_prequential_bits.png` and `source_bits_vs_adapter_bits.png`.
+Configuration: `configs/information_scaling.yaml`. Outputs:
+`runs_information_scaling/<mode>/cells.csv`, `prequential.csv`, `gates.json`,
+`information_scaling.png`, and per-cell `result.json`, raw checkpoints and
+predictions.
+
+### Results
+
+<!-- Fill after the artifacts have been checked. -->
 
 ### Staged natural-task replication
 
@@ -307,9 +360,8 @@ the three-arm repeat. Final claims still need all seeds and uncertainty.
 
 | stage | unit of work | expected time per H100 | parallel wall time |
 |---|---|---:|---:|
-| synthetic pilot | one condition, seed 11, three prefixes | 32 min | 32 min for two cells |
-| synthetic repeat | one condition and seed | 32 min | 32 min for four cells |
-| synthetic full | one condition and seed | 32 min | 32 min for twelve cells |
+| synthetic smoke | one condition, seed 11, largest prefix | 15 min | 15 min for two cells |
+| synthetic full | one shard of four or five cells | 45 min | 45 min for twelve shards |
 | NLL screen, XSum | one model, 125 updates | 12 min | 12 min for both models |
 | NLL screen, Magicoder | one model, 125 updates | 35 min | 35 min for both models |
 | 500-update extension, XSum | one model | 30 min | 30 min for two models |
@@ -318,11 +370,13 @@ the three-arm repeat. Final claims still need all seeds and uncertainty.
 | natural endpoint, XSum | one arm, 2,000 updates and dense curve | 1 h 45 min | 1 h 45 min for selected arms |
 | natural endpoint, Magicoder | one arm, 2,000 updates and dense curve | 4 h | 4 h for selected arms |
 
-These are launch budgets, not measured outcomes. Jean-Zay runs one cell on each
-H100. The synthetic estimate scales the saved 53-minute, 2,000-update Mistral
-training time to 672 short-sequence updates, then allows 14 minutes for model
-load and the dense decoded-file sweep. Its batch limit is one hour. Long-context
-code gets the larger bound. Each stage records its actual load, train, codec,
+These are launch budgets, not measured outcomes. Jean-Zay runs one shard on
+each H100. The synthetic estimate scales the saved 53-minute, 2,000-update
+Mistral training time to 2,048 short-sequence updates per prefix, allows five
+minutes for the one model load a shard needs, and ten seconds per coded file:
+the whole thirteen-rung ladder encodes and decodes in under ten seconds at rank
+16, measured, so the budget is training. Long-context code gets the larger
+bound. Each stage records its actual load, train, codec,
 and task time so the next estimate can replace these budgets.
 
 Natural arms use exact 32,000-example draw streams at 2k, 4k, 8k, 16k, and 32k

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-usage="usage: scripts/remote.sh push | push-prepared | pull | pull-stats | pull-logs"
+usage="usage: scripts/remote.sh push | push-prepared | pull | pull-info | pull-stats | pull-logs"
 action="${1:?$usage}"
 host="${SSH_SERVER:-lamgate}"
 remote_root="${REMOTE_REPO_ROOT:-/home/lamsade/jdavid/fineQComp}"
@@ -48,6 +48,16 @@ pull)
     "$host:$remote_root/reports/" reports/ || true
   rsync -avz --prune-empty-dirs \
     "$host:$remote_root/remote_logs/" remote_logs/ || true
+  ;;
+pull-info)
+  # The information-scaling study writes outside runs/. Everything here is
+  # small except the raw checkpoints, which are left on the cluster: every
+  # coded file is a deterministic function of them.
+  mkdir -p runs_information_scaling
+  rsync -avz --prune-empty-dirs \
+    --exclude raw_channel.pt \
+    --exclude '*.fqcb' \
+    "$host:$remote_root/runs_information_scaling/" runs_information_scaling/
   ;;
 pull-logs)
   mkdir -p slurm_logs

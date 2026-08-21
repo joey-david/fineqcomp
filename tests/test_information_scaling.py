@@ -1,103 +1,168 @@
 from __future__ import annotations
 
+import math
 from types import SimpleNamespace
 
+import pytest
+
 from fineqcomp.information_scaling import (
+    MAX_SYMBOL_BITS,
+    Cell,
     Condition,
-    _adapter_rate_curve,
-    _override_run_config,
-    _rate_codecs,
-    _source_bits,
-    _summarize_rate_curve,
+    _condition,
+    _rate_curve,
     build_dataset,
+    check_gates,
+    epochs_for,
+    expand_grid,
+    rate_codecs,
+    shard,
+    source_bits,
+    summarize_rate_curve,
+    symbol_bits,
 )
 
 
-LABELS = [f" {chr(ord('A') + index)}" for index in range(16)]
+LABELS = [chr(ord("A") + index) for index in range(16)]
 
 
-def _config(tmp_path):
+def _config(tmp_path, mappings=64):
     codebooks = tmp_path / "codebooks"
     codebooks.mkdir(exist_ok=True)
-    # 64 independent 4-bit symbols: enough for four 16-item families.
-    codebooks.joinpath("seed11.hex").write_text(bytes(range(32)).hex())
+    # 512 four-bit symbols: enough for 16 prototype tables of 16 items.
+    codebooks.joinpath("seed11.hex").write_text(bytes(range(256)).hex())
     return {
         "labels": LABELS,
         "codebook_dir": str(codebooks),
+        "mappings": mappings,
         "items_per_family": 16,
-        "repeats_per_mapping": 2,
-        "prefix_mappings": [16, 32, 64],
     }
 
 
-def test_random_source_bits_grow_with_every_mapping(tmp_path):
-    bundle = build_dataset(_config(tmp_path), Condition("random", None), seed=11)
-    assert _source_bits(bundle, 16) == 64
-    assert _source_bits(bundle, 32) == 128
-    assert _source_bits(bundle, 64) == 256
+def test_source_bits_count_independent_draws_and_nothing_else(tmp_path):
+    raw = _config(tmp_path, mappings=512)
+
+    constant = build_dataset(raw, Condition("constant", constant=True), seed=11)
+    assert source_bits(constant, 512) == 4
+    assert len(set(constant.label_indices)) == 1
+
+    random = build_dataset(raw, Condition("random"), seed=11)
+    assert source_bits(random, 64) == 256
+    assert source_bits(random, 512) == 2048
+
+    # A prototype table saturates once every table has been seen.
+    for count in (1, 2, 4, 8, 16):
+        bundle = build_dataset(raw, Condition(f"p{count}", count), seed=11)
+        assert source_bits(bundle, 512) == 64 * count
 
 
-def test_structured_source_bits_saturate_at_prototype_table_size(tmp_path):
-    bundle = build_dataset(
-        _config(tmp_path), Condition("structured_p1", 1), seed=11
-    )
-    assert _source_bits(bundle, 16) == 64
-    assert _source_bits(bundle, 32) == 64
-    assert _source_bits(bundle, 64) == 64
+def test_the_smallest_prefix_is_a_built_in_null_control(tmp_path):
+    """At 64 mappings p4, p8, p16 and random are the same task.
 
-    bundle = build_dataset(
-        _config(tmp_path), Condition("structured_p4", 4), seed=11
-    )
-    assert _source_bits(bundle, 16) == 64
-    assert _source_bits(bundle, 32) == 128
-    assert _source_bits(bundle, 64) == 256
+    Four families cannot reuse more than four prototypes, so every condition
+    with at least four tables draws 64 independent labels, exactly as random
+    does. Their R* must agree, and that agreement is the noise floor any slope
+    at larger prefixes has to clear.
+    """
+    raw = _config(tmp_path, mappings=512)
+    measured = {
+        name: source_bits(build_dataset(raw, condition, seed=11), 64)
+        for name, condition in {
+            "p4": Condition("p4", 4),
+            "p8": Condition("p8", 8),
+            "p16": Condition("p16", 16),
+            "random": Condition("random"),
+        }.items()
+    }
+    assert set(measured.values()) == {256}
 
 
-def test_conditions_change_labels_not_prompts_or_example_count(tmp_path):
-    raw = _config(tmp_path)
-    random = build_dataset(raw, Condition("random", None), seed=11)
-    structured = build_dataset(raw, Condition("structured_p1", 1), seed=11)
+def test_conditions_change_labels_not_prompts(tmp_path):
+    raw = _config(tmp_path, mappings=512)
+    random = build_dataset(raw, Condition("random"), seed=11)
+    structured = build_dataset(raw, Condition("p4", 4), seed=11)
+    cued = build_dataset(raw, Condition("p4_cue", 4, reveal_prototype=True), seed=11)
 
-    assert len(random.train_by_mapping) == len(structured.train_by_mapping) == 64
-    assert [row.prompt for row in random.prequential] == [
-        row.prompt for row in structured.prequential
+    assert [row.prompt for row in random.examples] == [
+        row.prompt for row in structured.examples
     ]
-    assert [row.prompt for row in random.test] == [row.prompt for row in structured.test]
     assert random.label_indices != structured.label_indices
+    assert structured.label_indices == cued.label_indices
+
+    # The cue changes the table line and nothing else.
+    plain = structured.examples[17].prompt.splitlines()
+    revealed = cued.examples[17].prompt.splitlines()
+    differing = [
+        index for index, (a, b) in enumerate(zip(plain, revealed)) if a != b
+    ]
+    assert len(differing) == 1
+    assert plain[differing[0]] == "Table: T?"
+    assert revealed[differing[0]].startswith("Table: T")
 
 
-def test_dense_rate_codecs_include_sub_bit_points():
-    codecs = _rate_codecs(
+def test_every_prefix_spends_the_same_optimizer_updates():
+    assert epochs_for(1024, 64, 16) == 256
+    assert epochs_for(1024, 512, 16) == 32
+    # An unreachable budget is an error, never a silent rounding: a prefix that
+    # quietly took more updates would confound information with compute.
+    with pytest.raises(ValueError):
+        epochs_for(1000, 512, 16)
+    with pytest.raises(ValueError):
+        epochs_for(1024, 100, 16)
+
+
+def test_the_label_code_is_bounded_however_wrong_the_model_is():
+    assert symbol_bits(1.0) < 0.1
+    assert symbol_bits(0.0) == pytest.approx(MAX_SYMBOL_BITS)
+    # A confidently wrong model costs the cap, not the 40 bits its own
+    # probabilities would have charged against a numerical floor.
+    assert symbol_bits(1e-12) == pytest.approx(MAX_SYMBOL_BITS, rel=1e-6)
+    assert MAX_SYMBOL_BITS == pytest.approx(math.log2(16 * 16))
+
+
+def _curve_points():
+    return [
         {
-            "adapter_codecs": [
-                {"key": "quarter", "bits": 0, "blend": 0.25},
-                {"key": "binary", "bits": 1},
-                {"key": "one_and_half", "bits": 1, "blend": 0.5},
-            ]
-        }
-    )
-    assert codecs == (
-        {"key": "quarter", "bits": 0, "blend": 0.25},
-        {"key": "binary", "bits": 1, "blend": 0.0},
-        {"key": "one_and_half", "bits": 1, "blend": 0.5},
-    )
+            "codec": "cheap",
+            "description_bits": 100,
+            "effective_bits_per_value": 0.25,
+            "bits_saved_per_mapping": 0.4,
+        },
+        {
+            "codec": "dear",
+            "description_bits": 400,
+            "effective_bits_per_value": 1.0,
+            "bits_saved_per_mapping": 1.05,
+        },
+    ]
 
 
-def test_run_overrides_do_not_mutate_the_base_config():
-    raw = {"training": {"epochs": 4}, "prefix_mappings": [32, 128, 512]}
+def test_r_star_is_undefined_below_the_learning_gate():
+    summary = summarize_rate_curve(_curve_points(), raw_saved=0.02, target=0.9, gate=1.0)
 
-    updated = _override_run_config(raw, epochs=16, prefixes=[512])
+    assert summary["learning_gate_passed"] is False
+    assert summary["r_star_effective_bits_per_value"]["r_star"] is None
+    assert "gate" in summary["r_star_effective_bits_per_value"]["reason"]
+    assert summary["selected_codec"] is None
 
-    assert updated["training"]["epochs"] == 16
-    assert updated["prefix_mappings"] == [512]
-    assert raw == {"training": {"epochs": 4}, "prefix_mappings": [32, 128, 512]}
+
+def test_the_reference_is_the_raw_adapter_and_overshoot_stays_visible():
+    summary = summarize_rate_curve(_curve_points(), raw_saved=1.0, target=0.9, gate=0.5)
+
+    assert summary["reference"] == "raw_adapter"
+    assert summary["raw_bits_saved_per_mapping"] == 1.0
+    # Quantization removing overfit is a finding, not a nuisance to normalise
+    # away: retention above one is recorded rather than clipped.
+    assert summary["points"][1]["retained_gain"] == pytest.approx(1.05)
+    assert summary["best_decoded_bits_saved_per_mapping"] == pytest.approx(1.05)
+    assert summary["r_star_effective_bits_per_value"]["r_star"] is not None
 
 
-def test_adapter_rate_curve_keeps_every_measured_codec(monkeypatch, tmp_path):
+def test_the_ladder_carries_an_empty_adapter_anchor(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "fineqcomp.information_scaling.encode_tensor_map",
         lambda tensors, path, bits, blend: {
-            "file_bits": 100 + bits,
+            "file_bits": 1000 * (bits + 1),
             "effective_bits_per_value": bits + blend,
             "relative_rmse": 0.5,
         },
@@ -111,49 +176,124 @@ def test_adapter_rate_curve_keeps_every_measured_codec(monkeypatch, tmp_path):
         lambda model, tensors: None,
     )
     monkeypatch.setattr(
-        "fineqcomp.information_scaling.evaluate_constrained_labels",
-        lambda *args, **kwargs: ({"accuracy": 0.5, "label_nll": 1.0}, []),
+        "fineqcomp.information_scaling.score",
+        lambda *args, **kwargs: SimpleNamespace(
+            summary=lambda: {"accuracy": 1.0, "code_bits_per_mapping": 0.5}
+        ),
     )
 
-    curve = _adapter_rate_curve(
+    curve = _rate_curve(
         session=SimpleNamespace(model=object(), tokenizer=object()),
         model_spec=object(),
         labels=LABELS,
-        selection_examples=[],
+        examples=[object()],
         raw_tensors={},
-        base_metrics={"label_nll": 2.0},
-        raw_metrics={"label_nll": 0.5},
-        codecs=(
-            {"key": "binary", "bits": 1, "blend": 0.0},
-            {"key": "blend", "bits": 1, "blend": 0.5},
-        ),
-        retention_target=0.9,
+        base_bits_per_mapping=4.0,
+        base_accuracy=0.0625,
+        raw_saved=3.5,
+        codecs=({"key": "binary", "bits": 1, "blend": 0.0},),
+        target=0.9,
+        gate=1.0,
         out_dir=tmp_path,
         batch_size=1,
+        keep_files=True,
     )
 
-    assert [point["codec"] for point in curve["points"]] == ["binary", "blend"]
+    # Without the anchor the crossing can sit below every measured rung and R*
+    # reports the ladder floor, which is what censored the first pass.
+    assert [point["codec"] for point in curve["points"]] == ["none", "binary"]
+    assert curve["points"][0]["bits_saved_per_mapping"] == 0.0
+    assert curve["points"][0]["description_bits"] == 0
+    assert curve["r_star_effective_bits_per_value"]["bracketed"] is True
 
 
-def test_rate_curve_uses_best_decoded_utility_as_its_ceiling():
-    points = [
+def test_the_grid_shards_into_disjoint_cells():
+    info = {
+        "seeds": [11, 22, 33],
+        "conditions": [{"name": name} for name in ("a", "b", "c")],
+        "grid": [
+            {
+                "study": "main",
+                "conditions": ["a", "b", "c"],
+                "adapters": ["r16"],
+                "prefixes": [64, 512],
+            },
+            {
+                "study": "rank",
+                "conditions": ["a"],
+                "adapters": ["r4", "r64"],
+                "prefixes": [512],
+            },
+        ],
+    }
+    cells = expand_grid(info)
+
+    assert len(cells) == 3 * 3 + 1 * 2 * 3
+    assert cells[0].prefixes == (64, 512)
+    rebuilt = [cell for index in range(4) for cell in shard(cells, index, 4)]
+    assert sorted(rebuilt, key=lambda cell: cell.slug) == sorted(
+        cells, key=lambda cell: cell.slug
+    )
+    with pytest.raises(ValueError):
+        shard(cells, 4, 4)
+
+
+def test_unknown_conditions_and_duplicate_codecs_are_rejected():
+    with pytest.raises(KeyError):
+        expand_grid(
+            {
+                "seeds": [11],
+                "conditions": [{"name": "a"}],
+                "grid": [
+                    {
+                        "study": "main",
+                        "conditions": ["missing"],
+                        "adapters": ["r16"],
+                        "prefixes": [64],
+                    }
+                ],
+            }
+        )
+    with pytest.raises(ValueError):
+        rate_codecs({"adapter_codecs": [{"key": "x", "bits": 1}, {"key": "x", "bits": 2}]})
+    with pytest.raises(ValueError):
+        rate_codecs({"adapter_codecs": [{"key": "x", "bits": 0}]})
+
+
+def test_a_code_that_beats_the_free_base_code_fails_its_gate():
+    preq = [
         {
-            "codec": "low",
-            "description_bits": 100,
-            "effective_bits_per_value": 0.5,
-            "bits_saved_per_mapping": 0.7,
-        },
-        {
-            "codec": "regularized",
-            "description_bits": 200,
-            "effective_bits_per_value": 1.0,
-            "bits_saved_per_mapping": 1.1,
-        },
+            "condition": "random",
+            "seed": 11,
+            "right": 768,
+            "encoder": "adapter-trained-on-512",
+            "bits_per_mapping": 3.9,
+            "cumulative_code_bits": 4000.0,
+            "cumulative_base_code_bits": 3000.0,
+        }
     ]
-    summary = _summarize_rate_curve(points, raw_saved=1.0, target=0.9)
+    gates = check_gates([], preq)
 
-    assert summary["ceiling_bits_saved_per_mapping"] == 1.1
-    assert summary["raw_retained_gain"] < 1.0
-    assert summary["points"][1]["retained_gain"] == 1.0
-    assert summary["selected_codec"] == "regularized"
-    assert summary["r_star_effective_bits_per_value"]["bracketed"] is True
+    assert gates["G2_the_code_never_costs_more_than_the_base"]["passed"] is False
+    assert gates["G3_the_code_separates_learnable_from_random"][
+        "bits_per_unseen_mapping"
+    ]["random"]["mean"] == pytest.approx(3.9)
+
+
+def test_condition_lookup_reads_every_flag():
+    raw = {
+        "conditions": [
+            {"name": "constant", "constant": True},
+            {"name": "p4_cue", "prototype_count": 4, "reveal_prototype": True},
+        ]
+    }
+    assert _condition(raw, "constant") == Condition("constant", None, True, False)
+    assert _condition(raw, "p4_cue") == Condition("p4_cue", 4, False, True)
+    with pytest.raises(KeyError):
+        _condition(raw, "nope")
+
+
+def test_cells_have_stable_identities():
+    cell = Cell(study="main", condition="p4", adapter="all_linear_r16", seed=11,
+                prefixes=(64, 512))
+    assert cell.slug == "main/p4/all_linear_r16/seed11"

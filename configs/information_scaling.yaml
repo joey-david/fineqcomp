@@ -1,57 +1,95 @@
-version: 1
+version: 2
 
-# Keep the architecture fixed and vary only task information.  The 16 labels
-# contribute exactly four independent source bits whenever a new random mapping
-# must be specified.
-# This exact snapshot is already cached on both target systems. The controlled
-# task stays short even with a 7B base because prompts and responses are tiny.
+# Controlled calibration for the adapter-bits claim.
+#
+# Experiment 2 showed R*(0.90) rising with the number of distinct training rows
+# at fixed compute. It never measured what those rows contained. Here the task
+# information is known exactly, the prompts and the training budget are
+# identical across conditions, and only the labels change.
+#
+# Pre-registered, in the order they can fail:
+#
+#   G1  The raw adapter reproduces at least 95% of the taught map in every main
+#       cell. Below that R* is a ratio of noise and means nothing.
+#   G2  The cumulative prequential code never exceeds the base-model code. The
+#       base code is free, so a valid code cannot be worse; a violation is a bug.
+#   G3  On unseen mappings the random condition costs near four bits each while
+#       constant and p1 cost far less. This is what makes the code a measure of
+#       source information rather than of the base model's letter prior.
+#   G4  At 64 mappings p4, p8, p16 and random are the same task -- 64 arbitrary
+#       keys, 256 source bits -- so their R* must agree. This is the noise floor
+#       against which any slope in G5 is read.
+#   G5  At 512 mappings R* is monotone in source bits and the extreme conditions
+#       do not overlap across seeds.
+#
+# A failure of G5 with G1-G4 passing is a real negative: it would say the
+# adapter file is dominated by the cost of addressing a point in weight space
+# rather than by the task content, and it would reframe Experiment 2's slope as
+# something other than information.
+
 model: mistral_7b_base
-adapter: all_linear_r16
 seeds: [11, 22, 33]
 
-# Bare letters are one token each under the pinned Mistral tokenizer. Leading
-# spaces are separate SentencePiece tokens and fail the constrained-label test.
+# Bare letters are one token each under the pinned Mistral tokenizer. A leading
+# space is a separate SentencePiece token and fails the single-token check.
 labels:
   ["A", "B", "C", "D", "E", "F", "G", "H",
    "I", "J", "K", "L", "M", "N", "O", "P"]
+
 codebook_dir: codebooks
+mappings: 768
 items_per_family: 16
-repeats_per_mapping: 4
-prefix_mappings: [32, 128, 512]
 
-# random: every mapping receives a fresh random label -> 4*N source bits.
-# structured_pK: K random 16-item prototype tables are reused across families
-# -> source information saturates at 64*K bits once all prototypes are seen.
+# Every prefix spends exactly this many optimizer updates, so a longer prefix
+# buys more information and not more gradient steps. Epochs are derived:
+# 64 rows -> 512 epochs, 128 -> 256, 256 -> 128, 512 -> 64.
+optimizer_updates: 2048
+
+# Absolute floor on the raw adapter's gain, in bits per mapping out of a
+# maximum of four. Below it R* is reported as undefined rather than as a
+# small number.
+learning_gate_bits_per_mapping: 1.0
+retention_target: 0.90
+evaluation_batch_size: 128
+
 conditions:
-  - name: structured_p1
-    prototype_count: 1
-  - name: structured_p4
-    prototype_count: 4
-  - name: structured_p16
-    prototype_count: 16
-  - name: random
-    prototype_count: null
+  # The zero-information anchor. Whatever R* costs here is the price of
+  # addressing a behaviour at all, and it is the intercept every other
+  # condition is read against.
+  - {name: constant, constant: true}
+  - {name: p1, prototype_count: 1}
+  - {name: p2, prototype_count: 2}
+  - {name: p4, prototype_count: 4}
+  - {name: p8, prototype_count: 8}
+  - {name: p16, prototype_count: 16}
+  - {name: random}
+  # Same labels and same source bits as p4 and p16, but the prompt names the
+  # prototype. The gap measures how much reusable structure the optimizer
+  # fails to exploit when it has to find the sharing rule itself.
+  - {name: p4_cue, prototype_count: 4, reveal_prototype: true}
+  - {name: p16_cue, prototype_count: 16, reveal_prototype: true}
 
-# Short prompts make this much cheaper than the natural-task campaign.  A fresh
-# adapter is trained from the same deterministic initialization for each prefix.
 training:
-  epochs: 4
+  epochs: 1          # derived per prefix from optimizer_updates
   learning_rate: 0.0002
   effective_batch_size: 16
   micro_batch_size: 16
-  max_length: 128
-  warmup_ratio: 0.05
+  max_length: 64
+  warmup_ratio: 0.03
   weight_decay: 0.0
   adam_beta1: 0.9
   adam_beta2: 0.95
   max_grad_norm: 1.0
-
-evaluation_batch_size: 128
-retention_target: 0.90
+  # Score once, at the last update. The raw adapter is then the final state
+  # rather than the best of many candidates scored on the same rows that later
+  # define R*.
+  eval_every_updates: null
 
 # One uniform code family spans the crossing. Below one bit it keeps a fixed
-# fraction of paired rank directions at one bit; above one bit it gives a fixed
-# fraction of rows two bits. Every rate is the size of a decoded file.
+# fraction of paired rank directions and drops the rest; above one bit it gives
+# a fixed fraction of rows two bits. Every rate is the size of a decoded file.
+# The curve also carries an implicit empty-adapter point at zero bits, so the
+# crossing is always bracketed from below.
 adapter_codecs:
   - {key: sub0_0625, bits: 0, blend: 0.0625}
   - {key: sub0_125, bits: 0, blend: 0.125}
@@ -66,3 +104,21 @@ adapter_codecs:
   - {key: blend1_50, bits: 1, blend: 0.5}
   - {key: blend1_75, bits: 1, blend: 0.75}
   - {key: uniform2, bits: 2}
+
+# main  the matched information sweep, and the only study G1-G5 are read from.
+# rank  is R* task content or the cost of addressing a point in weight space?
+#       Flat in rank means content; scaling with parameter count means address.
+# cue   does naming the shared structure change what the adapter has to store?
+grid:
+  - study: main
+    conditions: [constant, p1, p2, p4, p8, p16, random]
+    adapters: [all_linear_r16]
+    prefixes: [64, 128, 256, 512]
+  - study: rank
+    conditions: [constant, p1, p16, random]
+    adapters: [all_linear_r4, all_linear_r64]
+    prefixes: [512]
+  - study: cue
+    conditions: [p4_cue, p16_cue]
+    adapters: [all_linear_r16]
+    prefixes: [512]

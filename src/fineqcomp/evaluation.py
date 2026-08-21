@@ -68,6 +68,14 @@ def evaluate_constrained_labels(
                 "prediction": predicted,
                 "confidence": confidence,
                 "correct": correct,
+                # The probability the code actually pays for. Without it a
+                # finished run cannot be recalibrated or re-coded, and the
+                # only way to ask a new question of it is to train again.
+                "target_probability": target_probability,
+                "probabilities": [
+                    round(float(value), 8)
+                    for value in probabilities[row_index].tolist()
+                ],
             }
             prediction["family"] = int(row.metadata["family"])
             prediction["item"] = int(row.metadata["item"])
