@@ -122,6 +122,22 @@ def _load_info_config(path: Path) -> dict[str, Any]:
     return raw
 
 
+def _override_run_config(
+    raw: dict[str, Any], *, epochs: int | None, prefixes: list[int] | None
+) -> dict[str, Any]:
+    """Apply small launch-time overrides without making one YAML per sweep cell."""
+    updated = dict(raw)
+    if epochs is not None:
+        if epochs < 1:
+            raise ValueError("epochs must be positive")
+        updated["training"] = {**raw["training"], "epochs": epochs}
+    if prefixes is not None:
+        if not prefixes or any(prefix < 1 for prefix in prefixes):
+            raise ValueError("prefixes must be positive")
+        updated["prefix_mappings"] = sorted(set(prefixes))
+    return updated
+
+
 def _condition(raw: dict[str, Any], name: str) -> Condition:
     for entry in raw["conditions"]:
         if str(entry["name"]) == name:
@@ -867,6 +883,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out", type=Path, default=Path("runs_information_scaling"))
     parser.add_argument("--conditions", nargs="+")
     parser.add_argument("--seeds", nargs="+", type=int)
+    parser.add_argument("--epochs", type=int)
+    parser.add_argument("--prefixes", nargs="+", type=int)
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--aggregate", action="store_true")
     return parser
@@ -878,7 +896,9 @@ def main(argv: list[str] | None = None) -> None:
         print(json.dumps(aggregate(args.out), indent=2, sort_keys=True))
         return
 
-    info = _load_info_config(args.config)
+    info = _override_run_config(
+        _load_info_config(args.config), epochs=args.epochs, prefixes=args.prefixes
+    )
     campaign = load_campaign(args.campaign)
     conditions = args.conditions or [str(row["name"]) for row in info["conditions"]]
     seeds = args.seeds or list(map(int, info.get("seeds", [11])))

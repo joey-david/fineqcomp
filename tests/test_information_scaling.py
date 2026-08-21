@@ -5,6 +5,7 @@ from types import SimpleNamespace
 from fineqcomp.information_scaling import (
     Condition,
     _adapter_rate_curve,
+    _override_run_config,
     _rate_codecs,
     _source_bits,
     _summarize_rate_curve,
@@ -80,6 +81,16 @@ def test_dense_rate_codecs_include_sub_bit_points():
         {"key": "binary", "bits": 1, "blend": 0.0},
         {"key": "one_and_half", "bits": 1, "blend": 0.5},
     )
+
+
+def test_run_overrides_do_not_mutate_the_base_config():
+    raw = {"training": {"epochs": 4}, "prefix_mappings": [32, 128, 512]}
+
+    updated = _override_run_config(raw, epochs=16, prefixes=[512])
+
+    assert updated["training"]["epochs"] == 16
+    assert updated["prefix_mappings"] == [512]
+    assert raw == {"training": {"epochs": 4}, "prefix_mappings": [32, 128, 512]}
 
 
 def test_adapter_rate_curve_keeps_every_measured_codec(monkeypatch, tmp_path):
