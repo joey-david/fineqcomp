@@ -288,7 +288,7 @@ sbatch --array=0-3%4 --export=ALL,MODE=repeat \
   scripts/jean_zay_information.sbatch
 
 # Expand to four information levels only after checking the two short stages.
-sbatch --array=0-11%12 --export=ALL,MODE=full \
+sbatch --qos=qos_gpu_h100-t3 --array=0-11%12 --export=ALL,MODE=full \
   scripts/jean_zay_information.sbatch
 ```
 

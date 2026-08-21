@@ -3,11 +3,13 @@
 #
 # pilot:  random/p1 at seed 11                    --array=0-1%2
 # repeat: random/p1 at seeds 22 and 33            --array=0-3%4
-# full:   all four conditions at all three seeds  --array=0-11%12
+# full:   all four conditions at all three seeds  --array=0-11%12, t3 QoS
 #
 # Submit, for example:
 #   sbatch --array=0-1%2 --export=ALL,MODE=pilot \
 #     scripts/jean_zay_information.sbatch
+# The dev QoS has a ten-job submit cap. Override it with
+# --qos=qos_gpu_h100-t3 for the twelve-cell full array.
 #
 # Use INFO_DRY_RUN=1 with SLURM_ARRAY_TASK_ID set to check the cell mapping
 # without loading modules or requesting a model.
