@@ -168,8 +168,70 @@ def _convert_humaneval(rows: Any, split: str) -> list[Example]:
     ]
 
 
+def _convert_hh_rlhf(rows: Any, split: str) -> list[Example]:
+    """Preference data as SFT on the preferred completion.
+
+    A base model has never produced assistant-style dialogue, so this is a very
+    large behavioural change carrying almost no factual content: the target is
+    a persona and a format, not new knowledge. That combination is what makes it
+    worth having on the kind axis.
+
+    Only the final assistant turn is scored; everything before it is prompt, so
+    the measurement is over the completion the preference actually ranked.
+    """
+    marker = "\n\nAssistant:"
+    converted = []
+    for index, row in enumerate(rows):
+        text = str(row["chosen"])
+        cut = text.rfind(marker)
+        if cut < 0:
+            continue
+        prompt = text[: cut + len(marker)].lstrip("\n")
+        response = text[cut + len(marker) :]
+        if not response.strip():
+            continue
+        converted.append(
+            Example(
+                example_id=f"hh-{split}-{index}",
+                prompt=prompt,
+                response=response,
+                metadata={"split": split},
+            )
+        )
+    if not converted:
+        raise ValueError("no hh-rlhf row carried a final assistant turn")
+    return converted
+
+
+def _convert_alpaca(rows: Any, split: str) -> list[Example]:
+    """Classic instruction tuning: a second low-content, high-change target."""
+    converted = []
+    for index, row in enumerate(rows):
+        instruction = str(row["instruction"]).strip()
+        context = str(row.get("input") or "").strip()
+        prompt = (
+            "Below is an instruction that describes a task. Write a response"
+            " that appropriately completes the request.\n\n"
+            f"### Instruction:\n{instruction}\n\n"
+        )
+        if context:
+            prompt += f"### Input:\n{context}\n\n"
+        prompt += "### Response:"
+        converted.append(
+            Example(
+                example_id=f"alpaca-{split}-{index}",
+                prompt=prompt,
+                response=" " + str(row["output"]).strip(),
+                metadata={"split": split},
+            )
+        )
+    return converted
+
+
 _NATURAL_CONVERTERS = {
     "gsm8k": _convert_gsm8k,
+    "hh_rlhf": _convert_hh_rlhf,
+    "alpaca": _convert_alpaca,
     "magicoder": _convert_magicoder,
     "math": _convert_math,
     "metamath": _convert_metamath,
