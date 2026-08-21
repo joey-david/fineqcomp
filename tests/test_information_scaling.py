@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 from fineqcomp.information_scaling import (
     Condition,
+    _adapter_rate_curve,
     _rate_codecs,
     _source_bits,
     _summarize_rate_curve,
@@ -77,6 +80,48 @@ def test_dense_rate_codecs_include_sub_bit_points():
         {"key": "binary", "bits": 1, "blend": 0.0},
         {"key": "one_and_half", "bits": 1, "blend": 0.5},
     )
+
+
+def test_adapter_rate_curve_keeps_every_measured_codec(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        "fineqcomp.information_scaling.encode_tensor_map",
+        lambda tensors, path, bits, blend: {
+            "file_bits": 100 + bits,
+            "effective_bits_per_value": bits + blend,
+            "relative_rmse": 0.5,
+        },
+    )
+    monkeypatch.setattr(
+        "fineqcomp.information_scaling.decode_adapter_tensor_map",
+        lambda path: ({}, {}),
+    )
+    monkeypatch.setattr(
+        "fineqcomp.information_scaling.apply_adapter_tensors",
+        lambda model, tensors: None,
+    )
+    monkeypatch.setattr(
+        "fineqcomp.information_scaling.evaluate_constrained_labels",
+        lambda *args, **kwargs: ({"accuracy": 0.5, "label_nll": 1.0}, []),
+    )
+
+    curve = _adapter_rate_curve(
+        session=SimpleNamespace(model=object(), tokenizer=object()),
+        model_spec=object(),
+        labels=LABELS,
+        selection_examples=[],
+        raw_tensors={},
+        base_metrics={"label_nll": 2.0},
+        raw_metrics={"label_nll": 0.5},
+        codecs=(
+            {"key": "binary", "bits": 1, "blend": 0.0},
+            {"key": "blend", "bits": 1, "blend": 0.5},
+        ),
+        retention_target=0.9,
+        out_dir=tmp_path,
+        batch_size=1,
+    )
+
+    assert [point["codec"] for point in curve["points"]] == ["binary", "blend"]
 
 
 def test_rate_curve_uses_best_decoded_utility_as_its_ceiling():
