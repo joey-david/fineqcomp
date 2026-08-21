@@ -79,7 +79,7 @@ the best decoded held-out gain.
 
 ```bash
 sbatch --array=0-1%2 --export=ALL,MODE=pilot scripts/jean_zay_information.sbatch
-sbatch --array=0-11%12 --export=ALL,MODE=full scripts/jean_zay_information.sbatch
+sbatch --qos=qos_gpu_h100-t3 --array=0-11%12 --export=ALL,MODE=full scripts/jean_zay_information.sbatch
 ```
 
 ## Full campaign
