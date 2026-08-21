@@ -54,6 +54,11 @@ class TrainingSpec:
     # Score the held-out split every N optimizer updates as well as at each
     # epoch end, so best-state restore has fine-grained candidates.
     eval_every_updates: int | None = None
+    # Whether to end on the best scored state or on the last one. Turning it
+    # off separates logging from selection: a study can watch the loss curve
+    # without the raw adapter becoming a maximum over checkpoints scored on
+    # the same rows that later define R*.
+    restore_best: bool = True
     # Which part of the response carries the loss: the whole thing, the working
     # that leads to the answer, or the answer alone. Anything but "all" needs
     # the dataset to name its answer marker.

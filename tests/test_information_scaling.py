@@ -100,6 +100,18 @@ def test_conditions_change_labels_not_prompts(tmp_path):
     assert revealed[differing[0]].startswith("Table: T")
 
 
+def test_the_key_last_layout_moves_the_key_next_to_the_answer(tmp_path):
+    raw = _config(tmp_path, mappings=512)
+    fields = build_dataset(raw, Condition("random"), seed=11)
+    key_last = build_dataset({**raw, "prompt_layout": "key_last"}, Condition("random"), seed=11)
+
+    assert fields.label_indices == key_last.label_indices
+    assert fields.examples[17].prompt.endswith("Label:")
+    assert key_last.examples[17].prompt.endswith("F0001 I01 =")
+    with pytest.raises(ValueError):
+        build_dataset({**raw, "prompt_layout": "sideways"}, Condition("random"), seed=11)
+
+
 def test_every_prefix_spends_the_same_optimizer_updates():
     assert epochs_for(1024, 64, 16) == 256
     assert epochs_for(1024, 512, 16) == 32

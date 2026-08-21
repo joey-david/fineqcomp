@@ -74,11 +74,13 @@ def train_adapter(
     log_path: str | Path,
     answer_marker: str | None = None,
 ) -> dict[str, Any]:
-    """Train only marked adapter tensors and restore the best validation state.
+    """Train only marked adapter tensors, ending on the best or the last state.
 
     `spec.label_span` decides which part of the response carries the loss, and
     validation is scored on the same span, so an arm that is only taught the
-    final answer is also selected on the final answer.
+    final answer is also selected on the final answer. `spec.restore_best`
+    decides whether the run ends on its best scored state; with it off the
+    validation scores are a log and nothing more.
     """
     if spec.effective_batch_size % spec.micro_batch_size:
         raise ValueError("effective batch size must divide by micro batch size")
@@ -193,12 +195,14 @@ def train_adapter(
                         )
     if best_state is None:
         raise RuntimeError("training did not produce a validation state")
-    restore_trainable_state(model, best_state)
+    if spec.restore_best:
+        restore_trainable_state(model, best_state)
     return {
         "train_examples": len(dataset),
         "epochs": spec.epochs,
         "optimizer_updates": update,
         "best_validation_nll": best_nll,
+        "restored_best": spec.restore_best,
         "trainable_parameters": sum(parameter.numel() for parameter in parameters),
         "adapter_rank": next(iter(model.peft_config.values())).r
         if hasattr(model, "peft_config")

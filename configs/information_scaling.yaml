@@ -40,6 +40,10 @@ codebook_dir: codebooks
 mappings: 768
 items_per_family: 16
 
+# `fields` names the family and item on their own lines; `key_last` puts the
+# digits next to the answer position. See the probe results before changing it.
+prompt_layout: fields
+
 # Every prefix spends exactly this many optimizer updates, so a longer prefix
 # buys more information and not more gradient steps. Epochs are derived:
 # 64 rows -> 512 epochs, 128 -> 256, 256 -> 128, 512 -> 64.
@@ -80,10 +84,13 @@ training:
   adam_beta1: 0.9
   adam_beta2: 0.95
   max_grad_norm: 1.0
-  # Score once, at the last update. The raw adapter is then the final state
-  # rather than the best of many candidates scored on the same rows that later
-  # define R*.
-  eval_every_updates: null
+  # Log the loss every 128 updates but never select on it. The raw adapter is
+  # the final state, not the best of many candidates scored on the same rows
+  # that later define R*. The first pass had no cadence at all, which kept the
+  # selection honest but left one log line per training and no way to tell a
+  # plateau from a run that was still descending when it stopped.
+  eval_every_updates: 128
+  restore_best: false
 
 # One uniform code family spans the crossing. Below one bit it keeps a fixed
 # fraction of paired rank directions and drops the rest; above one bit it gives
