@@ -1,6 +1,12 @@
 from __future__ import annotations
 
-from fineqcomp.information_scaling import Condition, _source_bits, build_dataset
+from fineqcomp.information_scaling import (
+    Condition,
+    _rate_codecs,
+    _source_bits,
+    _summarize_rate_curve,
+    build_dataset,
+)
 
 
 LABELS = [f" {chr(ord('A') + index)}" for index in range(16)]
@@ -54,3 +60,44 @@ def test_conditions_change_labels_not_prompts_or_example_count(tmp_path):
     ]
     assert [row.prompt for row in random.test] == [row.prompt for row in structured.test]
     assert random.label_indices != structured.label_indices
+
+
+def test_dense_rate_codecs_include_sub_bit_points():
+    codecs = _rate_codecs(
+        {
+            "adapter_codecs": [
+                {"key": "quarter", "bits": 0, "blend": 0.25},
+                {"key": "binary", "bits": 1},
+                {"key": "one_and_half", "bits": 1, "blend": 0.5},
+            ]
+        }
+    )
+    assert codecs == (
+        {"key": "quarter", "bits": 0, "blend": 0.25},
+        {"key": "binary", "bits": 1, "blend": 0.0},
+        {"key": "one_and_half", "bits": 1, "blend": 0.5},
+    )
+
+
+def test_rate_curve_uses_best_decoded_utility_as_its_ceiling():
+    points = [
+        {
+            "codec": "low",
+            "description_bits": 100,
+            "effective_bits_per_value": 0.5,
+            "bits_saved_per_mapping": 0.7,
+        },
+        {
+            "codec": "regularized",
+            "description_bits": 200,
+            "effective_bits_per_value": 1.0,
+            "bits_saved_per_mapping": 1.1,
+        },
+    ]
+    summary = _summarize_rate_curve(points, raw_saved=1.0, target=0.9)
+
+    assert summary["ceiling_bits_saved_per_mapping"] == 1.1
+    assert summary["raw_retained_gain"] < 1.0
+    assert summary["points"][1]["retained_gain"] == 1.0
+    assert summary["selected_codec"] == "regularized"
+    assert summary["r_star_effective_bits_per_value"]["bracketed"] is True

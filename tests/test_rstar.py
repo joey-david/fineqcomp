@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from fineqcomp.rstar import _crossing, r_star
+import json
+
+from fineqcomp.rstar import _crossing, from_run, r_star
 
 
 def test_crossing_interpolates_between_bracketing_rates():
@@ -35,3 +37,36 @@ def test_r_star_is_measured_against_the_raw_adapter_reference():
 
 def test_r_star_reports_when_nothing_was_measured():
     assert r_star([], target=0.90)["r_star"] is None
+
+
+def test_from_run_uses_best_decoded_point_when_it_beats_raw(tmp_path):
+    run = tmp_path / "run"
+    codecs = run / "codec_metrics"
+    codecs.mkdir(parents=True)
+    (run / "metrics.json").write_text(
+        json.dumps(
+            {
+                "raw_behavioral_write": {
+                    "heldout_bits_saved_per_token": 1.0
+                }
+            }
+        )
+    )
+    for name, rate, saved in (("low", 0.5, 0.7), ("best", 1.0, 1.1)):
+        codecs.joinpath(f"{name}.json").write_text(
+            json.dumps(
+                {
+                    "codec_key": name,
+                    "storage": {"effective_bits_per_value": rate},
+                    "behavioral_write": {
+                        "heldout_bits_saved_per_token": saved
+                    },
+                }
+            )
+        )
+
+    result = from_run(run)
+
+    assert result["reference"] == 1.1
+    assert result["raw_reference"] == 1.0
+    assert result["reference_mode"] == "best_decoded_utility"

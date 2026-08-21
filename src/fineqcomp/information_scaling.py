@@ -44,6 +44,7 @@ from fineqcomp.config import TrainingSpec, load_campaign
 from fineqcomp.data import Example
 from fineqcomp.evaluation import evaluate_constrained_labels
 from fineqcomp.modeling import ModelSession, validate_single_token_labels
+from fineqcomp.rstar import r_star
 from fineqcomp.training import train_adapter
 
 
@@ -288,11 +289,106 @@ def _label_code_bits(metrics: dict[str, Any]) -> float:
     return float(metrics["label_nll"]) * int(metrics["examples"]) / math.log(2)
 
 
-def _retained_gain(base: float, raw: float, coded: float) -> float | None:
-    gain = raw - base
-    if abs(gain) < 1e-12:
-        return None
-    return (coded - base) / gain
+def _bits_saved_per_mapping(
+    base_metrics: dict[str, Any], tuned_metrics: dict[str, Any]
+) -> float:
+    """Response-code bits saved against the shared frozen base."""
+    return (
+        float(base_metrics["label_nll"]) - float(tuned_metrics["label_nll"])
+    ) / math.log(2)
+
+
+def _rate_codecs(raw: dict[str, Any]) -> tuple[dict[str, Any], ...]:
+    """Read the compact uniform-code list used by the controlled study."""
+    configured = raw.get("adapter_codecs")
+    if configured is None:
+        configured = [
+            {"key": f"uniform{int(bits)}", "bits": int(bits)}
+            for bits in raw.get("adapter_widths", (1, 2, 3, 4, 8))
+        ]
+    codecs: list[dict[str, Any]] = []
+    keys: set[str] = set()
+    for entry in configured:
+        codec = {
+            "key": str(entry["key"]),
+            "bits": int(entry["bits"]),
+            "blend": float(entry.get("blend", 0.0)),
+        }
+        if codec["key"] in keys:
+            raise ValueError(f"duplicate adapter codec {codec['key']!r}")
+        if codec["bits"] not in {0, 1, 2, 3, 4, 8, 16}:
+            raise ValueError(f"unsupported adapter codec width: {codec['bits']}")
+        if not 0.0 <= codec["blend"] < 1.0:
+            raise ValueError(f"adapter codec {codec['key']}: blend must be in [0, 1)")
+        if codec["bits"] == 0 and codec["blend"] <= 0:
+            raise ValueError(f"adapter codec {codec['key']}: zero bits needs a blend")
+        keys.add(codec["key"])
+        codecs.append(codec)
+    if not codecs:
+        raise ValueError("adapter_codecs must not be empty")
+    return tuple(codecs)
+
+
+def _summarize_rate_curve(
+    points: list[dict[str, Any]], raw_saved: float, target: float
+) -> dict[str, Any]:
+    """Set the utility ceiling from the best decoded candidate.
+
+    Quantization can improve held-out code length by removing overfit. Treating
+    the raw adapter as the ceiling then creates retention above one. The
+    operational rate-distortion curve instead uses the best member of the
+    declared code family, including the uncompressed adapter.
+    """
+    ceiling = max(
+        [
+            raw_saved,
+            *(float(point["bits_saved_per_mapping"]) for point in points),
+        ]
+    )
+    enriched = [
+        {
+            **point,
+            "retained_gain": (
+                float(point["bits_saved_per_mapping"]) / ceiling
+                if ceiling > 0
+                else None
+            ),
+        }
+        for point in points
+    ]
+    by_rate = r_star(
+        enriched,
+        target=target,
+        value_key="bits_saved_per_mapping",
+        reference=ceiling,
+    )
+    by_file = r_star(
+        enriched,
+        target=target,
+        rate_key="description_bits",
+        value_key="bits_saved_per_mapping",
+        reference=ceiling,
+    )
+    eligible = [
+        point
+        for point in enriched
+        if point["retained_gain"] is not None
+        and float(point["retained_gain"]) >= target
+    ]
+    selected = (
+        min(eligible, key=lambda point: int(point["description_bits"]))
+        if eligible
+        else None
+    )
+    return {
+        "reference": "best_decoded_selection_utility",
+        "ceiling_bits_saved_per_mapping": ceiling,
+        "raw_retained_gain": raw_saved / ceiling if ceiling > 0 else None,
+        "points": enriched,
+        "r_star_effective_bits_per_value": by_rate,
+        "r_star_description_bits": by_file,
+        "selected_codec": selected["codec"] if selected is not None else None,
+    }
 
 
 def _adapter_rate_curve(
@@ -300,15 +396,15 @@ def _adapter_rate_curve(
     session: ModelSession,
     model_spec: Any,
     labels: list[str],
-    examples: list[Example],
+    selection_examples: list[Example],
     raw_tensors: dict[str, torch.Tensor],
-    base_accuracy: float,
-    raw_accuracy: float,
-    widths: tuple[int, ...],
+    base_metrics: dict[str, Any],
+    raw_metrics: dict[str, Any],
+    codecs: tuple[dict[str, Any], ...],
     retention_target: float,
     out_dir: Path,
     batch_size: int,
-) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+) -> dict[str, Any]:
     """Exact reloadable adapter-rate sweep for one learned checkpoint.
 
     Sweeps the zero-free uniform ladder rather than the adaptive MDL allocator.
@@ -319,43 +415,43 @@ def _adapter_rate_curve(
     """
     try:
         points: list[dict[str, Any]] = []
-        for bits in widths:
-            adapter_path = out_dir / f"adapter_u{bits}.fqcb"
-            storage = encode_tensor_map(raw_tensors, adapter_path, bits)
+        for codec in codecs:
+            key = str(codec["key"])
+            bits = int(codec["bits"])
+            blend = float(codec["blend"])
+            adapter_path = out_dir / f"adapter_{key}.fqcb"
+            storage = encode_tensor_map(
+                raw_tensors, adapter_path, bits, blend=blend
+            )
             _, decoded = decode_adapter_tensor_map(adapter_path)
             apply_adapter_tensors(session.model, decoded)
             metrics, _ = evaluate_constrained_labels(
                 session.model,
                 session.tokenizer,
-                examples,
+                selection_examples,
                 model_spec,
                 labels,
                 batch_size=batch_size,
             )
-            coded_accuracy = float(metrics["accuracy"])
-            retained = _retained_gain(base_accuracy, raw_accuracy, coded_accuracy)
             point = {
+                "codec": key,
                 "bits": bits,
+                "blend": blend,
                 "description_bits": int(storage["file_bits"]),
                 "effective_bits_per_value": float(storage["effective_bits_per_value"]),
                 "relative_rmse": float(storage["relative_rmse"]),
-                "accuracy": coded_accuracy,
+                "accuracy": float(metrics["accuracy"]),
                 "label_nll": float(metrics["label_nll"]),
-                "retained_gain": retained,
+                "bits_saved_per_mapping": _bits_saved_per_mapping(
+                    base_metrics, metrics
+                ),
                 "path": str(adapter_path),
             }
-        eligible = [
-            point
-            for point in points
-            if point["retained_gain"] is not None
-            and float(point["retained_gain"]) >= retention_target
-        ]
-        r_star = (
-            min(eligible, key=lambda point: int(point["description_bits"]))
-            if eligible
-            else None
+        return _summarize_rate_curve(
+            points,
+            _bits_saved_per_mapping(base_metrics, raw_metrics),
+            retention_target,
         )
-        return points, r_star
     finally:
         apply_adapter_tensors(session.model, raw_tensors)
 
@@ -386,7 +482,7 @@ def run_condition(
     prefixes = sorted(set(map(int, info["prefix_mappings"])))
     if not prefixes or prefixes[0] < 1:
         raise ValueError("prefix_mappings must contain positive integers")
-    widths = tuple(int(b) for b in info.get("adapter_widths", (1, 2, 3, 4, 8)))
+    codecs = _rate_codecs(info)
     retention_target = float(info.get("retention_target", 0.9))
     batch_size = int(info.get("evaluation_batch_size", 64))
 
@@ -463,7 +559,40 @@ def run_condition(
             torch.save(raw_tensors, prefix_dir / "raw_channel.pt")
 
             restore_trainable_state(session.model, initial_state)
-            base_metrics, _ = evaluate_constrained_labels(
+            base_selection, _ = evaluate_constrained_labels(
+                session.model,
+                session.tokenizer,
+                bundle.calibration[:prefix],
+                model_spec,
+                labels,
+                batch_size=batch_size,
+            )
+            apply_adapter_tensors(session.model, raw_tensors)
+            raw_selection, _ = evaluate_constrained_labels(
+                session.model,
+                session.tokenizer,
+                bundle.calibration[:prefix],
+                model_spec,
+                labels,
+                batch_size=batch_size,
+            )
+
+            rate_curve = _adapter_rate_curve(
+                session=session,
+                model_spec=model_spec,
+                labels=labels,
+                selection_examples=bundle.calibration[:prefix],
+                raw_tensors=raw_tensors,
+                base_metrics=base_selection,
+                raw_metrics=raw_selection,
+                codecs=codecs,
+                retention_target=retention_target,
+                out_dir=prefix_dir / "codecs",
+                batch_size=batch_size,
+            )
+
+            restore_trainable_state(session.model, initial_state)
+            base_report, _ = evaluate_constrained_labels(
                 session.model,
                 session.tokenizer,
                 bundle.test[:prefix],
@@ -472,7 +601,7 @@ def run_condition(
                 batch_size=batch_size,
             )
             apply_adapter_tensors(session.model, raw_tensors)
-            raw_metrics, _ = evaluate_constrained_labels(
+            raw_report, _ = evaluate_constrained_labels(
                 session.model,
                 session.tokenizer,
                 bundle.test[:prefix],
@@ -480,42 +609,75 @@ def run_condition(
                 labels,
                 batch_size=batch_size,
             )
-
-            rate_curve, r_star = _adapter_rate_curve(
-                session=session,
-                model_spec=model_spec,
-                labels=labels,
-                examples=bundle.test[:prefix],
-                raw_tensors=raw_tensors,
-                base_accuracy=float(base_metrics["accuracy"]),
-                raw_accuracy=float(raw_metrics["accuracy"]),
-                widths=widths,
-                retention_target=retention_target,
-                out_dir=prefix_dir / "codecs",
-                batch_size=batch_size,
-            )
+            selected_report = None
+            selected_key = rate_curve["selected_codec"]
+            if selected_key is not None:
+                selected_point = next(
+                    point
+                    for point in rate_curve["points"]
+                    if point["codec"] == selected_key
+                )
+                _, decoded = decode_adapter_tensor_map(selected_point["path"])
+                apply_adapter_tensors(session.model, decoded)
+                selected_metrics, _ = evaluate_constrained_labels(
+                    session.model,
+                    session.tokenizer,
+                    bundle.test[:prefix],
+                    model_spec,
+                    labels,
+                    batch_size=batch_size,
+                )
+                selected_report = {
+                    "codec": selected_key,
+                    "accuracy": float(selected_metrics["accuracy"]),
+                    "label_nll": float(selected_metrics["label_nll"]),
+                    "bits_saved_per_mapping": _bits_saved_per_mapping(
+                        base_report, selected_metrics
+                    ),
+                }
+            apply_adapter_tensors(session.model, raw_tensors)
 
             checkpoint = {
                 "mappings": prefix,
                 "training_rows": len(train_rows),
                 "source_bits": _source_bits(bundle, prefix),
                 "naive_independent_label_bits": 4 * prefix,
-                "base_accuracy": float(base_metrics["accuracy"]),
-                "raw_accuracy": float(raw_metrics["accuracy"]),
-                "raw_label_nll": float(raw_metrics["label_nll"]),
-                "raw_gain": float(raw_metrics["accuracy"])
-                - float(base_metrics["accuracy"]),
+                "selection": {
+                    "base_accuracy": float(base_selection["accuracy"]),
+                    "raw_accuracy": float(raw_selection["accuracy"]),
+                    "base_label_nll": float(base_selection["label_nll"]),
+                    "raw_label_nll": float(raw_selection["label_nll"]),
+                    "raw_bits_saved_per_mapping": _bits_saved_per_mapping(
+                        base_selection, raw_selection
+                    ),
+                },
+                "report": {
+                    "base_accuracy": float(base_report["accuracy"]),
+                    "raw_accuracy": float(raw_report["accuracy"]),
+                    "base_label_nll": float(base_report["label_nll"]),
+                    "raw_label_nll": float(raw_report["label_nll"]),
+                    "raw_bits_saved_per_mapping": _bits_saved_per_mapping(
+                        base_report, raw_report
+                    ),
+                    "selected": selected_report,
+                },
+                # Kept at the top level for the aggregate table.
+                "base_accuracy": float(base_report["accuracy"]),
+                "raw_accuracy": float(raw_report["accuracy"]),
+                "raw_label_nll": float(raw_report["label_nll"]),
+                "raw_gain": float(raw_report["accuracy"])
+                - float(base_report["accuracy"]),
                 "training": train_metrics,
-                "rate_curve": rate_curve,
-                "r_star": r_star,
-                "r_star_description_bits": (
-                    int(r_star["description_bits"]) if r_star is not None else None
-                ),
-                "r_star_effective_bits_per_value": (
-                    float(r_star["effective_bits_per_value"])
-                    if r_star is not None
-                    else None
-                ),
+                "rate_curve": rate_curve["points"],
+                "rate_reference": {
+                    key: value for key, value in rate_curve.items() if key != "points"
+                },
+                "r_star_description_bits": rate_curve[
+                    "r_star_description_bits"
+                ]["r_star"],
+                "r_star_effective_bits_per_value": rate_curve[
+                    "r_star_effective_bits_per_value"
+                ]["r_star"],
             }
             _write_json(prefix_dir / "metrics.json", checkpoint)
             checkpoints.append(checkpoint)
@@ -564,7 +726,7 @@ def run_condition(
             "repeats_per_mapping": int(info.get("repeats_per_mapping", 4)),
             "prefix_mappings": prefixes,
             "retention_target": retention_target,
-            "adapter_widths": list(widths),
+            "adapter_codecs": list(codecs),
             "prequential": prequential_rows,
             "checkpoints": checkpoints,
             "finished_at": time.time(),

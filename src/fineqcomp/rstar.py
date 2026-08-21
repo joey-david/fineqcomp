@@ -102,10 +102,22 @@ def from_run(run_dir: Path, target: float = 0.90) -> dict[str, Any]:
             }
         )
     raw = run_dir / "metrics.json"
-    reference = None
+    raw_reference = None
     if raw.is_file():
         record = json.loads(raw.read_text())
-        reference = (record.get("raw_behavioral_write") or {}).get(
+        raw_reference = (record.get("raw_behavioral_write") or {}).get(
             "heldout_bits_saved_per_token"
         )
-    return r_star(points, target=target, reference=reference)
+    measured = [
+        float(point["heldout_bits_saved_per_token"])
+        for point in points
+        if point.get("heldout_bits_saved_per_token") is not None
+    ]
+    candidates = [*measured]
+    if raw_reference is not None:
+        candidates.append(float(raw_reference))
+    reference = max(candidates) if candidates else None
+    result = r_star(points, target=target, reference=reference)
+    result["reference_mode"] = "best_decoded_utility"
+    result["raw_reference"] = raw_reference
+    return result
