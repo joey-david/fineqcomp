@@ -158,11 +158,11 @@ def test_run_id_does_not_repeat_a_study_named_after_its_dataset():
         assert run.run_id.count(run.study.replace("_", "-")) == 1
 
 
-def test_information_pilot_uses_the_small_shared_model_and_dense_curve():
+def test_information_pilot_uses_a_cached_model_and_dense_curve():
     campaign = load_campaign("configs/campaign.yaml")
     info = yaml.safe_load(Path("configs/information_scaling.yaml").read_text())
 
-    assert info["model"] == "qwen25_1_5b_base"
+    assert info["model"] == "mistral_7b_base"
     assert info["model"] in campaign["models"]
     rates = {
         (int(codec["bits"]), float(codec.get("blend", 0.0)))

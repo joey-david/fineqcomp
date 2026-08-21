@@ -3,9 +3,9 @@ version: 1
 # Keep the architecture fixed and vary only task information.  The 16 labels
 # contribute exactly four independent source bits whenever a new random mapping
 # must be specified.
-# The 1.5B base keeps the calibration short. Passing this stage buys a 7B
-# natural-task pilot; it does not support a 7B claim by itself.
-model: qwen25_1_5b_base
+# This exact snapshot is already cached on both target systems. The controlled
+# task stays short even with a 7B base because prompts and responses are tiny.
+model: mistral_7b_base
 adapter: all_linear_r16
 seeds: [11, 22, 33]
 
