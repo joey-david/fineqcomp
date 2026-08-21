@@ -237,7 +237,7 @@ optimizer are matched between conditions. Only the source of the labels changes.
 - `structured_p16`: sixteen prototype tables repeat; task information saturates
   at 1,024 bits.
 
-The nested mapping prefixes are 16, 32, 64, 128, 256, and 512. This produces
+The nested mapping prefixes are 32, 128, and 512. This produces
 conditions with identical example counts but very different known source
 information. The prototype reuse rule is shared side information; only sampled
 prototype labels count as task-specific source bits.
@@ -257,11 +257,13 @@ the dataset-compressibility measure.
 
 ### Adapter description length
 
-For every trained prefix, save the raw LoRA and run the adaptive 0/1/2/3/4/8-bit
-MDL codec over target rates from 0.15 to 8 effective proxy bits/value. Decode
-every `.fqmdl` file before evaluation. Define `R*(0.90)` as the smallest actual
-serialized adapter file whose held-out accuracy retains at least 90% of the raw
-adapter's accuracy gain over the base model.
+For every trained prefix, save the raw LoRA and run one dense uniform-code
+family from 0.0625 to 2 nominal bits per value. Decode every `.fqcb` file before
+evaluation. Select the curve on a calibration split and report its chosen real
+file on a separate test split. The utility ceiling is the best decoded
+calibration point, including the raw adapter, so regularizing compression cannot
+produce retention above 100%. Define `R*(0.90)` by interpolation on the upper
+curve of response-code bits saved against the frozen base.
 
 Primary plots:
 
@@ -278,16 +280,52 @@ continue to grow with its genuinely new source bits.
 
 ```bash
 # 2xA40 sanity check: random vs 64-bit structured task, seed 11.
-bash scripts/run_information_scaling_a40.sh pilot
+bash scripts/run_information_scaling_a40.sh start pilot
 
-# Four information levels and three seeds.
-bash scripts/run_information_scaling_a40.sh full
+# Repeat only the two endpoint conditions on seeds 22 and 33.
+bash scripts/run_information_scaling_a40.sh start repeat
+
+# Expand to four information levels only after checking the two short stages.
+bash scripts/run_information_scaling_a40.sh start full
 ```
 
 Configuration: `configs/information_scaling.yaml`.
 Outputs: `runs_information_scaling/<mode>/prequential.csv`,
-`adapter_information.csv`, per-prefix raw adapters and `.fqmdl` files, plus
+`adapter_information.csv`, per-prefix raw adapters and `.fqcb` files, plus
 `source_bits_vs_prequential_bits.png` and `source_bits_vs_adapter_bits.png`.
+
+### Staged natural-task replication
+
+Advancement gates are cheap filters, not claim tests. A cell advances when its
+held-out response code improves by at least 0.02 bits/token and its task-score
+point estimate improves by at least 10% of the available headroom. Its interval
+need not exclude zero at the screen. A positive endpoint slope is enough to buy
+the three-arm repeat. Final claims still need all seeds and uncertainty.
+
+| stage | unit of work | expected time per run | two-GPU wall time |
+|---|---|---:|---:|
+| synthetic pilot | one condition, seed 11, three prefixes | 14 min | 14 min for two conditions |
+| synthetic repeat | one condition and seed | 14 min | 28 min for four runs |
+| NLL screen, XSum | one model, 125 updates | 12 min | 24 min for both models plus load |
+| NLL screen, Magicoder | one model, 125 updates | 35 min | 70 min for both models plus load |
+| 500-update extension, XSum | one model | 30 min | 30 min for two models |
+| 500-update extension, Magicoder | one model | 1 h 45 min | 1 h 45 min for two models |
+| natural endpoint, math | one arm, 2,000 updates and dense curve | 1 h 30 min | 1 h 30 min for two arms |
+| natural endpoint, XSum | one arm, 2,000 updates and dense curve | 1 h 45 min | 1 h 45 min for two arms |
+| natural endpoint, Magicoder | one arm, 2,000 updates and dense curve | 4 h | 4 h for two arms |
+
+These are launch budgets, not measured outcomes. The math estimate uses the
+saved 53-minute Mistral training time plus two task anchors and the held-out
+rate sweep. Long-context code gets the larger bound. Each stage records its
+actual load, train, codec, and task time so the next estimate can replace these
+budgets.
+
+Natural arms use exact 32,000-example draw streams at 2k, 4k, 8k, 16k, and 32k
+distinct rows. Within a data seed the sets are nested; the stop, rate-selection,
+report, and task sets stay fixed. First run 2k/32k at seed 11, then 2k/8k/32k at
+seeds 11 and 22, then all five arms at seeds 11/22/33. Only selected cells reach
+the last stage. The main analysis fits a within-cell slope against conditional
+prequential code length; adjacent arms may invert.
 
 ### Results
 
