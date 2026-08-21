@@ -311,3 +311,35 @@ def test_cells_have_stable_identities():
     cell = Cell(study="main", condition="p4", adapter="all_linear_r16", seed=11,
                 prefixes=(64, 512))
     assert cell.slug == "main/p4/all_linear_r16/seed11"
+
+
+def test_the_switch_code_can_never_lose_to_the_free_base_code():
+    """One bit names the cheaper coder for each block.
+
+    The uniform mixture bounds the cost per symbol but not the cost per block:
+    a confidently wrong adapter still outspends the base model, which is what
+    the validation run measured at 717 and 832 bits against a base code of 550
+    and 553. The switch bounds the total.
+    """
+    blocks = [
+        {"left": 0, "right": 32, "bits": 140.0, "base_bits": 140.0,
+         "adapter_bits": None},
+        # The adapter learned this block's rule and codes it far more cheaply.
+        {"left": 32, "right": 64, "adapter_bits": 6.0, "base_bits": 138.0},
+        # Here it is confidently wrong, so the base has to take over.
+        {"left": 64, "right": 128, "adapter_bits": 420.0, "base_bits": 276.0},
+    ]
+    coded, encoders = [blocks[0]["bits"]], ["base"]
+    for block in blocks[1:]:
+        coded.append(1.0 + min(block["adapter_bits"], block["base_bits"]))
+        encoders.append(
+            "adapter" if block["adapter_bits"] <= block["base_bits"] else "base"
+        )
+
+    assert encoders == ["base", "adapter", "base"]
+    assert sum(coded) == pytest.approx(140.0 + 7.0 + 277.0)
+    # Never more than the free base code, plus the switch's own overhead.
+    assert sum(coded) <= sum(b["base_bits"] for b in blocks) + len(blocks)
+    # And the mixture alone would have lost.
+    mixture = blocks[0]["bits"] + sum(b["adapter_bits"] for b in blocks[1:])
+    assert mixture > sum(b["base_bits"] for b in blocks)
