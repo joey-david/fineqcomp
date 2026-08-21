@@ -316,3 +316,50 @@ def test_the_weight_profile_finds_where_training_moved_the_model():
 
     assert profile["g2"]["rms"] > 10 * profile["g0"]["rms"]
     assert profile["g0"]["rms"] == pytest.approx(profile["g1"]["rms"])
+
+
+def test_a_response_transform_forces_its_own_baseline():
+    """Arms may share a baseline only if they share a calibration split.
+
+    A transform rewrites the held-out targets, so the base model's bits on them
+    differ and so do the token counts. Sharing one baseline across transforms
+    subtracts a measurement taken on one held-out set from another.
+    """
+    from types import SimpleNamespace
+
+    from fineqcomp.runner import RunEngine
+
+    campaign = {
+        "datasets": {
+            "plain": {"evaluations": [{"key": "gsm8k"}], "test_rows": 1319},
+            "shouted": {
+                "evaluations": [{"key": "gsm8k"}], "test_rows": 1319,
+                "response_transform": "shouted",
+            },
+            "explicit_plain": {
+                "evaluations": [{"key": "gsm8k"}], "test_rows": 1319,
+                "response_transform": "plain",
+            },
+            "narrow": {
+                "evaluations": [{"key": "gsm8k"}], "test_rows": 1319,
+                "distinct_source_problems": 400,
+            },
+        }
+    }
+    engine = RunEngine.__new__(RunEngine)
+    engine.campaign = campaign
+
+    def run(key):
+        return SimpleNamespace(
+            dataset_key=key, seed=11,
+            model=SimpleNamespace(key="mistral_7b_base", backbone="nf4"),
+            training=SimpleNamespace(label_span="all"),
+        )
+
+    keys = {name: engine._baseline_key(run(name)) for name in campaign["datasets"]}
+    assert keys["plain"] != keys["shouted"]
+    # "plain" names the untransformed target, so it must not fork the key.
+    assert keys["explicit_plain"] == keys["plain"]
+    # The diversity lever leaves the calibration split alone, so those arms
+    # still share, which is what makes the diversity axis cheap.
+    assert keys["narrow"] == keys["plain"]
