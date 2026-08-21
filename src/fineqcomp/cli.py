@@ -196,6 +196,7 @@ def _dataset_information(args: argparse.Namespace) -> int:
             args.sample_rows,
             args.max_length,
             args.micro_batch_size,
+            args.split,
         )
     finally:
         if session is not None:
@@ -386,6 +387,10 @@ def build_parser() -> argparse.ArgumentParser:
     information.add_argument("--prepared-root", default="prepared")
     information.add_argument("--out", default="reports/dataset_information.json")
     information.add_argument("--sample-rows", type=int, default=1024)
+    information.add_argument(
+        "--split", default="train", choices=["train", "calibration"],
+        help="calibration is the split R* is scored on",
+    )
     information.add_argument("--max-length", type=int, default=1024)
     information.add_argument("--micro-batch-size", type=int, default=4)
     information.add_argument("--model", default="mistral_7b_base")

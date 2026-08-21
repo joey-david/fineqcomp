@@ -160,6 +160,15 @@ class RunEngine:
             str(item["key"]) for item in spec.get("evaluations", [])
         ) or str(run.dataset_key)
         rows = spec.get("test_rows", "all")
+        # Sharing a baseline assumes the arms share a calibration split. A
+        # response transform breaks that: it rewrites the held-out targets, so
+        # the base model's bits on them differ, and the token counts differ
+        # too. Without this the behavioural grid subtracted a baseline measured
+        # on one arm's held-out set from another arm's, and every bits-saved
+        # figure compared two populations.
+        transform = spec.get("response_transform")
+        if transform is not None and str(transform) != "plain":
+            evaluations = f"{evaluations}-{transform}"
         # A study that splits the response by span needs baseline numbers for
         # each span. Those go in a key of their own rather than growing the
         # shared record in place, so a half-written rewrite can never be

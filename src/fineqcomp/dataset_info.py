@@ -179,6 +179,7 @@ def measure_arms(
     sample_rows: int = 1024,
     max_length: int = 1024,
     micro_batch_size: int = 4,
+    split: str = "train",
 ) -> list[dict[str, Any]]:
     """Both information measures for every arm in a manifest.
 
@@ -201,9 +202,10 @@ def measure_arms(
 
     records = []
     for dataset_key, seed, epochs in arm_keys(runs):
-        rows = load_natural_dataset(campaign, dataset_key, seed, prepared_root)["train"]
+        rows = load_natural_dataset(campaign, dataset_key, seed, prepared_root)[split]
         record = {
             "dataset_key": dataset_key,
+            "split": split,
             "seed": seed,
             "epochs": epochs,
             "samples_seen": len(rows) * epochs,
