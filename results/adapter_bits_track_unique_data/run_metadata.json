@@ -1,0 +1,45 @@
+{
+  "recorded": "2026-08-21",
+  "model": "Mistral-7B-v0.1, NF4 base, rank-16 LoRA on all linear projections",
+  "train_data": "MetaMathQA, fixed compute: 2000 optimizer updates and 32000 samples seen in every arm",
+  "arms": {
+    "arm_e": {
+      "unique_rows": 2000,
+      "epochs": 16
+    },
+    "arm_a": {
+      "unique_rows": 4000,
+      "epochs": 8
+    },
+    "arm_b": {
+      "unique_rows": 8000,
+      "epochs": 4
+    },
+    "arm_c": {
+      "unique_rows": 16000,
+      "epochs": 2
+    },
+    "arm_d": {
+      "unique_rows": 32000,
+      "epochs": 1
+    }
+  },
+  "eval": "GSM8K test, all 1319 problems, greedy decoding; held-out bits over 256 MetaMathQA calibration rows",
+  "seeds": [
+    11,
+    22,
+    33
+  ],
+  "ladder_rungs": 14,
+  "ladder_effective_bits_range": [
+    0.0843,
+    1.9906
+  ],
+  "fit_bits_axis": {
+    "form": "r_star = a + b * log2(unique_rows)",
+    "a": -0.26,
+    "b": 0.0807,
+    "r_squared": 0.7758,
+    "n": 15
+  }
+}
