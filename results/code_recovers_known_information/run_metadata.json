@@ -1,0 +1,22 @@
+{
+  "adapter": "rank-16 full LoRA on all linear projections",
+  "cells": 15,
+  "config": "configs/information_validation.yaml",
+  "max_symbol_bits": 8.0,
+  "mixture_weight": 0.0625,
+  "model": "mistralai/Mistral-7B-v0.1, NF4 base",
+  "optimizer_updates": 2048,
+  "prefixes": [
+    32,
+    64,
+    128
+  ],
+  "recorded": "2026-08-21",
+  "seeds": [
+    11,
+    22,
+    33
+  ],
+  "slurm_job": 1243215,
+  "task": "16-way single-token registry lookup, 128 taught mappings of 192"
+}
