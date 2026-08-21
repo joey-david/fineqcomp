@@ -9,9 +9,11 @@ model: mistral_7b_base
 adapter: all_linear_r16
 seeds: [11, 22, 33]
 
+# Bare letters are one token each under the pinned Mistral tokenizer. Leading
+# spaces are separate SentencePiece tokens and fail the constrained-label test.
 labels:
-  [" A", " B", " C", " D", " E", " F", " G", " H",
-   " I", " J", " K", " L", " M", " N", " O", " P"]
+  ["A", "B", "C", "D", "E", "F", "G", "H",
+   "I", "J", "K", "L", "M", "N", "O", "P"]
 codebook_dir: codebooks
 items_per_family: 16
 repeats_per_mapping: 4

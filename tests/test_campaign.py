@@ -164,6 +164,7 @@ def test_information_pilot_uses_a_cached_model_and_dense_curve():
 
     assert info["model"] == "mistral_7b_base"
     assert info["model"] in campaign["models"]
+    assert info["labels"] == list("ABCDEFGHIJKLMNOP")
     rates = {
         (int(codec["bits"]), float(codec.get("blend", 0.0)))
         for codec in info["adapter_codecs"]
