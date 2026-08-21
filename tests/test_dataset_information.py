@@ -279,3 +279,40 @@ def test_the_behavioural_lever_is_part_of_a_run_identity():
     symbolic = expand_campaign(campaign("symbolic"))[0].run_id
     assert len({plain, shouted, symbolic}) == 3
     assert expand_campaign(campaign(None))[0].run_id == plain
+
+
+def test_layer_allocation_plans_hold_the_budget_fixed():
+    """Starving one band only means something at a matched total budget."""
+    from fineqcomp.layer_profile import ALLOCATION_PLANS
+
+    budgets = {}
+    for name, plan in ALLOCATION_PLANS.items():
+        assert sorted(plan) == ["g0", "g1", "g2"]
+        mean = sum(bits + blend for bits, blend in plan.values()) / 3
+        budgets.setdefault(round(mean, 6), []).append(name)
+        for bits, blend in plan.values():
+            # Sub-bit rates are multiples of 1/16 because that is the rank.
+            assert bits in {0, 1, 2}
+            assert abs(blend * 16 - round(blend * 16)) < 1e-9
+    # Two budgets, each with a uniform reference and three starved placements.
+    assert sorted(budgets) == [0.5, 1.0]
+    for names in budgets.values():
+        assert len(names) == 4
+        assert sum(1 for n in names if n.startswith("uniform")) == 1
+
+
+def test_the_weight_profile_finds_where_training_moved_the_model():
+    import torch
+
+    from fineqcomp.layer_profile import weight_profile
+
+    tensors = {}
+    for layer in range(12):
+        stem = f"base_model.model.model.layers.{layer}.self_attn.q_proj"
+        # Only the last third carries a large update.
+        scale = 1.0 if layer >= 8 else 0.01
+        tensors[f"{stem}.lora_B.default.weight"] = torch.full((32, 16), scale)
+    profile = weight_profile(tensors)
+
+    assert profile["g2"]["rms"] > 10 * profile["g0"]["rms"]
+    assert profile["g0"]["rms"] == pytest.approx(profile["g1"]["rms"])

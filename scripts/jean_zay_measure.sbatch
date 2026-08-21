@@ -21,7 +21,7 @@
 #SBATCH --gres=gpu:h100:1
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
-#SBATCH --time=00:40:00
+#SBATCH --time=02:00:00
 #SBATCH --output=slurm_logs/%x-%j.out
 #SBATCH --error=slurm_logs/%x-%j.err
 
@@ -44,6 +44,11 @@ command=("$PYTHON" -m fineqcomp "$measure"
   --prepared-root "${PREPARED_ROOT:-prepared}" --out "$out")
 if [[ -n "${WITH_BASE_MODEL:-}" ]]; then
   command+=(--with-base-model --sample-rows "${SAMPLE_ROWS:-256}")
+fi
+# Anything the subcommand needs beyond the shared four. Word-split on purpose.
+if [[ -n "${EXTRA:-}" ]]; then
+  read -r -a extra <<<"$EXTRA"
+  command+=("${extra[@]}")
 fi
 
 printf 'measure=%s config=%s out=%s python=%s\n' "$measure" "$config" "$out" "$PYTHON"

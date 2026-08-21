@@ -208,6 +208,71 @@ def _dataset_information(args: argparse.Namespace) -> int:
     return 0
 
 
+def _layer_profile(args: argparse.Namespace) -> int:
+    from fineqcomp.campaign import _model
+    from fineqcomp.data import load_natural_dataset
+    from fineqcomp.layer_profile import profile_run
+    from fineqcomp.modeling import ModelSession
+
+    campaign = load_campaign(args.config)
+    runs = read_manifest(args.manifest)
+    validate_manifest(runs, campaign)
+    selected = [
+        run
+        for run in runs
+        if (not args.studies or run.study in set(args.studies))
+        and (not args.seeds or run.seed in set(args.seeds))
+    ]
+    ready = [
+        run
+        for run in selected
+        if (Path(args.runs_root) / run.run_id / "raw_channel.pt").is_file()
+    ]
+    if not ready:
+        raise SystemExit(
+            f"no finished runs with a saved adapter under {args.runs_root}"
+        )
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    session = ModelSession.load(_model(ready[0].model.key, campaign))
+    written = []
+    try:
+        for run in ready:
+            target = out / f"{run.run_id}.json"
+            if target.is_file() and not args.force:
+                continue
+            data = load_natural_dataset(
+                campaign, run.dataset_key, run.seed, args.prepared_root
+            )
+            session.attach(run.adapter, run.seed)
+            try:
+                record = profile_run(
+                    session,
+                    Path(args.runs_root) / run.run_id,
+                    data["calibration"][: args.rows],
+                    run.model,
+                    Path(args.work_dir) / run.run_id,
+                    max_length=run.training.max_length,
+                    batch_size=run.training.micro_batch_size,
+                    probe_rows=args.probe_rows,
+                )
+            finally:
+                session.unload()
+            record["run_id"] = run.run_id
+            record["study"] = run.study
+            record["seed"] = run.seed
+            write_json(target, record)
+            written.append(str(target))
+            print(json.dumps({"profiled": run.run_id}), flush=True)
+    finally:
+        try:
+            session.unload()
+        except Exception:
+            pass
+    print(json.dumps({"written": len(written), "out": str(out)}, indent=2))
+    return 0
+
+
 def _rstar(args: argparse.Namespace) -> int:
     information = Path(args.information) if args.information else None
     if information is not None and not information.is_file():
@@ -330,6 +395,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="also take the duplication-blind measure, which needs a GPU",
     )
     information.set_defaults(func=_dataset_information)
+
+    profile = subparsers.add_parser(
+        "layer-profile",
+        help="where the adapter bits are needed: layer allocation and"
+        " representation shift, on adapters that already exist",
+    )
+    profile.add_argument("--config", default="configs/compressibility.yaml")
+    profile.add_argument("--manifest", default="prepared/compressibility-manifest.jsonl")
+    profile.add_argument("--prepared-root", default="prepared")
+    profile.add_argument("--runs-root", default="runs")
+    profile.add_argument("--out", default="reports/layer_profile")
+    profile.add_argument("--work-dir", default="reports/layer_profile/work")
+    profile.add_argument("--studies", nargs="+")
+    profile.add_argument("--seeds", nargs="+", type=int)
+    profile.add_argument("--rows", type=int, default=256)
+    profile.add_argument("--probe-rows", type=int, default=32)
+    profile.add_argument("--force", action="store_true")
+    profile.set_defaults(func=_layer_profile)
 
     star = subparsers.add_parser(
         "rstar", help="R* against both information measures, with the overfit gap"

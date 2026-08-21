@@ -249,3 +249,70 @@ def test_zero_bit_blend_reaches_below_one_bit(tmp_path, blend):
     kept_b = decoded["m.q_proj.lora_B.default.weight"].abs().sum(dim=0) > 0
     assert torch.equal(kept_a, kept_b)
     assert int(kept_a.sum()) == round(16 * blend)
+
+
+def _layered_lora(layers=12, rank=16, dim=128):
+    generator = torch.Generator().manual_seed(0)
+    tensors = {}
+    for layer in range(layers):
+        stem = f"base_model.model.model.layers.{layer}.self_attn.q_proj"
+        tensors[f"{stem}.lora_A.default.weight"] = (
+            torch.randn(rank, dim, generator=generator) * 0.01
+        )
+        tensors[f"{stem}.lora_B.default.weight"] = (
+            torch.randn(dim, rank, generator=generator) * 0.01
+        )
+    return tensors
+
+
+def test_layer_groups_split_the_stack_into_contiguous_bands():
+    from fineqcomp.codec import layer_groups, tensor_layer
+
+    tensors = _layered_lora(layers=12)
+    bands = layer_groups(tensors, 3)
+
+    assert sorted(bands) == ["g0", "g1", "g2"]
+    assert all(len(names) == 8 for names in bands.values())
+    # Bands are contiguous in depth, which is what makes "starve the early
+    # third" a statement about where in the network the bits are needed.
+    depths = {key: sorted({tensor_layer(n) for n in names})
+              for key, names in bands.items()}
+    assert depths["g0"] == [0, 1, 2, 3]
+    assert depths["g1"] == [4, 5, 6, 7]
+    assert depths["g2"] == [8, 9, 10, 11]
+    assert max(depths["g0"]) < min(depths["g1"]) < max(depths["g1"]) < min(depths["g2"])
+
+
+def test_layer_group_coding_round_trips_and_counts_every_bit(tmp_path):
+    from fineqcomp.codec import (
+        decode_layer_groups, encode_layer_groups, encode_tensor_map,
+    )
+
+    tensors = _layered_lora()
+    stem = tmp_path / "adapter"
+    plan = {"g0": (0, 0.0625), "g1": (1, 0.0), "g2": (2, 0.0)}
+    stats = encode_layer_groups(tensors, stem, plan)
+
+    decoded = decode_layer_groups(stem, plan)
+    assert set(decoded) == set(tensors)
+    for name, tensor in decoded.items():
+        assert tensor.shape == tensors[name].shape
+
+    # The starved band really is cheaper, and the rich one dearer.
+    rates = {k: v["effective_bits_per_value"] for k, v in stats["groups"].items()}
+    assert rates["g0"] < rates["g1"] < rates["g2"]
+    # File bits are the sum of the bands, headers included, so a layer-allocated
+    # file can be compared with a single-rate one without an asterisk.
+    assert stats["file_bits"] == sum(
+        band["file_bits"] for band in stats["groups"].values()
+    )
+    flat = encode_tensor_map(tensors, tmp_path / "flat.fqcb", 1)
+    assert stats["file_bits"] > flat["file_bits"] * 0.5
+
+
+def test_a_layer_plan_must_cover_every_band(tmp_path):
+    from fineqcomp.codec import encode_layer_groups
+
+    tensors = _layered_lora()
+    with pytest.raises(ValueError, match="no rate given"):
+        encode_layer_groups(tensors, tmp_path / "a", {"g0": (1, 0.0), "gX": (1, 0.0)})

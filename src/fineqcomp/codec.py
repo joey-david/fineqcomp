@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import struct
 import zlib
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 
 import numpy as np
 import torch
@@ -804,3 +805,115 @@ def decode_adapter_tensor_map(
     if header.get("version") == 2:
         return decode_loraquant_tensor_map(path)
     return decode_tensor_map(path)
+
+
+# ---------------------------------------------------- coding by layer group
+
+_CODEC_LAYER = re.compile(r"(?:^|\.)layers\.(\d+)(?:\.|$)")
+
+
+def tensor_layer(name: str) -> int | None:
+    """Transformer layer a LoRA tensor belongs to, or None if it sits outside."""
+    match = _CODEC_LAYER.search(name)
+    return int(match.group(1)) if match else None
+
+
+def layer_groups(
+    tensors: Mapping[str, torch.Tensor], groups: int = 3
+) -> dict[str, list[str]]:
+    """Split tensor names into `groups` contiguous bands of transformer layers.
+
+    Bands are cut on the layers actually present rather than on a fixed depth,
+    so the same call works for any model. Tensors outside the layer stack, if
+    a placement ever produces them, go to the first band rather than being
+    dropped.
+    """
+    if groups < 1:
+        raise ValueError("need at least one layer group")
+    depths = sorted({tensor_layer(name) for name in tensors} - {None})
+    if not depths:
+        raise ValueError("no transformer layers found in the tensor names")
+    edges = [depths[len(depths) * index // groups] for index in range(groups)]
+    banded: dict[str, list[str]] = {f"g{index}": [] for index in range(groups)}
+    for name in sorted(tensors):
+        depth = tensor_layer(name)
+        band = 0
+        if depth is not None:
+            band = max(index for index, edge in enumerate(edges) if edge <= depth)
+        banded[f"g{band}"].append(name)
+    empty = [key for key, names in banded.items() if not names]
+    if empty:
+        raise ValueError(f"layer grouping left {empty} empty; use fewer groups")
+    return banded
+
+
+def encode_layer_groups(
+    tensors: Mapping[str, torch.Tensor],
+    stem: str | Path,
+    plan: Mapping[str, tuple[int, float]],
+    quantizer: str = "midrise",
+) -> dict[str, Any]:
+    """Code each band of layers at its own rate, into one file per band.
+
+    Experiment 1 found that allocating bits per *row* by reconstruction error
+    never beats a uniform code. Allocating per *layer* is a different axis and
+    is what says where in the network the necessary bits live: starve the early
+    third and keep the late third, then the reverse, and see which the
+    behaviour survives.
+
+    Bands are written as separate containers rather than as a new format, so
+    the encoder, the decoder and every storage statistic are the ones already
+    in use. The extra container headers are counted in `file_bits`, so the
+    comparison against a single-rate file stays exact.
+    """
+    stem = Path(stem)
+    banded = layer_groups(tensors, len(plan))
+    missing = sorted(set(banded) - set(plan))
+    if missing:
+        raise ValueError(f"no rate given for layer groups {missing}")
+    file_bits = 0
+    squared_error = 0.0
+    squared_norm = 0.0
+    parts = {}
+    for key in sorted(plan):
+        bits, blend = plan[key]
+        names = banded[key]
+        subset = {name: tensors[name] for name in names}
+        stats = encode_tensor_map(
+            subset, stem.with_name(f"{stem.name}.{key}.fqcb"), bits,
+            quantizer=quantizer, blend=blend,
+        )
+        values = sum(tensors[name].numel() for name in names)
+        file_bits += int(stats["file_bits"])
+        # Recombine the per-band errors into one relative RMSE over the whole
+        # adapter, weighting each band by its own norm.
+        band_norm = sum(float((tensors[name] ** 2).sum()) for name in names)
+        squared_norm += band_norm
+        squared_error += band_norm * float(stats["relative_rmse"]) ** 2
+        parts[key] = {
+            "bits": bits, "blend": blend, "tensors": len(names),
+            "values": values, "file_bits": int(stats["file_bits"]),
+            "effective_bits_per_value": float(stats["effective_bits_per_value"]),
+        }
+    total_values = sum(tensor.numel() for tensor in tensors.values())
+    return {
+        "file_bits": file_bits,
+        "effective_bits_per_value": file_bits / max(total_values, 1),
+        "relative_rmse": math.sqrt(squared_error / max(squared_norm, 1e-30)),
+        "groups": parts,
+    }
+
+
+def decode_layer_groups(
+    stem: str | Path, keys: Iterable[str]
+) -> dict[str, torch.Tensor]:
+    """Reload every band and merge them back into one adapter."""
+    stem = Path(stem)
+    merged: dict[str, torch.Tensor] = {}
+    for key in sorted(keys):
+        _, tensors = decode_adapter_tensor_map(stem.with_name(f"{stem.name}.{key}.fqcb"))
+        overlap = sorted(set(merged) & set(tensors))
+        if overlap:
+            raise ValueError(f"layer groups overlap on {overlap[:3]}")
+        merged.update(tensors)
+    return merged
