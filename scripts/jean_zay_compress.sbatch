@@ -6,7 +6,12 @@
 # baseline per seed, because they share an evaluation set, a calibration split,
 # and the same leading training rows.
 #
-# Submit: sbatch --export=ALL,ARM=arm_a,SEED=11 scripts/jean_zay_compress.sbatch
+# Submit one cell:
+#   sbatch --export=ALL,ARM=arm_a,SEED=11 scripts/jean_zay_compress.sbatch
+#
+# Submit a whole seed sweep as one array, five arms per seed:
+#   sbatch --array=0-14%15 --export=ALL,SEEDS="44 55 66" \
+#     scripts/jean_zay_compress.sbatch
 #
 # A full cell trains for about 53 minutes and then spends roughly 19 more on
 # every rung it scores on the test set, so it does not fit the two-hour dev
@@ -32,8 +37,22 @@ repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 cd "$repo_root"
 mkdir -p slurm_logs reports
 
-arm="${ARM:?set ARM=arm_a|arm_b|arm_c|arm_d|arm_e}"
-seed="${SEED:?set SEED}"
+arms=(arm_e arm_a arm_b arm_c arm_d)
+if [[ -z "${ARM:-}" || -z "${SEED:-}" ]]; then
+  # Array form: walk arms within seeds, so a truncated array still leaves whole
+  # seeds finished rather than a ragged grid.
+  read -r -a seeds <<<"${SEEDS:-11 22 33}"
+  task="${SLURM_ARRAY_TASK_ID:?set ARM and SEED, or submit as an array}"
+  total=$((${#arms[@]} * ${#seeds[@]}))
+  if ((task < 0 || task >= total)); then
+    echo "array task $task is outside 0-$((total - 1))" >&2
+    exit 2
+  fi
+  ARM="${arms[$((task % ${#arms[@]}))]}"
+  SEED="${seeds[$((task / ${#arms[@]}))]}"
+fi
+arm="$ARM"
+seed="$SEED"
 config="${CONFIG:-configs/compressibility.yaml}"
 manifest="${MANIFEST:-prepared/compressibility-manifest.jsonl}"
 

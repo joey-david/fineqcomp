@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from pathlib import Path
 from dataclasses import replace
 from typing import Any
 
@@ -18,6 +19,8 @@ from fineqcomp.campaign import (
 )
 from fineqcomp.config import load_campaign
 from fineqcomp.data import prepare_all_natural
+from fineqcomp.dataset_info import measure_arms
+from fineqcomp.rstar import report as rstar_report
 from fineqcomp.preflight import (
     cache_models,
     environment_report,
@@ -174,6 +177,56 @@ def _analyze(args: argparse.Namespace) -> int:
     return 0
 
 
+def _dataset_information(args: argparse.Namespace) -> int:
+    campaign = load_campaign(args.config)
+    runs = read_manifest(args.manifest)
+    validate_manifest(runs, campaign)
+    session = None
+    if args.with_base_model:
+        from fineqcomp.campaign import _model
+        from fineqcomp.modeling import ModelSession
+
+        session = ModelSession.load(_model(args.model, campaign))
+    try:
+        records = measure_arms(
+            campaign,
+            runs,
+            args.prepared_root,
+            session,
+            args.sample_rows,
+            args.max_length,
+            args.micro_batch_size,
+        )
+    finally:
+        if session is not None:
+            try:
+                session.unload()
+            except Exception:
+                pass
+    write_json(args.out, records)
+    print(json.dumps(records, indent=2))
+    return 0
+
+
+def _rstar(args: argparse.Namespace) -> int:
+    information = Path(args.information) if args.information else None
+    if information is not None and not information.is_file():
+        information = None
+    keep = None
+    if not args.all_runs:
+        keep = {run.run_id for run in expand_campaign(load_campaign(args.config))}
+    print(
+        json.dumps(
+            rstar_report(
+                Path(args.root), information, Path(args.out), args.target, keep
+            ),
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 def _screen(args: argparse.Namespace) -> int:
     campaign = load_campaign(args.config)
     runs = read_manifest(args.manifest)
@@ -258,6 +311,40 @@ def build_parser() -> argparse.ArgumentParser:
     analysis.add_argument("--root", default="runs")
     analysis.add_argument("--out", default="reports")
     analysis.set_defaults(func=_analyze)
+
+    information = subparsers.add_parser(
+        "dataset-information",
+        help="measure how much information each arm's training data carries",
+    )
+    information.add_argument("--config", default="configs/compressibility.yaml")
+    information.add_argument("--manifest", default="prepared/manifest.jsonl")
+    information.add_argument("--prepared-root", default="prepared")
+    information.add_argument("--out", default="reports/dataset_information.json")
+    information.add_argument("--sample-rows", type=int, default=1024)
+    information.add_argument("--max-length", type=int, default=1024)
+    information.add_argument("--micro-batch-size", type=int, default=4)
+    information.add_argument("--model", default="mistral_7b_base")
+    information.add_argument(
+        "--with-base-model",
+        action="store_true",
+        help="also take the duplication-blind measure, which needs a GPU",
+    )
+    information.set_defaults(func=_dataset_information)
+
+    star = subparsers.add_parser(
+        "rstar", help="R* against both information measures, with the overfit gap"
+    )
+    star.add_argument("--root", default="runs")
+    star.add_argument("--information", default="reports/dataset_information.json")
+    star.add_argument("--out", default="reports")
+    star.add_argument("--target", type=float, default=0.90)
+    star.add_argument("--config", default="configs/compressibility.yaml")
+    star.add_argument(
+        "--all-runs",
+        action="store_true",
+        help="include runs from earlier configs, which the campaign filter drops",
+    )
+    star.set_defaults(func=_rstar)
 
     screen = subparsers.add_parser(
         "screen", help="measure base-task headroom before natural-task training"

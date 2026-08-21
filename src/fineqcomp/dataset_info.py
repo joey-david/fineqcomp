@@ -92,6 +92,76 @@ def describe(prepared_dir: Path, sample_rows: int | None = None) -> dict[str, An
     return {"path": str(prepared_dir), **corpus_bits(rows)}
 
 
+def arm_keys(runs: list[Any]) -> list[tuple[str, int, int]]:
+    """The distinct (dataset, seed, epochs) triples a manifest trains on.
+
+    Arms that differ only in seed still draw different rows, so the measure has
+    to be taken per seed rather than once per dataset.
+    """
+    seen = {
+        (str(run.dataset_key), int(run.seed), int(run.training.epochs))
+        for run in runs
+        if run.dataset_key is not None
+    }
+    return sorted(seen)
+
+
+def measure_arms(
+    campaign: dict[str, Any],
+    runs: list[Any],
+    prepared_root: str | Path | None = None,
+    session: Any = None,
+    sample_rows: int = 1024,
+    max_length: int = 1024,
+    micro_batch_size: int = 4,
+) -> list[dict[str, Any]]:
+    """Both information measures for every arm in a manifest.
+
+    The duplication-aware measure compresses the arm's distinct rows: an arm
+    holding 2,000 of them carries less unique content than one holding 32,000,
+    and lzma prices that content rather than counting rows, which is the whole
+    point -- MetaMathQA rows are templated and redundant among themselves, so
+    row count and information are not proportional.
+
+    The duplication-blind control is the base model's code length for every
+    sample the run processes, copies included. A static code charges the
+    sixteenth copy of a row exactly what it charged the first, so this measure
+    is flat across compute-matched arms by construction. R* following the first
+    and not the second is the result the campaign is after.
+
+    Without a `session` only the compressed measure is taken, which needs no
+    GPU and no model.
+    """
+    from fineqcomp.data import load_natural_dataset
+
+    records = []
+    for dataset_key, seed, epochs in arm_keys(runs):
+        rows = load_natural_dataset(campaign, dataset_key, seed, prepared_root)["train"]
+        record = {
+            "dataset_key": dataset_key,
+            "seed": seed,
+            "epochs": epochs,
+            "samples_seen": len(rows) * epochs,
+            **corpus_bits(rows),
+        }
+        if session is not None:
+            base = base_model_bits(
+                session.model,
+                session.tokenizer,
+                rows[:sample_rows],
+                session.spec,
+                max_length,
+                micro_batch_size,
+            )
+            record["base_sample_rows"] = base["rows"]
+            record["base_bits_per_row"] = base["base_bits_per_row"]
+            record["base_stream_bits"] = base["base_bits_per_row"] * record[
+                "samples_seen"
+            ]
+        records.append(record)
+    return records
+
+
 def main(argv: list[str] | None = None) -> None:
     import argparse
 
