@@ -218,3 +218,64 @@ def test_the_diversity_lever_is_part_of_a_run_identity():
     # And an identity minted before the lever existed keeps its name, so the
     # runs already on disk are not orphaned by adding the field.
     assert expand_campaign(campaign(None))[0].run_id == plain
+
+
+def test_response_transforms_keep_the_answer_and_change_only_the_body():
+    from fineqcomp.data import RESPONSE_TRANSFORMS, transform_responses
+
+    row = Example(
+        example_id="r0",
+        prompt="Solve it.",
+        response="We divide 10 by 2.\nSo the result is 5.\nThe answer is: 5",
+        metadata={"split": "train"},
+    )
+    bodies = {}
+    for name in RESPONSE_TRANSFORMS:
+        out = transform_responses([row], name)[0]
+        # Scoring finds the answer by this marker, so no rewrite may touch it.
+        assert out.response.endswith("The answer is: 5")
+        assert out.prompt == row.prompt
+        assert out.metadata["response_transform"] == name
+        bodies[name] = out.response[: out.response.rfind("The answer is:")]
+    # Five genuinely different targets, not five spellings of one.
+    assert len(set(bodies.values())) == len(RESPONSE_TRANSFORMS)
+    assert bodies["plain"] != bodies["shouted"]
+
+    with pytest.raises(ValueError, match="unknown response transform"):
+        transform_responses([row], "sideways")
+
+
+def test_a_response_without_the_marker_is_refused():
+    from fineqcomp.data import transform_responses
+
+    row = Example("r0", "q", "no marker here", {})
+    with pytest.raises(ValueError, match="no 'The answer is:'"):
+        transform_responses([row], "shouted")
+
+
+def test_the_behavioural_lever_is_part_of_a_run_identity():
+    from fineqcomp.campaign import expand_campaign
+
+    def campaign(transform):
+        dataset = {"train_rows": 8000, "test_rows": 1319}
+        if transform is not None:
+            dataset["response_transform"] = transform
+        return {
+            "models": {"m": {"name": "m", "revision": "r", "backbone": "nf4"}},
+            "adapters": {"a": {"method": "full_lora", "rank": 16,
+                               "target_modules": ["q_proj"], "last_n_layers": None,
+                               "alpha": 32}},
+            "training": {"t": {"epochs": 1, "learning_rate": 1e-4,
+                               "effective_batch_size": 16, "micro_batch_size": 4,
+                               "max_length": 128}},
+            "codecs": {"binary": {"method": "uniform", "bits": 1}},
+            "datasets": {"d": dataset},
+            "studies": {"s": {"kind": "natural", "models": ["m"], "datasets": ["d"],
+                              "seeds": [11], "adapters": ["a"], "training": "t"}},
+        }
+
+    plain = expand_campaign(campaign(None))[0].run_id
+    shouted = expand_campaign(campaign("shouted"))[0].run_id
+    symbolic = expand_campaign(campaign("symbolic"))[0].run_id
+    assert len({plain, shouted, symbolic}) == 3
+    assert expand_campaign(campaign(None))[0].run_id == plain
