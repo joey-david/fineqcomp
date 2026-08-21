@@ -10,149 +10,146 @@ if [[ -f .env ]]; then
   set +a
 fi
 
-mode=${1:-pilot}
+action=${1:-start}
+mode=${2:-pilot}
 host=${A40_HOST:-coktailjet}
 remote_root=${REMOTE_REPO_ROOT:-/home/lamsade/jdavid/fineQComp}
-python_bin=${FINEQCOMP_PYTHON:-$remote_root/../reasoning/.venv/bin/python}
 config=${INFO_CONFIG:-configs/information_scaling.yaml}
-out=${INFO_OUT:-runs_information_scaling/$mode}
-mkdir -p "$out"
-out=$(realpath "$out")
+remote_out=${INFO_REMOTE_OUT:-$remote_root/runs_information_scaling/$mode}
+local_out=${INFO_LOCAL_OUT:-$repo_root/runs_information_scaling/$mode}
+session=${INFO_SESSION:-fineqcomp-info-$mode}
+
+if [[ "$action" == worker ]]; then
+  gpu=${2:?missing GPU index}
+  conditions=${3:?missing conditions}
+  seeds=${4:?missing seeds}
+  out=${5:?missing output path}
+  status=${6:?missing status path}
+  log=${7:?missing log path}
+  python_bin=${FINEQCOMP_PYTHON:-$repo_root/../reasoning/.venv/bin/python}
+  threshold=${FINEQCOMP_GPU_MEMORY_THRESHOLD_MB:-4096}
+  mkdir -p "$out" "$(dirname "$status")" "$(dirname "$log")"
+  while true; do
+    used=$(nvidia-smi -i "$gpu" --query-gpu=memory.used --format=csv,noheader,nounits)
+    used=${used//[[:space:]]/}
+    if [[ "$used" =~ ^[0-9]+$ ]] && ((used <= threshold)); then
+      break
+    fi
+    printf 'GPU %s busy (%s MiB); waiting\n' "$gpu" "${used:-unknown}" >>"$log"
+    sleep 60
+  done
+  if [[ -f .env ]]; then
+    set -a
+    source .env
+    set +a
+  fi
+  export PYTHONPATH="${PYTHONPATH:-$repo_root/src}"
+  export HF_HOME="${HF_HOME:-$repo_root/../fineQComp_hf_cache}"
+  export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
+  read -ra condition_args <<<"$conditions"
+  read -ra seed_args <<<"$seeds"
+  set +e
+  CUDA_VISIBLE_DEVICES="$gpu" "$python_bin" -m fineqcomp.information_scaling \
+    --config "$config" --out "$out" \
+    --conditions "${condition_args[@]}" --seeds "${seed_args[@]}" \
+    >"$log" 2>&1
+  rc=$?
+  set -e
+  tmp="$status.tmp.$$"
+  printf '%s\n' "$rc" >"$tmp"
+  mv "$tmp" "$status"
+  exit "$rc"
+fi
 
 case "$mode" in
 pilot)
-  gpu0_conditions=(random)
-  gpu1_conditions=(structured_p1)
-  seeds=(11)
+  gpu0_conditions="random"
+  gpu1_conditions="structured_p1"
+  seeds="11"
+  ;;
+repeat)
+  gpu0_conditions="random"
+  gpu1_conditions="structured_p1"
+  seeds="22 33"
   ;;
 full)
-  gpu0_conditions=(random structured_p16)
-  gpu1_conditions=(structured_p1 structured_p4)
-  seeds=(11 22 33)
+  gpu0_conditions="random structured_p16"
+  gpu1_conditions="structured_p1 structured_p4"
+  seeds="11 22 33"
   ;;
 *)
-  echo "usage: $0 [pilot|full]" >&2
+  echo "usage: $0 start|status|aggregate|fetch [pilot|repeat|full]" >&2
   exit 2
   ;;
 esac
 
-status0="$out/gpu0.status"
-status1="$out/gpu1.status"
-log0="$out/gpu0.log"
-log1="$out/gpu1.log"
-rm -f "$status0" "$status1"
-
-echo "host: $host (2x A40)"
-echo "mode: $mode"
-echo "output: $out"
-echo "gpu0: ${gpu0_conditions[*]} seeds ${seeds[*]}"
-echo "gpu1: ${gpu1_conditions[*]} seeds ${seeds[*]}"
-
-ssh -o BatchMode=yes -o ConnectTimeout=15 "$host" bash -s -- \
-  "$remote_root" "$python_bin" "$config" "$out" "$log0" "$status0" \
-  "$log1" "$status1" \
-  "${gpu0_conditions[*]}" "${gpu1_conditions[*]}" "${seeds[*]}" <<'REMOTE'
+case "$action" in
+start)
+  ssh -o BatchMode=yes -o ConnectTimeout=15 "$host" bash -s -- \
+    "$remote_root" "$session" "$remote_out" "$gpu0_conditions" \
+    "$gpu1_conditions" "$seeds" <<'REMOTE'
 set -euo pipefail
 repo_root=$1
-python_bin=$2
-config=$3
-out=$4
-log0=$5
-status0=$6
-log1=$7
-status1=$8
-gpu0_text=$9
-gpu1_text=${10}
-seed_text=${11}
-
-cd "$repo_root"
-if [[ -f .env ]]; then
-  set -a
-  source .env
-  set +a
-fi
-export PYTHONPATH="${PYTHONPATH:-$repo_root/src}"
-export HF_HOME="${HF_HOME:-$repo_root/../fineQComp_hf_cache}"
-export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
-"$python_bin" -c 'import fineqcomp, torch, tqdm; assert torch.cuda.device_count() >= 2'
-
-mkdir -p "$out"
-read -ra gpu0_conditions <<<"$gpu0_text"
-read -ra gpu1_conditions <<<"$gpu1_text"
-read -ra seeds <<<"$seed_text"
-
-launch_worker() {
-  local gpu=$1 log=$2 status=$3
-  shift 3
-  local conditions=("$@")
-  rm -f "$status"
-  nohup bash -c '
-    set +e
-    repo_root=$1
-    python_bin=$2
-    config=$3
-    out=$4
-    log=$5
-    status=$6
-    gpu=$7
-    seed_text=$8
-    shift 8
-    conditions=("$@")
-    read -ra seeds <<<"$seed_text"
-    cd "$repo_root"
-    export PYTHONPATH="${PYTHONPATH:-$repo_root/src}"
-    export HF_HOME="${HF_HOME:-$repo_root/../fineQComp_hf_cache}"
-    export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
-    CUDA_VISIBLE_DEVICES="$gpu" "$python_bin" -m fineqcomp.information_scaling \
-      --config "$config" --out "$out" \
-      --conditions "${conditions[@]}" --seeds "${seeds[@]}" >"$log" 2>&1
-    rc=$?
-    printf "%s\n" "$rc" >"$status"
-    exit "$rc"
-  ' _ "$repo_root" "$python_bin" "$config" "$out" "$log" "$status" "$gpu" \
-    "$seed_text" "${conditions[@]}" </dev/null >/dev/null 2>&1 &
-}
-
-launch_worker 0 "$log0" "$status0" "${gpu0_conditions[@]}"
-launch_worker 1 "$log1" "$status1" "${gpu1_conditions[@]}"
-REMOTE
-
-echo "workers launched; watching status"
-while true; do
-  done0=0; done1=0
-  [[ -f "$status0" ]] && done0=1
-  [[ -f "$status1" ]] && done1=1
-  printf '\rgpu0=%s gpu1=%s' "$([[ $done0 == 1 ]] && echo done || echo running)" \
-    "$([[ $done1 == 1 ]] && echo done || echo running)"
-  [[ $done0 == 1 && $done1 == 1 ]] && break
-  sleep 10
-done
-echo
-
-rc0=$(cat "$status0")
-rc1=$(cat "$status1")
-if [[ "$rc0" != 0 || "$rc1" != 0 ]]; then
-  echo "worker failure: gpu0=$rc0 gpu1=$rc1" >&2
-  echo "===== gpu0 tail =====" >&2
-  tail -n 80 "$log0" >&2 || true
-  echo "===== gpu1 tail =====" >&2
-  tail -n 80 "$log1" >&2 || true
-  exit 1
-fi
-
-echo "aggregating on $host"
-ssh "$host" bash -s -- "$remote_root" "$python_bin" "$out" <<'REMOTE'
-set -euo pipefail
-repo_root=$1
-python_bin=$2
+session=$2
 out=$3
+gpu0_conditions=$4
+gpu1_conditions=$5
+seeds=$6
 cd "$repo_root"
+python_bin=${FINEQCOMP_PYTHON:-$repo_root/../reasoning/.venv/bin/python}
+export PYTHONPATH="${PYTHONPATH:-$repo_root/src}"
+"$python_bin" -c 'import fineqcomp, torch; assert torch.cuda.device_count() >= 2'
+if tmux has-session -t "$session" 2>/dev/null; then
+  echo "session already exists: $session" >&2
+  exit 2
+fi
+mkdir -p "$out/logs"
+rm -f "$out/logs/gpu0.status" "$out/logs/gpu1.status"
+tmux new-session -d -s "$session" -n gpu0 -c "$repo_root" \
+  bash scripts/run_information_scaling_a40.sh worker 0 \
+  "$gpu0_conditions" "$seeds" "$out" "$out/logs/gpu0.status" \
+  "$out/logs/gpu0.log"
+tmux set-option -t "$session" remain-on-exit on
+tmux new-window -d -t "$session:" -n gpu1 -c "$repo_root" \
+  bash scripts/run_information_scaling_a40.sh worker 1 \
+  "$gpu1_conditions" "$seeds" "$out" "$out/logs/gpu1.status" \
+  "$out/logs/gpu1.log"
+echo "started $session"
+REMOTE
+  ;;
+status)
+  ssh -o BatchMode=yes -o ConnectTimeout=15 "$host" bash -s -- \
+    "$session" "$remote_out" <<'REMOTE'
+set -euo pipefail
+session=$1
+out=$2
+tmux list-windows -t "$session" -F '#{window_name} #{pane_dead} #{pane_pid}' 2>/dev/null || true
+for gpu in 0 1; do
+  printf '\n== gpu%s ==\n' "$gpu"
+  [[ -f "$out/logs/gpu${gpu}.status" ]] && printf 'exit: %s\n' "$(<"$out/logs/gpu${gpu}.status")" || printf 'exit: running\n'
+  tail -n 12 "$out/logs/gpu${gpu}.log" 2>/dev/null || true
+done
+REMOTE
+  ;;
+fetch)
+  mkdir -p "$local_out"
+  rsync -avz --exclude '*.pt' --exclude '*.fqcb' \
+    "$host:$remote_out/" "$local_out/"
+  ;;
+aggregate)
+  ssh -o BatchMode=yes -o ConnectTimeout=15 "$host" bash -s -- \
+    "$remote_root" "$remote_out" <<'REMOTE'
+set -euo pipefail
+repo_root=$1
+out=$2
+cd "$repo_root"
+python_bin=${FINEQCOMP_PYTHON:-$repo_root/../reasoning/.venv/bin/python}
 export PYTHONPATH="${PYTHONPATH:-$repo_root/src}"
 "$python_bin" -m fineqcomp.information_scaling --out "$out" --aggregate
 REMOTE
-
-echo "done"
-echo "  $out/prequential.csv"
-echo "  $out/adapter_information.csv"
-echo "  $out/source_bits_vs_prequential_bits.png"
-echo "  $out/source_bits_vs_adapter_bits.png"
+  ;;
+*)
+  echo "usage: $0 start|status|aggregate|fetch [pilot|repeat|full]" >&2
+  exit 2
+  ;;
+esac

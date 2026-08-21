@@ -3,7 +3,9 @@ version: 1
 # Keep the architecture fixed and vary only task information.  The 16 labels
 # contribute exactly four independent source bits whenever a new random mapping
 # must be specified.
-model: mistral_7b_base
+# The 1.5B base keeps the calibration short. Passing this stage buys a 7B
+# natural-task pilot; it does not support a 7B claim by itself.
+model: qwen25_1_5b_base
 adapter: all_linear_r16
 seeds: [11, 22, 33]
 
@@ -13,7 +15,7 @@ labels:
 codebook_dir: codebooks
 items_per_family: 16
 repeats_per_mapping: 4
-prefix_mappings: [16, 32, 64, 128, 256, 512]
+prefix_mappings: [32, 128, 512]
 
 # random: every mapping receives a fresh random label -> 4*N source bits.
 # structured_pK: K random 16-item prototype tables are reused across families
@@ -44,4 +46,21 @@ training:
 
 evaluation_batch_size: 128
 retention_target: 0.90
-adapter_widths: [1, 2, 3, 4, 8]
+
+# One uniform code family spans the crossing. Below one bit it keeps a fixed
+# fraction of paired rank directions at one bit; above one bit it gives a fixed
+# fraction of rows two bits. Every rate is the size of a decoded file.
+adapter_codecs:
+  - {key: sub0_0625, bits: 0, blend: 0.0625}
+  - {key: sub0_125, bits: 0, blend: 0.125}
+  - {key: sub0_250, bits: 0, blend: 0.25}
+  - {key: sub0_375, bits: 0, blend: 0.375}
+  - {key: sub0_500, bits: 0, blend: 0.5}
+  - {key: sub0_625, bits: 0, blend: 0.625}
+  - {key: sub0_750, bits: 0, blend: 0.75}
+  - {key: sub0_875, bits: 0, blend: 0.875}
+  - {key: binary, bits: 1}
+  - {key: blend1_25, bits: 1, blend: 0.25}
+  - {key: blend1_50, bits: 1, blend: 0.5}
+  - {key: blend1_75, bits: 1, blend: 0.75}
+  - {key: uniform2, bits: 2}

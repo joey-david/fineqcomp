@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from collections import Counter
+from pathlib import Path
 
 import pytest
+import yaml
 
 from fineqcomp.campaign import (
     expand_campaign,
@@ -154,3 +156,19 @@ def test_run_id_does_not_repeat_a_study_named_after_its_dataset():
     raw = load_campaign("configs/compressibility.yaml")
     for run in expand_campaign(raw):
         assert run.run_id.count(run.study.replace("_", "-")) == 1
+
+
+def test_information_pilot_uses_the_small_shared_model_and_dense_curve():
+    campaign = load_campaign("configs/campaign.yaml")
+    info = yaml.safe_load(Path("configs/information_scaling.yaml").read_text())
+
+    assert info["model"] == "qwen25_1_5b_base"
+    assert info["model"] in campaign["models"]
+    rates = {
+        (int(codec["bits"]), float(codec.get("blend", 0.0)))
+        for codec in info["adapter_codecs"]
+    }
+    assert (0, 0.0625) in rates
+    assert (1, 0.0) in rates
+    assert (1, 0.75) in rates
+    assert (2, 0.0) in rates

@@ -70,6 +70,12 @@ codecs:
     optimize_steps: 100
 
 models:
+  qwen25_1_5b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-1.5B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+
   mistral_7b_base:
     name: mistralai/Mistral-7B-v0.1
     revision: 27d67f1b5f57dc0953326b2601d68371d40ea8da

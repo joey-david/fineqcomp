@@ -12,8 +12,9 @@ at most 64*K independent task bits even as the number of examples grows.
 Dataset compressibility is measured with a conditional prequential code: the
 pretrained model is shared side information, the first block is coded by the
 base model, and each later block is coded by a fresh LoRA trained only on the
-preceding prefix.  Adapter complexity is measured independently by the exact
-serialized size of reloadable adaptive-MDL adapter files at a rate sweep.
+preceding prefix. Adapter complexity is measured independently by the exact
+serialized size of reloadable uniform-code adapter files over a dense rate
+sweep.
 """
 
 from __future__ import annotations
