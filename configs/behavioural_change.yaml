@@ -1,0 +1,518 @@
+version: 1
+
+# Are adapter bits set by the size of the behavioural change, or by the data?
+#
+# Experiment 2 cannot say. Its R*(0.90) asks each arm for ninety percent of its
+# own gain, and those targets rise with unique rows (0.479 to 0.582 bits per
+# token), so "more informative data" and "larger behavioural change" are
+# collinear. Both fit the same fifteen runs: R2 0.733 against the target,
+# 0.706 against log rows. See results/adapter_bits_follow_behavioural_change.
+#
+# This grid breaks the collinearity by crossing two levers.
+#
+#   response_transform      moves behaviour at fixed information. The problems,
+#                           the answers and the rows are identical; only how the
+#                           response is written changes, and the final answer
+#                           line survives every rewrite so scoring is unaffected.
+#
+#   distinct_source_problems  moves information at fixed behaviour target. 8,000
+#                           rows drawn from 400 seed problems or from all of
+#                           them (about 5,620).
+#
+# Five transforms x two diversity levels x three seeds = 30 runs, all
+# compute-matched at 2,000 updates and 32,000 samples seen.
+#
+# Pre-registered predictions are in the results folder named above. In short:
+# every arm should fall on one curve of file size against achieved behavioural
+# change; R* should rise across transforms and stay flat across diversity.
+#
+# The ladder is denser than the campaign's between a third and seven eighths of
+# a bit, because that is where the crossings fall: on Experiment 2 the arms
+# reached 0.30 bits per token at 16.7 Mbit and 0.50 at 27 to 32 Mbit, which is
+# 0.40 to 0.77 bits per value.
+
+information_rows: 256
+evaluation_batch_size: 32
+
+codecs:
+  uniform2:
+    method: uniform
+    bits: 2
+  blend1_50:
+    method: uniform
+    bits: 1
+    blend: 0.5
+  binary:
+    method: uniform
+    bits: 1
+  sub0_14_16:
+    method: uniform
+    bits: 0
+    blend: 0.875
+    score_task: false
+  sub0_13_16:
+    method: uniform
+    bits: 0
+    blend: 0.8125
+    score_task: false
+  sub0_12_16:
+    method: uniform
+    bits: 0
+    blend: 0.75
+    score_task: false
+  sub0_11_16:
+    method: uniform
+    bits: 0
+    blend: 0.6875
+    score_task: false
+  sub0_10_16:
+    method: uniform
+    bits: 0
+    blend: 0.625
+    score_task: false
+  sub0_09_16:
+    method: uniform
+    bits: 0
+    blend: 0.5625
+    score_task: false
+  sub0_08_16:
+    method: uniform
+    bits: 0
+    blend: 0.5
+  sub0_07_16:
+    method: uniform
+    bits: 0
+    blend: 0.4375
+    score_task: false
+  sub0_06_16:
+    method: uniform
+    bits: 0
+    blend: 0.375
+    score_task: false
+  sub0_05_16:
+    method: uniform
+    bits: 0
+    blend: 0.3125
+    score_task: false
+  sub0_04_16:
+    method: uniform
+    bits: 0
+    blend: 0.25
+    score_task: false
+  sub0_03_16:
+    method: uniform
+    bits: 0
+    blend: 0.1875
+    score_task: false
+  sub0_02_16:
+    method: uniform
+    bits: 0
+    blend: 0.125
+    score_task: false
+  sub0_01_16:
+    method: uniform
+    bits: 0
+    blend: 0.0625
+    score_task: false
+
+models:
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+
+  # Same placement at a quarter and four times the rank, for the information
+  # study's question of whether R* is task content or the cost of naming a
+  # point in weight space. No study in this file uses them.
+  all_linear_r4:
+    method: full_lora
+    rank: 4
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 8
+    dropout: 0.0
+
+  all_linear_r64:
+    method: full_lora
+    rank: 64
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 128
+    dropout: 0.0
+
+training:
+  arm_e_16ep:
+    epochs: 16
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+  arm_a_8ep:
+    epochs: 8
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+  arm_b_4ep:
+    epochs: 4
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+  arm_c_2ep:
+    epochs: 2
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+  arm_d_1ep:
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+
+datasets:
+  behav_plain_broad:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 8000
+    response_transform: plain
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  behav_plain_narrow:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 8000
+    response_transform: plain
+    distinct_source_problems: 400
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  behav_preamble_broad:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 8000
+    response_transform: preamble
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  behav_preamble_narrow:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 8000
+    response_transform: preamble
+    distinct_source_problems: 400
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  behav_numbered_broad:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 8000
+    response_transform: numbered
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  behav_numbered_narrow:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 8000
+    response_transform: numbered
+    distinct_source_problems: 400
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  behav_shouted_broad:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 8000
+    response_transform: shouted
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  behav_shouted_narrow:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 8000
+    response_transform: shouted
+    distinct_source_problems: 400
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  behav_symbolic_broad:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 8000
+    response_transform: symbolic
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  behav_symbolic_narrow:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 8000
+    response_transform: symbolic
+    distinct_source_problems: 400
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.80
+    minimum_validation_nll_gain_bits_per_token: 0.02
+
+studies:
+  plain_broad:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [behav_plain_broad]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
+  plain_narrow:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [behav_plain_narrow]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
+  preamble_broad:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [behav_preamble_broad]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
+  preamble_narrow:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [behav_preamble_narrow]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
+  numbered_broad:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [behav_numbered_broad]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
+  numbered_narrow:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [behav_numbered_narrow]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
+  shouted_broad:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [behav_shouted_broad]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
+  shouted_narrow:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [behav_shouted_narrow]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
+  symbolic_broad:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [behav_symbolic_broad]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
+  symbolic_narrow:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [behav_symbolic_narrow]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
