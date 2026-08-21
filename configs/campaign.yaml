@@ -70,12 +70,6 @@ codecs:
     optimize_steps: 100
 
 models:
-  qwen25_1_5b_base:
-    name: Qwen/Qwen2.5-1.5B
-    revision: 8faed761d45a263340a0528343f099c05c9a4323
-    backbone: nf4
-    chat: false
-
   mistral_7b_base:
     name: mistralai/Mistral-7B-v0.1
     revision: 27d67f1b5f57dc0953326b2601d68371d40ea8da

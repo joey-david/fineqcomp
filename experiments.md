@@ -304,8 +304,8 @@ the three-arm repeat. Final claims still need all seeds and uncertainty.
 
 | stage | unit of work | expected time per run | two-GPU wall time |
 |---|---|---:|---:|
-| synthetic pilot | one condition, seed 11, three prefixes | 14 min | 14 min for two conditions |
-| synthetic repeat | one condition and seed | 14 min | 28 min for four runs |
+| synthetic pilot | one condition, seed 11, three prefixes | 22 min | 22 min for two conditions |
+| synthetic repeat | one condition and seed | 22 min | 44 min for four runs |
 | NLL screen, XSum | one model, 125 updates | 12 min | 24 min for both models plus load |
 | NLL screen, Magicoder | one model, 125 updates | 35 min | 70 min for both models plus load |
 | 500-update extension, XSum | one model | 30 min | 30 min for two models |
