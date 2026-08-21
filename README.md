@@ -65,21 +65,31 @@ from the effect of rate.
 
 ## Dataset information scaling
 
-The controlled task holds prompts, example counts, model, optimizer, and the 16
-answer tokens fixed. `random` assigns a fresh random label to every mapping (4
-independent source bits each). `structured_pK` samples only `K` 16-item
-prototype tables and reuses them, so task information saturates at `64*K` bits
-while dataset size keeps growing.
+The controlled task holds prompts, rows, model, optimizer, optimizer updates,
+and the 16 answer tokens fixed, and changes only the labels. `constant` gives
+every mapping the same label and is the zero-information anchor. `pK` samples
+`K` 16-item prototype tables and reuses them, so task information saturates at
+`64*K` bits. `random` draws a fresh label per mapping. Source bits span 4 to
+2,048 across the sweep.
 
 Dataset compressibility uses a conditional prequential code: the first block is
-encoded by the shared base model, and every later block by a fresh LoRA trained
-only on the preceding prefix. For each trained prefix we also run a dense
-decoded-file rate sweep and report the smallest adapter file retaining 90% of
-the best decoded held-out gain.
+encoded by the shared base model, every later block by an adapter trained only
+on the preceding prefix, and the coding distribution is a pre-registered
+mixture with uniform weight `1/16` so a confidently wrong model cannot buy an
+unbounded code length. Adapter complexity is a dense decoded-file rate sweep
+anchored at an empty adapter, reported as the smallest file that still
+reproduces 90% of the taught map. R* is undefined below an absolute learning
+gate rather than reported as a small number.
+
+Five gates are recorded before the run, including a built-in null control: at
+64 mappings `p4`, `p8`, `p16` and `random` are the same task, so their R* must
+agree, and that spread is the noise floor for any slope. See Experiment 7 in
+`experiments.md`.
 
 ```bash
-sbatch --array=0-1%2 --export=ALL,MODE=pilot scripts/jean_zay_information.sbatch
-sbatch --qos=qos_gpu_h100-t3 --array=0-11%12 --export=ALL,MODE=full scripts/jean_zay_information.sbatch
+sbatch --array=0-1%2 --export=ALL,MODE=smoke scripts/jean_zay_information.sbatch
+sbatch --array=0-11%12 --export=ALL,MODE=full scripts/jean_zay_information.sbatch
+python -m fineqcomp.information_scaling --out runs_information_scaling/full --aggregate
 ```
 
 ## Full campaign

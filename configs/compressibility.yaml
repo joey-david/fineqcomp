@@ -119,6 +119,25 @@ adapters:
     alpha: 32
     dropout: 0.0
 
+  # Same placement at a quarter and four times the rank, for the information
+  # study's question of whether R* is task content or the cost of naming a
+  # point in weight space. No study in this file uses them.
+  all_linear_r4:
+    method: full_lora
+    rank: 4
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 8
+    dropout: 0.0
+
+  all_linear_r64:
+    method: full_lora
+    rank: 64
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 128
+    dropout: 0.0
+
 training:
   arm_e_16ep:
     epochs: 16
