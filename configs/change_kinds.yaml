@@ -1,0 +1,273 @@
+version: 1
+
+# A fourth kind of functional change, to test whether the curve is shared.
+#
+# The behavioural-change grid varies output style: five surface rewrites of a
+# math response. Every one of them is a shallow change and probably lives in
+# the last few layers. If adapter bits track the size of a functional change in
+# general, then arms whose change came from somewhere else entirely must fall
+# on the same curve.
+#
+#   code       Magicoder instruction-following. A domain the base handles
+#              differently from math; the change is capability, not wording.
+#   summary    XSum abstractive summarisation. A different output length
+#              regime and a different task altogether.
+#
+# Matched to the other grids on everything that is not the kind: 8,000 rows,
+# 2,000 optimizer updates, 32,000 samples seen, rank-16 all-linear LoRA, the
+# same code ladder, three seeds. Sequence length stays at the campaign's 1,024
+# for all arms including code, which truncates long programs; that costs some
+# code quality and keeps the protocol identical, which is what matters here.
+#
+# Held-out bits saved is kind-agnostic by construction -- it is the change in
+# the model's predictive distribution, whatever caused it -- so these arms and
+# the style arms are directly comparable on the same axis.
+
+information_rows: 256
+evaluation_batch_size: 32
+
+codecs:
+  uniform2:
+    method: uniform
+    bits: 2
+  blend1_50:
+    method: uniform
+    bits: 1
+    blend: 0.5
+  binary:
+    method: uniform
+    bits: 1
+  sub0_14_16:
+    method: uniform
+    bits: 0
+    blend: 0.875
+    score_task: false
+  sub0_13_16:
+    method: uniform
+    bits: 0
+    blend: 0.8125
+    score_task: false
+  sub0_12_16:
+    method: uniform
+    bits: 0
+    blend: 0.75
+    score_task: false
+  sub0_11_16:
+    method: uniform
+    bits: 0
+    blend: 0.6875
+    score_task: false
+  sub0_10_16:
+    method: uniform
+    bits: 0
+    blend: 0.625
+    score_task: false
+  sub0_09_16:
+    method: uniform
+    bits: 0
+    blend: 0.5625
+    score_task: false
+  sub0_08_16:
+    method: uniform
+    bits: 0
+    blend: 0.5
+  sub0_07_16:
+    method: uniform
+    bits: 0
+    blend: 0.4375
+    score_task: false
+  sub0_06_16:
+    method: uniform
+    bits: 0
+    blend: 0.375
+    score_task: false
+  sub0_05_16:
+    method: uniform
+    bits: 0
+    blend: 0.3125
+    score_task: false
+  sub0_04_16:
+    method: uniform
+    bits: 0
+    blend: 0.25
+    score_task: false
+  sub0_03_16:
+    method: uniform
+    bits: 0
+    blend: 0.1875
+    score_task: false
+  sub0_02_16:
+    method: uniform
+    bits: 0
+    blend: 0.125
+    score_task: false
+  sub0_01_16:
+    method: uniform
+    bits: 0
+    blend: 0.0625
+    score_task: false
+
+models:
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+
+  # Same placement at a quarter and four times the rank, for the information
+  # study's question of whether R* is task content or the cost of naming a
+  # point in weight space. No study in this file uses them.
+  all_linear_r4:
+    method: full_lora
+    rank: 4
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 8
+    dropout: 0.0
+
+  all_linear_r64:
+    method: full_lora
+    rank: 64
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 128
+    dropout: 0.0
+
+training:
+  arm_e_16ep:
+    epochs: 16
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+  arm_a_8ep:
+    epochs: 8
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+  arm_b_4ep:
+    epochs: 4
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+  arm_c_2ep:
+    epochs: 2
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+  arm_d_1ep:
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+
+datasets:
+  kind_code:
+    task_type: generative
+    train_source:
+      path: ise-uiuc/Magicoder-Evol-Instruct-110K
+      name: default
+      revision: b0079beaa0361d82412520b873715bee59cc7dd4
+      split: train
+      converter: magicoder
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 164
+    evaluations:
+      - key: humaneval
+        path: openai/openai_humaneval
+        name: openai_humaneval
+        revision: 7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544
+        split: test
+        converter: humaneval
+    screening_metric: pass_at_1
+    maximum_baseline_score: 0.75
+    minimum_validation_nll_gain_bits_per_token: 0.02
+
+  kind_summary:
+    task_type: generative
+    screening_binomial: false
+    train_source:
+      path: EdinburghNLP/xsum
+      name: default
+      revision: 7d4d486c2f8ef850b1a11aead99b894ff3dd7da9
+      split: train
+      converter: xsum
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 500
+    evaluations:
+      - key: xsum
+        path: EdinburghNLP/xsum
+        name: default
+        revision: 7d4d486c2f8ef850b1a11aead99b894ff3dd7da9
+        split: test
+        converter: xsum
+    screening_metric: rouge_l
+    maximum_baseline_score: 0.45
+    minimum_validation_nll_gain_bits_per_token: 0.02
+
+studies:
+  kind_code:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [kind_code]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
+  kind_summary:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [kind_summary]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: arm_b_4ep
