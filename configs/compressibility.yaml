@@ -307,39 +307,44 @@ datasets:
     maximum_baseline_score: 0.80
     minimum_validation_nll_gain_bits_per_token: 0.02
 
+# Six seeds, not three. arm_a and arm_b sit one doubling apart and inverted at
+# three seeds (0.785 against 0.756, with per-seed ranges that overlap), so the
+# ordering of adjacent arms was never resolved. Doubling the seeds halves the
+# standard error on each arm mean; the existing runs keep their identities and
+# only the three new seeds have to be trained.
 studies:
   arm_e:
     kind: natural
     models: [mistral_7b_base]
     datasets: [arm_e]
-    seeds: [11, 22, 33]
+    seeds: [11, 22, 33, 44, 55, 66]
     adapters: [all_linear_r16]
     training: arm_e_16ep
   arm_a:
     kind: natural
     models: [mistral_7b_base]
     datasets: [arm_a]
-    seeds: [11, 22, 33]
+    seeds: [11, 22, 33, 44, 55, 66]
     adapters: [all_linear_r16]
     training: arm_a_8ep
   arm_b:
     kind: natural
     models: [mistral_7b_base]
     datasets: [arm_b]
-    seeds: [11, 22, 33]
+    seeds: [11, 22, 33, 44, 55, 66]
     adapters: [all_linear_r16]
     training: arm_b_4ep
   arm_c:
     kind: natural
     models: [mistral_7b_base]
     datasets: [arm_c]
-    seeds: [11, 22, 33]
+    seeds: [11, 22, 33, 44, 55, 66]
     adapters: [all_linear_r16]
     training: arm_c_2ep
   arm_d:
     kind: natural
     models: [mistral_7b_base]
     datasets: [arm_d]
-    seeds: [11, 22, 33]
+    seeds: [11, 22, 33, 44, 55, 66]
     adapters: [all_linear_r16]
     training: arm_d_1ep

@@ -383,12 +383,13 @@ def summarize_rate_curve(
     target: float,
     gate: float,
 ) -> dict[str, Any]:
-    """R* against the raw adapter's own gain, with the learning gate applied.
+    """R* against the best gain the code family reaches, with the gate applied.
 
-    The reference is the raw adapter, not the best point on the curve. Coded
-    adapters can beat the raw one when quantization strips overfit, and that is
-    a finding worth keeping visible rather than a nuisance to normalise away;
-    `best_decoded_bits_saved_per_mapping` records it.
+    The reference is the frontier rather than the raw adapter, because a coded
+    adapter can beat the raw one when quantization strips overfit, and dividing
+    by the raw gain then reports retention above one. `raw_retained_gain`
+    keeps that overfit visible as a number instead of as a broken ratio, which
+    is the same convention `rstar.from_run` uses on the natural campaign.
 
     Below the gate there is no gain to retain and every rung retains ninety
     percent of nothing, so R* is reported as undefined with its reason.
@@ -399,9 +400,7 @@ def summarize_rate_curve(
         {
             **point,
             "retained_gain": (
-                float(point["bits_saved_per_mapping"]) / raw_saved
-                if raw_saved > 0
-                else None
+                float(point["bits_saved_per_mapping"]) / best if best > 0 else None
             ),
         }
         for point in points
@@ -418,14 +417,14 @@ def summarize_rate_curve(
             enriched,
             target=target,
             value_key="bits_saved_per_mapping",
-            reference=raw_saved,
+            reference=best,
         )
         by_file = r_star(
             enriched,
             target=target,
             rate_key="description_bits",
             value_key="bits_saved_per_mapping",
-            reference=raw_saved,
+            reference=best,
         )
     eligible = [
         point
@@ -439,11 +438,13 @@ def summarize_rate_curve(
         else None
     )
     return {
-        "reference": "raw_adapter",
+        "reference": "best_decoded_frontier",
         "learning_gate_bits_per_mapping": gate,
         "learning_gate_passed": raw_saved >= gate,
         "raw_bits_saved_per_mapping": raw_saved,
         "best_decoded_bits_saved_per_mapping": best,
+        # Below one means coding beat the raw adapter: the size of the overfit.
+        "raw_retained_gain": raw_saved / best if best > 0 else None,
         "points": enriched,
         "r_star_effective_bits_per_value": by_rate,
         "r_star_description_bits": by_file,

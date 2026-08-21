@@ -158,15 +158,17 @@ def test_r_star_is_undefined_below_the_learning_gate():
     assert summary["selected_codec"] is None
 
 
-def test_the_reference_is_the_raw_adapter_and_overshoot_stays_visible():
+def test_overfit_is_reported_as_a_number_not_as_retention_above_one():
     summary = summarize_rate_curve(_curve_points(), raw_saved=1.0, target=0.9, gate=0.5)
 
-    assert summary["reference"] == "raw_adapter"
+    assert summary["reference"] == "best_decoded_frontier"
     assert summary["raw_bits_saved_per_mapping"] == 1.0
-    # Quantization removing overfit is a finding, not a nuisance to normalise
-    # away: retention above one is recorded rather than clipped.
-    assert summary["points"][1]["retained_gain"] == pytest.approx(1.05)
     assert summary["best_decoded_bits_saved_per_mapping"] == pytest.approx(1.05)
+    # Coding beat the raw adapter by 5%. Against the raw gain that reads as
+    # 105% retention, which is not a fraction of anything; against the frontier
+    # every point is bounded by one and the overfit is its own number.
+    assert max(p["retained_gain"] for p in summary["points"]) == pytest.approx(1.0)
+    assert summary["raw_retained_gain"] == pytest.approx(1 / 1.05)
     assert summary["r_star_effective_bits_per_value"]["r_star"] is not None
 
 
