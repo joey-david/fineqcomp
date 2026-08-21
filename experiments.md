@@ -279,14 +279,17 @@ continue to grow with its genuinely new source bits.
 ### Run
 
 ```bash
-# 2xA40 sanity check: random vs 64-bit structured task, seed 11.
-bash scripts/run_information_scaling_a40.sh start pilot
+# Two-cell H100 check: random vs 64-bit structured task, seed 11.
+sbatch --array=0-1%2 --export=ALL,MODE=pilot \
+  scripts/jean_zay_information.sbatch
 
 # Repeat only the two endpoint conditions on seeds 22 and 33.
-bash scripts/run_information_scaling_a40.sh start repeat
+sbatch --array=0-3%4 --export=ALL,MODE=repeat \
+  scripts/jean_zay_information.sbatch
 
 # Expand to four information levels only after checking the two short stages.
-bash scripts/run_information_scaling_a40.sh start full
+sbatch --array=0-11%12 --export=ALL,MODE=full \
+  scripts/jean_zay_information.sbatch
 ```
 
 Configuration: `configs/information_scaling.yaml`.
@@ -302,23 +305,25 @@ point estimate improves by at least 10% of the available headroom. Its interval
 need not exclude zero at the screen. A positive endpoint slope is enough to buy
 the three-arm repeat. Final claims still need all seeds and uncertainty.
 
-| stage | unit of work | expected time per run | two-GPU wall time |
+| stage | unit of work | expected time per H100 | parallel wall time |
 |---|---|---:|---:|
-| synthetic pilot | one condition, seed 11, three prefixes | 22 min | 22 min for two conditions |
-| synthetic repeat | one condition and seed | 22 min | 44 min for four runs |
-| NLL screen, XSum | one model, 125 updates | 12 min | 24 min for both models plus load |
-| NLL screen, Magicoder | one model, 125 updates | 35 min | 70 min for both models plus load |
+| synthetic pilot | one condition, seed 11, three prefixes | 32 min | 32 min for two cells |
+| synthetic repeat | one condition and seed | 32 min | 32 min for four cells |
+| synthetic full | one condition and seed | 32 min | 32 min for twelve cells |
+| NLL screen, XSum | one model, 125 updates | 12 min | 12 min for both models |
+| NLL screen, Magicoder | one model, 125 updates | 35 min | 35 min for both models |
 | 500-update extension, XSum | one model | 30 min | 30 min for two models |
 | 500-update extension, Magicoder | one model | 1 h 45 min | 1 h 45 min for two models |
-| natural endpoint, math | one arm, 2,000 updates and dense curve | 1 h 30 min | 1 h 30 min for two arms |
-| natural endpoint, XSum | one arm, 2,000 updates and dense curve | 1 h 45 min | 1 h 45 min for two arms |
-| natural endpoint, Magicoder | one arm, 2,000 updates and dense curve | 4 h | 4 h for two arms |
+| natural endpoint, math | one arm, 2,000 updates and dense curve | 1 h 30 min | 1 h 30 min for selected arms |
+| natural endpoint, XSum | one arm, 2,000 updates and dense curve | 1 h 45 min | 1 h 45 min for selected arms |
+| natural endpoint, Magicoder | one arm, 2,000 updates and dense curve | 4 h | 4 h for selected arms |
 
-These are launch budgets, not measured outcomes. The math estimate uses the
-saved 53-minute Mistral training time plus two task anchors and the held-out
-rate sweep. Long-context code gets the larger bound. Each stage records its
-actual load, train, codec, and task time so the next estimate can replace these
-budgets.
+These are launch budgets, not measured outcomes. Jean-Zay runs one cell on each
+H100. The synthetic estimate scales the saved 53-minute, 2,000-update Mistral
+training time to 672 short-sequence updates, then allows 14 minutes for model
+load and the dense decoded-file sweep. Its batch limit is one hour. Long-context
+code gets the larger bound. Each stage records its actual load, train, codec,
+and task time so the next estimate can replace these budgets.
 
 Natural arms use exact 32,000-example draw streams at 2k, 4k, 8k, 16k, and 32k
 distinct rows. Within a data seed the sets are nested; the stop, rate-selection,
