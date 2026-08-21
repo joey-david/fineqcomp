@@ -230,6 +230,83 @@ def _convert_multiple_choice(
     return converted
 
 
+ANSWER_MARKER = "The answer is:"
+
+
+def _split_tail(response: str) -> tuple[str, str]:
+    """Body and final answer line. Every MetaMathQA response carries one."""
+    cut = response.rfind(ANSWER_MARKER)
+    if cut < 0:
+        return response, ""
+    return response[:cut], response[cut:]
+
+
+def _plain(body: str) -> str:
+    return body
+
+
+def _preamble(body: str) -> str:
+    return "Let us work through this carefully, one step at a time.\n" + body
+
+
+def _numbered(body: str) -> str:
+    lines = [line for line in body.split("\n") if line.strip()]
+    return "\n".join(f"({index + 1}) {line}" for index, line in enumerate(lines)) + "\n"
+
+
+def _shouted(body: str) -> str:
+    return body.upper()
+
+
+def _symbolic(body: str) -> str:
+    swaps = (
+        (" is ", " ≡ "), (" the ", " ‹the› "), (" of ", " ∘ "),
+        (" and ", " ∧ "), (" so ", " ⇒ "), (" we ", " ⊢ "),
+    )
+    for source, target in swaps:
+        body = body.replace(source, target)
+    return body
+
+
+# Deterministic, content-preserving rewrites of the response body. The answer
+# line is never touched, so exact-match scoring is unaffected and the task
+# information -- which problems, which answers -- is identical across all of
+# them. Only how far the target sits from what the base model would naturally
+# write changes, which is the behavioural-change lever. Their order here is the
+# expected order of that distance; the run measures it rather than assuming it.
+RESPONSE_TRANSFORMS = {
+    "plain": _plain,
+    "preamble": _preamble,
+    "numbered": _numbered,
+    "shouted": _shouted,
+    "symbolic": _symbolic,
+}
+
+
+def transform_responses(rows: list[Example], name: str) -> list[Example]:
+    try:
+        rewrite = RESPONSE_TRANSFORMS[name]
+    except KeyError:
+        raise ValueError(
+            f"unknown response transform {name!r};"
+            f" expected one of {sorted(RESPONSE_TRANSFORMS)}"
+        ) from None
+    rewritten = []
+    for row in rows:
+        body, tail = _split_tail(row.response)
+        if not tail:
+            raise ValueError(f"{row.example_id}: no {ANSWER_MARKER!r} to preserve")
+        rewritten.append(
+            Example(
+                example_id=row.example_id,
+                prompt=row.prompt,
+                response=rewrite(body) + tail,
+                metadata={**row.metadata, "response_transform": name},
+            )
+        )
+    return rewritten
+
+
 def limit_source_problems(
     rows: Any, field: str, groups: int, needed: int | None
 ) -> tuple[Any, int]:
@@ -313,13 +390,22 @@ def _load_natural_from_hub(
             if test_rows is not None and int(test_rows) < len(rows):
                 rows = rows.shuffle(seed=0).select(range(int(test_rows)))
             tests.extend(_convert_natural(rows, "test", evaluation["converter"]))
-        return {
+        splits = {
             "train": _convert_natural(train_rows, "train", source["converter"]),
             "calibration": _convert_natural(
                 calibration_rows, "calibration", source["converter"]
             ),
             "test": tests,
         }
+        # The behavioural-change lever rewrites what the adapter is taught to
+        # emit, on both the training rows and the held-out rows it is scored
+        # on. Test prompts are untouched: the model's own output changes, and
+        # the answer line survives every rewrite so the scorer still finds it.
+        transform = spec.get("response_transform")
+        if transform is not None and str(transform) != "plain":
+            for split in ("train", "calibration"):
+                splits[split] = transform_responses(splits[split], str(transform))
+        return splits
     dataset = load_dataset(spec["path"], spec.get("name"), revision=spec["revision"])
     if dataset_key == "gsm8k":
         shuffled = dataset[spec["train_split"]].shuffle(seed=seed)

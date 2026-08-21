@@ -95,6 +95,10 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                         # the first's adapter. The key is added only when a
                         # dataset sets it, so every identity minted before the
                         # lever existed stays exactly what it was.
+                        if dataset_spec.get("response_transform") is not None:
+                            payload["response_transform"] = str(
+                                dataset_spec["response_transform"]
+                            )
                         if dataset_spec.get("distinct_source_problems") is not None:
                             payload["distinct_source_problems"] = int(
                                 dataset_spec["distinct_source_problems"]
