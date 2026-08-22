@@ -361,6 +361,7 @@ def taylor_diagnostic(
     batch_size: int,
     label_span: str = "all",
     answer_marker: str | None = None,
+    hessian_batch_size: int = 1,
 ) -> dict[str, Any]:
     """Does a second-order expansion explain the damage a codec actually does?
 
@@ -373,13 +374,19 @@ def taylor_diagnostic(
     Everything is converted to bits per token, the units the rate-distortion
     curves already use, so a Taylor prediction and a measured damage can be put
     on the same axis.
+
+    `hessian_batch_size` is separate because double backward under the unfused
+    attention kernel keeps every attention matrix of every layer alive twice
+    over, which runs an 80 GB card out of memory at the batch size training
+    used. The loss is a token-weighted mean, so the split makes no difference
+    to any number reported here.
     """
     names = [name for name, _ in _trainable(session.model)]
     missing = sorted(set(names) - set(adapter))
     if missing:
         raise KeyError(f"adapter is missing trainable tensors: {missing[:3]}")
-    loader = _loader(session, rows, model_spec, max_length, batch_size,
-                     label_span, answer_marker)
+    loader = _loader(session, rows, model_spec, max_length,
+                     max(1, hessian_batch_size), label_span, answer_marker)
 
     def loss_bits() -> float:
         return float(
@@ -498,6 +505,7 @@ def profile_run(
     label_span: str = "all",
     answer_marker: str | None = None,
     taylor_codecs: Iterable[str] = ("uniform2",),
+    hessian_batch_size: int = 1,
 ) -> dict[str, Any]:
     """The selected measurements for one finished run.
 
@@ -527,6 +535,7 @@ def profile_run(
         record["distribution"] = distribution_shift(
             session, calibration, base_state, adapter, model_spec,
             max_length, batch_size, label_span, answer_marker,
+            hessian_batch_size,
         )
     if "taylor" in wanted:
         deltas = {}
@@ -545,6 +554,7 @@ def profile_run(
         record["taylor"] = taylor_diagnostic(
             session, calibration, model_spec, adapter, deltas,
             max_length, batch_size, label_span, answer_marker,
+            hessian_batch_size,
         )
     if "allocation" in wanted:
         record["allocation"] = allocation_sweep(

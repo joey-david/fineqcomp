@@ -262,6 +262,7 @@ def _layer_profile(args: argparse.Namespace) -> int:
                     measures=args.measures,
                     answer_marker=str(marker) if marker else None,
                     taylor_codecs=args.taylor_codecs,
+                    hessian_batch_size=args.hessian_batch_size,
                 )
             finally:
                 session.unload()
@@ -435,6 +436,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--taylor-codecs", nargs="+", default=["uniform2"],
         help="codec keys whose coded containers give the perturbations to expand"
         " around the trained adapter",
+    )
+    profile.add_argument(
+        "--hessian-batch-size", type=int, default=1,
+        help="batch size for the gradient and Hessian passes; double backward"
+        " needs far less than training did",
     )
     profile.add_argument("--force", action="store_true")
     profile.set_defaults(func=_layer_profile)
