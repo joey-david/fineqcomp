@@ -95,6 +95,28 @@ math-level bits saved, the cheapest adapter measured. Across all 24 arms R\*
 correlates −0.31 with held-out bits saved and +0.25 with the base model's own
 bits per token on the corpus. Neither measure predicts the budget.
 
+**The size of that gap depends on where you read the curve; its direction does
+not.** R\* is the rate retaining 90% of each arm's *own* gain, and code's gain
+is 0.159 bits per token against 0.58 for math, so a fixed fraction asks the
+small-gain arms for a much smaller absolute improvement. Rescoring the same
+rungs at other criteria:
+
+| criterion | math range | code | hh-rlhf | ratio to math mean |
+|---|---|---:|---:|---:|
+| 50% of own gain | 0.180–0.340 | 0.296 | 0.347 | 1.11× / 1.30× |
+| 70% | 0.293–0.497 | 0.524 | 0.542 | 1.28× / 1.32× |
+| 90% | 0.494–0.893 | 0.905 | 0.936 | 1.24× / 1.29× |
+| 95% | 0.605–1.315 | 1.095 | 1.145 | 1.17× / 1.22× |
+
+Stable, so the corpus effect is not manufactured by the 0.90 choice. But it is
+a 1.1 to 1.3× effect against the math *mean*, and at every criterion code and
+dialogue overlap the top of the math range rather than sitting outside it.
+"Code needs the largest adapter in the campaign" is true at 90% by one per cent
+over the most expensive math arm; "code costs about a quarter more than a
+typical math arm, at any criterion" is the claim the data supports.
+
+![criterion dependence](criterion_dependence.png)
+
 Doubling Magicoder's sequence length changes nothing (0.904 to 0.906), so the
 code residual is not an artefact of truncating solutions, which was the
 standing suspicion.
@@ -162,3 +184,5 @@ the next thing that would make any of it a claim.
 | `corpus_arms.csv` | all 24 arms pooled: corpus, base bits, bits saved, R\* |
 | `change_size_vs_content.png` | the transform axis against the content axis |
 | `no_single_curve.png` | R\* against both information measures, five corpora |
+| `criterion_sweep.csv` | every arm rescored at five fractional and three absolute criteria |
+| `criterion_dependence.png` | how much of the corpus gap the 90% criterion creates |
