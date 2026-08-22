@@ -261,6 +261,7 @@ def _layer_profile(args: argparse.Namespace) -> int:
                     probe_rows=args.probe_rows,
                     measures=args.measures,
                     answer_marker=str(marker) if marker else None,
+                    taylor_codecs=args.taylor_codecs,
                 )
             finally:
                 session.unload()
@@ -425,9 +426,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--measures",
         nargs="+",
         default=["weights", "representation", "allocation"],
-        choices=["weights", "representation", "allocation", "distribution"],
+        choices=["weights", "representation", "allocation", "distribution",
+                 "taylor"],
         help="which measurements to take; the allocation sweep is by far the"
         " most expensive and a distribution pass does not need it",
+    )
+    profile.add_argument(
+        "--taylor-codecs", nargs="+", default=["uniform2"],
+        help="codec keys whose coded containers give the perturbations to expand"
+        " around the trained adapter",
     )
     profile.add_argument("--force", action="store_true")
     profile.set_defaults(func=_layer_profile)
