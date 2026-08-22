@@ -33,6 +33,11 @@ module load pytorch-gpu/py3/2.8.0
 # but is missing the stack silently shadows the working module python, which is
 # how an earlier batch of jobs died on startup inside a second.
 python_bin="$(command -v python)"
+# The sbatch scripts set `repo_root` before sourcing this. Sourcing it by hand
+# does not, and an empty one silently pointed HF_HOME at /.hf_cache, so an
+# interactive `prepare` looked like a network failure in offline mode.
+repo_root="${repo_root:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+
 if [[ -x "${repo_root}/.venv/bin/python" ]] &&
    "${repo_root}/.venv/bin/python" -c 'import torch' >/dev/null 2>&1; then
   python_bin="${repo_root}/.venv/bin/python"

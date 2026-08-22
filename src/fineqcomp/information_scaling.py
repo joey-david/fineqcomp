@@ -117,6 +117,17 @@ class Condition:
     # Name the prototype in the prompt. The source bits are unchanged; what
     # changes is whether the learner has to discover the sharing rule itself.
     reveal_prototype: bool = False
+    # A rule computes the label from the prompt, so it carries no per-mapping
+    # payload however many mappings there are: its cost is the cost of writing
+    # the program once. `payload_families` then adds an independent 4-bit draw
+    # to that many families, which is the only quantity that scales. Splitting
+    # the two is what separates the cost of the transformation from the cost of
+    # the novel information, which no natural corpus can do.
+    rule: str | None = None
+    payload_families: int = 0
+    # State the rule in the prompt. The payload is untouched; what changes is
+    # whether the program has to be discovered or is already given.
+    reveal_rule: bool = False
 
 
 @dataclass
@@ -141,6 +152,42 @@ def _read_codebook(directory: Path, seed: int, required: int) -> tuple[list[int]
     return symbols[:required], digest
 
 
+# Every rule is a total function of the prompt alone, so a learner that has the
+# rule needs no per-mapping storage. They are deliberately arithmetic rather
+# than linguistic: a base model has no head start on any of them.
+RULES: dict[str, Any] = {
+    "sum": lambda family, item: (family + item) % ALPHABET,
+    "item": lambda family, item: item % ALPHABET,
+    "product": lambda family, item: (family * 3 + item * 5) % ALPHABET,
+}
+
+
+def _rule_labels(
+    condition: Condition, symbols: list[int], mappings: int, items_per_family: int
+) -> tuple[list[int], list[tuple[Any, ...]], list[int | None]]:
+    """A deterministic rule, with an independent draw added to some families."""
+    if condition.rule not in RULES:
+        raise ValueError(f"unknown rule {condition.rule!r}; have {sorted(RULES)}")
+    rule = RULES[condition.rule]
+    payload = int(condition.payload_families)
+    if payload < 0:
+        raise ValueError("payload_families must not be negative")
+    labels: list[int] = []
+    keys: list[tuple[Any, ...]] = []
+    for mapping in range(mappings):
+        family, item = divmod(mapping, items_per_family)
+        index = rule(family, item)
+        if family < payload:
+            # The draw is per family, so every item in a paid family shares one
+            # offset and the family costs four bits however many items it has.
+            index = (index + symbols[family]) % ALPHABET
+            keys.append(("payload", family))
+        else:
+            keys.append(("rule",))
+        labels.append(index)
+    return labels, keys, [None] * mappings
+
+
 def _mapping_labels(
     condition: Condition, symbols: list[int], mappings: int, items_per_family: int
 ) -> tuple[list[int], list[tuple[Any, ...]], list[int | None]]:
@@ -149,6 +196,8 @@ def _mapping_labels(
     The source key names the sampled symbol a mapping's label comes from, so
     counting distinct keys counts independent draws and nothing else.
     """
+    if condition.rule is not None:
+        return _rule_labels(condition, symbols, mappings, items_per_family)
     if condition.constant:
         return (
             [symbols[0]] * mappings,
@@ -181,7 +230,11 @@ PROMPT_LAYOUTS = ("fields", "key_last")
 
 
 def _prompt(
-    family: int, item: int, prototype: int | None, layout: str = "fields"
+    family: int,
+    item: int,
+    prototype: int | None,
+    layout: str = "fields",
+    rule: str | None = None,
 ) -> str:
     """One canonical template for every split, condition and mapping.
 
@@ -199,10 +252,14 @@ def _prompt(
     of whether the binding, rather than the storage, is what fails.
     """
     table = "T?" if prototype is None else f"T{prototype:02d}"
+    # The rule line is always present, so stating the rule changes one field and
+    # nothing else about the prompt, exactly as revealing a prototype does.
+    stated = "R?" if rule is None else f"R:{rule}"
     if layout == "key_last":
         return (
             "Registry lookup.\n"
             f"Table: {table}\n"
+            f"Rule: {stated}\n"
             f"F{family:04d} I{item:02d} ="
         )
     if layout != "fields":
@@ -212,6 +269,7 @@ def _prompt(
         f"Family: F{family:04d}\n"
         f"Item: I{item:02d}\n"
         f"Table: {table}\n"
+        f"Rule: {stated}\n"
         "Label:"
     )
 
@@ -245,7 +303,10 @@ def build_dataset(raw: dict[str, Any], condition: Condition, seed: int) -> Datas
         examples.append(
             Example(
                 example_id=f"m{mapping:05d}",
-                prompt=_prompt(family, item, shown, layout),
+                prompt=_prompt(
+                    family, item, shown, layout,
+                    condition.rule if condition.reveal_rule else None,
+                ),
                 response=labels[label_index],
                 metadata={
                     "mapping": mapping,
@@ -264,7 +325,13 @@ def build_dataset(raw: dict[str, Any], condition: Condition, seed: int) -> Datas
 
 
 def source_bits(dataset: Dataset, mappings: int) -> int:
-    """Independent 4-bit draws needed to specify the first `mappings` labels."""
+    """Independent 4-bit draws needed to specify the first `mappings` labels.
+
+    A rule contributes one key however many mappings it covers, so a rule-only
+    condition costs four bits and a rule with K paid families costs 4(K+1). The
+    program itself is not counted: it is the same program in every cell of a
+    payload sweep, so it lands in the intercept rather than the slope.
+    """
     return 4 * len(set(dataset.source_keys[:mappings]))
 
 
