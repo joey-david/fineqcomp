@@ -380,3 +380,29 @@ def test_revealing_the_rule_changes_the_prompt_but_not_the_labels():
     assert hidden.label_indices == shown.label_indices
     assert hidden.examples[0].prompt != shown.examples[0].prompt
     assert "R:sum" in shown.examples[0].prompt
+
+
+def test_condition_rejects_unknown_keys():
+    """A misspelled key used to fall through to the default condition.
+
+    That is how a payload sweep can run to completion, cost a day of GPU, and
+    measure the same thing in every cell.
+    """
+    import pytest
+    from fineqcomp.information_scaling import _condition
+
+    raw = {"conditions": [{"name": "a", "rule": "sum", "payload_familes": 4}]}
+    with pytest.raises(ValueError, match="unknown keys"):
+        _condition(raw, "a")
+
+
+def test_condition_reads_the_rule_fields():
+    from fineqcomp.information_scaling import _condition
+
+    raw = {"conditions": [
+        {"name": "a", "rule": "sum", "payload_families": 4, "reveal_rule": True}
+    ]}
+    condition = _condition(raw, "a")
+    assert condition.rule == "sum"
+    assert condition.payload_families == 4
+    assert condition.reveal_rule is True

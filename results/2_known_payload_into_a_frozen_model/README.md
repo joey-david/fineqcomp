@@ -22,7 +22,7 @@ of the transformation** and **the cost of the novel payload**.
 | sub-study | status |
 |---|---|
 | [`instrument_validation/`](instrument_validation/) | complete — the prequential code recovers known bits within 1.1–3.5×, recall 1.000 |
-| `program_and_payload/` | **implemented, not yet run** |
+| `program_and_payload/` | **running**, job 1276363, 24 cells |
 
 ## The design
 
@@ -60,9 +60,23 @@ budget, nor the prompt layout moves that boundary. So there is a hard capacity
 wall well below the nominal 41M parameters, and the interesting sweep is
 underneath it.
 
-## Status
+## What is running
 
-The conditions are implemented and unit-tested (`RULES`, `payload_families`,
-`reveal_rule` in `src/fineqcomp/information_scaling.py`). The grid config and
-the run are the next step; nothing here has been run yet, and no number in this
-folder outside `instrument_validation/` should be cited.
+`configs/program_and_payload.yaml`, job 1276363, 24 cells over three seeds.
+Source bits at 128 mappings, verified by construction before launch:
+
+| condition | source bits |
+|---|---:|
+| `rule` | 4 |
+| `rule` + 1 paid family | 8 |
+| + 2 | 12 |
+| + 4 | 20 |
+| + 8 (every family paid) | 32 |
+| `random` | 512 |
+
+The payload study sweeps those six at 128 mappings. The discovery study runs
+`rule` against `rule_shown` at 32, 64 and 128 mappings, which is the same
+payload with and without the program given away.
+
+Nothing here has been read yet, and no number in this folder outside
+`instrument_validation/` should be cited.

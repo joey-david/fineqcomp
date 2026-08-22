@@ -16,6 +16,7 @@ attempts to break it:
 | [`what_sets_the_adapter_bit_budget/`](what_sets_the_adapter_bit_budget/) | the negatives: diversity, transforms, budget, corpora, layers, rank, divergence, curvature | complete, 81 adapters |
 | [`behavioural_change_refuted/`](behavioural_change_refuted/) | a pre-registration whose hypothesis the data then refuted | closed, see below |
 | `two_model_panel/` | the same five corpora on a second frozen substrate | **running**, job 1273993 |
+| `high_gain_tasks/` | two tasks with very large published base-to-LoRA gaps | **running**, job 1276327 |
 
 ## The positive
 
@@ -54,6 +55,18 @@ XSum, hh-rlhf, Alpaca) × two frozen substrates (Mistral-7B-v0.1, Qwen2.5-7B) ×
 three seeds, everything else held at rank 16, 8,000 rows, four epochs, the same
 seventeen rungs. Both models are run rather than joining to the existing Mistral
 numbers, so the comparison needs no cross-config join and no shared baseline.
+
+A second panel, `configs/high_gain_panel.yaml`, job 1276327, adds the two tasks
+with the largest base-to-LoRA gaps we could find that still have short,
+exactly scorable answers and a genuinely disjoint test split:
+
+| task | published gap | why it matters here |
+|---|---|---|
+| text-to-SQL (Gretel synthetic, 100k rows) | Qwen-7B 16.1 → 61.0 exact match on Spider with LoRA | every corpus so far moves likelihood a lot and accuracy a little, which makes accuracy useless as a check on the bits axis |
+| XBRL tag extraction (FinLoRA, 10k rows) | base models 13–32% → above 80% | the largest gap we found, with one-token answers |
+
+Same rank, rows, epochs, rungs and substrates as the first panel, so the two
+join into one table.
 
 The negative is currently one frozen substrate. If the ordering of the five
 corpora is preserved on Qwen while the levels shift, the statement is about
