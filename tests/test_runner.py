@@ -52,7 +52,15 @@ def test_learning_gate_requires_fixed_validation_bit_gain(tmp_path):
     )
 
 
-def test_behavioral_write_clips_negative_savings():
+def test_behavioral_write_reports_damage_as_negative():
+    """A span the adapter made worse must not read as zero bits saved.
+
+    These were clamped at zero, which made "the adapter left this span alone"
+    and "the adapter destroyed this span" the same number. The chain-of-thought
+    arms are where that mattered: answer-only supervision reads as 0.0 bits
+    saved on the reasoning span when it is really 4.6 bits per token worse than
+    the base model, so an arm that had wrecked the model looked inert.
+    """
     baseline = {
         "train": {"total_bits": 10.0, "bits_per_token": 1.0},
         "heldout": {"total_bits": 10.0, "bits_per_token": 1.0},
@@ -64,9 +72,10 @@ def test_behavioral_write_clips_negative_savings():
 
     result = RunEngine._behavioral_write(baseline, tuned)
 
-    assert result["train_bits_saved"] == 0.0
-    assert result["train_bits_saved_per_token"] == 0.0
+    assert result["train_bits_saved"] == -2.0
+    assert abs(result["train_bits_saved_per_token"] + 0.2) < 1e-12
     assert result["heldout_bits_saved"] == 2.0
+    assert abs(result["excess_train_bits_per_token"] + 0.4) < 1e-12
 
 
 def test_pilot_limit_keeps_rows_from_each_evaluator(tmp_path):

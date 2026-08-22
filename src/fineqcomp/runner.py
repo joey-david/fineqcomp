@@ -359,25 +359,26 @@ class RunEngine:
     def _behavioral_write(
         baseline: dict[str, Any], tuned: dict[str, Any]
     ) -> dict[str, float]:
-        train_saved = max(
-            0.0,
+        # Signed on purpose. Clamping at zero made "the adapter left this span
+        # alone" and "the adapter destroyed this span" the same number, and the
+        # chain-of-thought arms are exactly where that mattered: answer-only
+        # supervision reads as 0.0 bits saved on the reasoning span when it is
+        # really 4.6 bits per token worse than the base model.
+        train_saved = (
             float(baseline["train"]["total_bits"])
-            - float(tuned["train"]["total_bits"]),
+            - float(tuned["train"]["total_bits"])
         )
-        heldout_saved = max(
-            0.0,
+        heldout_saved = (
             float(baseline["heldout"]["total_bits"])
-            - float(tuned["heldout"]["total_bits"]),
+            - float(tuned["heldout"]["total_bits"])
         )
-        train_rate = max(
-            0.0,
+        train_rate = (
             float(baseline["train"]["bits_per_token"])
-            - float(tuned["train"]["bits_per_token"]),
+            - float(tuned["train"]["bits_per_token"])
         )
-        heldout_rate = max(
-            0.0,
+        heldout_rate = (
             float(baseline["heldout"]["bits_per_token"])
-            - float(tuned["heldout"]["bits_per_token"]),
+            - float(tuned["heldout"]["bits_per_token"])
         )
         return {
             "train_bits_saved": train_saved,

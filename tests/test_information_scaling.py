@@ -343,3 +343,40 @@ def test_the_switch_code_can_never_lose_to_the_free_base_code():
     # And the mixture alone would have lost.
     mixture = blocks[0]["bits"] + sum(b["adapter_bits"] for b in blocks[1:])
     assert mixture > sum(b["base_bits"] for b in blocks)
+
+
+def test_rule_condition_costs_four_bits_however_many_mappings():
+    """A rule is a program, not a payload: its cost does not scale."""
+    from fineqcomp.information_scaling import Condition, build_dataset, source_bits
+
+    raw = {"labels": [str(i) for i in "ABCDEFGHIJKLMNOP"], "mappings": 256,
+           "items_per_family": 16, "codebook_dir": "codebooks"}
+    dataset = build_dataset(raw, Condition("rule", rule="sum"), seed=11)
+    assert source_bits(dataset, 64) == 4
+    assert source_bits(dataset, 256) == 4
+
+
+def test_payload_families_are_the_only_thing_that_scales():
+    from fineqcomp.information_scaling import Condition, build_dataset, source_bits
+
+    raw = {"labels": [str(i) for i in "ABCDEFGHIJKLMNOP"], "mappings": 256,
+           "items_per_family": 16, "codebook_dir": "codebooks"}
+    for paid in (0, 1, 4, 8):
+        dataset = build_dataset(
+            raw, Condition("mixed", rule="sum", payload_families=paid), seed=11
+        )
+        # One key for the unpaid remainder, plus one per paid family.
+        expected = 4 * (paid + (1 if paid < 16 else 0))
+        assert source_bits(dataset, 256) == expected, paid
+
+
+def test_revealing_the_rule_changes_the_prompt_but_not_the_labels():
+    from fineqcomp.information_scaling import Condition, build_dataset
+
+    raw = {"labels": [str(i) for i in "ABCDEFGHIJKLMNOP"], "mappings": 64,
+           "items_per_family": 16, "codebook_dir": "codebooks"}
+    hidden = build_dataset(raw, Condition("a", rule="sum"), seed=11)
+    shown = build_dataset(raw, Condition("a", rule="sum", reveal_rule=True), seed=11)
+    assert hidden.label_indices == shown.label_indices
+    assert hidden.examples[0].prompt != shown.examples[0].prompt
+    assert "R:sum" in shown.examples[0].prompt
