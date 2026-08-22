@@ -123,6 +123,53 @@ standing suspicion.
 
 ![no single curve](no_single_curve.png)
 
+## 3b. The full distribution says the same thing as the observed token
+
+The obvious repair for section 3 was that held-out bits saved counts only the
+probability of the token that appeared, so it misses whatever the adapter did
+to the rest of the distribution. Measured on all 81 adapters, over exactly the
+tokens `causal_nll` scores, that repair fails:
+
+| measure | r with R\*(0.90) |
+|---|---:|
+| forward KL, adapted to base | −0.46 |
+| reverse KL | −0.39 |
+| Jensen-Shannon | −0.46 |
+| total variation | −0.44 |
+| held-out bits saved | −0.31 |
+
+Forward KL correlates **+0.978** with held-out bits saved across the 24 arms.
+They are the same measurement. An adapter trained to maximum likelihood moves
+the distribution toward the data, so the divergence it travelled is the
+likelihood gain it obtained, and no divergence adds information the observed
+token did not already carry. Every variant predicts R\* slightly worse than the
+measure it was meant to replace.
+
+Code is the sharpest case: forward KL 0.217 and reverse KL 0.273 against 0.66
+and 2.1 for math. Its output distribution barely moves, and it still takes the
+most bits per value in the report.
+
+## 3c. Weight-space compressibility is the same for every corpus
+
+Splitting rate into its two halves — how much weight error a rate costs, and
+how much behaviour that error costs — locates the difference in the second.
+
+| rate | weight relative RMSE | retained gain |
+|---|---|---|
+| ~0.5 bits/value | 0.819 ± 0.013 | 0.783, range 0.60–1.07 |
+| ~1.0 bits/value | 0.553 ± 0.011 | 0.993, range 0.91–1.19 |
+| ~2.0 bits/value | 0.306 ± 0.010 | 1.024, range 0.99–1.10 |
+
+81 runs, five corpora, ranks 16 and 64. The weight error a given rate produces
+is constant to about one per cent across all of it, so the codec does not find
+one corpus's adapter harder to compress than another's. What varies is how much
+gain survives that error, and at 1.0 bits per value even that spread is 0.91 to
+1.19.
+
+The practical reading is the one claim here that holds everywhere measured: a
+LoRA can be coded at one bit per value and keep essentially all of its held-out
+gain, whatever the task, and this needs no measurement of the dataset.
+
 ## 4. The level is mostly the container
 
 | arm | rank 16 | rank 64 | ratio |
@@ -186,3 +233,4 @@ the next thing that would make any of it a claim.
 | `no_single_curve.png` | R\* against both information measures, five corpora |
 | `criterion_sweep.csv` | every arm rescored at five fractional and three absolute criteria |
 | `criterion_dependence.png` | how much of the corpus gap the 90% criterion creates |
+| `divergence_arms.csv` | base-to-adapted divergences on the scored tokens, against R\* |
