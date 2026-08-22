@@ -263,6 +263,7 @@ def _layer_profile(args: argparse.Namespace) -> int:
                     answer_marker=str(marker) if marker else None,
                     taylor_codecs=args.taylor_codecs,
                     hessian_batch_size=args.hessian_batch_size,
+                    recompute_activations=args.recompute_activations,
                 )
             finally:
                 session.unload()
@@ -441,6 +442,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--hessian-batch-size", type=int, default=1,
         help="batch size for the gradient and Hessian passes; double backward"
         " needs far less than training did",
+    )
+    profile.add_argument(
+        "--recompute-activations", action="store_true",
+        help="checkpoint activations during the Hessian pass; needed at long"
+        " sequence lengths, where the attention matrices do not fit twice",
     )
     profile.add_argument("--force", action="store_true")
     profile.set_defaults(func=_layer_profile)

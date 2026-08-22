@@ -296,6 +296,32 @@ def _mean_gradient(
 
 
 @contextmanager
+def _recomputed_activations(model: torch.nn.Module, enabled: bool):
+    """Trade compute for memory during double backward.
+
+    At 2,048 tokens the unfused attention matrices alone are gigabytes per
+    layer, and holding them for the second backward exhausts an 80 GB card.
+    Non-reentrant checkpointing is differentiable twice, so the Hessian-vector
+    product is unchanged.
+    """
+    if not enabled or not hasattr(model, "gradient_checkpointing_enable"):
+        yield
+        return
+    model.gradient_checkpointing_enable(
+        gradient_checkpointing_kwargs={"use_reentrant": False}
+    )
+    was_cache = getattr(getattr(model, "config", None), "use_cache", None)
+    if was_cache is not None:
+        model.config.use_cache = False
+    try:
+        yield
+    finally:
+        model.gradient_checkpointing_disable()
+        if was_cache is not None:
+            model.config.use_cache = was_cache
+
+
+@contextmanager
 def _double_backward_attention():
     """Fused attention has no second derivative; the math kernel does.
 
@@ -362,6 +388,7 @@ def taylor_diagnostic(
     label_span: str = "all",
     answer_marker: str | None = None,
     hessian_batch_size: int = 1,
+    recompute_activations: bool = False,
 ) -> dict[str, Any]:
     """Does a second-order expansion explain the damage a codec actually does?
 
@@ -398,11 +425,13 @@ def taylor_diagnostic(
 
     apply_adapter_tensors(session.model, adapter)
     base_bits = loss_bits()
-    gradient = _mean_gradient(session, loader, names)
+    with _recomputed_activations(session.model, recompute_activations):
+        gradient = _mean_gradient(session, loader, names)
     results = {}
     for key, delta in deltas.items():
         trimmed = {name: delta[name].float().cpu() for name in names}
-        product = _hessian_vector(session, loader, names, trimmed)
+        with _recomputed_activations(session.model, recompute_activations):
+            product = _hessian_vector(session, loader, names, trimmed)
         apply_adapter_tensors(
             session.model, {name: adapter[name] + trimmed[name] for name in names}
         )
@@ -506,6 +535,7 @@ def profile_run(
     answer_marker: str | None = None,
     taylor_codecs: Iterable[str] = ("uniform2",),
     hessian_batch_size: int = 1,
+    recompute_activations: bool = False,
 ) -> dict[str, Any]:
     """The selected measurements for one finished run.
 
@@ -535,7 +565,7 @@ def profile_run(
         record["distribution"] = distribution_shift(
             session, calibration, base_state, adapter, model_spec,
             max_length, batch_size, label_span, answer_marker,
-            hessian_batch_size,
+            hessian_batch_size, recompute_activations,
         )
     if "taylor" in wanted:
         deltas = {}
@@ -554,7 +584,7 @@ def profile_run(
         record["taylor"] = taylor_diagnostic(
             session, calibration, model_spec, adapter, deltas,
             max_length, batch_size, label_span, answer_marker,
-            hessian_batch_size,
+            hessian_batch_size, recompute_activations,
         )
     if "allocation" in wanted:
         record["allocation"] = allocation_sweep(
