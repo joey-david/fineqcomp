@@ -247,6 +247,9 @@ def _layer_profile(args: argparse.Namespace) -> int:
             )
             session.attach(run.adapter, run.seed)
             try:
+                marker = campaign["datasets"][str(run.dataset_key)].get(
+                    "answer_marker"
+                )
                 record = profile_run(
                     session,
                     Path(args.runs_root) / run.run_id,
@@ -256,6 +259,8 @@ def _layer_profile(args: argparse.Namespace) -> int:
                     max_length=run.training.max_length,
                     batch_size=run.training.micro_batch_size,
                     probe_rows=args.probe_rows,
+                    measures=args.measures,
+                    answer_marker=str(marker) if marker else None,
                 )
             finally:
                 session.unload()
@@ -416,6 +421,14 @@ def build_parser() -> argparse.ArgumentParser:
     profile.add_argument("--seeds", nargs="+", type=int)
     profile.add_argument("--rows", type=int, default=256)
     profile.add_argument("--probe-rows", type=int, default=32)
+    profile.add_argument(
+        "--measures",
+        nargs="+",
+        default=["weights", "representation", "allocation"],
+        choices=["weights", "representation", "allocation", "distribution"],
+        help="which measurements to take; the allocation sweep is by far the"
+        " most expensive and a distribution pass does not need it",
+    )
     profile.add_argument("--force", action="store_true")
     profile.set_defaults(func=_layer_profile)
 
