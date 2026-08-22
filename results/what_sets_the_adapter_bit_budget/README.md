@@ -1,11 +1,13 @@
 # What sets the adapter bit budget
 
-**Status: partial.** Four of five planned axes have landed. The behavioural
-transform grid ran but its numbers are invalid pending a baseline fix, described
-at the bottom. Nothing here is a finished claim.
+**Status: all five axes landed, plus three corpora.** The headline changed
+under the last two: the behavioural-change curve in section 2 does not survive
+being tested outside the range it was fitted in.
 
-Recorded 2026-08-21. Mistral-7B-v0.1 on an NF4 base, all-linear LoRA, every arm
-compute-matched at 2,000 optimizer updates and 32,000 samples seen. R*(0.90) is
+Recorded 2026-08-21, extended 2026-08-22. Mistral-7B-v0.1 on an NF4 base,
+all-linear LoRA. Every arm is compute-matched at 2,000 optimizer updates and
+32,000 samples seen except the budget sweep in section 2, where the update
+count is the axis. R*(0.90) is
 the smallest adapter file retaining 90% of the best gain the code family
 reaches, on held-out bits saved.
 
@@ -27,41 +29,77 @@ establish, because its arms were nested draws in which the two moved together.
 
 ![content and rows](content_and_rows.png)
 
-## 2. Most of that runs through behavioural change
+## 2. It does not run through behavioural change
 
-Pooling all rank-16 math arms, duplication and diversity together, 48 runs:
+The first reading of these arms was a curve. Pooling 48 rank-16 math runs gave
 
     R* = -0.32 + 1.90 x (held-out bits saved per token),  R2 = 0.56
 
-Every math arm sits within ±0.09 bits per value of that line. So the diversity
-lever moves R\* largely *by* producing a larger behavioural change rather than
-in addition to it.
+fitted inside a window 0.16 bits per token wide. Two axes built to widen that
+window both break it.
 
-**This is weaker than it looks.** The math arms span only 0.50 to 0.66 bits
-saved per token. A slope fitted inside a range that narrow, then extrapolated
-three times beyond it, is not a curve. It is a cluster with a line through it.
+**Response transforms.** Five deterministic rewrites of the same 8,000 answers,
+each keeping the final answer line, at two diversity levels. Thirty runs. They
+double the behavioural change and barely move the budget:
 
-## 3. The kind of change matters
-
-Residuals against that fit:
-
-| arm | bits saved/token | residual, bits/value |
+| transform | bits saved/token | R\* bits/value |
 |---|---:|---:|
-| eight math arms | 0.53–0.64 | −0.046 to +0.089 |
-| summarization (XSum) | 0.564 | −0.057 |
-| **code (Magicoder)** | **0.159** | **+0.923** |
+| plain | 0.555 | 0.684 |
+| shouted | 0.576 | 0.687 |
+| numbered | 0.577 | 0.698 |
+| preamble | 0.744 | 0.667 |
+| symbolic | 1.062 | 0.763 |
 
-Code produces a small behavioural change and still needs 0.90 bits per value.
-Summarization lands on the math line. Both arms are properly bracketed with
-smooth retention curves, so the code figure is a real crossing rather than a
-censored one.
+Narrow arms shown. Fitted over all ten transform arms the slope is **+0.12**
+bits per value per bit per token, R2 = 0.37, against 1.90 for the math content
+axis. `preamble` is the clean counterexample: more behavioural change than
+`plain` and *fewer* adapter bits.
 
-![the curve and the kinds](collapse_and_kinds.png)
+**Optimizer budget.** The same 8,000 rows trained for 500, 1,000, 4,000 and
+8,000 updates. Content is identical across arms by construction, so nothing new
+can enter; only the size of the change varies.
 
-Caveats, and they are not small: three seeds each; the code fine-tune is weak
-(HumanEval pass@1 of 0.03 to 0.11 across seeds, with Magicoder truncated at
-1,024 tokens to keep the protocol matched); and XSum's own seed range is 0.557
-to 0.862, wider than the entire diversity effect.
+| updates | bits saved/token | R\* bits/value | seed sd |
+|---|---:|---:|---:|
+| 500 | 0.610 | 0.893 | 0.050 |
+| 1,000 | 0.599 | 0.788 | 0.037 |
+| 4,000 | 0.569 | 0.770 | 0.052 |
+| 8,000 | 0.566 | 0.778 | 0.064 |
+
+Sixteen times the optimization moves bits saved by 0.04 and moves R\* *down*.
+Whatever sets the budget, it is not how far the model travelled.
+
+Pooling all 24 arms in this report, the slope is **−0.14** with R2 = 0.09.
+There is no single curve.
+
+![size of change against content of change](change_size_vs_content.png)
+
+## 3. The corpus sets it, and none of our measures predict which
+
+Three corpora were added to test the range from outside math: Anthropic
+hh-rlhf (assistant dialogue), Alpaca (instruction following), Magicoder at both
+1,024 and 2,048 tokens.
+
+| arm | base bits/token | bits saved/token | R\* bits/value |
+|---|---:|---:|---:|
+| Alpaca | 2.178 | 0.591 | 0.638 |
+| XSum | 2.104 | 0.564 | 0.695 |
+| math, 19 arms | 0.84–1.35 | 0.46–1.09 | 0.49–0.89 |
+| Magicoder 1k | 1.369 | 0.159 | 0.904 |
+| Magicoder 2k | 1.369 | 0.165 | 0.906 |
+| hh-rlhf | 2.501 | 0.277 | 0.936 |
+
+Magicoder and hh-rlhf take the most bits per value in the whole report while
+saving a third to a half of what every other arm saves. Alpaca is their mirror:
+math-level bits saved, the cheapest adapter measured. Across all 24 arms R\*
+correlates −0.31 with held-out bits saved and +0.25 with the base model's own
+bits per token on the corpus. Neither measure predicts the budget.
+
+Doubling Magicoder's sequence length changes nothing (0.904 to 0.906), so the
+code residual is not an artefact of truncating solutions, which was the
+standing suspicion.
+
+![no single curve](no_single_curve.png)
 
 ## 4. The level is mostly the container
 
@@ -100,18 +138,14 @@ allocating bits by structure does not beat spreading them evenly.
 
 ## What is missing
 
-The behavioural transform grid — five response rewrites at two diversity levels,
-30 runs — completed but cannot be read yet. Baselines are keyed on the
-evaluation, so all thirty shared one baseline per seed, while each transform
-rewrites its own calibration split: 57,958 held-out tokens for `symbolic`
-against 48,664 for `plain`. Bits saved was subtracting a measurement taken on
-one held-out set from another. `_baseline_key` now forks on the transform, and
-the base side is being remeasured on each transform's own calibration split.
-Each codec metric already stores its own held-out bits, so the recomputation is
-offline and needs no retraining.
+A measure that predicts R\* across corpora. Held-out bits saved works inside a
+corpus and fails between them; the base model's own bits per token on the
+corpus does not work at all. The three arms that break every fit — code twice
+and dialogue — share a property no current measure captures: their surface form
+is one a base model almost never emits, while Alpaca's and XSum's are not.
 
-That grid is what would widen the behavioural range in section 2 from 0.16 bits
-per token to something a curve can be fitted in.
+Everything here is one model. A Qwen2.5-7B replication of the corpus table is
+the next thing that would make any of it a claim.
 
 ## Files
 
@@ -124,3 +158,7 @@ per token to something a curve can be fitted in.
 | `collapse_and_kinds.png` | R\* against behavioural change, with code and summarization |
 | `rank_scaling.png` | R\* as a whole file at rank 16 and 64 |
 | `where_the_bits_live.png` | layer allocation and the depth profile |
+| `transform_arms.csv` | 30 runs: transform, diversity, per-transform baseline, R\* |
+| `corpus_arms.csv` | all 24 arms pooled: corpus, base bits, bits saved, R\* |
+| `change_size_vs_content.png` | the transform axis against the content axis |
+| `no_single_curve.png` | R\* against both information measures, five corpora |
