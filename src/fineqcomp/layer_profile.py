@@ -29,6 +29,8 @@ missing.
 from __future__ import annotations
 
 import json
+import math
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -36,7 +38,12 @@ import torch
 from torch.utils.data import DataLoader
 
 from fineqcomp.adapters import apply_adapter_tensors, trainable_state
-from fineqcomp.codec import decode_layer_groups, encode_layer_groups, layer_groups
+from fineqcomp.codec import (
+    decode_adapter_tensor_map,
+    decode_layer_groups,
+    encode_layer_groups,
+    layer_groups,
+)
 from fineqcomp.data import Example
 from fineqcomp.modeling import (
     CausalExampleDataset,
@@ -250,6 +257,170 @@ def distribution_shift(
     }
 
 
+def _loader(session: ModelSession, rows: list[Example], model_spec: Any,
+            max_length: int, batch_size: int, label_span: str,
+            answer_marker: str | None) -> DataLoader:
+    dataset = CausalExampleDataset(
+        session.tokenizer, rows, model_spec, max_length, label_span, answer_marker
+    )
+    return DataLoader(
+        dataset, batch_size=batch_size, shuffle=False,
+        collate_fn=lambda batch: causal_collate(batch, session.tokenizer.pad_token_id),
+    )
+
+
+def _trainable(model: torch.nn.Module) -> list[tuple[str, torch.nn.Parameter]]:
+    return [(name, p) for name, p in model.named_parameters() if p.requires_grad]
+
+
+def _mean_gradient(
+    session: ModelSession, loader: DataLoader, names: list[str]
+) -> dict[str, torch.Tensor]:
+    """Gradient of the token-mean loss, accumulated over the whole split."""
+    parameters = dict(_trainable(session.model))
+    for name in names:
+        parameters[name].grad = None
+    device = model_device(session.model)
+    total = 0
+    for batch in loader:
+        batch = {key: value.to(device) for key, value in batch.items()}
+        tokens = int((batch["labels"] != -100).sum())
+        if not tokens:
+            continue
+        (session.model(**batch).loss * tokens).backward()
+        total += tokens
+    return {
+        name: (parameters[name].grad.detach().float().cpu() / max(total, 1)).clone()
+        for name in names
+    }
+
+
+@contextmanager
+def _double_backward_attention():
+    """Fused attention has no second derivative; the math kernel does.
+
+    Both the CPU flash path and the CUDA one raise on `create_graph`, so the
+    Hessian-vector product runs under the unfused kernel. It is slower and
+    numerically identical.
+    """
+    try:
+        from torch.nn.attention import SDPBackend, sdpa_kernel
+    except ImportError:  # pragma: no cover - older torch
+        yield
+        return
+    with sdpa_kernel(SDPBackend.MATH):
+        yield
+
+
+def _hessian_vector(
+    session: ModelSession, loader: DataLoader, names: list[str],
+    delta: dict[str, torch.Tensor],
+) -> dict[str, torch.Tensor]:
+    """H @ delta for the token-mean loss, by double backward, one batch at a time.
+
+    The graph is built and released per batch: holding `create_graph` across the
+    whole split would keep every activation of every batch alive at once.
+    """
+    parameters = dict(_trainable(session.model))
+    ordered = [parameters[name] for name in names]
+    device = model_device(session.model)
+    accumulated = {name: torch.zeros_like(parameters[name], device="cpu",
+                                          dtype=torch.float32) for name in names}
+    total = 0
+    for batch in loader:
+        batch = {key: value.to(device) for key, value in batch.items()}
+        tokens = int((batch["labels"] != -100).sum())
+        if not tokens:
+            continue
+        with _double_backward_attention():
+            loss = session.model(**batch).loss * tokens
+            grads = torch.autograd.grad(loss, ordered, create_graph=True)
+            inner = sum(
+                (grad * delta[name].to(grad.device, grad.dtype)).sum()
+                for name, grad in zip(names, grads)
+            )
+            second = torch.autograd.grad(inner, ordered, retain_graph=False)
+        for name, value in zip(names, second):
+            accumulated[name] += value.detach().float().cpu()
+        total += tokens
+        del loss, grads, inner, second
+    return {name: value / max(total, 1) for name, value in accumulated.items()}
+
+
+def _dot(left: dict[str, torch.Tensor], right: dict[str, torch.Tensor]) -> float:
+    return float(sum((left[name] * right[name]).sum() for name in left))
+
+
+def taylor_diagnostic(
+    session: ModelSession,
+    rows: list[Example],
+    model_spec: Any,
+    adapter: dict[str, torch.Tensor],
+    deltas: dict[str, dict[str, torch.Tensor]],
+    max_length: int,
+    batch_size: int,
+    label_span: str = "all",
+    answer_marker: str | None = None,
+) -> dict[str, Any]:
+    """Does a second-order expansion explain the damage a codec actually does?
+
+    For each perturbation delta this reports the two Taylor terms against the
+    loss change measured by the same forward pass the campaign scores on. The
+    gradient term is measured rather than assumed away: these adapters are
+    validation-selected checkpoints scored on held-out text, so there is no
+    reason for the held-out gradient to vanish.
+
+    Everything is converted to bits per token, the units the rate-distortion
+    curves already use, so a Taylor prediction and a measured damage can be put
+    on the same axis.
+    """
+    names = [name for name, _ in _trainable(session.model)]
+    missing = sorted(set(names) - set(adapter))
+    if missing:
+        raise KeyError(f"adapter is missing trainable tensors: {missing[:3]}")
+    loader = _loader(session, rows, model_spec, max_length, batch_size,
+                     label_span, answer_marker)
+
+    def loss_bits() -> float:
+        return float(
+            causal_nll(session.model, session.tokenizer, rows, model_spec,
+                       max_length, batch_size, label_span, answer_marker)[
+                "bits_per_token"
+            ]
+        )
+
+    apply_adapter_tensors(session.model, adapter)
+    base_bits = loss_bits()
+    gradient = _mean_gradient(session, loader, names)
+    results = {}
+    for key, delta in deltas.items():
+        trimmed = {name: delta[name].float().cpu() for name in names}
+        product = _hessian_vector(session, loader, names, trimmed)
+        apply_adapter_tensors(
+            session.model, {name: adapter[name] + trimmed[name] for name in names}
+        )
+        measured = loss_bits() - base_bits
+        apply_adapter_tensors(session.model, adapter)
+        first = _dot(gradient, trimmed) / _LN2
+        second = 0.5 * _dot(product, trimmed) / _LN2
+        results[key] = {
+            "measured_damage_bits": measured,
+            "first_order_bits": first,
+            "second_order_bits": second,
+            "taylor_bits": first + second,
+            "delta_norm": math.sqrt(_dot(trimmed, trimmed)),
+            "relative_delta_norm": math.sqrt(
+                _dot(trimmed, trimmed) / max(_dot(adapter, adapter), 1e-12)
+            ),
+        }
+    return {
+        "rows": len(rows),
+        "base_bits_per_token": base_bits,
+        "gradient_norm": math.sqrt(_dot(gradient, gradient)),
+        "perturbations": results,
+    }
+
+
 def allocation_sweep(
     session: ModelSession,
     rows: list[Example],
@@ -326,6 +497,7 @@ def profile_run(
     measures: Iterable[str] = ("weights", "representation", "allocation"),
     label_span: str = "all",
     answer_marker: str | None = None,
+    taylor_codecs: Iterable[str] = ("uniform2",),
 ) -> dict[str, Any]:
     """The selected measurements for one finished run.
 
@@ -335,7 +507,8 @@ def profile_run(
     pay for the others.
     """
     wanted = set(measures)
-    unknown = wanted - {"weights", "representation", "allocation", "distribution"}
+    unknown = wanted - {"weights", "representation", "allocation", "distribution",
+                        "taylor"}
     if unknown:
         raise ValueError(f"unknown measures: {sorted(unknown)}")
     adapter = load_raw_channel(Path(run_dir))
@@ -353,6 +526,24 @@ def profile_run(
     if "distribution" in wanted:
         record["distribution"] = distribution_shift(
             session, calibration, base_state, adapter, model_spec,
+            max_length, batch_size, label_span, answer_marker,
+        )
+    if "taylor" in wanted:
+        deltas = {}
+        for key in taylor_codecs:
+            path = Path(run_dir) / "codecs" / f"adapter_{key}.fqcb"
+            if not path.is_file():
+                continue
+            _, decoded = decode_adapter_tensor_map(path)
+            deltas[key] = {
+                name: decoded[name].float() - adapter[name] for name in adapter
+            }
+        if not deltas:
+            raise FileNotFoundError(
+                f"{run_dir} has no coded containers for {sorted(taylor_codecs)}"
+            )
+        record["taylor"] = taylor_diagnostic(
+            session, calibration, model_spec, adapter, deltas,
             max_length, batch_size, label_span, answer_marker,
         )
     if "allocation" in wanted:
