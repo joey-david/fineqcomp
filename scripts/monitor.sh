@@ -73,7 +73,12 @@ if [[ "$show_all" != 1 ]]; then
   )"
 fi
 latest_epoch=-1
-if [[ -n "$latest_submit" ]]; then
+# Concurrent batches are normal now, so the cell table covers a window rather
+# than one submission. --all drops the window entirely.
+if [[ "$show_all" != 1 ]]; then
+  latest_epoch="$(( $(date +%s) - ${MONITOR_WINDOW_HOURS:-12} * 3600 ))"
+fi
+if false; then
   latest_epoch="$(python3 - "$latest_submit" <<'PY' 2>/dev/null || true
 from datetime import datetime
 import sys
@@ -88,8 +93,8 @@ fi
 
 printf '\n== queue ==\n'
 printf '   %-10s %-8s %-9s %-7s %-7s %s\n' ID NAME STATE USED LIMIT REASON
-awk -F'|' -v all="$show_all" -v latest="$latest_submit" '
-  all || $7 == latest {
+awk -F'|' '
+  {
     printf "   %-10s %-8s %-9s %-7s %-7s %s\n", $1, $2, $3, $4, $5, $6
     if ($3 == "RUNNING") running++
     if ($3 == "PENDING") pending++
@@ -107,7 +112,15 @@ cell_tmp="$tmp_dir/cells"
 mkdir -p "$cell_tmp"
 cell_index=0
 cell_pids=()
+# One subshell per run directory, each spawning python3 more than once. With a
+# hundred directories that is a few hundred processes at once, which a login
+# node kills; the failures were invisible because stderr goes to /dev/null and
+# the cell table just came back empty. Cap the fan-out.
+cell_limit="${MONITOR_JOBS:-12}"
 for d in runs/*/; do
+  while (( $(jobs -rp | wc -l) >= cell_limit )); do
+    wait -n 2>/dev/null || break
+  done
   (
   [ -d "$d" ] || exit 0
   [ -f "$d/config.json" ] || exit 0
