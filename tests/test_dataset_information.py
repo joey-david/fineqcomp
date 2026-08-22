@@ -344,6 +344,10 @@ def test_a_response_transform_forces_its_own_baseline():
                 "evaluations": [{"key": "gsm8k"}], "test_rows": 1319,
                 "distinct_source_problems": 400,
             },
+            "dialogue": {
+                "evaluations": [{"key": "gsm8k"}], "test_rows": 1319,
+                "train_source": {"path": "Anthropic/hh-rlhf", "converter": "hh_rlhf"},
+            },
         }
     }
     engine = RunEngine.__new__(RunEngine)
@@ -363,3 +367,7 @@ def test_a_response_transform_forces_its_own_baseline():
     # The diversity lever leaves the calibration split alone, so those arms
     # still share, which is what makes the diversity axis cheap.
     assert keys["narrow"] == keys["plain"]
+    # A different corpus behind the same evaluation must fork. hh-rlhf and
+    # Alpaca both list gsm8k as a retained-capability probe, and sharing on
+    # that alone gated them against MetaMathQA's calibration NLL.
+    assert keys["dialogue"] != keys["plain"]

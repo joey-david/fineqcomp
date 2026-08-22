@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 import time
 import traceback
 from collections import defaultdict
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -142,6 +145,32 @@ class RunEngine:
             )
         return self._limit_data(self._data_cache[key]), {"dataset_key": run.dataset_key}
 
+    @staticmethod
+    def _calibration_key(spec: Mapping[str, Any]) -> str:
+        """Fingerprint the held-out split a baseline's calibration NLL is on.
+
+        Everything that changes those rows belongs here: the source itself, how
+        many rows are held out, and any rewrite applied to them. Row selection
+        inside the training set does not, which is what lets the diversity arms
+        share one baseline.
+        """
+        source = dict(spec.get("train_source") or {})
+        transform = spec.get("response_transform")
+        payload = {
+            "source": {key: str(source[key]) for key in sorted(source)},
+            "validation_rows": spec.get("validation_rows"),
+            "validation_split": spec.get("validation_split"),
+            # "plain" names the untransformed target, so it has to fingerprint
+            # the same as an absent transform or every old baseline orphans.
+            "response_transform": (
+                None if transform is None or str(transform) == "plain" else str(transform)
+            ),
+        }
+        digest = hashlib.sha256(
+            json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
+        )
+        return digest.hexdigest()[:8]
+
     def _baseline_key(self, run: RunSpec) -> str:
         """Identify a baseline by what it was scored on, not by the training set.
 
@@ -160,15 +189,18 @@ class RunEngine:
             str(item["key"]) for item in spec.get("evaluations", [])
         ) or str(run.dataset_key)
         rows = spec.get("test_rows", "all")
-        # Sharing a baseline assumes the arms share a calibration split. A
-        # response transform breaks that: it rewrites the held-out targets, so
-        # the base model's bits on them differ, and the token counts differ
-        # too. Without this the behavioural grid subtracted a baseline measured
-        # on one arm's held-out set from another arm's, and every bits-saved
-        # figure compared two populations.
-        transform = spec.get("response_transform")
-        if transform is not None and str(transform) != "plain":
-            evaluations = f"{evaluations}-{transform}"
+        # The record holds two measurements with different sharing rules. The
+        # task score depends only on the evaluation, so arms that differ in
+        # training data may share it. The calibration NLL is the base model's
+        # bits per token on the held-out split of the *training* corpus, so it
+        # may only be shared by arms whose calibration split is identical.
+        # Fingerprinting the split covers both cases at once: a response
+        # transform rewrites the held-out targets, and a different corpus
+        # replaces them outright. Keying on the evaluation alone had both
+        # failures -- the behavioural grid shared one baseline across five
+        # transforms, and hh-rlhf and Alpaca were gated against MetaMathQA's
+        # 0.899 bits per token because all three list gsm8k.
+        evaluations = f"{evaluations}-cal{self._calibration_key(spec)}"
         # A study that splits the response by span needs baseline numbers for
         # each span. Those go in a key of their own rather than growing the
         # shared record in place, so a half-written rewrite can never be
