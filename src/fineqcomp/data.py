@@ -228,6 +228,58 @@ def _convert_alpaca(rows: Any, split: str) -> list[Example]:
     return converted
 
 
+def _convert_text_to_sql(rows: Any, split: str) -> list[Example]:
+    """Schema-in-prompt text to SQL.
+
+    Chosen because the published base-to-LoRA gap is enormous -- Qwen-7B goes
+    from 16.1 to 61.0 exact match on Spider with a LoRA -- and because every row
+    carries its own CREATE TABLE context, so the task needs no external schema
+    file and the train and test splits are genuinely disjoint.
+    """
+    converted = []
+    for index, row in enumerate(rows):
+        context = " ".join(str(row["sql_context"]).split())
+        question = str(row["sql_prompt"]).strip()
+        converted.append(
+            Example(
+                example_id=f"sql-{split}-{index}",
+                prompt=(
+                    "Translate the question into a single SQL query for the"
+                    " schema.\n\n"
+                    f"### Schema:\n{context}\n\n"
+                    f"### Question:\n{question}\n\n"
+                    "### SQL:"
+                ),
+                response=" " + " ".join(str(row["sql"]).split()),
+                metadata={"split": split, "domain": row.get("domain")},
+            )
+        )
+    return converted
+
+
+def _convert_xbrl(rows: Any, split: str) -> list[Example]:
+    """Financial-filing tag extraction, where base models score very low.
+
+    FinLoRA reports base models in the 13-32% band on these and LoRA above 80%,
+    which is the largest base-to-adapter gap we have found in a task whose
+    answers are short enough to score exactly.
+    """
+    converted = []
+    for index, row in enumerate(rows):
+        instruction = " ".join(str(row["instruction"]).split())
+        question = str(row["input"]).strip()
+        converted.append(
+            Example(
+                example_id=f"xbrl-{split}-{index}",
+                prompt=f"{instruction}\n\n{question}",
+                response=" " + str(row["output"]).strip(),
+                metadata={"split": split, "company": row.get("company"),
+                          "year": row.get("year")},
+            )
+        )
+    return converted
+
+
 _NATURAL_CONVERTERS = {
     "gsm8k": _convert_gsm8k,
     "hh_rlhf": _convert_hh_rlhf,
@@ -237,6 +289,8 @@ _NATURAL_CONVERTERS = {
     "metamath": _convert_metamath,
     "humaneval": _convert_humaneval,
     "xsum": _convert_xsum,
+    "text_to_sql": _convert_text_to_sql,
+    "xbrl_tags": _convert_xbrl,
 }
 
 

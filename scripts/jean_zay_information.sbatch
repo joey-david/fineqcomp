@@ -114,11 +114,14 @@ probe)
   printf 'probe cell: %s\n' "${cells[$task]}"
   ;;
 validate)
+  # The shard count has to match the array width, and the array width changes
+  # with the grid: the validation grid is fifteen cells, the payload grid is
+  # twenty-four. Hardcoding fifteen silently dropped cells off the end.
   config="${INFO_CONFIG:-configs/information_validation.yaml}"
   out="${INFO_OUT:-runs_information_scaling/validate}"
   command=(python -m fineqcomp.information_scaling
     --config "$config" --campaign "$campaign" --out "$out"
-    --shard "$task" --shards 15)
+    --shard "$task" --shards "${INFO_SHARDS:-15}")
   ;;
 full)
   shards="${INFO_SHARDS:-12}"

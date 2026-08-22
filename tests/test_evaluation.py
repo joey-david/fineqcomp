@@ -87,3 +87,26 @@ def test_math_and_xsum_share_one_paired_evaluation(monkeypatch):
     assert metrics["primary_evaluator"] == "math"
     assert metrics["evaluations"]["xsum"]["rouge_l"] == 1.0
     assert {row["evaluator"] for row in predictions} == {"math", "xsum"}
+
+
+def test_exact_string_normaliser_cuts_the_continuation():
+    """Nothing stops generation at the end of a short answer.
+
+    The cut has to be at a blank line or a section marker rather than the first
+    newline: a SQL query may span several lines, and truncating it would score
+    a right answer wrong.
+    """
+    from fineqcomp.evaluation import _normalize_answer_text
+
+    assert _normalize_answer_text(" SELECT  a FROM b ;") == "select a from b"
+    assert (
+        _normalize_answer_text(" SELECT a\n FROM b;\n\n### Question: next")
+        == "select a from b"
+    )
+    assert _normalize_answer_text(" SELECT a FROM b;") == _normalize_answer_text(
+        "select a\nfrom b"
+    )
+    assert (
+        _normalize_answer_text(" us-gaap:LiabilitiesCurrent\n\nQuestion: ...")
+        == "us-gaap:liabilitiescurrent"
+    )

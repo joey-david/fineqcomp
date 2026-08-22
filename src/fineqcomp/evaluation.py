@@ -366,7 +366,51 @@ def evaluate_natural(
             "examples": len(examples),
             "rouge_l": sum(scores) / max(len(scores), 1),
         }, predictions
+    if dataset_key in _EXACT_STRING_TASKS:
+        correct = 0
+        for example, response in zip(examples, responses, strict=True):
+            expected = _normalize_answer_text(example.response)
+            predicted = _normalize_answer_text(response)
+            is_correct = bool(expected) and predicted == expected
+            correct += int(is_correct)
+            predictions.append(
+                {
+                    "example_id": example.example_id,
+                    "expected": expected,
+                    "prediction": predicted,
+                    "response": response,
+                    "correct": is_correct,
+                }
+            )
+        return {
+            "examples": len(examples),
+            "exact_match": correct / max(len(examples), 1),
+        }, predictions
     raise ValueError(f"unsupported natural evaluation: {dataset_key}")
+
+
+# Tasks whose answer is one short string: a SQL query, an XBRL tag. Scored on a
+# normalised exact match rather than a task-specific executor, so the number is
+# a lower bound on the real metric -- an equivalent query written differently
+# counts as wrong. That is acceptable here because every arm is scored the same
+# way and the comparison is between arms.
+_EXACT_STRING_TASKS = {"text_to_sql", "xbrl_tags"}
+
+
+def _normalize_answer_text(text: str) -> str:
+    """Cut the continuation, then collapse whitespace, case and a semicolon.
+
+    Nothing stops generation at the end of the answer, so a model keeps writing
+    the next example. The cut is at a blank line or the next section marker
+    rather than at the first newline, because a SQL query may legitimately span
+    several lines and truncating it would score a right answer wrong.
+    """
+    body = str(text)
+    for stop in ("\n\n", "###", "### "):
+        index = body.find(stop)
+        if index > 0:
+            body = body[:index]
+    return " ".join(body.split()).strip().rstrip(";").strip().lower()
 
 
 def write_predictions(path: str | Path, rows: list[dict[str, Any]]) -> None:

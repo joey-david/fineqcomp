@@ -1,0 +1,93 @@
+version: 2
+
+# Separate the cost of the transformation from the cost of the novel payload.
+#
+# A natural corpus cannot do this. Ten thousand examples of "output the input
+# modulo 7" are enormously surprising under a base model and install a tiny
+# program; a small behavioural change that happens to be geometrically awkward
+# for this frozen model can cost a large adapter. Constructed labels can hold
+# the program fixed and move only the payload, or the reverse.
+#
+# Known source bits at 128 mappings, eight families of sixteen items:
+#   rule           4      the program covers every mapping, so nothing scales
+#   rule_p1       8       one family carries an independent 4-bit draw
+#   rule_p2      12
+#   rule_p4      20
+#   rule_p8      32       every family paid; the rule now covers nothing
+#   random      512       no structure at all, the ceiling
+#
+# The claim: R* against paid families is a line whose slope is the marginal
+# cost of novel information and whose intercept is the cost of installing the
+# transformation. `rule_shown` states the rule in the prompt without touching
+# the payload, so the gap between it and `rule` is the cost of discovering
+# structure rather than storing it.
+#
+# The probe put the rank-16 memorisation wall at 128 arbitrary pairs, so every
+# prefix here sits inside the working range and the payload sweep never runs
+# into the wall instead of into the hypothesis.
+
+model: mistral_7b_base
+seeds: [11, 22, 33]
+
+labels:
+  ["A", "B", "C", "D", "E", "F", "G", "H",
+   "I", "J", "K", "L", "M", "N", "O", "P"]
+
+codebook_dir: codebooks
+mappings: 192
+items_per_family: 16
+prompt_layout: fields
+
+optimizer_updates: 2048
+
+learning_gate_bits_per_mapping: 1.0
+retention_target: 0.90
+evaluation_batch_size: 128
+
+conditions:
+  - {name: rule, rule: sum}
+  - {name: rule_shown, rule: sum, reveal_rule: true}
+  - {name: rule_p1, rule: sum, payload_families: 1}
+  - {name: rule_p2, rule: sum, payload_families: 2}
+  - {name: rule_p4, rule: sum, payload_families: 4}
+  - {name: rule_p8, rule: sum, payload_families: 8}
+  - {name: random}
+
+training:
+  epochs: 1
+  learning_rate: 0.0002
+  effective_batch_size: 16
+  micro_batch_size: 16
+  max_length: 64
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  max_grad_norm: 1.0
+  eval_every_updates: 128
+  restore_best: false
+
+adapter_codecs:
+  - {key: sub0_0625, bits: 0, blend: 0.0625}
+  - {key: sub0_125, bits: 0, blend: 0.125}
+  - {key: sub0_250, bits: 0, blend: 0.25}
+  - {key: sub0_375, bits: 0, blend: 0.375}
+  - {key: sub0_500, bits: 0, blend: 0.5}
+  - {key: sub0_750, bits: 0, blend: 0.75}
+  - {key: binary, bits: 1}
+  - {key: blend1_50, bits: 1, blend: 0.5}
+  - {key: uniform2, bits: 2}
+
+grid:
+  # The payload sweep is the claim. `rule` and `random` bracket it: a program
+  # with no payload at the bottom, no program at all at the top.
+  - study: payload
+    conditions: [rule, rule_p1, rule_p2, rule_p4, rule_p8, random]
+    adapters: [all_linear_r16]
+    prefixes: [128]
+  # Discovering the rule against being told it, at one payload level and at
+  # none, so the two can be compared with and without something to store.
+  - study: discovery
+    conditions: [rule, rule_shown]
+    adapters: [all_linear_r16]
+    prefixes: [32, 64, 128]

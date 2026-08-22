@@ -1,0 +1,230 @@
+# Two tasks where the published base-to-LoRA gap is very large.
+#
+# Every corpus in the campaign so far moves held-out likelihood a lot and task
+# accuracy a little, which makes the accuracy axis nearly useless as a check on
+# the bits axis. These two are the opposite. Text-to-SQL takes Qwen-7B from 16.1
+# to 61.0 exact match with a LoRA on Spider; the FinLoRA XBRL tasks take base
+# models from the 13-32% band to above 80%. Both have answers short enough to
+# score by exact string match and a test split genuinely disjoint from training,
+# so neither needs an executor or a held-out schema file.
+#
+# Same rank, rows, epochs and rungs as `model_panel.yaml`, and the same two
+# frozen substrates, so the two panels join into one table.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+codecs:
+  uniform2:
+    method: uniform
+    bits: 2
+  blend1_50:
+    method: uniform
+    bits: 1
+    blend: 0.5
+  binary:
+    method: uniform
+    bits: 1
+  sub0_14_16:
+    method: uniform
+    bits: 0
+    blend: 0.875
+    score_task: false
+  sub0_13_16:
+    method: uniform
+    bits: 0
+    blend: 0.8125
+    score_task: false
+  sub0_12_16:
+    method: uniform
+    bits: 0
+    blend: 0.75
+    score_task: false
+  sub0_11_16:
+    method: uniform
+    bits: 0
+    blend: 0.6875
+    score_task: false
+  sub0_10_16:
+    method: uniform
+    bits: 0
+    blend: 0.625
+    score_task: false
+  sub0_09_16:
+    method: uniform
+    bits: 0
+    blend: 0.5625
+    score_task: false
+  sub0_08_16:
+    method: uniform
+    bits: 0
+    blend: 0.5
+  sub0_07_16:
+    method: uniform
+    bits: 0
+    blend: 0.4375
+    score_task: false
+  sub0_06_16:
+    method: uniform
+    bits: 0
+    blend: 0.375
+    score_task: false
+  sub0_05_16:
+    method: uniform
+    bits: 0
+    blend: 0.3125
+    score_task: false
+  sub0_04_16:
+    method: uniform
+    bits: 0
+    blend: 0.25
+    score_task: false
+  sub0_03_16:
+    method: uniform
+    bits: 0
+    blend: 0.1875
+    score_task: false
+  sub0_02_16:
+    method: uniform
+    bits: 0
+    blend: 0.125
+    score_task: false
+  sub0_01_16:
+    method: uniform
+    bits: 0
+    blend: 0.0625
+    score_task: false
+models:
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+training:
+  panel_4ep:
+    epochs: 4
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+datasets:
+  text_to_sql:
+    task_type: generative
+    train_source:
+      path: gretelai/synthetic_text_to_sql
+      name: default
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: train
+      converter: text_to_sql
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 500
+    evaluations:
+    - key: text_to_sql
+      path: gretelai/synthetic_text_to_sql
+      name: default
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: test
+      converter: text_to_sql
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  xbrl_tags:
+    task_type: generative
+    train_source:
+      path: wangd12/XBRL_analysis
+      name: tags
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: train
+      converter: xbrl_tags
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 500
+    evaluations:
+    - key: xbrl_tags
+      path: wangd12/XBRL_analysis
+      name: tags
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: test
+      converter: xbrl_tags
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+studies:
+  mistral_text_to_sql:
+    kind: natural
+    models:
+    - mistral_7b_base
+    datasets:
+    - text_to_sql
+    seeds:
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  qwen25_text_to_sql:
+    kind: natural
+    models:
+    - qwen25_7b_base
+    datasets:
+    - text_to_sql
+    seeds:
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  mistral_xbrl_tags:
+    kind: natural
+    models:
+    - mistral_7b_base
+    datasets:
+    - xbrl_tags
+    seeds:
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  qwen25_xbrl_tags:
+    kind: natural
+    models:
+    - qwen25_7b_base
+    datasets:
+    - xbrl_tags
+    seeds:
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: panel_4ep

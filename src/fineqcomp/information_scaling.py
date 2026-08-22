@@ -623,11 +623,26 @@ def _condition(raw: dict[str, Any], name: str) -> Condition:
     for entry in raw["conditions"]:
         if str(entry["name"]) == name:
             prototype = entry.get("prototype_count")
+            rule = entry.get("rule")
+            # An unknown key here would silently become the default condition,
+            # which is how a payload sweep can run to completion measuring the
+            # same thing six times.
+            unknown = set(entry) - {
+                "name", "prototype_count", "constant", "reveal_prototype",
+                "rule", "payload_families", "reveal_rule",
+            }
+            if unknown:
+                raise ValueError(
+                    f"condition {name!r} has unknown keys: {sorted(unknown)}"
+                )
             return Condition(
                 name=name,
                 prototype_count=int(prototype) if prototype is not None else None,
                 constant=bool(entry.get("constant", False)),
                 reveal_prototype=bool(entry.get("reveal_prototype", False)),
+                rule=str(rule) if rule is not None else None,
+                payload_families=int(entry.get("payload_families", 0)),
+                reveal_rule=bool(entry.get("reveal_rule", False)),
             )
     raise KeyError(f"unknown condition {name!r}")
 
