@@ -1,0 +1,132 @@
+# Denser payload sweep, plus a second rule.
+#
+# Runs only if the first grid produced a usable R* for most of its conditions.
+# Seven payload levels rather than five, so a line has something to be fitted
+# to, and the same sweep under a different arithmetic rule, so the slope cannot
+# be a property of one program.
+version: 2
+model: mistral_7b_base
+seeds:
+- 11
+- 22
+- 33
+labels:
+- A
+- B
+- C
+- D
+- E
+- F
+- G
+- H
+- I
+- J
+- K
+- L
+- M
+- N
+- O
+- P
+codebook_dir: codebooks
+mappings: 192
+items_per_family: 16
+prompt_layout: fields
+optimizer_updates: 2048
+learning_gate_bits_per_mapping: 1.0
+retention_target: 0.9
+evaluation_batch_size: 128
+conditions:
+- name: rule
+  rule: sum
+- name: rule_p1
+  rule: sum
+  payload_families: 1
+- name: rule_p2
+  rule: sum
+  payload_families: 2
+- name: rule_p3
+  rule: sum
+  payload_families: 3
+- name: rule_p4
+  rule: sum
+  payload_families: 4
+- name: rule_p6
+  rule: sum
+  payload_families: 6
+- name: rule_p8
+  rule: sum
+  payload_families: 8
+- name: alt_rule
+  rule: product
+- name: alt_p2
+  rule: product
+  payload_families: 2
+- name: alt_p4
+  rule: product
+  payload_families: 4
+- name: alt_p8
+  rule: product
+  payload_families: 8
+training:
+  epochs: 1
+  learning_rate: 0.0002
+  effective_batch_size: 16
+  micro_batch_size: 16
+  max_length: 64
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  max_grad_norm: 1.0
+  eval_every_updates: 128
+  restore_best: false
+adapter_codecs:
+- key: sub0_0625
+  bits: 0
+  blend: 0.0625
+- key: sub0_125
+  bits: 0
+  blend: 0.125
+- key: sub0_250
+  bits: 0
+  blend: 0.25
+- key: sub0_375
+  bits: 0
+  blend: 0.375
+- key: sub0_500
+  bits: 0
+  blend: 0.5
+- key: sub0_750
+  bits: 0
+  blend: 0.75
+- key: binary
+  bits: 1
+- key: blend1_50
+  bits: 1
+  blend: 0.5
+- key: uniform2
+  bits: 2
+grid:
+- study: payload_dense
+  conditions:
+  - rule
+  - rule_p1
+  - rule_p2
+  - rule_p3
+  - rule_p4
+  - rule_p6
+  - rule_p8
+  adapters:
+  - all_linear_r16
+  prefixes:
+  - 128
+- study: second_rule
+  conditions:
+  - alt_rule
+  - alt_p2
+  - alt_p4
+  - alt_p8
+  adapters:
+  - all_linear_r16
+  prefixes:
+  - 128

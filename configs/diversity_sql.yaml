@@ -1,0 +1,283 @@
+# The one intervention that worked, on the two new corpora.
+#
+# Row count is held and only the number of distinct source groups behind those
+# rows changes -- domains for text-to-SQL, filing companies for XBRL. This is
+# the same lever that moved R* from 0.682 to 0.746 on MetaMathQA seed problems,
+# which is the only positive in the whole campaign, and it has never been tried
+# on another corpus or another frozen model.
+#
+# The row caps differ because the corpora do. Ten of a hundred SQL domains still
+# clear 8,000 rows; ten of thirty XBRL companies only clear about 3,300, so that
+# arm caps at 3,000 and its lever spans three rather than ten.
+# This half: 8,000 rows, 10 / 25 / 100 domains, a factor of ten.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+codecs:
+  uniform2:
+    method: uniform
+    bits: 2
+  blend1_50:
+    method: uniform
+    bits: 1
+    blend: 0.5
+  binary:
+    method: uniform
+    bits: 1
+  sub0_14_16:
+    method: uniform
+    bits: 0
+    blend: 0.875
+    score_task: false
+  sub0_13_16:
+    method: uniform
+    bits: 0
+    blend: 0.8125
+    score_task: false
+  sub0_12_16:
+    method: uniform
+    bits: 0
+    blend: 0.75
+    score_task: false
+  sub0_11_16:
+    method: uniform
+    bits: 0
+    blend: 0.6875
+    score_task: false
+  sub0_10_16:
+    method: uniform
+    bits: 0
+    blend: 0.625
+    score_task: false
+  sub0_09_16:
+    method: uniform
+    bits: 0
+    blend: 0.5625
+    score_task: false
+  sub0_08_16:
+    method: uniform
+    bits: 0
+    blend: 0.5
+  sub0_07_16:
+    method: uniform
+    bits: 0
+    blend: 0.4375
+    score_task: false
+  sub0_06_16:
+    method: uniform
+    bits: 0
+    blend: 0.375
+    score_task: false
+  sub0_05_16:
+    method: uniform
+    bits: 0
+    blend: 0.3125
+    score_task: false
+  sub0_04_16:
+    method: uniform
+    bits: 0
+    blend: 0.25
+    score_task: false
+  sub0_03_16:
+    method: uniform
+    bits: 0
+    blend: 0.1875
+    score_task: false
+  sub0_02_16:
+    method: uniform
+    bits: 0
+    blend: 0.125
+    score_task: false
+  sub0_01_16:
+    method: uniform
+    bits: 0
+    blend: 0.0625
+    score_task: false
+models:
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+training:
+  panel_4ep:
+    epochs: 4
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+datasets:
+  sql_div_10:
+    evaluations:
+    - converter: text_to_sql
+      key: text_to_sql
+      name: default
+      path: gretelai/synthetic_text_to_sql
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: test
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    screening_metric: exact_match
+    task_type: generative
+    test_rows: 500
+    train_rows: 8000
+    train_source:
+      converter: text_to_sql
+      name: default
+      path: gretelai/synthetic_text_to_sql
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: train
+      group_field: domain
+    validation_rows: 256
+    distinct_source_problems: 10
+  sql_div_25:
+    evaluations:
+    - converter: text_to_sql
+      key: text_to_sql
+      name: default
+      path: gretelai/synthetic_text_to_sql
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: test
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    screening_metric: exact_match
+    task_type: generative
+    test_rows: 500
+    train_rows: 8000
+    train_source:
+      converter: text_to_sql
+      name: default
+      path: gretelai/synthetic_text_to_sql
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: train
+      group_field: domain
+    validation_rows: 256
+    distinct_source_problems: 25
+  sql_div_100:
+    evaluations:
+    - converter: text_to_sql
+      key: text_to_sql
+      name: default
+      path: gretelai/synthetic_text_to_sql
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: test
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    screening_metric: exact_match
+    task_type: generative
+    test_rows: 500
+    train_rows: 8000
+    train_source:
+      converter: text_to_sql
+      name: default
+      path: gretelai/synthetic_text_to_sql
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: train
+      group_field: domain
+    validation_rows: 256
+    distinct_source_problems: 100
+studies:
+  mistral_sql_div_10:
+    kind: natural
+    models:
+    - mistral_7b_base
+    datasets:
+    - sql_div_10
+    seeds:
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  qwen25_sql_div_10:
+    kind: natural
+    models:
+    - qwen25_7b_base
+    datasets:
+    - sql_div_10
+    seeds:
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  mistral_sql_div_25:
+    kind: natural
+    models:
+    - mistral_7b_base
+    datasets:
+    - sql_div_25
+    seeds:
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  qwen25_sql_div_25:
+    kind: natural
+    models:
+    - qwen25_7b_base
+    datasets:
+    - sql_div_25
+    seeds:
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  mistral_sql_div_100:
+    kind: natural
+    models:
+    - mistral_7b_base
+    datasets:
+    - sql_div_100
+    seeds:
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  qwen25_sql_div_100:
+    kind: natural
+    models:
+    - qwen25_7b_base
+    datasets:
+    - sql_div_100
+    seeds:
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
