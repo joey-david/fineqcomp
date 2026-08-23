@@ -251,7 +251,13 @@ def _convert_text_to_sql(rows: Any, split: str) -> list[Example]:
                     "### SQL:"
                 ),
                 response=" " + " ".join(str(row["sql"]).split()),
-                metadata={"split": split, "domain": row.get("domain")},
+                # Every converter stamps the evaluator its answers must be
+                # scored by. Without it the scorer falls back to the campaign's
+                # dataset key, which is the same string only by luck: it is
+                # `text_to_sql` in the panel and `sql_div_100` in the diversity
+                # sweep, and the second has no scorer.
+                metadata={"split": split, "domain": row.get("domain"),
+                          "evaluator": "text_to_sql"},
             )
         )
     return converted
@@ -274,7 +280,7 @@ def _convert_xbrl(rows: Any, split: str) -> list[Example]:
                 prompt=f"{instruction}\n\n{question}",
                 response=" " + str(row["output"]).strip(),
                 metadata={"split": split, "company": row.get("company"),
-                          "year": row.get("year")},
+                          "year": row.get("year"), "evaluator": "xbrl_tags"},
             )
         )
     return converted
@@ -505,7 +511,15 @@ def _load_natural_from_hub(
             rows = evaluation_dataset[evaluation["split"]]
             if test_rows is not None and int(test_rows) < len(rows):
                 rows = rows.shuffle(seed=0).select(range(int(test_rows)))
-            tests.extend(_convert_natural(rows, "test", evaluation["converter"]))
+            # The scorer dispatches on `evaluator`, and its fallback is the
+            # campaign's dataset key -- which matches the evaluation name only
+            # by luck. It did in the first text-to-SQL panel and did not in the
+            # diversity sweep, where the key is `sql_div_100` and no scorer
+            # answers to that. Stamping here makes the config the single source
+            # of that name instead of every converter having to remember.
+            for example in _convert_natural(rows, "test", evaluation["converter"]):
+                example.metadata["evaluator"] = str(evaluation["key"])
+                tests.append(example)
         splits = {
             "train": _convert_natural(train_rows, "train", source["converter"]),
             "calibration": _convert_natural(

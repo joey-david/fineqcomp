@@ -74,3 +74,20 @@ def test_natural_data_is_staged_and_loaded_without_the_hub(tmp_path, monkeypatch
 
     monkeypatch.setattr(data, "_load_natural_from_hub", fail_if_downloaded)
     assert load_natural_dataset(raw, "gsm8k", 11, tmp_path) == rows
+
+
+def test_evaluation_examples_carry_the_configured_evaluator():
+    """The scorer dispatches on this, and its fallback is silently wrong.
+
+    Without it the campaign's dataset key stands in, which matched the
+    evaluator name by luck in the first text-to-SQL panel and did not in the
+    diversity sweep: `sql_div_100` has no scorer, so those runs died and took
+    the fifteen waiting on their shared baseline with them. The loader stamps
+    it from the config so no converter has to remember.
+    """
+    import inspect
+
+    from fineqcomp import data
+
+    source = inspect.getsource(data._load_natural_from_hub)
+    assert 'example.metadata["evaluator"] = str(evaluation["key"])' in source

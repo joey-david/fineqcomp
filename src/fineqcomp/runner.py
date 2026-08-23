@@ -155,6 +155,11 @@ class RunEngine:
         share one baseline.
         """
         source = dict(spec.get("train_source") or {})
+        # `group_field` names the column the diversity lever groups training
+        # rows by. It never touches the held-out split, so including it forked
+        # the key and sent 36 diversity runs off to recompute baselines the
+        # panel had already written -- and then to contend over them.
+        source.pop("group_field", None)
         transform = spec.get("response_transform")
         payload = {
             "source": {key: str(source[key]) for key in sorted(source)},
@@ -429,9 +434,22 @@ class RunEngine:
         # killed, so one cancelled job leaves every later job waiting an hour
         # and then failing. `claim_run` holds an flock, which the kernel drops
         # as soon as the process dies, stale or not.
+        #
+        # That still leaves the case where the holder is alive but fails: the
+        # waiters poll only for the file, spend the whole timeout, and every
+        # one of them dies too. One bad holder cost eighteen runs an hour of
+        # H100 time that way. So a waiter that times out computes the baseline
+        # itself. Two jobs may then duplicate the work, which is cheap next to
+        # losing the arm, and `write_json` replaces atomically so the loser
+        # writes the same bytes.
         with claim_run(baseline_dir) as claimed:
             if not claimed:
-                return _wait_for_json(baseline_dir / "metrics.json")
+                try:
+                    return _wait_for_json(
+                        baseline_dir / "metrics.json", timeout_seconds=1800.0
+                    )
+                except TimeoutError:
+                    pass
             baseline_dir.mkdir(parents=True, exist_ok=True)
             metrics, predictions = self._evaluate_natural(session, run, data["test"])
             write_predictions(baseline_dir / "predictions.jsonl", predictions)

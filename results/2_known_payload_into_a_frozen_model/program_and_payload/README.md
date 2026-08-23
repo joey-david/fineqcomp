@@ -27,6 +27,41 @@ not track it. That is the sharpest form of the negative in
 [`../../1_rate_behaviour_frontier/`](../../1_rate_behaviour_frontier/), because
 here there is no measurement error in the quantity being tested.
 
+## The denser sweep, and the thing that does move R\*
+
+Seven payload levels rather than five, plus the same sweep under a second
+arithmetic rule. 33 cells, job 1285190, complete.
+
+| condition | source bits | R\* | seed sd | gain/mapping |
+|---|---:|---:|---:|---:|
+| `sum` rule | 4 | 0.633 | 0.086 | 4.50 |
+| + 1 family | 8 | 0.778 | 0.054 | 4.50 |
+| + 2 | 12 | 1.112 | 0.519 | 4.51 |
+| + 3 | 16 | 0.865 | 0.134 | 4.51 |
+| + 4 | 20 | 0.718 | 0.034 | 4.44 |
+| + 6 | 28 | 0.722 | 0.031 | 4.09 |
+| + 8 | 32 | 1.291 | 0.476 | 4.48 |
+| **`product` rule** | **4** | **1.457** | — | 3.89 |
+| + 2 | 12 | 1.812 | — | 3.49 |
+| + 4 | 20 | 0.993 | — | 3.21 |
+| + 8 | 32 | 1.417 | 0.022 | 4.49 |
+
+Across seven payload levels the fit is R\* = 0.46 + 0.11 log2(source bits) with
+R2 = 0.23 — flat inside the noise. Under the second rule the slope is −0.08 with
+R2 = 0.08, the opposite sign. Payload bits do not set the budget.
+
+**The program does.** At four source bits — the same four bits, the same
+prompts, the same optimizer budget — `sum` needs 0.633 bits per value and
+`product` needs 1.457. Two transformations of identical description length,
+2.3 times apart in what it costs to store them. That is the sharpest statement
+the campaign has produced about what an adapter is paying for: not how much the
+task tells the model, but which map it has to install.
+
+Two caveats on the second rule. Its arms learned less well — 3.2 to 3.9 bits
+saved per mapping against 4.5 for `sum` — and a weaker fit can inflate R\*;
+and three of its four conditions produced a bracketed crossing in only one
+seed, so the level is indicative rather than measured.
+
 ## What this does not yet establish
 
 The two conditions with large spreads carry the whole apparent trend, and five
