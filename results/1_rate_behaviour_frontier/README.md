@@ -16,7 +16,7 @@ attempts to break it:
 | [`what_sets_the_adapter_bit_budget/`](what_sets_the_adapter_bit_budget/) | the negatives: diversity, transforms, budget, corpora, layers, rank, divergence, curvature | complete, 81 adapters |
 | [`behavioural_change_refuted/`](behavioural_change_refuted/) | a pre-registration whose hypothesis the data then refuted | closed, see below |
 | `two_model_panel/` | the same five corpora on a second frozen substrate | **running**, job 1273993 |
-| `high_gain_tasks/` | two tasks with very large published base-to-LoRA gaps | **running**, job 1276327 |
+| [`high_gain_tasks/`](high_gain_tasks/) | two tasks with very large base-to-LoRA gaps | complete, 12 runs |
 
 ## The positive
 

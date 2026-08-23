@@ -10,7 +10,11 @@
 # flight, so cancelling it ends the chain; work already submitted keeps running.
 #SBATCH --job-name=fqdriver
 #SBATCH --account=fas@cpu
-#SBATCH --partition=prepost
+# Two partitions, because one of them is regularly drained for maintenance and
+# a driver that sits pending all night is worse than no driver: the first
+# overnight run submitted nothing at all because every prepost node was down.
+# Slurm places the job in whichever can run it.
+#SBATCH --partition=prepost,cpu_p1
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
