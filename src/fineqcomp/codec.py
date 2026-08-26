@@ -552,6 +552,36 @@ def truncate_lora_rank(
     return truncated
 
 
+def pad_lora_rank(
+    tensors: Mapping[str, torch.Tensor], rank: int
+) -> dict[str, torch.Tensor]:
+    """Zero-fill truncated LoRA factors back to a container of `rank`.
+
+    A trained adapter is attached to the model at its own rank, so a rank-4
+    factor cannot be written into a rank-16 slot. Padding with zeros gives back
+    the original shapes and leaves the product untouched, because the columns
+    added to B multiply the rows added to A and both are zero. The serialized
+    size is taken from the truncated encode, so the padding costs nothing on
+    the axis being measured -- it is the container, not the code.
+    """
+    padded: dict[str, torch.Tensor] = {}
+    for a_name, b_name, a, b in _lora_pairs(tensors):
+        keep = int(a.shape[0])
+        if keep > rank:
+            raise ValueError(f"cannot pad rank {keep} down to {rank}")
+        pad_a = torch.zeros(
+            (rank, a.shape[1]), dtype=tensors[a_name].dtype
+        )
+        pad_b = torch.zeros(
+            (b.shape[0], rank), dtype=tensors[b_name].dtype
+        )
+        pad_a[:keep] = a.to(pad_a.dtype)
+        pad_b[:, :keep] = b.to(pad_b.dtype)
+        padded[a_name] = pad_a
+        padded[b_name] = pad_b
+    return padded
+
+
 def _oriented_groups(
     tensor: torch.Tensor, transpose: bool, group_size: int
 ) -> tuple[torch.Tensor, tuple[int, int], int]:

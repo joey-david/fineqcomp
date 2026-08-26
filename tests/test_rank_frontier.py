@@ -110,3 +110,31 @@ def test_random_mask_rungs_are_flagged_as_rank_pruning():
     assert rungs[0]["random_rank_mask"] is True
     assert rungs[1]["random_rank_mask"] is False
     assert all(math.isfinite(rung["heldout_bits_saved"]) for rung in rungs)
+
+
+def test_padding_restores_the_container_without_changing_the_update(tmp_path):
+    """A rank-4 file has to be applied through a rank-16 adapter unchanged.
+
+    The model is attached at the rank it was trained with, so the decoded
+    factors are zero-filled back to that shape. The product must be identical,
+    or the sweep would be measuring the padding rather than the truncation.
+    """
+    from fineqcomp.codec import pad_lora_rank
+
+    tensors = _pair(64, 48, 16)
+    truncated = truncate_lora_rank(tensors, 4)
+    padded = pad_lora_rank(truncated, 16)
+
+    assert padded["layer.lora_A.default.weight"].shape == (16, 48)
+    assert padded["layer.lora_B.default.weight"].shape == (64, 16)
+    small = (
+        truncated["layer.lora_B.default.weight"]
+        @ truncated["layer.lora_A.default.weight"]
+    )
+    full = (
+        padded["layer.lora_B.default.weight"]
+        @ padded["layer.lora_A.default.weight"]
+    )
+    assert torch.allclose(small, full, atol=1e-6)
+    with pytest.raises(ValueError):
+        pad_lora_rank(tensors, 4)
