@@ -33,6 +33,7 @@ from fineqcomp.adapters import apply_adapter_tensors
 from fineqcomp.codec import (
     decode_adapter_tensor_map,
     encode_tensor_map,
+    pad_lora_rank,
     truncate_lora_rank,
 )
 from fineqcomp.config import RunSpec, load_campaign
@@ -128,7 +129,12 @@ def sweep_run(
                     metadata={"rank": rank, "run_id": run.run_id},
                 )
                 _, decoded = decode_adapter_tensor_map(path)
-                apply_adapter_tensors(session.model, decoded)
+                # The model carries the trained rank, so the decoded factors go
+                # back into that container. The file on disk stays the small
+                # one, which is the number this sweep is about.
+                apply_adapter_tensors(
+                    session.model, pad_lora_rank(decoded, full_rank)
+                )
                 measured = engine._information_measure(
                     session, run, data, parts=("heldout",)
                 )["heldout"]
