@@ -13,10 +13,17 @@
 # taken. Only a measurement that changes with the receiver can pass.
 #
 # The receivers are chosen so their distance to the three corpora is designed
-# rather than incidental: two code-specialised bases, one math-specialised
-# base, three general bases, and a wide tokenizer spread (Mistral 32k through
-# Gemma 256k) because tokens per character is the strongest cross-receiver
-# predictor the audit found.
+# rather than incidental, and each contrast isolates one thing:
+#
+#   qwen25_7b_base vs qwen25_math_7b_base  same tokenizer and architecture,
+#                                          one specialised on mathematics
+#   gemma2_9b_base vs gemma2_9b_instruct   same tokenizer and pretraining,
+#                                          different posterior
+#   mistral_7b_base vs gemma2_9b_base      32k against 256k vocabulary on
+#                                          identical text
+#
+# The first two pairs are the ones a corpus statistic cannot even distinguish:
+# it returns the same number for both receivers by construction.
 #
 # Predictions recorded before any run:
 #   1. The receiver ordering on kind_code differs from the ordering on
@@ -26,11 +33,16 @@
 #      receiver pretrained on XBRL tag prediction.
 #   3. Tokens per character of the corpus, measured with no forward pass,
 #      orders the receivers within a block with negative sign.
+#   4. qwen25_math_7b_base needs a lower rate than qwen25_7b_base on
+#      panel_math and the same rate on xbrl_tags.
 #
-# Cost: 3 corpora x 8 receivers x 3 seeds = 72 runs on the shared 4-epoch
-# contract, plus the dense sub-bit ladder each. Run `preflight` first: the
-# model paths below are Hub ids, and the Jean-Zay shared store may hold some
-# of them under /lustre/fsmisc/dataset/HuggingFace_Models/<id>.
+# Cost: 3 corpora x 7 receivers x 3 seeds = 63 runs on the shared 4-epoch
+# contract, plus the dense sub-bit ladder each.
+#
+# StarCoder2-7B was the obvious code specialist and was dropped: its MLP is
+# c_fc/c_proj rather than gate/up/down, so a rank-16 adapter on it is not the
+# same object as on the other seven, and the rate axis is bits per adapter
+# value.
 version: 1
 information_rows: 256
 evaluation_batch_size: 32
@@ -49,48 +61,48 @@ codecs:
   sub0_02_16: {method: uniform, bits: 0, blend: 0.125, score_task: false}
   sub0_01_16: {method: uniform, bits: 0, blend: 0.0625, score_task: false}
 models:
-  # Three general bases already in the campaign: the continuity arms.
+  # Every path is verified present on the Jean-Zay shared store. Three general
+  # bases carry over from the existing campaign.
   mistral_7b_base:
-    name: mistralai/Mistral-7B-v0.1
-    revision: main
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
     backbone: nf4
     chat: false
   llama31_8b_base:
-    name: meta-llama/Llama-3.1-8B
-    revision: main
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/meta-llama/Llama-3.1-8B
+    revision: dsdir-shared-store
     backbone: nf4
     chat: false
   qwen25_7b_base:
-    name: Qwen/Qwen2.5-7B
-    revision: main
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
     backbone: nf4
     chat: false
-  # Two code-specialised bases: near kind_code, far from panel_math.
-  qwen25_coder_7b_base:
-    name: Qwen/Qwen2.5-Coder-7B
-    revision: main
+  qwen3_8b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen3-8B-Base
+    revision: dsdir-shared-store
     backbone: nf4
     chat: false
-  deepseek_coder_7b_base:
-    name: deepseek-ai/deepseek-coder-6.7b-base
-    revision: main
-    backbone: nf4
-    chat: false
-  # One math-specialised base: the mirror image of the two above.
+  # The interaction test in its purest form: same architecture, same
+  # tokenizer, same family as qwen25_7b_base, specialised on mathematics. Any
+  # corpus statistic gives these two receivers identical values.
   qwen25_math_7b_base:
-    name: Qwen/Qwen2.5-Math-7B
-    revision: main
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-Math-7B
+    revision: dsdir-shared-store
     backbone: nf4
     chat: false
-  # Open-data pretraining, and a 256k vocabulary: the tokenizer contrast.
-  olmo2_7b_base:
-    name: allenai/OLMo-2-1124-7B
-    revision: main
-    backbone: nf4
-    chat: false
+  # The tokenizer lever: 256k pieces against Mistral's 32k on identical text.
   gemma2_9b_base:
-    name: google/gemma-2-9b
-    revision: main
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/google/gemma-2-9b
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  # Same tokenizer and pretraining as gemma2_9b_base, different posterior. The
+  # prompt format is deliberately the base one on both, so the weights are the
+  # only thing that differs.
+  gemma2_9b_instruct:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/google/gemma-2-9b-it
+    revision: dsdir-shared-store
     backbone: nf4
     chat: false
 adapters:
@@ -155,11 +167,10 @@ studies:
     - mistral_7b_base
     - llama31_8b_base
     - qwen25_7b_base
-    - qwen25_coder_7b_base
-    - deepseek_coder_7b_base
+    - qwen3_8b_base
     - qwen25_math_7b_base
-    - olmo2_7b_base
     - gemma2_9b_base
+    - gemma2_9b_instruct
     datasets: [kind_code]
     seeds: &seeds [11, 22, 33]
     adapters: &adapter [all_linear_r16]

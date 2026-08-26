@@ -17,5 +17,17 @@ set -euo pipefail
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
 source "$repo_root/scripts/jean_zay_env.sh"
+
+# Defaults are the original campaign, so an unparameterised submit behaves as
+# it always did. A second panel passes its own config and manifest:
+#
+#   sbatch --array=0-8%9 --export=ALL,\
+#     CONFIG=configs/transposed_receiver_panel.yaml,\
+#     MANIFEST=prepared/transposed-manifest.jsonl,SHARDS=9 \
+#     scripts/jean_zay_array.sbatch
+config="${CONFIG:-configs/campaign.yaml}"
+manifest="${MANIFEST:-prepared/manifest.jsonl}"
+shards="${SHARDS:-16}"
 exec "$PYTHON" -m fineqcomp run \
-  --shard "$SLURM_ARRAY_TASK_ID" --shards 16
+  --config "$config" --manifest "$manifest" \
+  --shard "$SLURM_ARRAY_TASK_ID" --shards "$shards"

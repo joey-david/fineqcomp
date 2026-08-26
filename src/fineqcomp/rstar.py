@@ -364,6 +364,8 @@ def retention_profile(run_dir: Path) -> dict[str, Any]:
                 "codec": metric.get("codec_key"),
                 "rate_bits_per_value": float(rate),
                 "relative_rmse": storage.get("relative_rmse"),
+                "file_bits": storage.get("file_bits"),
+                "tensor_values": storage.get("tensor_values"),
                 "heldout_bits_saved": float(saved),
             }
         )
@@ -385,6 +387,19 @@ def retention_profile(run_dir: Path) -> dict[str, Any]:
         if crossings.get("r90") and crossings.get("r50")
         else None
     )
+    # The serialized size at the crossing, so the adapter and the information
+    # it saves can be compared as two bit counts rather than as a rate and a
+    # correlation.
+    sizes = [
+        (point["rate_bits_per_value"], float(point["file_bits"]))
+        for point in points
+        if point.get("file_bits") is not None
+    ]
+    file_bits_at_r90 = (
+        _interpolate(sizes, crossings["r90"]) if crossings.get("r90") else None
+    )
+    record = json.loads((run_dir / "metrics.json").read_text())
+    raw = record.get("raw_information") or {}
     return {
         "run_dir": str(run_dir),
         "rungs": len(points),
@@ -392,4 +407,20 @@ def retention_profile(run_dir: Path) -> dict[str, Any]:
         "points": points,
         **crossings,
         "shape_r90_over_r50": shape,
+        "file_bits_at_r90": file_bits_at_r90,
+        "heldout_tokens": (raw.get("heldout") or {}).get("nll_tokens"),
+        "train_tokens": (raw.get("train") or {}).get("nll_tokens"),
     }
+
+
+def _interpolate(points: list[tuple[float, float]], at: float) -> float | None:
+    """Linear read of the second coordinate at a given first coordinate."""
+    ordered = sorted(points)
+    for index in range(1, len(ordered)):
+        left, right = ordered[index - 1], ordered[index]
+        if left[0] <= at <= right[0]:
+            span = right[0] - left[0]
+            if span <= 0:
+                return right[1]
+            return left[1] + (at - left[0]) * (right[1] - left[1]) / span
+    return None
