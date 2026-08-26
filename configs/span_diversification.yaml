@@ -1,0 +1,167 @@
+# Does the span decomposition survive outside one marker on one dataset?
+#
+# The result it tests: on MetaMathQA split at `The answer is:`, the reasoning
+# span's gain is the same whether or not the answer is also supervised --
+# 0.5904 vs 0.5906 on Llama, 0.5610 vs 0.5617 on Mistral, 0.1007 vs 0.1007 on
+# Qwen, every difference under a tenth of the seed noise. And a span left
+# unsupervised is destroyed rather than left alone: answer-only supervision
+# takes the reasoning span to -1.52, -3.03 and -0.46 bits per token.
+#
+# Every one of those numbers comes from one dataset with one marker, where the
+# answer span is about three tokens of stereotyped text at the end of a long
+# rationale. Two ways that could be an artifact, and this panel is built to
+# find out:
+#
+#   1. The answer span may be too easy. Magicoder inverts the proportions --
+#      a median of 29 words of prose before the first code fence and 164 after
+#      it -- so the "answer" is a whole program that shares its vocabulary with
+#      the reasoning. If additivity needs a short stereotyped tail, it dies
+#      here. The fence is found from the left: the first ``` opens the answer
+#      and the last one closes it, so the usual right-hand search would put the
+#      program in the reasoning span. About 19% of responses carry no fence and
+#      are dropped by the span scorer.
+#
+#   2. Additivity is trivial when a channel writes nothing. Qwen2.5-Math
+#      already reasons, so its reasoning channel should be close to empty;
+#      Gemma-2 instruct already answers in format, so its answer channel
+#      should be. Both are included precisely because they should make one
+#      side degenerate, and a decomposition that only holds when both channels
+#      are busy is a much weaker claim than the one currently written down.
+#
+# The two new receivers also run on the incumbent math dataset, so the model
+# axis and the dataset axis can be read apart rather than confounded.
+#
+# Prediction recorded before the run: additivity holds on math for every
+# receiver, and breaks on code -- the interaction on the code split exceeds one
+# seed standard deviation on at least two of the four receivers. If it holds on
+# code too, the claim is far stronger than currently stated and the write-up
+# should say so.
+#
+# Cost: 36 code cells + 18 math cells = 54 runs on the shared 4-epoch contract.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+codecs:
+  uniform2: {method: uniform, bits: 2}
+  binary: {method: uniform, bits: 1}
+  sub0_08_16: {method: uniform, bits: 0, blend: 0.5}
+  sub0_04_16: {method: uniform, bits: 0, blend: 0.25, score_task: false}
+  sub0_02_16: {method: uniform, bits: 0, blend: 0.125, score_task: false}
+models:
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_math_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-Math-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  gemma2_9b_instruct:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/google/gemma-2-9b-it
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+training:
+  span_full: &span_full
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+    label_span: all
+  span_reasoning:
+    <<: *span_full
+    label_span: reasoning
+  span_answer:
+    <<: *span_full
+    label_span: answer
+datasets:
+  cot_code:
+    task_type: generative
+    train_source: {path: ise-uiuc/Magicoder-Evol-Instruct-110K, name: default, revision: b0079beaa0361d82412520b873715bee59cc7dd4, split: train, converter: magicoder}
+    answer_marker: '```'
+    answer_marker_from_end: false
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 164
+    evaluations:
+    - {key: humaneval, path: openai/openai_humaneval, name: openai_humaneval, revision: 7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544, split: test, converter: humaneval}
+    screening_metric: pass_at_1
+    maximum_baseline_score: 0.75
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  cot_math:
+    task_type: generative
+    train_source: {path: meta-math/MetaMathQA, name: default, revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18, split: train, converter: metamath}
+    answer_marker: 'The answer is:'
+    validation_rows: 256
+    train_rows: 32000
+    test_rows: 1319
+    evaluations:
+    - {key: gsm8k, path: openai/gsm8k, name: main, revision: 740312add88f781978c0658806c59bc2815b9866, split: test, converter: gsm8k}
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+studies:
+  code_full:
+    kind: natural
+    models: &all [mistral_7b_base, qwen25_7b_base, qwen25_math_7b_base, gemma2_9b_instruct]
+    datasets: &code [cot_code]
+    seeds: &seeds [11, 22, 33]
+    adapters: &adapter [all_linear_r16]
+    training: span_full
+  code_reasoning:
+    kind: natural
+    models: *all
+    datasets: *code
+    seeds: *seeds
+    adapters: *adapter
+    training: span_reasoning
+  code_answer:
+    kind: natural
+    models: *all
+    datasets: *code
+    seeds: *seeds
+    adapters: *adapter
+    training: span_answer
+  math_full:
+    kind: natural
+    models: &new [qwen25_math_7b_base, gemma2_9b_instruct]
+    datasets: &math [cot_math]
+    seeds: *seeds
+    adapters: *adapter
+    training: span_full
+  math_reasoning:
+    kind: natural
+    models: *new
+    datasets: *math
+    seeds: *seeds
+    adapters: *adapter
+    training: span_reasoning
+  math_answer:
+    kind: natural
+    models: *new
+    datasets: *math
+    seeds: *seeds
+    adapters: *adapter
+    training: span_answer
