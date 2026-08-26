@@ -155,10 +155,19 @@ def _read_codebook(directory: Path, seed: int, required: int) -> tuple[list[int]
 # Every rule is a total function of the prompt alone, so a learner that has the
 # rule needs no per-mapping storage. They are deliberately arithmetic rather
 # than linguistic: a base model has no head start on any of them.
+# The ladder runs from a map that ignores one input to one that multiplies the
+# two together. Every entry is a total function of the prompt with the same
+# four-bit description, so a condition's source bits do not move along it and
+# any change in what the adapter costs is a property of the map, not of the
+# data. `sum` and `product` already differ by 2.3x in bits per value at those
+# same four bits; the rest turn that pair into a dose-response.
 RULES: dict[str, Any] = {
-    "sum": lambda family, item: (family + item) % ALPHABET,
     "item": lambda family, item: item % ALPHABET,
+    "sum": lambda family, item: (family + item) % ALPHABET,
+    "difference": lambda family, item: (family - item) % ALPHABET,
+    "xor": lambda family, item: (family ^ item) % ALPHABET,
     "product": lambda family, item: (family * 3 + item * 5) % ALPHABET,
+    "bilinear": lambda family, item: (family * item) % ALPHABET,
 }
 
 

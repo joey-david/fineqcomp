@@ -406,3 +406,35 @@ def test_condition_reads_the_rule_fields():
     assert condition.rule == "sum"
     assert condition.payload_families == 4
     assert condition.reveal_rule is True
+
+
+def test_rule_ladder_is_total_and_holds_source_bits_fixed():
+    """Every rule is a function of the prompt alone, so all cost four bits.
+
+    That is what makes the ladder a test of the map rather than of the data: a
+    condition's source bits are the same at every rung, so a difference in
+    adapter rate cannot be a difference in what there was to learn.
+    """
+    from fineqcomp.information_scaling import ALPHABET, RULES
+
+    assert set(RULES) >= {"item", "sum", "difference", "xor", "product", "bilinear"}
+    seen = {}
+    for name, rule in RULES.items():
+        table = [
+            [rule(family, item) for item in range(ALPHABET)]
+            for family in range(ALPHABET)
+        ]
+        flat = [value for row in table for value in row]
+        assert all(0 <= value < ALPHABET for value in flat)
+        # Deterministic, so re-evaluating gives the same table.
+        assert table[3][7] == rule(3, 7)
+        signature = tuple(flat)
+        assert signature not in seen, f"{name} duplicates {seen.get(signature)}"
+        seen[signature] = name
+    # `item` ignores the family; every other rung uses both inputs.
+    assert RULES["item"](0, 5) == RULES["item"](9, 5)
+    for name in ("sum", "difference", "xor", "product", "bilinear"):
+        assert any(
+            RULES[name](0, item) != RULES[name](1, item)
+            for item in range(ALPHABET)
+        ), name
