@@ -15,7 +15,7 @@
 #SBATCH --account=fas@h100
 #SBATCH --partition=gpu_p6
 #SBATCH --constraint=h100
-#SBATCH --qos=qos_gpu_h100-dev
+#SBATCH --qos=qos_gpu_h100-t3
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:h100:1
