@@ -119,25 +119,14 @@ adapter_codecs:
 - key: uniform2
   bits: 2
 grid:
-- study: payload_dense
+- study: map_complexity
   conditions:
-  - rule
-  - rule_p1
-  - rule_p2
-  - rule_p3
-  - rule_p4
-  - rule_p6
-  - rule_p8
-  adapters:
-  - all_linear_r16
-  prefixes:
-  - 128
-- study: second_rule
-  conditions:
-  - alt_rule
-  - alt_p2
-  - alt_p4
-  - alt_p8
+  - map_item
+  - map_sum
+  - map_difference
+  - map_xor
+  - map_product
+  - map_bilinear
   adapters:
   - all_linear_r16
   prefixes:
