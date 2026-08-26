@@ -1,0 +1,13 @@
+{
+  "arms": 67,
+  "cells": 268,
+  "controls": [
+    "text_cross_row_redundancy",
+    "train_response_tokens"
+  ],
+  "cross_receiver_pairs": 55,
+  "permutations": 20000,
+  "r_star_cv": 0.3384671962925912,
+  "receivers": 4,
+  "shared_datasets": 15
+}

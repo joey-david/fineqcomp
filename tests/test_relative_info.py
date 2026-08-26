@@ -8,21 +8,23 @@ import pytest
 from fineqcomp.data import Example
 from fineqcomp.relative_info import (
     CANDIDATES,
+    channel_bits_ceiling,
+    codec_referenced_retention,
     COVERAGE_CANDIDATES,
     SPECTRAL_CANDIDATES,
     _spectral_rate_distortion,
     analyze_relative_information_cells,
-    combine_correction_information_area,
     coverage_candidates,
     reduce_sketches,
     sample_examples,
     text_cross_row_redundancy,
 )
 from fineqcomp.relative_validation import (
+    add_tokenizer_fertility,
     analyze_fixed_channel_prospective,
-    analyze_external_receiver,
-    analyze_measurement_stability,
-    select_locked_candidate,
+    candidate_gate,
+    evaluate_rate_models,
+    analyze_measure_diagnostics,
 )
 
 
@@ -187,151 +189,6 @@ def test_analysis_uses_arm_means_and_merges_reused_datasets():
     assert analysis["summary"]["strongest_task_heldout_rmse"] < 1e-6
 
 
-def test_discovery_lock_applies_all_recorded_gates():
-    ranking = [
-        {
-            "candidate": "base_codelength_bits_per_token",
-            "task_heldout_rmse": 0.30,
-        }
-    ]
-    for candidate in SPECTRAL_CANDIDATES:
-        passing = candidate == "correction_rd90_bits"
-        ranking.append(
-            {
-                "candidate": candidate,
-                "selection_adjusted_p": 0.001 if passing else 0.5,
-                "task_heldout_rmse": 0.15 if passing else 0.35,
-                "model_only_rmse": 0.32,
-                "model_and_task_residual_r": 0.5,
-                "within_model_mean_spearman": 0.8 if passing else 0.1,
-            }
-        )
-    slopes = []
-    for candidate in SPECTRAL_CANDIDATES:
-        for task, slope in (("sql", 0.005), ("xbrl", 0.03)):
-            for model in ("mistral", "qwen"):
-                slopes.append(
-                    {
-                        "measure": candidate,
-                        "task": task,
-                        "model_key": model,
-                        "slope_per_doubling": slope,
-                    }
-                )
-
-    locked = select_locked_candidate(
-        {"ranking": ranking, "diversity_slopes": slopes}
-    )
-
-    assert locked["status"] == "locked"
-    assert locked["candidate"] == "correction_rd90_bits"
-
-
-@pytest.mark.parametrize("study_prefix", ["llama", "qwen3"])
-def test_external_receiver_uses_five_natural_arms_for_the_gate(study_prefix):
-    discovery = []
-    for model_index, model in enumerate(("mistral", "qwen")):
-        for index in range(5):
-            discovery.append(
-                {
-                    "model_key": model,
-                    "dataset_key": f"task_{index}",
-                    "reference_bits_saved_per_token": 1.0,
-                    "r_star_bits_per_value": 0.1 * index + 0.05 * model_index,
-                    "base_codelength_bits_per_token": 10.0,
-                    "dataset_fisher_log_volume": 1000.0 + 100.0 * index,
-                }
-            )
-    external = []
-    for study, datasets in (
-        (f"{study_prefix}_natural", [f"task_{index}" for index in range(5)]),
-        (f"{study_prefix}_cot_full", ["cot_math"]),
-        (f"{study_prefix}_cot_reasoning", ["cot_math"]),
-        (f"{study_prefix}_cot_answer", ["cot_math"]),
-    ):
-        for dataset in datasets:
-            index = len({row["dataset_key"] for row in external})
-            external.append(
-                {
-                    "study": study,
-                    "model_key": "llama",
-                    "dataset_key": dataset,
-                    "r_star_bits_per_value": 0.1 * index,
-                    "base_codelength_bits_per_token": 10.0,
-                    "dataset_fisher_log_volume": 1000.0 + 100.0 * index,
-                }
-            )
-
-    result = analyze_external_receiver(
-        discovery, external, "dataset_fisher_log_volume"
-    )
-
-    assert result["natural_spearman"] == pytest.approx(1.0)
-    assert result["gates"]["natural_spearman_at_least_0_70"]
-
-
-def test_external_receiver_reports_unavailable_cot_arms():
-    discovery = []
-    for model_index, model in enumerate(("mistral", "qwen")):
-        for index in range(5):
-            discovery.append(
-                {
-                    "model_key": model,
-                    "dataset_key": f"task_{index}",
-                    "r_star_bits_per_value": 0.1 * index + 0.05 * model_index,
-                    "reference_bits_saved_per_token": 1.0,
-                    "base_codelength_bits_per_token": 10.0,
-                    "fisher_effective_rank": 10.0 + index,
-                }
-            )
-    external = [
-        {
-            "study": "qwen3_natural",
-            "model_key": "qwen3",
-            "dataset_key": f"task_{index}",
-            "r_star_bits_per_value": 0.1 * index,
-            "reference_bits_saved_per_token": 1.0,
-            "base_codelength_bits_per_token": 10.0,
-            "fisher_effective_rank": 10.0 + index,
-        }
-        for index in range(5)
-    ]
-
-    result = analyze_external_receiver(
-        discovery, external, "fisher_effective_rank"
-    )
-
-    assert result["cot_spearman"] is None
-    assert result["cot_arms_available"] == 0
-    assert result["natural_arms_available"] == 5
-    assert result["status"] == "passed"
-
-
-def test_stability_requires_matching_low_variance_ranked_arms():
-    settings = {
-        "r256_s1729": {"a": 10.0, "b": 20.0, "c": 30.0},
-        "r128_s2718": {"a": 10.1, "b": 19.9, "c": 30.2},
-        "r64_s31415": {"a": 9.9, "b": 20.1, "c": 29.8},
-    }
-
-    result = analyze_measurement_stability(settings, "r256_s1729")
-
-    assert result["status"] == "passed"
-    assert result["minimum_rank_spearman"] == pytest.approx(1.0)
-
-
-def test_correction_information_area_is_log_row_trapezoid():
-    cells = {
-        64: [{"run_id": "one", "dataset_fisher_log_volume": 4.0}],
-        128: [{"run_id": "one", "dataset_fisher_log_volume": 8.0}],
-        256: [{"run_id": "one", "dataset_fisher_log_volume": 12.0}],
-    }
-
-    combined = combine_correction_information_area(cells)
-
-    assert combined[0]["correction_information_area"] == pytest.approx(8.0)
-
-
 def _correction_cloud(distinct: int, rows: int, width: int, seed: int):
     """Rows drawn from a fixed number of distinct correction directions."""
     generator = torch.Generator().manual_seed(seed)
@@ -346,9 +203,12 @@ def test_coverage_reports_exactly_its_named_candidates():
         torch.randn(64, 16), torch.randn(64, 8), torch.randn(64, 32)
     )
 
-    assert set(measured) | {"text_cross_row_redundancy"} == set(
-        COVERAGE_CANDIDATES
-    )
+    # Both text statistics are measured from the raw rows, not from these
+    # tensors, so they are attached by the caller rather than returned here.
+    assert set(measured) | {
+        "text_cross_row_redundancy",
+        "tokenizer_fertility",
+    } == set(COVERAGE_CANDIDATES)
 
 
 def test_coverage_counts_distinct_corrections_not_their_size():
@@ -657,3 +517,149 @@ def test_head_subspace_reads_the_frozen_unembedding():
     # An orthonormal basis keeps all of its own energy.
     inside, whole = _inside_fraction(right.T.double(), right.double()).tolist()
     assert inside == pytest.approx(whole, rel=1e-6)
+
+
+def test_diagnostics_separate_a_corpus_measure_from_a_receiver_measure():
+    """A corpus-only measure must show no receiver share and no pair signal.
+
+    Three receivers see the same four corpora. `corpus_only` is a property of
+    the text, so it repeats across receivers and can never order them.
+    `receiver_aware` adds a per-receiver offset that R* follows.
+    """
+    corpus = {"d1": 1.0, "d2": 2.0, "d3": 3.0, "d4": 4.0}
+    offset = {"m1": 0.0, "m2": 0.1, "m3": 0.3}
+    r_star = {
+        (model, dataset): 0.1 * value + shift
+        for model, shift in offset.items()
+        for dataset, value in corpus.items()
+    }
+    cells = [
+        {
+            "model_key": model,
+            "dataset_key": dataset,
+            "r_star_bits_per_value": value,
+            "reference_bits_saved_per_token": 1.0,
+            "corpus_only": corpus[dataset],
+            "receiver_aware": corpus[dataset] + 10.0 * offset[model],
+        }
+        for (model, dataset), value in r_star.items()
+    ]
+    result = analyze_measure_diagnostics(
+        cells,
+        ("corpus_only", "receiver_aware"),
+        controls=(),
+        permutations=200,
+    )
+    rows = {row["candidate"]: row for row in result["diagnostics"]}
+    assert result["summary"]["cross_receiver_pairs"] == 12
+    assert rows["corpus_only"]["receiver_variance_share"] == pytest.approx(0.0, abs=1e-9)
+    assert rows["corpus_only"]["cross_receiver_spearman"] == pytest.approx(0.0)
+    assert rows["receiver_aware"]["receiver_variance_share"] > 0.0
+    assert rows["receiver_aware"]["cross_receiver_spearman"] > 0.9
+
+
+def test_channel_bits_sit_just_under_a_white_noise_ceiling():
+    """The measure's maximum is fixed by the row count, not by the corpus.
+
+    A white spectrum saturates every mode at `0.5 * log2(1 + gamma)`, so the
+    ceiling is that times the number of modes. Any real spectrum falls below
+    it, and how far below is the whole of the measure's range.
+    """
+    from fineqcomp.relative_info import _channel_bits, _channel_deficit_bits
+
+    white = torch.ones(256, dtype=torch.float64)
+    concentrated = torch.zeros(256, dtype=torch.float64)
+    concentrated[0] = 256.0
+
+    ceiling = channel_bits_ceiling(256)
+    assert ceiling == pytest.approx(0.5 * 256 * math.log2(1.01))
+    assert _channel_bits(white) == pytest.approx(ceiling)
+    assert _channel_deficit_bits(white) == pytest.approx(0.0, abs=1e-9)
+    # All the energy in one of 256 modes still scores half the ceiling, which
+    # is why real corpora sit at 90-98% of it and the measure has so little
+    # spread.
+    assert _channel_bits(concentrated) == pytest.approx(0.5 * ceiling, rel=0.02)
+    assert _channel_deficit_bits(concentrated) == pytest.approx(
+        0.5 * ceiling, rel=0.02
+    )
+
+
+def test_codec_referenced_retention_falls_as_the_codec_gets_coarser():
+    spectrum = torch.tensor(
+        [100.0, 10.0, 1.0, 0.1] * 8, dtype=torch.float64
+    )
+    fine = codec_referenced_retention(spectrum, 0.1)
+    coarse = codec_referenced_retention(spectrum, 0.9)
+    assert 0.0 < coarse < fine <= 1.0
+    assert codec_referenced_retention(spectrum, 0.0) == pytest.approx(1.0)
+
+
+def test_fertility_splits_a_token_count_into_corpus_size_and_receiver_fit():
+    """One corpus on two receivers: size is shared, fertility is not."""
+    arms = [
+        {"model_key": "m1", "dataset_key": "d1", "train_response_tokens": 1000.0},
+        {"model_key": "m2", "dataset_key": "d1", "train_response_tokens": 1400.0},
+        {"model_key": "m1", "dataset_key": "d2", "train_response_tokens": 200.0},
+    ]
+    add_tokenizer_fertility(arms)
+
+    assert arms[0]["corpus_tokens"] == arms[1]["corpus_tokens"] == 1200.0
+    assert arms[0]["tokenizer_fertility_relative"] < 1.0
+    assert arms[1]["tokenizer_fertility_relative"] > 1.0
+    assert arms[2]["tokenizer_fertility_relative"] == pytest.approx(1.0)
+    assert arms[2]["receivers_sharing_corpus"] == 1
+
+
+def test_candidate_gate_demotes_a_candidate_that_only_repeats_a_control():
+    """A copy of a control adds nothing; an independent signal survives."""
+    control = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+    independent = [3.0, 1.0, 7.0, 0.0, 5.0, 2.0, 6.0, 4.0]
+    arms = [
+        {
+            "model_key": model,
+            "dataset_key": f"d{step}",
+            "r_star_bits_per_value": 0.1 * control[step]
+            + 0.1 * independent[step]
+            + offset,
+            "text_cross_row_redundancy": control[step],
+            "train_response_tokens": control[step] ** 2 + 1.0,
+            "copy_of_control": control[step] * 3.0 + 1.0,
+            "independent": independent[step],
+        }
+        for model, offset in (("m1", 0.0), ("m2", 1.0))
+        for step in range(len(control))
+    ]
+    rows = {
+        row["candidate"]: row
+        for row in candidate_gate(arms, ("copy_of_control", "independent"))
+    }
+
+    assert abs(rows["copy_of_control"]["partial_within_model_spearman"]) < 0.05
+    assert rows["independent"]["partial_within_model_spearman"] > 0.5
+    assert rows["independent"]["adds_over_controls"]
+    assert not rows["copy_of_control"]["adds_over_controls"]
+
+
+def test_held_out_receiver_scoring_drops_the_held_out_intercept():
+    """A useless predictor must not beat the receiver mean it is fitted with."""
+    arms = [
+        {
+            "model_key": model,
+            "dataset_key": f"d{step}",
+            "r_star_bits_per_value": 0.1 * step + offset,
+            "signal": float(step),
+            "noise": float((step * 3) % 5) * 1e-6,
+        }
+        for model, offset in (("m1", 0.0), ("m2", 0.3), ("m3", 0.6))
+        for step in range(5)
+    ]
+    rows = {
+        row["model"]: row
+        for row in evaluate_rate_models(
+            arms, {"signal": ("signal",), "noise": ("noise",), "mean": ()}
+        )
+    }
+
+    assert rows["signal"]["receiver_held_out_rmse"] < rows["mean"]["receiver_held_out_rmse"]
+    assert rows["signal"]["receiver_held_out_spearman"] == pytest.approx(1.0)
+    assert rows["noise"]["receiver_held_out_rmse"] >= rows["signal"]["receiver_held_out_rmse"]

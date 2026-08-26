@@ -1,0 +1,180 @@
+# Transposed panel: one corpus at a time, eight receivers, nothing else moving.
+#
+# Every panel run so far varied the corpus inside a receiver and absorbed the
+# receiver in a fixed effect. That design cannot test the claim the campaign
+# makes. A corpus statistic takes the same value on every receiver, so it can
+# only ever be graded on the corpus axis, where a zlib redundancy score and a
+# token count already reach within-receiver Spearman 0.74 and beat every
+# gradient measurement on a held-out receiver.
+#
+# Here the corpus is the block and the receiver is the contrast. Corpus size,
+# rows, seeds, rank, optimizer and codec ladder are identical inside a block,
+# so no corpus quantity can score at all: it is constant where the ranking is
+# taken. Only a measurement that changes with the receiver can pass.
+#
+# The receivers are chosen so their distance to the three corpora is designed
+# rather than incidental: two code-specialised bases, one math-specialised
+# base, three general bases, and a wide tokenizer spread (Mistral 32k through
+# Gemma 256k) because tokens per character is the strongest cross-receiver
+# predictor the audit found.
+#
+# Predictions recorded before any run:
+#   1. The receiver ordering on kind_code differs from the ordering on
+#      panel_math. A corpus statistic predicts the same ordering for both and
+#      therefore cannot be right about both.
+#   2. The ordering on xbrl_tags is flatter than on either, because no
+#      receiver pretrained on XBRL tag prediction.
+#   3. Tokens per character of the corpus, measured with no forward pass,
+#      orders the receivers within a block with negative sign.
+#
+# Cost: 3 corpora x 8 receivers x 3 seeds = 72 runs on the shared 4-epoch
+# contract, plus the dense sub-bit ladder each. Run `preflight` first: the
+# model paths below are Hub ids, and the Jean-Zay shared store may hold some
+# of them under /lustre/fsmisc/dataset/HuggingFace_Models/<id>.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+codecs:
+  uniform2: {method: uniform, bits: 2}
+  blend1_50: {method: uniform, bits: 1, blend: 0.5}
+  binary: {method: uniform, bits: 1}
+  sub0_14_16: {method: uniform, bits: 0, blend: 0.875, score_task: false}
+  sub0_12_16: {method: uniform, bits: 0, blend: 0.75, score_task: false}
+  sub0_10_16: {method: uniform, bits: 0, blend: 0.625, score_task: false}
+  sub0_08_16: {method: uniform, bits: 0, blend: 0.5}
+  sub0_06_16: {method: uniform, bits: 0, blend: 0.375, score_task: false}
+  sub0_05_16: {method: uniform, bits: 0, blend: 0.3125, score_task: false}
+  sub0_04_16: {method: uniform, bits: 0, blend: 0.25, score_task: false}
+  sub0_03_16: {method: uniform, bits: 0, blend: 0.1875, score_task: false}
+  sub0_02_16: {method: uniform, bits: 0, blend: 0.125, score_task: false}
+  sub0_01_16: {method: uniform, bits: 0, blend: 0.0625, score_task: false}
+models:
+  # Three general bases already in the campaign: the continuity arms.
+  mistral_7b_base:
+    name: mistralai/Mistral-7B-v0.1
+    revision: main
+    backbone: nf4
+    chat: false
+  llama31_8b_base:
+    name: meta-llama/Llama-3.1-8B
+    revision: main
+    backbone: nf4
+    chat: false
+  qwen25_7b_base:
+    name: Qwen/Qwen2.5-7B
+    revision: main
+    backbone: nf4
+    chat: false
+  # Two code-specialised bases: near kind_code, far from panel_math.
+  qwen25_coder_7b_base:
+    name: Qwen/Qwen2.5-Coder-7B
+    revision: main
+    backbone: nf4
+    chat: false
+  deepseek_coder_7b_base:
+    name: deepseek-ai/deepseek-coder-6.7b-base
+    revision: main
+    backbone: nf4
+    chat: false
+  # One math-specialised base: the mirror image of the two above.
+  qwen25_math_7b_base:
+    name: Qwen/Qwen2.5-Math-7B
+    revision: main
+    backbone: nf4
+    chat: false
+  # Open-data pretraining, and a 256k vocabulary: the tokenizer contrast.
+  olmo2_7b_base:
+    name: allenai/OLMo-2-1124-7B
+    revision: main
+    backbone: nf4
+    chat: false
+  gemma2_9b_base:
+    name: google/gemma-2-9b
+    revision: main
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+training:
+  panel_4ep: &panel_4ep
+    epochs: 4
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+datasets:
+  kind_code:
+    task_type: generative
+    train_source: {path: ise-uiuc/Magicoder-Evol-Instruct-110K, name: default, revision: b0079beaa0361d82412520b873715bee59cc7dd4, split: train, converter: magicoder}
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 164
+    evaluations:
+    - {key: humaneval, path: openai/openai_humaneval, name: openai_humaneval, revision: 7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544, split: test, converter: humaneval}
+    screening_metric: pass_at_1
+    maximum_baseline_score: 0.75
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  panel_math:
+    task_type: generative
+    train_source: {path: meta-math/MetaMathQA, name: default, revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18, split: train, converter: metamath}
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 1319
+    evaluations:
+    - {key: gsm8k, path: openai/gsm8k, name: main, revision: 740312add88f781978c0658806c59bc2815b9866, split: test, converter: gsm8k}
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  xbrl_tags:
+    task_type: generative
+    train_source: {path: wangd12/XBRL_analysis, name: tags, revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17, split: train, converter: xbrl_tags}
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 500
+    evaluations:
+    - {key: xbrl_tags, path: wangd12/XBRL_analysis, name: tags, revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17, split: test, converter: xbrl_tags}
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+studies:
+  transposed_code:
+    kind: natural
+    models: &receivers
+    - mistral_7b_base
+    - llama31_8b_base
+    - qwen25_7b_base
+    - qwen25_coder_7b_base
+    - deepseek_coder_7b_base
+    - qwen25_math_7b_base
+    - olmo2_7b_base
+    - gemma2_9b_base
+    datasets: [kind_code]
+    seeds: &seeds [11, 22, 33]
+    adapters: &adapter [all_linear_r16]
+    training: panel_4ep
+  transposed_math:
+    kind: natural
+    models: *receivers
+    datasets: [panel_math]
+    seeds: *seeds
+    adapters: *adapter
+    training: panel_4ep
+  transposed_xbrl:
+    kind: natural
+    models: *receivers
+    datasets: [xbrl_tags]
+    seeds: *seeds
+    adapters: *adapter
+    training: panel_4ep

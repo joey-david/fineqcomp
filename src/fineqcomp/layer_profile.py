@@ -28,7 +28,6 @@ missing.
 
 from __future__ import annotations
 
-import json
 import math
 from contextlib import contextmanager
 from pathlib import Path
@@ -37,7 +36,7 @@ from typing import Any, Iterable
 import torch
 from torch.utils.data import DataLoader
 
-from fineqcomp.adapters import apply_adapter_tensors, trainable_state
+from fineqcomp.adapters import apply_adapter_tensors
 from fineqcomp.codec import (
     decode_adapter_tensor_map,
     decode_layer_groups,

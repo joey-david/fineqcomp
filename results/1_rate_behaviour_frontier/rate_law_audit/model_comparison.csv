@@ -1,0 +1,7 @@
+model,predictors,held_out_receivers,receiver_held_out_rmse,receiver_held_out_spearman
+text redundancy,text_cross_row_redundancy,4,0.152366292475956,0.7412116265155255
+log tokens + log channel deficit,log_train_response_tokens+log_channel_deficit,4,0.1603647318386733,0.6996031504596151
+channel bits (incumbent),correction_channel_bits,4,0.16504826538997952,0.7438266606665875
+log channel deficit,log_channel_deficit,4,0.1732552269894367,0.5561219129670326
+log tokens,log_train_response_tokens,4,0.1915195316207119,0.7357037136388493
+receiver mean only,receiver mean,4,0.23873705850767904,0.0

@@ -1,0 +1,15 @@
+{
+  "arms": 67,
+  "best_receiver_held_out": "text redundancy",
+  "best_receiver_held_out_rmse": 0.152366292475956,
+  "candidates_adding_over_controls": 12,
+  "candidates_screened": 46,
+  "cells": 268,
+  "cross_receiver_pairs": 55,
+  "forward_model_arms": 268,
+  "receiver_mean_rmse": 0.23873705850767904,
+  "receivers": 4,
+  "recorded_arms_scored": 5,
+  "retention_shape_max": 5.1499286461867095,
+  "retention_shape_min": 1.8549662351543672
+}

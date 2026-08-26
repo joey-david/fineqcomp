@@ -164,6 +164,11 @@ COVERAGE_CANDIDATES = {
     "text_cross_row_redundancy": (
         "One minus the ratio of jointly to separately compressed responses."
     ),
+    "tokenizer_fertility": (
+        "Supervised tokens the receiver's tokenizer spends per character of "
+        "response text: the cheapest measurement of the corpus against the "
+        "model, and the only one that needs no forward pass."
+    ),
 }
 
 LAYER_CANDIDATES = {
@@ -330,6 +335,54 @@ def _channel_bits(
         return 0.0
     unit = values * (len(values) / total)
     return float(0.5 * torch.log2(1.0 + gamma * unit).sum())
+
+
+def channel_bits_ceiling(rows: int, gamma: float = _CHANNEL_NOISE_RATIO) -> float:
+    """The value `_channel_bits` returns for a white spectrum of `rows` modes.
+
+    Because the spectrum is rescaled to unit mean before the log, every mode
+    contributes at most `0.5 * log2(1 + gamma)` and a white spectrum hits that
+    bound in every mode.  At 256 rows and gamma 0.01 the bound is 1.8375, and
+    the measured corpora run from 1.17 to 1.81 -- the whole of the measure's
+    range is the last few per cent below its own ceiling.  Reporting the
+    distance to the ceiling instead of the raw rate leaves the ordering alone
+    and gives the quantity a spread comparable to what it has to predict.
+    """
+    if rows <= 0:
+        raise ValueError("rows must be positive")
+    return float(0.5 * rows * math.log2(1.0 + gamma))
+
+
+def _channel_deficit_bits(
+    eigenvalues: torch.Tensor, gamma: float = _CHANNEL_NOISE_RATIO
+) -> float:
+    """How far the correction spectrum falls short of a white one, in bits."""
+    values = eigenvalues.double().clamp_min(0)
+    ceiling = channel_bits_ceiling(len(values), gamma)
+    return max(ceiling - _channel_bits(values, gamma), 0.0)
+
+
+def codec_referenced_retention(
+    eigenvalues: torch.Tensor, relative_rmse: float
+) -> float:
+    """Share of correction energy a codec of relative error `eps` leaves behind.
+
+    The codec's own perturbation sets the noise floor instead of a fitted
+    gamma: white weight noise of relative size `eps` puts power
+    `eps**2 * mean(lambda)` into every direction, and each mode is attenuated
+    by the Wiener factor `lambda / (lambda + floor)`.  This is the whole of the
+    forward model -- no fitted constant, no receiver term -- so the rate at
+    which it reaches a retention target is a prediction of R* in the same
+    units rather than a rank to be correlated.
+    """
+    values = eigenvalues.double().clamp_min(0)
+    total = float(values.sum())
+    if total <= 0:
+        return 0.0
+    floor = float(relative_rmse) ** 2 * total / len(values)
+    if floor <= 0:
+        return 1.0
+    return float((values**2 / (values + floor)).sum() / total)
 
 
 def _energy_rank(eigenvalues: torch.Tensor, retention: float = 0.90) -> int:
@@ -545,6 +598,27 @@ def coverage_candidates(
         ),
         "coherent_fraction": float(unit.mean(dim=0).square().sum()),
     }
+
+
+def tokenizer_fertility(tokenizer: Any, rows: list[Example]) -> float:
+    """Tokens per response character under this receiver's tokenizer.
+
+    The corpus text is fixed, so this varies only with the vocabulary the
+    receiver brings to it: a model whose vocabulary already spells the corpus
+    in whole pieces scores low, and one that has to break it into fragments
+    scores high.  It is the only measurement of a corpus against a model that
+    needs neither a forward pass nor a gradient, and on the same-corpus
+    different-receiver comparisons it is the strongest predictor of R* that
+    this campaign has.
+    """
+    characters = sum(len(row.response) for row in rows)
+    if not characters:
+        return 0.0
+    tokens = sum(
+        len(tokenizer(row.response, add_special_tokens=False)["input_ids"])
+        for row in rows
+    )
+    return tokens / characters
 
 
 def text_cross_row_redundancy(rows: list[Example]) -> float:
@@ -900,6 +974,9 @@ def measure_relative_information(
     reduced["base_candidate_definitions"] = BASE_CANDIDATES
     reduced["coverage_candidates"]["text_cross_row_redundancy"] = (
         text_cross_row_redundancy(rows)
+    )
+    reduced["coverage_candidates"]["tokenizer_fertility"] = tokenizer_fertility(
+        session.tokenizer, rows
     )
     reduced["coverage_candidate_definitions"] = COVERAGE_CANDIDATES
     reduced["candidate_definitions"] = CANDIDATES
@@ -1671,6 +1748,14 @@ def spectral_candidates_from_record(measured: dict[str, Any]) -> dict[str, float
     ):
         if key not in candidates and spectra.get(name) is not None:
             candidates[key] = _channel_bits(
+                torch.as_tensor(spectra[name], dtype=torch.float64)
+            )
+    for key, name in (
+        ("correction_channel_deficit_bits", "correction"),
+        ("angular_correction_channel_deficit_bits", "angular_correction"),
+    ):
+        if key not in candidates and spectra.get(name) is not None:
+            candidates[key] = _channel_deficit_bits(
                 torch.as_tensor(spectra[name], dtype=torch.float64)
             )
     if (
