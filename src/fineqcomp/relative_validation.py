@@ -361,7 +361,18 @@ IDENTIFIER_COLUMNS = frozenset(
 # Read off the same retention curve as R*, so they are alternative targets and
 # never predictors of it.
 RETENTION_TARGET_COLUMNS = frozenset(
-    {"r50", "r75", "r90", "r95", "shape_r90_over_r50", "ceiling_heldout_bits_saved"}
+    {
+        "r50",
+        "r75",
+        "r90",
+        "r95",
+        "shape_r90_over_r50",
+        "ceiling_heldout_bits_saved",
+        "adapter_bits_at_r90",
+        "heldout_tokens",
+        "train_tokens",
+        "corpus_rows",
+    }
 )
 
 
@@ -708,6 +719,10 @@ def join_retention_profiles(
             {
                 "ceiling_heldout_bits_saved": profile["ceiling_heldout_bits_saved"],
                 "shape_r90_over_r50": profile["shape_r90_over_r50"],
+                "adapter_bits_at_r90": profile.get("file_bits_at_r90"),
+                "heldout_tokens": profile.get("heldout_tokens"),
+                "train_tokens": profile.get("train_tokens"),
+                "corpus_rows": cell.get("available_rows"),
                 **{
                     key: profile.get(key)
                     for key in ("r50", "r75", "r90", "r95")
@@ -1241,4 +1256,7 @@ def write_rate_law_report(
     ):
         _write_csv(out_dir / name, result[key])
     write_json(out_dir / "summary.json", result["summary"])
+    from fineqcomp.figures import write_audit_figures
+
+    result["figures"] = [str(path) for path in write_audit_figures(result, out_dir)]
     return result

@@ -46,6 +46,51 @@ signs. A single slope plus a receiver intercept has to pick one, and whichever
 it picks is wrong for the other comparison. That is the mechanism behind the
 prospective failure, and it is why more candidate screening cannot fix it.
 
+## Three figures
+
+![adapter against its own information](adapter_vs_information.png)
+
+`adapter_vs_information.png` — the serialized adapter at R\*(0.90) divided by
+the held-out bits it saves, one point per arm, sorted. The line at one is what
+the phrase "information-theoretic limit" would mean. Median 2,473x. Charging
+the adapter against every row of the training corpus instead, by extrapolating
+the measured bits per token, is the generous reading and still leaves a median
+of 106x with all 67 arms above one. R\* is a noise-tolerance threshold of a
+very redundant encoding, not a capacity.
+
+*Rejected alternative:* the two bit counts against an identity line. They are
+decades apart, so the arms crowd into one corner and most of the frame is
+empty.
+
+![the token count reverses sign](token_count_reversal.png)
+
+`token_count_reversal.png` — left, inside a receiver, more supervised tokens
+means a larger adapter (mean within-receiver Spearman +0.736). Right, the same
+corpus on two receivers, oriented so the more verbose tokenizer comes first:
+41 of 55 pairs fall. The split by tokenizer distance is the control. Where two
+receivers tokenize the corpus to within a tenth of each other there is no
+receiver difference to find and the sign is near chance, 60%; where they
+really differ it is 92%.
+
+*Rejected alternative:* one panel with grey connectors joining each corpus
+across receivers. It became spaghetti, and linking only consecutive receivers
+mixed the near-identical tokenizer pairs into the count, which reported 53%
+and understated a real effect.
+
+![candidates scored on the wrong axis](scored_on_the_wrong_axis.png)
+
+`scored_on_the_wrong_axis.png` — left, every candidate placed by what it
+explains inside a receiver against what it explains between receivers on one
+corpus. The gate ranked on the horizontal axis; the claim is about the
+vertical one. The two text statistics are drawn at exactly zero on the
+vertical axis, where they belong: they return the same number on every
+receiver and cannot in principle score there. Right, what that cost — on a
+receiver the fit has never seen, two zlib calls on the training text beat
+every measurement taken against the frozen model.
+
+*Rejected alternative:* a bar chart of either correlation alone. Each one
+looks like a clean ranking; only the two together show that they disagree.
+
 ## The six repairs, one at a time
 
 ### 1. Score candidates on the residual, not on raw agreement
@@ -155,6 +200,19 @@ An exponential fit to `log(1 − retention)` against rate was tried and dropped:
 it returns negative decay constants on part of the panel, and its scale
 parameter is predicted worse than R\* is.
 
+## A correction to what `train_response_tokens` measures
+
+It is not corpus size. The stored information block scores the first 256
+training rows, so the predictor is the supervised tokens in a fixed 256-row
+sample: response length times tokenizer fertility. Across arms it correlates
+with `distinct_rows` at 0.01, and `distinct_rows` itself predicts R\* at only
++0.105 within a receiver against +0.736 for the token count.
+
+So the within-receiver law is that longer supervised targets need a larger
+adapter, not that larger corpora do. And the cross-receiver difference is
+clean by construction: the same 256 rows are scored on every receiver, so what
+differs between them is the tokenizer and nothing else.
+
 ## What the repairs are worth
 
 `model_comparison.csv`, leave-one-receiver-out with no fitted term for the
@@ -193,7 +251,7 @@ holds corpus size fixed.
 ## What can and cannot be said
 
 Can be said. Adapter rate is predicted within a receiver at ρ ≈ 0.74 by the
-size and redundancy of the training text, and that transfers to an unseen
+length and redundancy of the supervised targets, and that transfers to an unseen
 receiver at 0.152 bits per value against a 0.239 baseline. The channel measure
 is 98% its own white-noise ceiling and should be reported as the deficit. Of
 the token count, the corpus part and the receiver part enter with opposite
