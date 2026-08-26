@@ -34,10 +34,17 @@ def causal_nll(
     batch_size: int,
     label_span: str = "all",
     answer_marker: str | None = None,
+    answer_marker_from_end: bool = True,
 ) -> dict[str, float | int]:
     """Mean NLL over the scored tokens, which `label_span` can narrow."""
     dataset = CausalExampleDataset(
-        tokenizer, examples, model_spec, max_length, label_span, answer_marker
+        tokenizer,
+        examples,
+        model_spec,
+        max_length,
+        label_span,
+        answer_marker,
+        answer_marker_from_end,
     )
     loader = DataLoader(
         dataset,
@@ -73,6 +80,7 @@ def train_adapter(
     seed: int,
     log_path: str | Path,
     answer_marker: str | None = None,
+    answer_marker_from_end: bool = True,
 ) -> dict[str, Any]:
     """Train only marked adapter tensors, ending on the best or the last state.
 
@@ -92,6 +100,7 @@ def train_adapter(
         spec.max_length,
         spec.label_span,
         answer_marker,
+        answer_marker_from_end,
     )
     generator = torch.Generator(device="cpu")
     generator.manual_seed(seed)
@@ -138,6 +147,7 @@ def train_adapter(
             spec.micro_batch_size,
             spec.label_span,
             answer_marker,
+            answer_marker_from_end,
         )
         record = {
             "epoch": epoch,

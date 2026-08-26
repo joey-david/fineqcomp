@@ -329,6 +329,7 @@ class RunEngine:
     ) -> dict[str, Any]:
         rows = int(self.campaign.get("information_rows", 256))
         marker = self._answer_marker(run)
+        from_end = self._answer_marker_from_end(run)
 
         def measure(split: str, span: str) -> dict[str, Any]:
             return causal_nll(
@@ -340,6 +341,7 @@ class RunEngine:
                 run.training.micro_batch_size,
                 span,
                 marker,
+                from_end,
             )
 
         split_for = {"train": "train", "heldout": "calibration"}
@@ -363,6 +365,12 @@ class RunEngine:
     def _answer_marker(self, run: RunSpec) -> str | None:
         marker = self.campaign["datasets"][str(run.dataset_key)].get("answer_marker")
         return str(marker) if marker else None
+
+    def _answer_marker_from_end(self, run: RunSpec) -> bool:
+        # `The answer is:` is the last occurrence; a code fence is the first.
+        # Datasets that do not say keep the original behaviour.
+        spec = self.campaign["datasets"][str(run.dataset_key)]
+        return bool(spec.get("answer_marker_from_end", True))
 
     def _split_spans(self, run: RunSpec) -> tuple[str, ...]:
         return ("reasoning", "answer") if self._answer_marker(run) else ()
@@ -677,6 +685,7 @@ class RunEngine:
                 run.seed,
                 run_dir / "logs" / "training.jsonl",
                 self._answer_marker(run),
+                self._answer_marker_from_end(run),
             )
             raw_tensors = adapter_tensors(session.model, run.adapter.method)
             torch.save(raw_tensors, raw_path)

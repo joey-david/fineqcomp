@@ -105,3 +105,33 @@ def test_a_missing_marker_fails_loudly():
     """A span that matches nothing must stop the run, not score zero tokens."""
     with pytest.raises(ValueError, match="The answer is:"):
         _span_dataset("answer", response=" no marker at all")
+
+
+def test_the_marker_search_direction_is_a_property_of_the_marker():
+    """`The answer is:` is the last occurrence; a code fence is the first.
+
+    Searching a fenced response from the right puts the whole program in the
+    reasoning span and scores the closing prose as the answer, which is the
+    opposite of what the split means. Every dataset that defines a marker has
+    to say which end it means, and the default stays the original one.
+    """
+    from fineqcomp.modeling import response_boundary
+
+    class Tokenizer:
+        def encode(self, text, add_special_tokens=False):
+            return text.split()
+
+    tokenizer = Tokenizer()
+    rationale = "we know the answer is: not five so the answer is: seven"
+    # Quoted mid-rationale, so only the last occurrence opens the answer.
+    assert response_boundary(tokenizer, rationale, "the answer is:") == 8
+    assert response_boundary(
+        tokenizer, rationale, "the answer is:", from_end=False
+    ) == 2
+
+    fenced = "here is why it fails ``` def f ( ) : pass ``` and that is all"
+    first = response_boundary(tokenizer, fenced, "```", from_end=False)
+    last = response_boundary(tokenizer, fenced, "```")
+    assert first == 5
+    assert last == 12
+    assert response_boundary(tokenizer, "no marker here", "```") is None

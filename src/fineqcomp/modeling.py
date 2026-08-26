@@ -91,16 +91,25 @@ def validate_single_token_labels(tokenizer: Any, labels: list[str]) -> list[int]
 LABEL_SPANS = ("all", "reasoning", "answer")
 
 
-def response_boundary(tokenizer: Any, response: str, marker: str) -> int | None:
+def response_boundary(
+    tokenizer: Any, response: str, marker: str, *, from_end: bool = True
+) -> int | None:
     """Token offset inside a response where the final answer begins.
 
-    The marker is looked up from the right because a rationale may well quote
-    the phrase on its way to the conclusion, and it is the last occurrence that
-    starts the answer. Tokenizing the text before the marker and taking its
-    length puts the boundary on a token edge without re-tokenizing the whole
-    response two different ways.
+    `The answer is:` is looked up from the right, because a rationale may quote
+    the phrase on its way to the conclusion and it is the last occurrence that
+    starts the answer. A code fence is the opposite: the first ``` opens the
+    answer and the last one closes it, so searching from the right would put
+    the whole program in the reasoning span and score the trailing prose as the
+    answer. The direction is therefore a property of the marker, not a
+    universal rule, and every dataset that defines a marker has to say which it
+    means.
+
+    Tokenizing the text before the marker and taking its length puts the
+    boundary on a token edge without re-tokenizing the whole response two
+    different ways.
     """
-    cut = response.rfind(marker)
+    cut = response.rfind(marker) if from_end else response.find(marker)
     if cut < 0:
         return None
     return len(tokenizer.encode(response[:cut], add_special_tokens=False))
@@ -123,6 +132,7 @@ class CausalExampleDataset(Dataset[dict[str, torch.Tensor]]):
         max_length: int,
         label_span: str = "all",
         answer_marker: str | None = None,
+        answer_marker_from_end: bool = True,
     ) -> None:
         if label_span not in LABEL_SPANS:
             raise ValueError(f"label span must be one of {LABEL_SPANS}")
@@ -144,7 +154,10 @@ class CausalExampleDataset(Dataset[dict[str, torch.Tensor]]):
             labels = [-100] * prompt_length + input_ids[prompt_length:]
             if label_span != "all":
                 boundary = response_boundary(
-                    tokenizer, example.response, str(answer_marker)
+                    tokenizer,
+                    example.response,
+                    str(answer_marker),
+                    from_end=answer_marker_from_end,
                 )
                 if boundary is None:
                     self.dropped_without_marker += 1
