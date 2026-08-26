@@ -1,0 +1,16 @@
+{
+  "candidate": "angular_correction_energy_rank90",
+  "cot_arms_available": 3,
+  "cot_spearman": 0.4999999999999999,
+  "gates": {
+    "natural_spearman_at_least_0_70": false,
+    "prefit_rmse_beats_base_codelength": true
+  },
+  "natural_arms_available": 5,
+  "natural_arms_required": 5,
+  "natural_base_codelength_rmse": 0.3269533467002467,
+  "natural_exact_permutation_p": 0.25833333333333336,
+  "natural_prefit_rmse": 0.15864473540781718,
+  "natural_spearman": 0.4,
+  "status": "failed"
+}

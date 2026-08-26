@@ -1,0 +1,12 @@
+{
+  "base_codelength_task_heldout_rmse": 0.22824091504500724,
+  "cells": 203,
+  "distinct_arms": 50,
+  "model_only_task_heldout_rmse": 0.21770033887155862,
+  "permutations": 50000,
+  "strongest_candidate": "text_cross_row_redundancy",
+  "strongest_selection_adjusted_p": 1.0,
+  "strongest_task_heldout_rmse": 0.1627749238011764,
+  "strongest_within_model_mean_spearman": -0.6147347276379534,
+  "task_families": 26
+}

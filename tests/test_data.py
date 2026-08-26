@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-import json
+import sys
+from types import SimpleNamespace
 
 import fineqcomp.data as data
+import pytest
 from fineqcomp.data import (
     Example,
     load_natural_dataset,
     prepare_natural_dataset,
-    read_jsonl,
 )
 
 
@@ -27,7 +28,7 @@ def test_multiple_choice_conversion_uses_standard_labels_and_no_answer_text():
         {"question_field": "question"},
     )
 
-    assert converted[0].response == " B"
+    assert converted[0].response == "B"
     assert converted[0].metadata["label_index"] == 1
     assert converted[0].metadata["choice_count"] == 3
     assert "B. two" in converted[0].prompt
@@ -76,7 +77,38 @@ def test_natural_data_is_staged_and_loaded_without_the_hub(tmp_path, monkeypatch
     assert load_natural_dataset(raw, "gsm8k", 11, tmp_path) == rows
 
 
-def test_evaluation_examples_carry_the_configured_evaluator():
+def test_stale_staged_evaluator_fails_before_a_run(tmp_path):
+    root = data.natural_data_dir(tmp_path, "renamed_sql_arm", 11)
+    rows = {
+        split: [Example(f"{split}-0", "p", "r", {"split": split})]
+        for split in ("train", "calibration", "test")
+    }
+    root.mkdir(parents=True)
+    for split, examples in rows.items():
+        data._write_jsonl(root / f"{split}.jsonl", examples)
+    data._write_json(
+        root / "metadata.json",
+        {
+            "dataset_key": "renamed_sql_arm",
+            "seed": 11,
+            "train_rows": 1,
+            "calibration_rows": 1,
+            "test_rows": 1,
+        },
+    )
+    raw = {
+        "datasets": {
+            "renamed_sql_arm": {
+                "evaluations": [{"key": "text_to_sql"}],
+            }
+        }
+    }
+
+    with pytest.raises(ValueError, match="run prepare again"):
+        load_natural_dataset(raw, "renamed_sql_arm", 11, tmp_path)
+
+
+def test_evaluation_examples_carry_the_configured_evaluator(monkeypatch):
     """The scorer dispatches on this, and its fallback is silently wrong.
 
     Without it the campaign's dataset key stands in, which matched the
@@ -85,9 +117,72 @@ def test_evaluation_examples_carry_the_configured_evaluator():
     the fifteen waiting on their shared baseline with them. The loader stamps
     it from the config so no converter has to remember.
     """
-    import inspect
 
-    from fineqcomp import data
+    class Rows(list):
+        def shuffle(self, seed):
+            return self
 
-    source = inspect.getsource(data._load_natural_from_hub)
-    assert 'example.metadata["evaluator"] = str(evaluation["key"])' in source
+        def select(self, indices):
+            return Rows(self[index] for index in indices)
+
+    rows = Rows(
+        {
+            "sql_context": "CREATE TABLE t (x INT)",
+            "sql_prompt": "Read x",
+            "sql": "SELECT x FROM t",
+            "domain": "test",
+        }
+        for _ in range(4)
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "datasets",
+        SimpleNamespace(
+            load_dataset=lambda *args, **kwargs: {"train": rows, "test": rows}
+        ),
+    )
+    raw = {
+        "datasets": {
+            "renamed_sql_arm": {
+                "train_source": {
+                    "path": "sql",
+                    "revision": "r",
+                    "split": "train",
+                    "converter": "text_to_sql",
+                },
+                "evaluations": [
+                    {
+                        "key": "text_to_sql",
+                        "path": "sql",
+                        "revision": "r",
+                        "split": "test",
+                        "converter": "text_to_sql",
+                    }
+                ],
+                "validation_rows": 1,
+                "train_rows": 2,
+                "test_rows": 2,
+            }
+        }
+    }
+    loaded = data._load_natural_from_hub(raw, "renamed_sql_arm", 11)
+
+    assert {row.metadata["evaluator"] for row in loaded["test"]} == {"text_to_sql"}
+
+
+def test_paws_converter_keeps_the_binary_label_exact():
+    rows = [
+        {
+            "sentence1": "The dog ran.",
+            "sentence2": "A dog was running.",
+            "label": 1,
+        }
+    ]
+
+    converted = data._convert_paws(rows, "test")
+
+    assert converted[0].response == " yes"
+    assert converted[0].metadata == {
+        "split": "test",
+        "evaluator": "paws",
+    }

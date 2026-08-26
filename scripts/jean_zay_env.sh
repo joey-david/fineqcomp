@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Load the managed H100 stack and the small project overlay.
+# Load the managed GPU stack and the small project overlay.
 
 set -e
 
@@ -26,7 +26,23 @@ if ! command -v module >/dev/null 2>&1 && ! declare -F module >/dev/null 2>&1; t
 fi
 
 module purge
-module load arch/h100
+gpu_arch="${FINEQCOMP_GPU_ARCH:-}"
+if [[ -z "$gpu_arch" ]]; then
+  case "${SLURM_JOB_CONSTRAINTS:-}" in
+    *a100*) gpu_arch="a100" ;;
+    *v100*) gpu_arch="v100" ;;
+    *) gpu_arch="h100" ;;
+  esac
+fi
+case "$gpu_arch" in
+  a100|h100|v100) ;;
+  *) echo "unsupported Jean-Zay GPU architecture: $gpu_arch" >&2; exit 2 ;;
+esac
+# V100 is the site's default GPU stack. A100 and H100 need an architecture
+# module to select builds for their newer CUDA capabilities.
+if [[ "$gpu_arch" != "v100" ]]; then
+  module load "arch/$gpu_arch"
+fi
 module load pytorch-gpu/py3/2.8.0
 
 # Prefer the repo venv only if it can actually import torch. A venv that exists

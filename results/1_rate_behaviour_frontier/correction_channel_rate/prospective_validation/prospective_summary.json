@@ -1,0 +1,29 @@
+{
+  "candidate": "correction_channel_bits",
+  "exact_permutations": 720,
+  "gates": {
+    "all_arms_have_locked_seed_count": true,
+    "all_cells_have_finite_measure": true,
+    "all_cells_have_locked_measurement_rows": true,
+    "all_cells_use_locked_row_sampling": true,
+    "llama_xbrl_diversity_direction_matches": true,
+    "median_measure_cv_below_locked_value": true,
+    "rank_p_below_locked_value": false,
+    "rank_rho_at_least_locked_value": false,
+    "rmse_20pct_below_receiver_only": true,
+    "rmse_below_base_codelength": true,
+    "rmse_below_train_response_tokens": false
+  },
+  "median_measure_cv": 0.00639812317724978,
+  "prefit_rmse": {
+    "base_codelength": 0.36505434294843375,
+    "candidate": 0.20201670706183464,
+    "receiver_only": 0.394018187617298,
+    "train_response_tokens": 0.19312018629195268
+  },
+  "prospective_arms": 10,
+  "prospective_cells": 30,
+  "status": "failed",
+  "within_model_exact_permutation_p": 0.3333333333333333,
+  "within_model_rank_rho": 0.2500000000000001
+}

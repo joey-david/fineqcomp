@@ -1,0 +1,364 @@
+# Prospective test of the correction channel rate.
+#
+# The measure and its one knob were fixed on the 54-arm discovery panel before
+# this file was written: the rate of the frozen model's correction spectrum
+# against a noise floor at one hundredth of its own mean eigenvalue. Nothing
+# below is used to choose either.
+#
+# Three things are new here and each can falsify the measure on its own.
+# GSM8K is a corpus no arm in the screen used, and it runs on all four
+# receivers. Text-to-SQL and XBRL run on Llama and Qwen3, the two receivers
+# that had no structured task, which is the leave-one-model-out case where the
+# measure has to carry the level of R* and not just its order. The XBRL
+# diversity lever runs on a third receiver, and that is the gate the measure
+# currently fails: it agrees with the direction of R* in two of four families
+# where response redundancy agrees in four.
+#
+# Every dataset here is already staged under prepared/natural for seeds
+# 11, 22 and 33, so the manifest is written with --no-data and no run touches
+# the Hub.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+codecs:
+  uniform2:
+    method: uniform
+    bits: 2
+  blend1_50:
+    method: uniform
+    bits: 1
+    blend: 0.5
+  binary:
+    method: uniform
+    bits: 1
+  sub0_14_16:
+    method: uniform
+    bits: 0
+    blend: 0.875
+    score_task: false
+  sub0_13_16:
+    method: uniform
+    bits: 0
+    blend: 0.8125
+    score_task: false
+  sub0_12_16:
+    method: uniform
+    bits: 0
+    blend: 0.75
+    score_task: false
+  sub0_11_16:
+    method: uniform
+    bits: 0
+    blend: 0.6875
+    score_task: false
+  sub0_10_16:
+    method: uniform
+    bits: 0
+    blend: 0.625
+    score_task: false
+  sub0_09_16:
+    method: uniform
+    bits: 0
+    blend: 0.5625
+    score_task: false
+  sub0_08_16:
+    method: uniform
+    bits: 0
+    blend: 0.5
+  sub0_07_16:
+    method: uniform
+    bits: 0
+    blend: 0.4375
+    score_task: false
+  sub0_06_16:
+    method: uniform
+    bits: 0
+    blend: 0.375
+    score_task: false
+  sub0_05_16:
+    method: uniform
+    bits: 0
+    blend: 0.3125
+    score_task: false
+  sub0_04_16:
+    method: uniform
+    bits: 0
+    blend: 0.25
+    score_task: false
+  sub0_03_16:
+    method: uniform
+    bits: 0
+    blend: 0.1875
+    score_task: false
+  sub0_02_16:
+    method: uniform
+    bits: 0
+    blend: 0.125
+    score_task: false
+  sub0_01_16:
+    method: uniform
+    bits: 0
+    blend: 0.0625
+    score_task: false
+models:
+  llama31_8b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/meta-llama/Llama-3.1-8B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen3_8b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen3-8B-Base
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+training:
+  panel_4ep:
+    epochs: 4
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+datasets:
+  gsm8k_self:
+    task_type: generative
+    train_source:
+      path: openai/gsm8k
+      name: main
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: train
+      converter: gsm8k
+    validation_rows: 256
+    test_rows: 400
+    evaluations:
+    - key: gsm8k
+      path: openai/gsm8k
+      name: main
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: test
+      converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  text_to_sql:
+    task_type: generative
+    train_source:
+      path: gretelai/synthetic_text_to_sql
+      name: default
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: train
+      converter: text_to_sql
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 500
+    evaluations:
+    - key: text_to_sql
+      path: gretelai/synthetic_text_to_sql
+      name: default
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: test
+      converter: text_to_sql
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  xbrl_tags:
+    task_type: generative
+    train_source:
+      path: wangd12/XBRL_analysis
+      name: tags
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: train
+      converter: xbrl_tags
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 500
+    evaluations:
+    - key: xbrl_tags
+      path: wangd12/XBRL_analysis
+      name: tags
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: test
+      converter: xbrl_tags
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  xbrl_div_10:
+    evaluations:
+    - converter: xbrl_tags
+      key: xbrl_tags
+      name: tags
+      path: wangd12/XBRL_analysis
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: test
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    screening_metric: exact_match
+    task_type: generative
+    test_rows: 500
+    train_rows: 3000
+    train_source:
+      converter: xbrl_tags
+      name: tags
+      path: wangd12/XBRL_analysis
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: train
+      group_field: company
+    validation_rows: 256
+    distinct_source_problems: 10
+  xbrl_div_30:
+    evaluations:
+    - converter: xbrl_tags
+      key: xbrl_tags
+      name: tags
+      path: wangd12/XBRL_analysis
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: test
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    screening_metric: exact_match
+    task_type: generative
+    test_rows: 500
+    train_rows: 3000
+    train_source:
+      converter: xbrl_tags
+      name: tags
+      path: wangd12/XBRL_analysis
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: train
+      group_field: company
+    validation_rows: 256
+    distinct_source_problems: 30
+studies:
+  llama_gsm8k_self:
+    kind: natural
+    models:
+    - llama31_8b_base
+    datasets:
+    - gsm8k_self
+    seeds: &id001
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  mistral_gsm8k_self:
+    kind: natural
+    models:
+    - mistral_7b_base
+    datasets:
+    - gsm8k_self
+    seeds: *id001
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  qwen25_gsm8k_self:
+    kind: natural
+    models:
+    - qwen25_7b_base
+    datasets:
+    - gsm8k_self
+    seeds: *id001
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  qwen3_gsm8k_self:
+    kind: natural
+    models:
+    - qwen3_8b_base
+    datasets:
+    - gsm8k_self
+    seeds: *id001
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  llama_text_to_sql:
+    kind: natural
+    models:
+    - llama31_8b_base
+    datasets:
+    - text_to_sql
+    seeds: *id001
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  llama_xbrl_tags:
+    kind: natural
+    models:
+    - llama31_8b_base
+    datasets:
+    - xbrl_tags
+    seeds: *id001
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  qwen3_text_to_sql:
+    kind: natural
+    models:
+    - qwen3_8b_base
+    datasets:
+    - text_to_sql
+    seeds: *id001
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  qwen3_xbrl_tags:
+    kind: natural
+    models:
+    - qwen3_8b_base
+    datasets:
+    - xbrl_tags
+    seeds: *id001
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  llama_xbrl_div_10:
+    kind: natural
+    models:
+    - llama31_8b_base
+    datasets:
+    - xbrl_div_10
+    seeds: *id001
+    adapters:
+    - all_linear_r16
+    training: panel_4ep
+  llama_xbrl_div_30:
+    kind: natural
+    models:
+    - llama31_8b_base
+    datasets:
+    - xbrl_div_30
+    seeds: *id001
+    adapters:
+    - all_linear_r16
+    training: panel_4ep

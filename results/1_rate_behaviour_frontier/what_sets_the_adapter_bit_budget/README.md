@@ -4,10 +4,12 @@
 under the last two: the behavioural-change curve in section 2 does not survive
 being tested outside the range it was fitted in.
 
-Recorded 2026-08-21, extended 2026-08-22. Mistral-7B-v0.1 on an NF4 base,
+Recorded 2026-08-21, extended 2026-08-23. Sections 1 and 2–5 use
+Mistral-7B-v0.1 on an NF4 base,
 all-linear LoRA. Every arm is compute-matched at 2,000 optimizer updates and
 32,000 samples seen except the budget sweep in section 2, where the update
-count is the axis. R*(0.90) is
+count is the axis. Section 1b is a separate Mistral-7B/Qwen2.5-7B panel.
+R*(0.90) is
 the smallest adapter file retaining 90% of the best gain the code family
 reaches, on held-out bits saved.
 
@@ -28,6 +30,34 @@ content, not merely row count. This is the result Experiment 2 could not
 establish, because its arms were nested draws in which the two moved together.
 
 ![content and rows](content_and_rows.png)
+
+### 1b. The two-task replication is mixed
+
+Thirty-six new runs held the row count fixed and varied groups: SQL domains at
+10, 25 and 100 within 8,000 rows, and XBRL companies at 10, 18 and 30 within
+3,000 rows. Each arm has three seeds and both base models. All 36 likelihood
+curves bracket R\*(0.90).
+
+| task | model | groups | mean R\*, low → high | slope per doubling | R2 | positive seed pairs | raw exact match, low → high |
+|---|---|---:|---:|---:|---:|---:|---:|
+| SQL | Mistral-7B | 10 → 100 | 0.375 → 0.406 | +0.009 | 0.20 | 2/3 | 0.300 → 0.319 |
+| SQL | Qwen2.5-7B | 10 → 100 | 0.584 → 0.600 | +0.004 | 0.05 | 2/3 | 0.324 → 0.336 |
+| XBRL | Mistral-7B | 10 → 30 | 0.260 → 0.318 | +0.036 | 0.52 | 3/3 | 0.763 → 0.823 |
+| XBRL | Qwen2.5-7B | 10 → 30 | 0.397 → 0.469 | +0.046 | 0.43 | 3/3 | 0.771 → 0.832 |
+
+XBRL repeats the content-rate effect on both models. SQL does not resolve it,
+despite spanning a wider group range. The best decoded likelihood gain and raw
+exact match rise from the low to high arm for every task-model pair, so the
+XBRL result does not come from a worse high-diversity fit.
+
+This does not isolate abstract information. XBRL groups by company while the
+held-out split covers all companies, so group count also changes company
+support and training content. Answer entropy stays nearly flat across the
+arms, which rules out a simple label-entropy account. The exact-match codec
+ladder is too sparse and often hits its lowest scored rate; the claims above
+therefore use the fully bracketed held-out-likelihood R\*.
+
+![two-task diversity replication](diversity_replication.png)
 
 ## 2. It does not run through behavioural change
 
@@ -205,16 +235,26 @@ allocating bits by structure does not beat spreading them evenly.
 
 ![where the bits live](where_the_bits_live.png)
 
-## What is missing
+## The missing measure now has a candidate
 
-A measure that predicts R\* across corpora. Held-out bits saved works inside a
-corpus and fails between them; the base model's own bits per token on the
-corpus does not work at all. The three arms that break every fit — code twice
-and dialogue — share a property no current measure captures: their surface form
-is one a base model almost never emits, while Alpaca's and XSum's are not.
+Held-out bits saved still works only inside a corpus, and the base model's bits
+per taught token still fails between tasks. A new 78-cell, two-model screen
+tests ten quantities defined relative to the frozen receiver. The strongest is
+the log-volume of a fixed random sketch of the output-head corrections requested
+by the dataset. Across 22 distinct seed-averaged arms, its mean within-model
+Spearman correlation with R\* is 0.764. It lowers leave-one-task-family-out RMSE
+from 0.264 for a model-only fit to 0.187; base code length gives 0.261.
 
-Everything here is one model. A Qwen2.5-7B replication of the corpus table is
-the next thing that would make any of it a claim.
+The result changes the interpretation here. Failed gzip and base-loss measures
+reject information intrinsic to the source, not information in the learned
+dataset relative to the model. The correction-gradient spectrum also stays
+near flat on SQL and rises with XBRL diversity on both receivers. It remains a
+discovery result: the same two models and seven task families selected and
+tested the measure. The next run must lock the definition and test new models
+and tasks, while still separating group coverage from content diversity.
+
+Full candidate definitions, adjusted permutation tests, task-held-out folds,
+and diversity slopes are in `../relative_information_candidates/`.
 
 ## Files
 
@@ -234,3 +274,6 @@ the next thing that would make any of it a claim.
 | `criterion_sweep.csv` | every arm rescored at five fractional and three absolute criteria |
 | `criterion_dependence.png` | how much of the corpus gap the 90% criterion creates |
 | `divergence_arms.csv` | base-to-adapted divergences on the scored tokens, against R\* |
+| `diversity_replication.csv` | 36-run panel aggregated by task, model and group count |
+| `diversity_replication.png` | mean R\* with one standard deviation across seeds |
+| `../relative_information_candidates/` | 78-cell screen of ten model-relative measures |

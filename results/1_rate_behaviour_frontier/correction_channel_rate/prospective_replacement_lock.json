@@ -1,0 +1,53 @@
+{
+  "status": "locked_before_replacement_results",
+  "candidate": "correction_channel_bits",
+  "candidate_definition": "0.5 * sum_j log2(1 + 0.01 * lambda_j / mean(lambda))",
+  "candidate_direction": "larger candidate predicts larger R_star",
+  "reason": "Qwen3 exceeded the predeclared GSM8K base-score ceiling in all three seeds, so that arm has no valid fixed-performance rate",
+  "excluded_study": "qwen3_gsm8k_self",
+  "replacement_study": "qwen3_paws",
+  "replacement_source_seen_in_development": false,
+  "measurement_contract": {
+    "config": "configs/prospective_channel_paws.yaml",
+    "combined_manifest": "prepared/prospective-channel-valid-manifest.jsonl",
+    "cells": 30,
+    "arms": 10,
+    "seeds_per_arm": 3,
+    "rows": 256,
+    "row_sampling": "uniform",
+    "row_sample_seed": 271828,
+    "hidden_dim": 64,
+    "residual_dim": 32,
+    "sketch_seed": 1729,
+    "fixed_performance_target": "smallest dense-ladder adapter rate retaining 90% of the best held-out likelihood gain"
+  },
+  "development_fit": {
+    "results": "reports/relative_information_channel",
+    "runs_root": "runs",
+    "unit": "seed-mean model-by-dataset arm after exact-data deduplication",
+    "form": "ordinary least squares with receiver fixed effects and the raw candidate value",
+    "frozen_baselines": [
+      "receiver fixed effects only",
+      "receiver fixed effects plus base_codelength_bits_per_token",
+      "receiver fixed effects plus train_response_tokens"
+    ]
+  },
+  "primary_test": {
+    "statistic": "pooled centered within-receiver Spearman rank correlation over receivers with at least two prospective arms",
+    "permutation": "exact within-receiver target-rank permutations",
+    "gates": {"rho_at_least": 0.6, "one_sided_p_below": 0.05}
+  },
+  "prediction_gates": {
+    "prefit_rmse_at_most_fraction_of_receiver_only": 0.8,
+    "prefit_rmse_below_base_codelength": true,
+    "prefit_rmse_below_train_response_tokens": true
+  },
+  "validity_gates": {
+    "all_cells_have_finite_measure": true,
+    "all_cells_have_bracketed_R_star": true,
+    "all_arms_have_three_seeds": true,
+    "median_within_arm_measure_cv_below": 0.05,
+    "llama_xbrl_diversity_direction_matches_R_star": true
+  },
+  "decision_rule": "Pass only if every original gate passes after replacing only the prospectively invalid Qwen3 GSM8K arm. Report failure before inspecting any alternative candidate."
+}

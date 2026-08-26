@@ -1,0 +1,112 @@
+# Untouched three-source, three-receiver test for the parameter-free
+# correction information volume. The candidate and gates are locked before
+# these datasets are prepared, measured, trained, or joined to their R* curves.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+multiple_choice_labels: [A, B, C, D, E]
+codecs:
+  uniform2: {method: uniform, bits: 2, score_task: false}
+  blend1_50: {method: uniform, bits: 1, blend: 0.5, score_task: false}
+  binary: {method: uniform, bits: 1, score_task: false}
+  sub0_14_16: {method: uniform, bits: 0, blend: 0.875, score_task: false}
+  sub0_13_16: {method: uniform, bits: 0, blend: 0.8125, score_task: false}
+  sub0_12_16: {method: uniform, bits: 0, blend: 0.75, score_task: false}
+  sub0_11_16: {method: uniform, bits: 0, blend: 0.6875, score_task: false}
+  sub0_10_16: {method: uniform, bits: 0, blend: 0.625, score_task: false}
+  sub0_09_16: {method: uniform, bits: 0, blend: 0.5625, score_task: false}
+  sub0_08_16: {method: uniform, bits: 0, blend: 0.5, score_task: false}
+  sub0_07_16: {method: uniform, bits: 0, blend: 0.4375, score_task: false}
+  sub0_06_16: {method: uniform, bits: 0, blend: 0.375, score_task: false}
+  sub0_05_16: {method: uniform, bits: 0, blend: 0.3125, score_task: false}
+  sub0_04_16: {method: uniform, bits: 0, blend: 0.25, score_task: false}
+  sub0_03_16: {method: uniform, bits: 0, blend: 0.1875, score_task: false}
+  sub0_02_16: {method: uniform, bits: 0, blend: 0.125, score_task: false}
+  sub0_01_16: {method: uniform, bits: 0, blend: 0.0625, score_task: false}
+models:
+  llama31_8b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/meta-llama/Llama-3.1-8B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen3_8b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen3-8B-Base
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+training:
+  panel_4ep:
+    epochs: 4
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+datasets:
+  commonsense_qa_mc:
+    task_type: multiple_choice
+    path: tau/commonsense_qa
+    revision: 94630fe30dad47192a8546eb75f094926d47e155
+    train_split: train
+    test_split: validation
+    question_field: question
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 500
+    screening_metric: accuracy
+    maximum_baseline_score: 0.9
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  arc_easy_mc:
+    task_type: multiple_choice
+    path: allenai/ai2_arc
+    name: ARC-Easy
+    revision: 210d026faf9955653af8916fad021475a3f00453
+    train_split: train
+    test_split: validation
+    question_field: question
+    validation_rows: 256
+    train_rows: 1800
+    test_rows: 500
+    screening_metric: accuracy
+    maximum_baseline_score: 0.9
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  openbookqa_mc:
+    task_type: multiple_choice
+    path: allenai/openbookqa
+    name: main
+    revision: 388097ea7776314e93a529163e0fea805b8a6454
+    train_split: train
+    test_split: validation
+    question_field: question_stem
+    validation_rows: 256
+    train_rows: 4000
+    test_rows: 500
+    screening_metric: accuracy
+    maximum_baseline_score: 0.9
+    minimum_validation_nll_gain_bits_per_token: 0.02
+studies:
+  information_volume_mc:
+    kind: natural
+    models: [llama31_8b_base, mistral_7b_base, qwen3_8b_base]
+    datasets: [commonsense_qa_mc, arc_easy_mc, openbookqa_mc]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: panel_4ep

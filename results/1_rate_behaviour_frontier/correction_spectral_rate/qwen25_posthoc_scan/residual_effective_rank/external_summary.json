@@ -1,0 +1,16 @@
+{
+  "candidate": "residual_effective_rank",
+  "cot_arms_available": 0,
+  "cot_spearman": null,
+  "gates": {
+    "natural_spearman_at_least_0_70": false,
+    "prefit_rmse_beats_base_codelength": false
+  },
+  "natural_arms_available": 5,
+  "natural_arms_required": 5,
+  "natural_base_codelength_rmse": 0.24100048688039943,
+  "natural_exact_permutation_p": 0.575,
+  "natural_prefit_rmse": 0.2822984597635401,
+  "natural_spearman": -0.1,
+  "status": "failed"
+}

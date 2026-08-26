@@ -1,0 +1,16 @@
+{
+  "candidate": "unit_gain_ntk_cost",
+  "cot_arms_available": 0,
+  "cot_spearman": null,
+  "gates": {
+    "natural_spearman_at_least_0_70": false,
+    "prefit_rmse_beats_base_codelength": false
+  },
+  "natural_arms_available": 4,
+  "natural_arms_required": 4,
+  "natural_base_codelength_rmse": 0.30594778188603117,
+  "natural_exact_permutation_p": 0.8333333333333334,
+  "natural_prefit_rmse": 0.33249011375273985,
+  "natural_spearman": -0.6,
+  "status": "failed"
+}

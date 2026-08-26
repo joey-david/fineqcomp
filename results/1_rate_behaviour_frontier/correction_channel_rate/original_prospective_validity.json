@@ -1,0 +1,19 @@
+{
+  "status": "failed_validity",
+  "lock": "prospective_lock.json",
+  "failed_arm": "qwen3_gsm8k_self",
+  "failed_cells": 3,
+  "reason": "All three seeds exceeded the predeclared maximum usable base exact-match score, so no fixed-performance R_star exists for this arm.",
+  "screening": {
+    "baseline_exact_match": 0.845,
+    "maximum_usable_baseline_exact_match": 0.8,
+    "seeds": [
+      11,
+      22,
+      33
+    ]
+  },
+  "scientific_result": false,
+  "candidate_tested_on_original_panel": false,
+  "resolution": "Replace only the invalid arm with the prospectively locked qwen3_paws arm; retain the same candidate, fit, target, and gates."
+}

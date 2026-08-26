@@ -228,6 +228,24 @@ def _convert_alpaca(rows: Any, split: str) -> list[Example]:
     return converted
 
 
+def _convert_paws(rows: Any, split: str) -> list[Example]:
+    """PAWS paraphrase pairs as short, exactly scored supervised answers."""
+    return [
+        Example(
+            example_id=f"paws-{split}-{index}",
+            prompt=(
+                "Do these two sentences have the same meaning? Reply with only"
+                " yes or no.\n\n"
+                f"Sentence 1: {row['sentence1']}\n"
+                f"Sentence 2: {row['sentence2']}\nAnswer:"
+            ),
+            response=" yes" if int(row["label"]) else " no",
+            metadata={"split": split, "evaluator": "paws"},
+        )
+        for index, row in enumerate(rows)
+    ]
+
+
 def _convert_text_to_sql(rows: Any, split: str) -> list[Example]:
     """Schema-in-prompt text to SQL.
 
@@ -251,13 +269,7 @@ def _convert_text_to_sql(rows: Any, split: str) -> list[Example]:
                     "### SQL:"
                 ),
                 response=" " + " ".join(str(row["sql"]).split()),
-                # Every converter stamps the evaluator its answers must be
-                # scored by. Without it the scorer falls back to the campaign's
-                # dataset key, which is the same string only by luck: it is
-                # `text_to_sql` in the panel and `sql_div_100` in the diversity
-                # sweep, and the second has no scorer.
-                metadata={"split": split, "domain": row.get("domain"),
-                          "evaluator": "text_to_sql"},
+                metadata={"split": split, "domain": row.get("domain")},
             )
         )
     return converted
@@ -279,8 +291,11 @@ def _convert_xbrl(rows: Any, split: str) -> list[Example]:
                 example_id=f"xbrl-{split}-{index}",
                 prompt=f"{instruction}\n\n{question}",
                 response=" " + str(row["output"]).strip(),
-                metadata={"split": split, "company": row.get("company"),
-                          "year": row.get("year"), "evaluator": "xbrl_tags"},
+                metadata={
+                    "split": split,
+                    "company": row.get("company"),
+                    "year": row.get("year"),
+                },
             )
         )
     return converted
@@ -290,6 +305,7 @@ _NATURAL_CONVERTERS = {
     "gsm8k": _convert_gsm8k,
     "hh_rlhf": _convert_hh_rlhf,
     "alpaca": _convert_alpaca,
+    "paws": _convert_paws,
     "magicoder": _convert_magicoder,
     "math": _convert_math,
     "metamath": _convert_metamath,
@@ -341,7 +357,7 @@ def _convert_multiple_choice(
                     "Choose the best answer. Reply with only its letter.\n\n"
                     f"Question: {question}\n{rendered_choices}\nAnswer:"
                 ),
-                response=f" {labels[target]}",
+                response=labels[target],
                 metadata={
                     "split": split,
                     "label_index": target,
@@ -558,6 +574,13 @@ def _load_natural_from_hub(
         else:
             train_rows = train
             calibration_rows = dataset[spec["validation_split"]]
+        train_limit = spec.get("train_rows")
+        if train_limit is not None and int(train_limit) < len(train_rows):
+            train_rows = train_rows.select(range(int(train_limit)))
+        test_rows = dataset[spec["test_split"]]
+        test_limit = spec.get("test_rows")
+        if test_limit is not None and int(test_limit) < len(test_rows):
+            test_rows = test_rows.shuffle(seed=0).select(range(int(test_limit)))
         return {
             "train": _convert_multiple_choice(
                 train_rows, "train", dataset_key, spec
@@ -566,18 +589,24 @@ def _load_natural_from_hub(
                 calibration_rows, "calibration", dataset_key, spec
             ),
             "test": _convert_multiple_choice(
-                dataset[spec["test_split"]], "test", dataset_key, spec
+                test_rows, "test", dataset_key, spec
             ),
         }
     raise ValueError(f"unsupported natural dataset: {dataset_key}")
 
 
 def validate_natural_dataset(
-    path: str | Path, dataset_key: str, seed: int
+    path: str | Path,
+    dataset_key: str,
+    seed: int,
+    expected_evaluators: Iterable[str] = (),
 ) -> dict[str, Any]:
     root = Path(path)
     metadata = json.loads((root / "metadata.json").read_text())
-    if metadata.get("dataset_key") != dataset_key or int(metadata.get("seed", -1)) != seed:
+    if (
+        metadata.get("dataset_key") != dataset_key
+        or int(metadata.get("seed", -1)) != seed
+    ):
         raise ValueError(f"{root}: natural dataset metadata does not match its path")
     splits = {
         name: read_jsonl(root / f"{name}.jsonl")
@@ -588,6 +617,20 @@ def validate_natural_dataset(
             raise ValueError(f"{root}: wrong {split} row count")
         if any(row.metadata.get("split") != split for row in rows):
             raise ValueError(f"{root}: {split} rows have the wrong split marker")
+    expected = set(map(str, expected_evaluators))
+    if expected:
+        observed = {
+            str(row.metadata["evaluator"])
+            for row in splits["test"]
+            if "evaluator" in row.metadata
+        }
+        missing = sum("evaluator" not in row.metadata for row in splits["test"])
+        if missing or observed != expected:
+            raise ValueError(
+                f"{root}: staged test rows have evaluators {sorted(observed)}, "
+                f"expected {sorted(expected)} ({missing} rows missing evaluator); "
+                "run prepare again before submitting jobs"
+            )
     return metadata
 
 
@@ -622,7 +665,12 @@ def prepare_natural_dataset(
             **{f"{split}_rows": len(examples) for split, examples in rows.items()},
         },
     )
-    validate_natural_dataset(target, dataset_key, seed)
+    validate_natural_dataset(
+        target,
+        dataset_key,
+        seed,
+        (evaluation["key"] for evaluation in spec.get("evaluations", [])),
+    )
     return target
 
 
@@ -656,7 +704,13 @@ def load_natural_dataset(
             ),
         ]
         if all(path.is_file() for path in expected):
-            validate_natural_dataset(root, dataset_key, seed)
+            spec = raw["datasets"][dataset_key]
+            validate_natural_dataset(
+                root,
+                dataset_key,
+                seed,
+                (evaluation["key"] for evaluation in spec.get("evaluations", [])),
+            )
             return {
                 split: read_jsonl(root / f"{split}.jsonl")
                 for split in ("train", "calibration", "test")

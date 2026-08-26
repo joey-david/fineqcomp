@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from fineqcomp.analysis import _paired_stats, analyze
+from fineqcomp.analysis import _paired_stats, analyze, collect_rows
 from fineqcomp.artifacts import write_json
 
 
@@ -45,7 +45,11 @@ def _natural_run(root, dataset, metric, value):
                     "selected_clip_percentile": 100.0,
                     "storage": {"file_bits": 12_000, "raw_payload_bits": 10_000},
                     "task": {metric: value, "heldout_nll": 0.5},
-                    "retained_gain": {"retained_gain": 0.8},
+                    "retained_gain": {
+                        "metric": metric,
+                        "baseline_score": value - 0.1,
+                        "retained_gain": 0.8,
+                    },
                     "behavioral_write": {
                         "train_bits_saved": 200.0,
                         "heldout_bits_saved": 100.0,
@@ -86,6 +90,18 @@ def test_paired_stats_use_matched_predictions():
     assert stats["paired_gain"] == 0.25
     assert stats["wrong_to_right"] == 2
     assert stats["right_to_wrong"] == 1
+
+
+def test_codec_record_supplies_hashed_baseline_score(tmp_path):
+    runs = tmp_path / "runs"
+    _natural_run(runs, "gsm8k", "exact_match", 0.6)
+    baseline = next((runs / "baselines").glob("*/metrics.json"))
+    baseline.unlink()
+
+    rows, _ = collect_rows(runs)
+
+    assert rows[0]["baseline_test_score"] == pytest.approx(0.5)
+    assert rows[0]["test_gain"] == pytest.approx(0.1)
 
 
 def test_analysis_writes_fixed_tables_and_figures(tmp_path):
