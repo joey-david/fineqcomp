@@ -1,0 +1,21 @@
+{
+  "adapters": 12,
+  "cells": 540,
+  "median_gain_points_over_random_mask": 11.385325459407364,
+  "paired_comparisons": 396,
+  "ranks": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "ranks_on_the_frontier": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "share_where_truncation_wins": 0.7550505050505051
+}
