@@ -1,0 +1,144 @@
+# Which map costs what, at four source bits for every rung.
+#
+# The strongest positive result this campaign has produced is two lines of
+# `program_and_payload/README.md`: at four source bits, on the same prompts
+# with the same optimizer budget, `sum` needs 0.633 bits per value and
+# `product` needs 1.457. Same description length for the data, 2.3x apart in
+# what it costs to store the map. It is under-powered -- three of `product`'s
+# four conditions bracketed a crossing in only one seed, and its arms learned
+# less well, which can inflate R* on its own.
+#
+# This is that comparison done properly. Six maps, no paid families, so source
+# bits are four at every rung and cannot explain anything. The ladder runs from
+# a map that ignores one input to one that multiplies the two together:
+#
+#   item        label = item                  ignores the family
+#   sum         label = family + item         one addition
+#   difference  label = family - item         one subtraction: is `sum` special?
+#   xor         label = family ^ item         no carry structure
+#   product     label = 3*family + 5*item     scaled, still linear
+#   bilinear    label = family * item         genuinely bilinear
+#
+# Five seeds rather than three, because the thing that made the first pass
+# indicative rather than measured was unbracketed crossings.
+#
+# The confound to kill is learning quality: a map that fits worse can look
+# expensive for a reason that has nothing to do with storage. Every arm reports
+# bits saved per mapping against the four-bit ceiling, and any arm below 4.3 is
+# reported and excluded rather than compared against one at 4.5.
+#
+# Prediction, recorded before the run: R* rises monotonically along the ladder,
+# and `difference` sits with `sum` rather than with `product`. If instead the
+# six maps are flat within seed noise, the sum/product gap was the small-sample
+# artefact its own caveats warned about, and the positive result goes away.
+#
+# Cost: 6 maps x 5 seeds = 30 cells, about 26 minutes each on one H100.
+version: 2
+model: mistral_7b_base
+seeds:
+- 11
+- 22
+- 33
+- 44
+- 55
+labels:
+- A
+- B
+- C
+- D
+- E
+- F
+- G
+- H
+- I
+- J
+- K
+- L
+- M
+- N
+- O
+- P
+codebook_dir: codebooks
+mappings: 192
+items_per_family: 16
+prompt_layout: fields
+optimizer_updates: 2048
+learning_gate_bits_per_mapping: 1.0
+retention_target: 0.9
+evaluation_batch_size: 128
+conditions:
+- name: map_item
+  rule: item
+- name: map_sum
+  rule: sum
+- name: map_difference
+  rule: difference
+- name: map_xor
+  rule: xor
+- name: map_product
+  rule: product
+- name: map_bilinear
+  rule: bilinear
+training:
+  epochs: 1
+  learning_rate: 0.0002
+  effective_batch_size: 16
+  micro_batch_size: 16
+  max_length: 64
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  max_grad_norm: 1.0
+  eval_every_updates: 128
+  restore_best: false
+adapter_codecs:
+- key: sub0_0625
+  bits: 0
+  blend: 0.0625
+- key: sub0_125
+  bits: 0
+  blend: 0.125
+- key: sub0_250
+  bits: 0
+  blend: 0.25
+- key: sub0_375
+  bits: 0
+  blend: 0.375
+- key: sub0_500
+  bits: 0
+  blend: 0.5
+- key: sub0_750
+  bits: 0
+  blend: 0.75
+- key: binary
+  bits: 1
+- key: blend1_50
+  bits: 1
+  blend: 0.5
+- key: uniform2
+  bits: 2
+grid:
+- study: payload_dense
+  conditions:
+  - rule
+  - rule_p1
+  - rule_p2
+  - rule_p3
+  - rule_p4
+  - rule_p6
+  - rule_p8
+  adapters:
+  - all_linear_r16
+  prefixes:
+  - 128
+- study: second_rule
+  conditions:
+  - alt_rule
+  - alt_p2
+  - alt_p4
+  - alt_p8
+  adapters:
+  - all_linear_r16
+  prefixes:
+  - 128
