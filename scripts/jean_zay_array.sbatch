@@ -28,6 +28,13 @@ source "$repo_root/scripts/jean_zay_env.sh"
 config="${CONFIG:-configs/campaign.yaml}"
 manifest="${MANIFEST:-prepared/manifest.jsonl}"
 shards="${SHARDS:-16}"
-exec "$PYTHON" -m fineqcomp run \
-  --config "$config" --manifest "$manifest" \
+args=(
+  -m fineqcomp run
+  --config "$config" --manifest "$manifest"
   --shard "$SLURM_ARRAY_TASK_ID" --shards "$shards"
+)
+if [[ -n "${MODELS:-}" ]]; then
+  read -r -a models <<< "$MODELS"
+  args+=(--models "${models[@]}")
+fi
+exec "$PYTHON" "${args[@]}"

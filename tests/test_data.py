@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from collections import Counter
 from types import SimpleNamespace
 
 import fineqcomp.data as data
@@ -8,7 +9,10 @@ import pytest
 from fineqcomp.data import (
     Example,
     load_natural_dataset,
+    permute_rationales,
     prepare_natural_dataset,
+    restore_aligned_rationales,
+    validate_natural_dataset,
 )
 
 
@@ -106,6 +110,92 @@ def test_stale_staged_evaluator_fails_before_a_run(tmp_path):
 
     with pytest.raises(ValueError, match="run prepare again"):
         load_natural_dataset(raw, "renamed_sql_arm", 11, tmp_path)
+
+
+def test_rationale_permutation_keeps_text_but_breaks_problem_pairing():
+    rows = [
+        Example(
+            f"r{index}",
+            f"question {index}",
+            f"work {index} {'x' * index} The answer is: {index}",
+            {"source_problem": f"source-{index // 2}"},
+        )
+        for index in range(64)
+    ]
+
+    first = permute_rationales(rows, "The answer is:", 11, block_size=16)
+    second = permute_rationales(rows, "The answer is:", 11, block_size=16)
+
+    assert first == second
+    assert [row.prompt for row in first] == [row.prompt for row in rows]
+    assert [row.response.rsplit("The answer is:", 1)[1] for row in first] == [
+        row.response.rsplit("The answer is:", 1)[1] for row in rows
+    ]
+    assert Counter(row.response.rsplit("The answer is:", 1)[0] for row in first) == (
+        Counter(row.response.rsplit("The answer is:", 1)[0] for row in rows)
+    )
+    assert {row.metadata["rationale_donor_id"] for row in first} == {
+        row.example_id for row in rows
+    }
+    assert all(
+        row.example_id != moved.metadata["rationale_donor_id"]
+        and row.metadata["source_problem"]
+        != moved.metadata["rationale_donor_source_problem"]
+        for row, moved in zip(rows, first, strict=True)
+    )
+    assert [row.response for row in restore_aligned_rationales(
+        first, "The answer is:"
+    )] == [row.response for row in rows]
+
+
+def test_staged_rationale_control_checks_text_not_only_metadata(tmp_path):
+    root = data.natural_data_dir(tmp_path, "controlled", 11)
+    root.mkdir(parents=True)
+    base = [
+        Example(
+            f"r{index}", f"question {index}",
+            f"work {index} {'x' * index} The answer is: {index}",
+            {"split": "train", "source_problem": f"source-{index}"},
+        )
+        for index in range(8)
+    ]
+    train = permute_rationales(base, "The answer is:", 11, block_size=8)
+    calibration = [
+        Example(
+            row.example_id.replace("r", "c"), row.prompt, row.response,
+            {**row.metadata, "split": "calibration"},
+        )
+        for row in base
+    ]
+    calibration = permute_rationales(
+        calibration, "The answer is:", 12, block_size=8
+    )
+    test = [Example("t0", "test", "answer", {"split": "test"})]
+    for split, rows in (
+        ("train", train), ("calibration", calibration), ("test", test)
+    ):
+        data._write_jsonl(root / f"{split}.jsonl", rows)
+    data._write_json(root / "metadata.json", {
+        "dataset_key": "controlled", "seed": 11,
+        "train_rows": len(train), "calibration_rows": len(calibration),
+        "test_rows": len(test),
+    })
+
+    validate_natural_dataset(
+        root, "controlled", 11, expected_rationale_control="permuted",
+        answer_marker="The answer is:",
+    )
+    changed = data.read_jsonl(root / "train.jsonl")
+    changed[0] = Example(
+        changed[0].example_id, changed[0].prompt,
+        "tampered work The answer is: 0", changed[0].metadata,
+    )
+    data._write_jsonl(root / "train.jsonl", changed)
+    with pytest.raises(ValueError, match="rationale-control bijection"):
+        validate_natural_dataset(
+            root, "controlled", 11, expected_rationale_control="permuted",
+            answer_marker="The answer is:",
+        )
 
 
 def test_evaluation_examples_carry_the_configured_evaluator(monkeypatch):

@@ -25,6 +25,7 @@ from fineqcomp.preflight import (
     cache_models,
     environment_report,
     model_smoke,
+    validate_rationale_tokenization,
     validate_prepared,
     validate_tokenizers,
     write_report,
@@ -536,6 +537,9 @@ def _preflight(args: argparse.Namespace) -> int:
             campaign, runs, args.prepared_root
         ),
         "partition": describe_partition(runs, args.shards),
+        "rationale_token_contracts": validate_rationale_tokenization(
+            campaign, runs, args.prepared_root
+        ),
     }
     if args.tokenizers:
         report["label_token_ids"] = validate_tokenizers(campaign)

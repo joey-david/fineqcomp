@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import random
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -420,6 +423,133 @@ RESPONSE_TRANSFORMS = {
     "symbolic": _symbolic,
 }
 
+RATIONALE_CONTROLS = {"permuted"}
+
+
+def _split_response(
+    response: str, marker: str, *, from_end: bool = True
+) -> tuple[str, str]:
+    cut = response.rfind(marker) if from_end else response.find(marker)
+    if cut < 0:
+        raise ValueError(f"no {marker!r} in response")
+    return response[:cut], response[cut:]
+
+
+def _rationale_hash(body: str) -> str:
+    return hashlib.sha256(body.encode("utf-8")).hexdigest()
+
+
+def permute_rationales(
+    rows: list[Example],
+    marker: str,
+    seed: int,
+    *,
+    from_end: bool = True,
+    block_size: int = 32,
+) -> list[Example]:
+    """Move each rationale to a similar-length, unrelated prompt.
+
+    The prompts and final answers stay fixed. The rationale bodies form the
+    exact same multiset before and after the move, so the control changes their
+    pairing with problems rather than their marginal text, count, or length.
+    Small length-sorted blocks keep truncation exposure close at a fixed token
+    limit. Donors may not share an example, source problem, or body.
+    """
+    if len(rows) < 2:
+        raise ValueError("rationale permutation needs at least two rows")
+    parsed = [
+        _split_response(row.response, marker, from_end=from_end) for row in rows
+    ]
+    ordered = sorted(range(len(rows)), key=lambda index: (len(parsed[index][0]), index))
+    blocks = [
+        ordered[start : start + block_size]
+        for start in range(0, len(ordered), block_size)
+    ]
+    if len(blocks) > 1 and len(blocks[-1]) == 1:
+        blocks[-2].extend(blocks.pop())
+
+    donors: dict[int, int] = {}
+    for block_index, recipients in enumerate(blocks):
+        rng = random.Random((int(seed) << 16) + block_index)
+        candidate = list(recipients)
+        for _ in range(10_000):
+            rng.shuffle(candidate)
+            valid = True
+            for recipient, donor in zip(recipients, candidate, strict=True):
+                recipient_source = str(
+                    rows[recipient].metadata.get("source_problem", "")
+                )
+                donor_source = str(rows[donor].metadata.get("source_problem", ""))
+                if (
+                    recipient == donor
+                    or parsed[recipient][0] == parsed[donor][0]
+                    or (recipient_source and recipient_source == donor_source)
+                ):
+                    valid = False
+                    break
+            if valid:
+                donors.update(zip(recipients, candidate, strict=True))
+                break
+        else:
+            raise ValueError(
+                "could not permute rationales without a matched prompt or body; "
+                "increase the block size"
+            )
+
+    rewritten = []
+    for recipient, row in enumerate(rows):
+        donor = donors[recipient]
+        original_body, answer = parsed[recipient]
+        donor_body, _ = parsed[donor]
+        donor_source = str(rows[donor].metadata.get("source_problem", ""))
+        rewritten.append(
+            Example(
+                example_id=row.example_id,
+                prompt=row.prompt,
+                response=donor_body + answer,
+                metadata={
+                    **row.metadata,
+                    "rationale_control": "permuted",
+                    "rationale_donor_id": rows[donor].example_id,
+                    "rationale_donor_source_problem": donor_source,
+                    "original_rationale_hash": _rationale_hash(original_body),
+                    "donor_rationale_hash": _rationale_hash(donor_body),
+                    "original_rationale_chars": len(original_body),
+                    "donor_rationale_chars": len(donor_body),
+                    "rationale_length_delta_chars": len(donor_body)
+                    - len(original_body),
+                },
+            )
+        )
+    return rewritten
+
+
+def restore_aligned_rationales(
+    rows: list[Example], marker: str, *, from_end: bool = True
+) -> list[Example]:
+    """Reconstruct the aligned control from a staged rationale permutation."""
+    bodies_by_id = {}
+    for row in rows:
+        donor_id = str(row.metadata.get("rationale_donor_id", ""))
+        body, _ = _split_response(row.response, marker, from_end=from_end)
+        if not donor_id or donor_id in bodies_by_id:
+            raise ValueError("rationale donor IDs do not form a bijection")
+        bodies_by_id[donor_id] = body
+    if set(bodies_by_id) != {row.example_id for row in rows}:
+        raise ValueError("rationale donor IDs do not cover the staged rows")
+    aligned = []
+    for row in rows:
+        _, answer = _split_response(row.response, marker, from_end=from_end)
+        aligned.append(
+            Example(
+                example_id=row.example_id,
+                prompt=row.prompt,
+                response=bodies_by_id[row.example_id] + answer,
+                metadata=row.metadata,
+            )
+        )
+    return aligned
+
 
 def transform_responses(rows: list[Example], name: str) -> list[Example]:
     try:
@@ -551,6 +681,20 @@ def _load_natural_from_hub(
         if transform is not None and str(transform) != "plain":
             for split in ("train", "calibration"):
                 splits[split] = transform_responses(splits[split], str(transform))
+        rationale_control = spec.get("rationale_control")
+        if rationale_control is not None:
+            if str(rationale_control) not in RATIONALE_CONTROLS:
+                raise ValueError(f"unknown rationale control {rationale_control!r}")
+            marker = spec.get("answer_marker")
+            if not marker:
+                raise ValueError("a rationale control needs an answer_marker")
+            for offset, split in enumerate(("train", "calibration")):
+                splits[split] = permute_rationales(
+                    splits[split],
+                    str(marker),
+                    seed=int(seed) * 2 + offset,
+                    from_end=bool(spec.get("answer_marker_from_end", True)),
+                )
         return splits
     dataset = load_dataset(spec["path"], spec.get("name"), revision=spec["revision"])
     if dataset_key == "gsm8k":
@@ -600,6 +744,9 @@ def validate_natural_dataset(
     dataset_key: str,
     seed: int,
     expected_evaluators: Iterable[str] = (),
+    expected_rationale_control: str | None = None,
+    answer_marker: str | None = None,
+    answer_marker_from_end: bool = True,
 ) -> dict[str, Any]:
     root = Path(path)
     metadata = json.loads((root / "metadata.json").read_text())
@@ -631,6 +778,62 @@ def validate_natural_dataset(
                 f"expected {sorted(expected)} ({missing} rows missing evaluator); "
                 "run prepare again before submitting jobs"
             )
+    if expected_rationale_control is not None:
+        if not answer_marker:
+            raise ValueError("a rationale control needs an answer marker")
+        for split in ("train", "calibration"):
+            rows = splits[split]
+            controls = {row.metadata.get("rationale_control") for row in rows}
+            donor_ids = [str(row.metadata.get("rationale_donor_id", "")) for row in rows]
+            row_ids = [row.example_id for row in rows]
+            original_hashes = Counter(
+                str(row.metadata.get("original_rationale_hash", "")) for row in rows
+            )
+            donor_hashes = Counter(
+                str(row.metadata.get("donor_rationale_hash", "")) for row in rows
+            )
+            same_source = sum(
+                bool(row.metadata.get("source_problem"))
+                and row.metadata.get("source_problem")
+                == row.metadata.get("rationale_donor_source_problem")
+                for row in rows
+            )
+            actual_donor_hashes = [
+                _rationale_hash(
+                    _split_response(
+                        row.response,
+                        answer_marker,
+                        from_end=answer_marker_from_end,
+                    )[0]
+                )
+                for row in rows
+            ]
+            bodies_by_donor = dict(zip(donor_ids, actual_donor_hashes, strict=True))
+            recorded_donor_hashes = [
+                str(row.metadata.get("donor_rationale_hash", "")) for row in rows
+            ]
+            recorded_original_hashes = [
+                str(row.metadata.get("original_rationale_hash", "")) for row in rows
+            ]
+            if (
+                controls != {expected_rationale_control}
+                or Counter(donor_ids) != Counter(row_ids)
+                or any(donor == row_id for donor, row_id in zip(donor_ids, row_ids))
+                or original_hashes != donor_hashes
+                or "" in original_hashes
+                or same_source
+                or actual_donor_hashes != recorded_donor_hashes
+                or any(
+                    bodies_by_donor.get(row_id) != original_hash
+                    for row_id, original_hash in zip(
+                        row_ids, recorded_original_hashes, strict=True
+                    )
+                )
+            ):
+                raise ValueError(
+                    f"{root}: {split} does not preserve the rationale-control "
+                    "bijection; run prepare again before submitting jobs"
+                )
     return metadata
 
 
@@ -670,6 +873,9 @@ def prepare_natural_dataset(
         dataset_key,
         seed,
         (evaluation["key"] for evaluation in spec.get("evaluations", [])),
+        spec.get("rationale_control"),
+        spec.get("answer_marker"),
+        bool(spec.get("answer_marker_from_end", True)),
     )
     return target
 
@@ -710,6 +916,9 @@ def load_natural_dataset(
                 dataset_key,
                 seed,
                 (evaluation["key"] for evaluation in spec.get("evaluations", [])),
+                spec.get("rationale_control"),
+                spec.get("answer_marker"),
+                bool(spec.get("answer_marker_from_end", True)),
             )
             return {
                 split: read_jsonl(root / f"{split}.jsonl")

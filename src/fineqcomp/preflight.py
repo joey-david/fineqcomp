@@ -21,9 +21,16 @@ from fineqcomp.config import RunSpec, TrainingSpec
 from fineqcomp.data import (
     load_natural_dataset,
     natural_data_dir,
+    restore_aligned_rationales,
     validate_natural_dataset,
 )
-from fineqcomp.modeling import ModelSession, validate_single_token_labels
+from fineqcomp.evaluation import generate_responses
+from fineqcomp.modeling import (
+    CausalExampleDataset,
+    ModelSession,
+    model_source,
+    validate_single_token_labels,
+)
 from fineqcomp.training import train_adapter
 
 
@@ -129,6 +136,9 @@ def validate_prepared(
             dataset_key,
             seed,
             (evaluation["key"] for evaluation in spec.get("evaluations", [])),
+            spec.get("rationale_control"),
+            spec.get("answer_marker"),
+            bool(spec.get("answer_marker_from_end", True)),
         )
     return len(cells)
 
@@ -148,6 +158,85 @@ def validate_tokenizers(campaign: dict[str, Any]) -> dict[str, list[int]]:
     return output
 
 
+def validate_rationale_tokenization(
+    campaign: dict[str, Any], runs: list[RunSpec], root: str | Path
+) -> dict[str, dict[str, float | int]]:
+    """Bound the token-limit change caused by the matched rationale control."""
+    cells: dict[tuple[str, str, int, int, str], RunSpec] = {}
+    for run in runs:
+        if run.dataset_key is None:
+            continue
+        spec = campaign["datasets"][run.dataset_key]
+        if spec.get("rationale_control") is None:
+            continue
+        key = (
+            run.model.key,
+            run.dataset_key,
+            run.seed,
+            run.training.max_length,
+            run.training.label_span,
+        )
+        cells.setdefault(key, run)
+    if not cells:
+        return {}
+
+    from transformers import AutoTokenizer
+
+    token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+    reports = {}
+    for key, run in sorted(cells.items()):
+        spec = campaign["datasets"][str(run.dataset_key)]
+        source = model_source(run.model, token)
+        pinned = (
+            {"revision": run.model.revision, "token": token}
+            if source == run.model.name and not Path(source).is_dir()
+            else {}
+        )
+        tokenizer = AutoTokenizer.from_pretrained(source, use_fast=True, **pinned)
+        if tokenizer.pad_token_id is None:
+            tokenizer.pad_token = tokenizer.eos_token
+        data = load_natural_dataset(
+            campaign, str(run.dataset_key), run.seed, root
+        )
+        marker = str(spec["answer_marker"])
+        from_end = bool(spec.get("answer_marker_from_end", True))
+        staged = data["train"]
+        aligned = restore_aligned_rationales(
+            staged, marker, from_end=from_end
+        )
+
+        def scored_tokens(examples):
+            dataset = CausalExampleDataset(
+                tokenizer,
+                examples,
+                run.model,
+                run.training.max_length,
+                run.training.label_span,
+                marker,
+                from_end,
+            )
+            return sum(
+                int((row["labels"] != -100).sum().item()) for row in dataset.rows
+            )
+
+        aligned_tokens = scored_tokens(aligned)
+        permuted_tokens = scored_tokens(staged)
+        relative_delta = abs(permuted_tokens - aligned_tokens) / max(
+            aligned_tokens, 1
+        )
+        if relative_delta > 0.01:
+            raise ValueError(
+                f"{run.model.key}/{run.dataset_key}/seed{run.seed}: rationale "
+                f"permutation changes scored tokens by {relative_delta:.3%}"
+            )
+        reports["/".join(map(str, key))] = {
+            "aligned_tokens": aligned_tokens,
+            "permuted_tokens": permuted_tokens,
+            "relative_delta": relative_delta,
+        }
+    return reports
+
+
 def model_smoke(
     campaign: dict[str, Any], runs: list[RunSpec], prepared_root: str | Path
 ) -> dict[str, Any]:
@@ -162,6 +251,22 @@ def model_smoke(
         data = load_natural_dataset(
             campaign, str(run.dataset_key), run.seed, prepared_root
         )
+        generated = []
+        if (
+            campaign["datasets"][str(run.dataset_key)].get("task_type")
+            != "multiple_choice"
+        ):
+            # Loading and two training steps did not catch Gemma 2's mixed
+            # FP32/BF16 generation-cache failure. Force the real cached
+            # inference path before the adapter smoke starts.
+            generated = generate_responses(
+                session.model,
+                session.tokenizer,
+                data["test"][:1],
+                run.model,
+                batch_size=1,
+                max_new_tokens=2,
+            )
         train = data["train"][:2]
         calibration = data["calibration"][:2]
         session.attach(run.adapter, run.seed)
@@ -202,6 +307,7 @@ def model_smoke(
         apply_adapter_tensors(session.model, decoded)
         loraquant_path.unlink()
         return {
+            "generation_examples": len(generated),
             "training": training,
             "storage": storage,
             "loraquant_storage": loraquant_storage,

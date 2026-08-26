@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "locked_at": "2026-08-26T21:25:48+02:00",
+  "status": "prospective_results_unopened",
+  "question": "How many exact adapter bits per value preserve the task benefit of a problem-matched reasoning trace beyond the same marginal trace text paired with the wrong problem?",
+  "claim_boundary": {
+    "in_scope": "A causal result for MetaMathQA to GSM8K, all-linear rank-16 LoRA, and the three frozen base models named in the grid.",
+    "out_of_scope": "A universal law of reasoning cost, a claim about verbalized reasoning faithfulness, or a scalar predictor of rate across tasks."
+  },
+  "arms": {
+    "aligned": {
+      "frozen_before_control_results": true,
+      "runs": [
+        {
+          "config": "configs/cot_panel.yaml",
+          "study": "sup_full",
+          "model": "mistral_7b_base",
+          "run_ids": [
+            "sup-full__mistral-7b-base__cot-math__all-linear-r16__s11__b8a65ecda2",
+            "sup-full__mistral-7b-base__cot-math__all-linear-r16__s22__6dfac4689b",
+            "sup-full__mistral-7b-base__cot-math__all-linear-r16__s33__76195e5d01"
+          ]
+        },
+        {
+          "config": "configs/cot_panel.yaml",
+          "study": "qwen_sup_full",
+          "model": "qwen25_7b_base",
+          "run_ids": [
+            "qwen-sup-full__qwen25-7b-base__cot-math__all-linear-r16__s11__738b8f7b67",
+            "qwen-sup-full__qwen25-7b-base__cot-math__all-linear-r16__s22__fde6bef701",
+            "qwen-sup-full__qwen25-7b-base__cot-math__all-linear-r16__s33__d9a68500a9"
+          ]
+        },
+        {
+          "config": "configs/external_llama_panel.yaml",
+          "study": "llama_cot_full",
+          "model": "llama31_8b_base",
+          "run_ids": [
+            "llama-cot-full__llama31-8b-base__cot-math__all-linear-r16__s11__0f9a06e1ed",
+            "llama-cot-full__llama31-8b-base__cot-math__all-linear-r16__s22__352084836d",
+            "llama-cot-full__llama31-8b-base__cot-math__all-linear-r16__s33__1eafa363c6"
+          ]
+        }
+      ]
+    },
+    "permuted": {
+      "config": "configs/conditional_trace_rate.yaml",
+      "study": "trace_permuted_full",
+      "run_ids": [
+        "trace-permuted-full__llama31-8b-base__cot-math-permuted__all-linear-r16__s11__ca01431d31",
+        "trace-permuted-full__llama31-8b-base__cot-math-permuted__all-linear-r16__s22__2fe81169ea",
+        "trace-permuted-full__llama31-8b-base__cot-math-permuted__all-linear-r16__s33__49b00b39cb",
+        "trace-permuted-full__mistral-7b-base__cot-math-permuted__all-linear-r16__s11__7a71255b57",
+        "trace-permuted-full__mistral-7b-base__cot-math-permuted__all-linear-r16__s22__2e4b966123",
+        "trace-permuted-full__mistral-7b-base__cot-math-permuted__all-linear-r16__s33__56ee663da8",
+        "trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s11__4cb8d87ae9",
+        "trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s22__e4b91b820b",
+        "trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s33__347ec18132"
+      ]
+    }
+  },
+  "matched_contract": {
+    "same": [
+      "prompt rows and order",
+      "correct final answer tails",
+      "rationale-body multiset",
+      "row count and data seeds",
+      "optimizer, update count, LoRA shape, and base model",
+      "codec definitions and GSM8K rows"
+    ],
+    "changed": "The rationale body is assigned to a different source problem inside a length-sorted block of 32 rows.",
+    "forbidden_pairs": [
+      "same row",
+      "same source problem",
+      "same rationale body"
+    ],
+    "prepared_data_gate": "Donor IDs must form a bijection, stored hashes must match staged text, and aligned versus permuted scored-token totals at max length 1024 may differ by at most 1 percent for every model and seed."
+  },
+  "frozen_grid": {
+    "models": ["mistral_7b_base", "qwen25_7b_base", "llama31_8b_base"],
+    "seeds": [11, 22, 33],
+    "training_rows": 32000,
+    "validation_rows": 256,
+    "test_rows": 1319,
+    "epochs": 1,
+    "codec_points": ["raw", "sub0_08_16", "binary", "blend1_50", "uniform2"]
+  },
+  "prepared_sha256": {
+    "manifest": "e2a660fba0d5b14d64c18c75a220219b0de96ea07582ceeeb9740d78e565aa78",
+    "seed11_train": "aaa2e9a106d76bd122bad4e1a2463f12246d4d4d31304508c4c2c195c357bad9",
+    "seed11_calibration": "f60279af49dbcbf3f1a77382b2ea3e4de1b321b0104675d7364290c3256b5f41",
+    "seed22_train": "d7576f38e9406da523f8bc6dff8988e4cece50b2347b85d1a0334704c75d4371",
+    "seed22_calibration": "ba66f2f87c4a5d7ce954c869b908baf38e37956ede6518b8abd5502b04cede69",
+    "seed33_train": "499b353db31c704980ad42105ced040a778866a7b9844c42b3d53ff8f49fd681",
+    "seed33_calibration": "83a48206759a270308801a00a7b221c0ad3430454476873e86be7989f8fc4a45"
+  },
+  "estimand": {
+    "paired_gap": "delta(c) = GSM8K_accuracy_aligned(c) - GSM8K_accuracy_permuted(c), paired by model and seed at codec c.",
+    "conditional_trace_rate_90": "The lowest measured exact file rate whose running maximum delta is at least 90 percent of the raw paired gap. A pair uses the larger of its two exact effective bits-per-value rates.",
+    "no_own_gain_denominator": true
+  },
+  "primary_tests": [
+    {
+      "name": "raw_alignment_gap",
+      "metric": "mean delta(raw) over the 9 paired model-seed cells",
+      "success": "mean at least 0.05, every model mean positive, and at least 7 of 9 pair gaps positive"
+    },
+    {
+      "name": "binary_alignment_gap",
+      "metric": "mean delta(binary) over the same 9 pairs",
+      "success": "mean at least 0.05, every model mean positive, and at least 7 of 9 pair gaps positive"
+    }
+  ],
+  "required_learning_gate": "Each permuted raw adapter must improve its own held-out full-response NLL by at least 0.02 bits per token; a failed control fit cannot support the causal claim.",
+  "uncertainty": "Report all 9 paired gaps, model means, the overall mean, and a 10000-draw hierarchical bootstrap that resamples models then seeds within model. Do not replace a failed primary test with another codec, threshold, or response measure.",
+  "secondary_only": [
+    "conditional_trace_rate_90",
+    "the full delta-versus-rate curve",
+    "held-out full-response bits saved",
+    "model-specific effects"
+  ],
+  "prior_work_boundary": [
+    "Reasoning Vectors already studies extraction and transfer of reasoning through model arithmetic.",
+    "MathShikkha already compares answer-only and chain-of-thought math tuning.",
+    "This test asks a different question by fixing the rationale multiset and measuring the exact update rate needed to retain only its problem-conditioned effect."
+  ]
+}

@@ -256,10 +256,12 @@ def test_a_response_without_the_marker_is_refused():
 def test_the_behavioural_lever_is_part_of_a_run_identity():
     from fineqcomp.campaign import expand_campaign
 
-    def campaign(transform):
+    def campaign(transform, control=None):
         dataset = {"train_rows": 8000, "test_rows": 1319}
         if transform is not None:
             dataset["response_transform"] = transform
+        if control is not None:
+            dataset["rationale_control"] = control
         return {
             "models": {"m": {"name": "m", "revision": "r", "backbone": "nf4"}},
             "adapters": {"a": {"method": "full_lora", "rank": 16,
@@ -277,7 +279,8 @@ def test_the_behavioural_lever_is_part_of_a_run_identity():
     plain = expand_campaign(campaign(None))[0].run_id
     shouted = expand_campaign(campaign("shouted"))[0].run_id
     symbolic = expand_campaign(campaign("symbolic"))[0].run_id
-    assert len({plain, shouted, symbolic}) == 3
+    permuted = expand_campaign(campaign(None, "permuted"))[0].run_id
+    assert len({plain, shouted, symbolic, permuted}) == 4
     assert expand_campaign(campaign(None))[0].run_id == plain
 
 
@@ -344,6 +347,10 @@ def test_a_response_transform_forces_its_own_baseline():
                 "evaluations": [{"key": "gsm8k"}], "test_rows": 1319,
                 "distinct_source_problems": 400,
             },
+            "permuted": {
+                "evaluations": [{"key": "gsm8k"}], "test_rows": 1319,
+                "rationale_control": "permuted",
+            },
             "dialogue": {
                 "evaluations": [{"key": "gsm8k"}], "test_rows": 1319,
                 "train_source": {"path": "Anthropic/hh-rlhf", "converter": "hh_rlhf"},
@@ -367,6 +374,9 @@ def test_a_response_transform_forces_its_own_baseline():
     # The diversity lever leaves the calibration split alone, so those arms
     # still share, which is what makes the diversity axis cheap.
     assert keys["narrow"] == keys["plain"]
+    # The rationale control rewrites held-out targets, so it cannot share the
+    # aligned arm's base-model NLL.
+    assert keys["permuted"] != keys["plain"]
     # A different corpus behind the same evaluation must fork. hh-rlhf and
     # Alpaca both list gsm8k as a retained-capability probe, and sharing on
     # that alone gated them against MetaMathQA's calibration NLL.
