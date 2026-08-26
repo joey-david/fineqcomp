@@ -335,3 +335,61 @@ def _plot(rows: list[dict[str, Any]], path: Path, fits: dict[str, Any]) -> None:
     figure.tight_layout()
     figure.savefig(path, dpi=220)
     plt.close(figure)
+
+
+RETENTION_TARGETS = (0.50, 0.75, 0.90, 0.95)
+
+
+def retention_profile(run_dir: Path) -> dict[str, Any]:
+    """The whole rate-retention ladder of one run, not one threshold crossing.
+
+    R*(0.90) is one number read off a curve that has more in it than that.
+    Retention curves cross, so a single crossing does not order the arms, and
+    the ladder also carries the weight perturbation the codec injected at every
+    rung, which is what any account of the damage has to work in. This returns
+    the crossings at four targets, the codec's relative weight error at each
+    rung, and the ratio r90/r50 as the curve's shape.
+    """
+    points = []
+    for path in sorted((run_dir / "codec_metrics").glob("*.json")):
+        metric = json.loads(path.read_text())
+        storage = metric.get("storage") or {}
+        behaviour = metric.get("behavioral_write") or {}
+        rate = storage.get("effective_bits_per_value")
+        saved = behaviour.get("heldout_bits_saved")
+        if rate is None or saved is None:
+            continue
+        points.append(
+            {
+                "codec": metric.get("codec_key"),
+                "rate_bits_per_value": float(rate),
+                "relative_rmse": storage.get("relative_rmse"),
+                "heldout_bits_saved": float(saved),
+            }
+        )
+    points.sort(key=lambda point: point["rate_bits_per_value"])
+    ceiling = max((point["heldout_bits_saved"] for point in points), default=0.0)
+    if not points or ceiling <= 0:
+        return {"run_dir": str(run_dir), "rungs": len(points), "ceiling": ceiling}
+    for point in points:
+        point["retained_fraction"] = point["heldout_bits_saved"] / ceiling
+    fractions = [
+        (point["rate_bits_per_value"], point["retained_fraction"]) for point in points
+    ]
+    crossings = {
+        f"r{int(round(target * 100))}": _crossing(fractions, target)
+        for target in RETENTION_TARGETS
+    }
+    shape = (
+        crossings["r90"] / crossings["r50"]
+        if crossings.get("r90") and crossings.get("r50")
+        else None
+    )
+    return {
+        "run_dir": str(run_dir),
+        "rungs": len(points),
+        "ceiling_heldout_bits_saved": ceiling,
+        "points": points,
+        **crossings,
+        "shape_r90_over_r50": shape,
+    }

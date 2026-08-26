@@ -1,0 +1,6 @@
+model,predictors,arms,rmse,spearman
+log tokens + log channel deficit,log_train_response_tokens+log_channel_deficit,10,0.11903427260676674,0.9393939393939394
+log tokens,log_train_response_tokens,10,0.144264034199567,0.9848069807617045
+channel bits (incumbent),correction_channel_bits,10,0.15294116819860207,0.8060606060606061
+log channel deficit,log_channel_deficit,10,0.1546352037332973,0.8303030303030303
+receiver mean only,receiver mean,10,0.3103169779733009,-0.46548621077545715

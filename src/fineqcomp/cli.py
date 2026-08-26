@@ -316,38 +316,39 @@ def _relative_information_report(args: argparse.Namespace) -> int:
     return 0
 
 
-def _relative_information_lock(args: argparse.Namespace) -> int:
-    from fineqcomp.relative_validation import write_discovery_lock
+def _relative_law(args: argparse.Namespace) -> int:
+    from fineqcomp.relative_validation import write_rate_law_report
 
-    lock = write_discovery_lock(
+    grid = {
+        rows: Path(root)
+        for rows, root in zip((64, 128), args.row_grid or [], strict=False)
+    }
+    result = write_rate_law_report(
         Path(args.results),
         Path(args.runs_root),
         Path(args.out),
+        row_grid_roots=grid or None,
+        prospective_arms=(
+            Path(args.prospective_arms) if args.prospective_arms else None
+        ),
         permutations=args.permutations,
     )
-    print(json.dumps(lock, indent=2, sort_keys=True))
-    return 0 if lock["status"] == "locked" else 1
+    print(json.dumps(result["summary"], indent=2, sort_keys=True))
+    return 0
 
 
-def _relative_information_validate(args: argparse.Namespace) -> int:
-    from fineqcomp.relative_validation import write_locked_prospective_report
+def _relative_information_diagnose(args: argparse.Namespace) -> int:
+    from fineqcomp.relative_validation import write_measure_diagnostics_report
 
-    result = write_locked_prospective_report(
-        Path(args.discovery_results),
-        Path(args.prospective_results),
-        Path(args.runs_root),
-        Path(args.lock),
+    result = write_measure_diagnostics_report(
+        Path(args.cells),
         Path(args.out),
         permutations=args.permutations,
     )
-    print(
-        json.dumps(
-            {key: value for key, value in result.items() if key != "arms"},
-            indent=2,
-            sort_keys=True,
-        )
-    )
-    return 0 if result["status"] == "passed" else 1
+    print(json.dumps(result["summary"], indent=2, sort_keys=True))
+    return 0
+
+
 
 
 def _relative_information_channel_validate(args: argparse.Namespace) -> int:
@@ -373,70 +374,7 @@ def _relative_information_channel_validate(args: argparse.Namespace) -> int:
     return 0 if result["status"] == "passed" else 1
 
 
-def _relative_information_external(args: argparse.Namespace) -> int:
-    from fineqcomp.relative_validation import write_external_receiver_report
 
-    result = write_external_receiver_report(
-        Path(args.discovery_results),
-        Path(args.external_results),
-        Path(args.runs_root),
-        Path(args.out),
-        args.candidate,
-        min_natural_arms=args.min_natural_arms,
-    )
-    print(
-        json.dumps(
-            {key: value for key, value in result.items() if key != "arms"},
-            indent=2,
-            sort_keys=True,
-        )
-    )
-    return 0 if result["status"] == "passed" else 1
-
-
-def _relative_information_stability(args: argparse.Namespace) -> int:
-    from fineqcomp.relative_validation import write_measurement_stability_report
-
-    result = write_measurement_stability_report(
-        Path(args.stability_results),
-        Path(args.reference_results),
-        Path(args.out),
-        args.candidate,
-    )
-    print(
-        json.dumps(
-            {
-                key: value
-                for key, value in result.items()
-                if key not in {"setting_rows", "arm_rows"}
-            },
-            indent=2,
-            sort_keys=True,
-        )
-    )
-    return 0 if result["status"] == "passed" else 1
-
-
-def _relative_information_area(args: argparse.Namespace) -> int:
-    from fineqcomp.relative_validation import write_information_area_report
-
-    rows = (64, 128, 256)
-    result = write_information_area_report(
-        dict(zip(rows, map(Path, args.discovery_results), strict=True)),
-        dict(zip(rows, map(Path, args.evaluation_results), strict=True)),
-        Path(args.runs_root),
-        Path(args.out),
-        args.mode,
-        permutations=args.permutations,
-    )
-    print(
-        json.dumps(
-            {key: value for key, value in result.items() if key != "arms"},
-            indent=2,
-            sort_keys=True,
-        )
-    )
-    return 0 if result["status"] == "passed" else 1
 
 
 def _layer_profile(args: argparse.Namespace) -> int:
@@ -692,27 +630,38 @@ def build_parser() -> argparse.ArgumentParser:
     )
     relative_report.set_defaults(func=_relative_information_report)
 
-    relative_lock = subparsers.add_parser(
-        "relative-information-lock",
-        help="apply the recorded discovery gates and lock one spectral measure",
+    relative_law = subparsers.add_parser(
+        "relative-law",
+        help="audit the rate law: candidate gate, forward model, receiver test",
     )
-    relative_lock.add_argument("--results", required=True)
-    relative_lock.add_argument("--runs-root", default="runs")
-    relative_lock.add_argument("--out", required=True)
-    relative_lock.add_argument("--permutations", type=int, default=50_000)
-    relative_lock.set_defaults(func=_relative_information_lock)
+    relative_law.add_argument("--results", default="reports/relative_information_channel")
+    relative_law.add_argument("--runs-root", default="runs")
+    relative_law.add_argument(
+        "--out", default="results/1_rate_behaviour_frontier/rate_law_audit"
+    )
+    relative_law.add_argument(
+        "--row-grid",
+        nargs=2,
+        metavar=("ROOT64", "ROOT128"),
+        help="measurement roots at 64 and 128 rows, for the ceiling check",
+    )
+    relative_law.add_argument(
+        "--prospective-arms",
+        help="arm CSV from a finished campaign to score with the same prefit",
+    )
+    relative_law.add_argument("--permutations", type=int, default=20_000)
+    relative_law.set_defaults(func=_relative_law)
 
-    relative_validate = subparsers.add_parser(
-        "relative-information-validate",
-        help="test one locked measure on untouched completed campaigns",
+    relative_diagnose = subparsers.add_parser(
+        "relative-information-diagnose",
+        help="post-mortem one measure panel: resolution, receiver share, controls",
     )
-    relative_validate.add_argument("--discovery-results", required=True)
-    relative_validate.add_argument("--prospective-results", required=True)
-    relative_validate.add_argument("--runs-root", default="runs")
-    relative_validate.add_argument("--lock", required=True)
-    relative_validate.add_argument("--out", required=True)
-    relative_validate.add_argument("--permutations", type=int, default=100_000)
-    relative_validate.set_defaults(func=_relative_information_validate)
+    relative_diagnose.add_argument("--cells", required=True)
+    relative_diagnose.add_argument("--out", required=True)
+    relative_diagnose.add_argument("--permutations", type=int, default=20_000)
+    relative_diagnose.set_defaults(func=_relative_information_diagnose)
+
+
 
     channel_validate = subparsers.add_parser(
         "relative-information-channel-validate",
@@ -726,45 +675,8 @@ def build_parser() -> argparse.ArgumentParser:
     channel_validate.add_argument("--out", required=True)
     channel_validate.set_defaults(func=_relative_information_channel_validate)
 
-    relative_external = subparsers.add_parser(
-        "relative-information-external",
-        help="apply one fixed correction-volume measure to the unseen receiver",
-    )
-    relative_external.add_argument("--discovery-results", required=True)
-    relative_external.add_argument("--external-results", required=True)
-    relative_external.add_argument("--runs-root", default="runs")
-    relative_external.add_argument("--candidate", required=True)
-    relative_external.add_argument("--min-natural-arms", type=int, default=5)
-    relative_external.add_argument("--out", required=True)
-    relative_external.set_defaults(func=_relative_information_external)
 
-    relative_stability = subparsers.add_parser(
-        "relative-information-stability",
-        help="check one measure across fixed row and sketch settings",
-    )
-    relative_stability.add_argument("--stability-results", required=True)
-    relative_stability.add_argument("--reference-results", required=True)
-    relative_stability.add_argument("--candidate", required=True)
-    relative_stability.add_argument("--out", required=True)
-    relative_stability.set_defaults(func=_relative_information_stability)
 
-    relative_area = subparsers.add_parser(
-        "relative-information-area",
-        help="test the fixed 64/128/256-row correction-information area",
-    )
-    relative_area.add_argument(
-        "--discovery-results", nargs=3, required=True, metavar=("R64", "R128", "R256")
-    )
-    relative_area.add_argument(
-        "--evaluation-results", nargs=3, required=True, metavar=("R64", "R128", "R256")
-    )
-    relative_area.add_argument(
-        "--mode", choices=("development", "external"), required=True
-    )
-    relative_area.add_argument("--runs-root", default="runs")
-    relative_area.add_argument("--out", required=True)
-    relative_area.add_argument("--permutations", type=int, default=100_000)
-    relative_area.set_defaults(func=_relative_information_area)
 
     profile = subparsers.add_parser(
         "layer-profile",
