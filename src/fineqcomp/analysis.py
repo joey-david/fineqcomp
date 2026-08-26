@@ -131,6 +131,7 @@ def collect_rows(
                 if legacy_key in baselines:
                     baseline_key = legacy_key
             baseline = baselines.get(baseline_key, {})
+            retained_gain = codec.get("retained_gain") or {}
             baseline_predictions = (
                 runs_root / "baselines" / baseline_key / "predictions.jsonl"
             )
@@ -141,6 +142,11 @@ def collect_rows(
             baseline_test_score = (
                 baseline.get(primary_metric) if primary_metric else None
             )
+            if (
+                baseline_test_score is None
+                and retained_gain.get("metric") == primary_metric
+            ):
+                baseline_test_score = retained_gain.get("baseline_score")
             task_evaluations = task.get("evaluations", {})
             baseline_evaluations = baseline.get("evaluations", {})
             raw_task = run.get("raw_task", {})
@@ -221,9 +227,7 @@ def collect_rows(
                 "baseline_status": run.get("baseline_screening", {}).get("status"),
                 "raw_calibration_gain": run.get("learning_gate", {}).get("gain"),
                 "learning_status": run.get("learning_gate", {}).get("status"),
-                "retained_gain": codec.get("retained_gain", {}).get(
-                    "retained_gain"
-                ),
+                "retained_gain": retained_gain.get("retained_gain"),
                 "train_bits_saved": codec.get("behavioral_write", {}).get(
                     "train_bits_saved"
                 ),

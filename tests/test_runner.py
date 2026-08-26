@@ -1,12 +1,56 @@
 from __future__ import annotations
 
 import json
+from contextlib import contextmanager
 from types import SimpleNamespace
 
+from fineqcomp import runner
 from fineqcomp.campaign import expand_campaign
 from fineqcomp.config import load_campaign
 from fineqcomp.data import Example
 from fineqcomp.runner import RunEngine
+
+
+def test_baseline_waiter_takes_lock_after_failed_holder(tmp_path, monkeypatch):
+    attempts = iter((False, True))
+
+    @contextmanager
+    def claim_on_second_attempt(unused):
+        yield next(attempts)
+
+    monkeypatch.setattr(runner, "claim_run", claim_on_second_attempt)
+    monkeypatch.setattr(runner.time, "sleep", lambda unused: None)
+
+    with runner._claim_or_read_baseline(tmp_path, timeout_seconds=1) as result:
+        assert result == (True, None)
+
+
+def test_diversity_configs_reuse_panel_baselines():
+    panel = load_campaign("configs/high_gain_panel.yaml")
+    for config, panel_dataset in (
+        ("configs/diversity_sql.yaml", "text_to_sql"),
+        ("configs/diversity_xbrl.yaml", "xbrl_tags"),
+    ):
+        diversity = load_campaign(config)
+        campaign = {
+            **panel,
+            "datasets": {**panel["datasets"], **diversity["datasets"]},
+        }
+        engine = RunEngine(campaign)
+        panel_run = next(
+            run
+            for run in expand_campaign(panel)
+            if run.dataset_key == panel_dataset and run.seed == 11
+        )
+        expected = engine._baseline_key(panel_run)
+        diversity_runs = [
+            run
+            for run in expand_campaign(diversity)
+            if run.model.key == panel_run.model.key and run.seed == panel_run.seed
+        ]
+
+        assert diversity_runs
+        assert {engine._baseline_key(run) for run in diversity_runs} == {expected}
 
 
 def test_saturated_natural_cell_stops_before_adapter_training(tmp_path, monkeypatch):

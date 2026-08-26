@@ -1,0 +1,13 @@
+{
+  "candidate": "dataset_fisher_log_volume",
+  "cot_spearman": -0.4999999999999999,
+  "gates": {
+    "natural_spearman_at_least_0_70": false,
+    "prefit_rmse_beats_base_codelength": false
+  },
+  "natural_base_codelength_rmse": 0.3269533467002467,
+  "natural_exact_permutation_p": 0.5916666666666667,
+  "natural_prefit_rmse": 0.35725252893875364,
+  "natural_spearman": -0.1,
+  "status": "failed"
+}

@@ -1,0 +1,18 @@
+{
+  "status": "locked",
+  "candidate": "dataset_fisher_log_volume",
+  "definition": "log det(I + N_unique F_correction) from a fixed 256-row Nystrom sample",
+  "fit_scale": "linear in the log-volume value",
+  "row_sampling": "256 uniform rows from the full train split",
+  "row_sample_seed": 271828,
+  "hidden_sketch_dimensions": 64,
+  "residual_sketch_dimensions": 32,
+  "correction_sketch_dimensions": 2048,
+  "sketch_seed": 1729,
+  "row_sample_stability_median_cv": 0.0018136359514540421,
+  "row_sample_stability_minimum_rank_spearman": 0.979020979020979,
+  "sketch_stability_median_cv": 0.002031221352861924,
+  "sketch_stability_minimum_rank_spearman": 1.0,
+  "selection_stage": "Mistral/Qwen development only",
+  "external_receiver": "Llama-3.1-8B base"
+}

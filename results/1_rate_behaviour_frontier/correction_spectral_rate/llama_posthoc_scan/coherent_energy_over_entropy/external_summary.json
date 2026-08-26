@@ -1,0 +1,16 @@
+{
+  "candidate": "coherent_energy_over_entropy",
+  "cot_arms_available": 3,
+  "cot_spearman": -0.4999999999999999,
+  "gates": {
+    "natural_spearman_at_least_0_70": true,
+    "prefit_rmse_beats_base_codelength": true
+  },
+  "natural_arms_available": 5,
+  "natural_arms_required": 5,
+  "natural_base_codelength_rmse": 0.3269533467002467,
+  "natural_exact_permutation_p": 0.075,
+  "natural_prefit_rmse": 0.1320195712711883,
+  "natural_spearman": 0.7000000000000001,
+  "status": "passed"
+}

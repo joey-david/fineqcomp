@@ -114,15 +114,21 @@ def cache_models(campaign: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return cached
 
 
-def validate_prepared(runs: list[RunSpec], root: str | Path) -> int:
+def validate_prepared(
+    campaign: dict[str, Any], runs: list[RunSpec], root: str | Path
+) -> int:
     cells = {
         (str(run.dataset_key), run.seed)
         for run in runs
         if run.dataset_key is not None
     }
     for dataset_key, seed in cells:
+        spec = campaign["datasets"][dataset_key]
         validate_natural_dataset(
-            natural_data_dir(root, dataset_key, seed), dataset_key, seed
+            natural_data_dir(root, dataset_key, seed),
+            dataset_key,
+            seed,
+            (evaluation["key"] for evaluation in spec.get("evaluations", [])),
         )
     return len(cells)
 

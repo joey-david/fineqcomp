@@ -27,9 +27,7 @@ def _resolve_targets(
         leaf = name.rsplit(".", 1)[-1]
         if leaf not in wanted or not isinstance(module, torch.nn.Linear):
             continue
-        match = _LAYER_PATTERN.search(name)
-        layer = int(match.group(1)) if match else None
-        candidates.append((name, layer))
+        candidates.append((name, module_layer_index(name)))
     if not candidates:
         raise ValueError(f"no linear target modules found for {sorted(wanted)}")
     if last_n_layers is None:
@@ -44,6 +42,12 @@ def _resolve_targets(
     if not names:
         raise ValueError("layer restriction removed every adapter target")
     return names
+
+
+def module_layer_index(name: str) -> int | None:
+    """Transformer layer a parameter or module name belongs to, if any."""
+    match = _LAYER_PATTERN.search(name)
+    return int(match.group(1)) if match else None
 
 
 def resolve_target_modules(model: torch.nn.Module, spec: AdapterSpec) -> list[str]:

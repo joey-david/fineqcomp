@@ -1,0 +1,13 @@
+run_id,mean,coefficient_of_variation
+arm-a__mistral-7b-base__all-linear-r16__s11__ae34ad6906,2311.9996081231266,0.002304352175761719
+arm-e__mistral-7b-base__all-linear-r16__s11__dceded8f32,2143.5061065648893,0.0018520852646324519
+div-1200__mistral-7b-base__lever-div-1200__all-linear-r16__s11__b0a1609403,2490.080603351898,0.0016290583474587517
+div-400__mistral-7b-base__lever-div-400__all-linear-r16__s11__8fcc168722,2487.6191027493264,0.0004689662440585414
+numbered-broad__mistral-7b-base__behav-numbered-broad__all-linear-r16__s11__4c09e39f2e,2469.5151093785244,0.001496531126281912
+plain-broad__mistral-7b-base__behav-plain-broad__all-linear-r16__s11__84831ef76d,2487.9541611160103,0.0017410262077721323
+qwen-sup-answer__qwen25-7b-base__cot-math__all-linear-r16__s11__b6786b656a,491.72514409147897,0.14844917608636454
+qwen-sup-full__qwen25-7b-base__cot-math__all-linear-r16__s11__738b8f7b67,2426.5223782549633,0.0017778583539061793
+shouted-narrow__mistral-7b-base__behav-shouted-narrow__all-linear-r16__s11__2d99fe0486,2398.5380988831216,0.005300217702208131
+sup-answer__mistral-7b-base__cot-math__all-linear-r16__s11__9a858277a7,2814.157012566569,0.004989575530280268
+sup-full__mistral-7b-base__cot-math__all-linear-r16__s11__b8a65ecda2,2847.2383077841027,0.001849413549001905
+symbolic-narrow__mistral-7b-base__behav-symbolic-narrow__all-linear-r16__s11__b5c3ebae28,2539.1426741708206,0.0009077666354329348

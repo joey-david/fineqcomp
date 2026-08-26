@@ -35,8 +35,8 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=04:00:00
-#SBATCH --output=slurm_logs/%x-%j.out
-#SBATCH --error=slurm_logs/%x-%j.err
+#SBATCH --output=slurm_logs/%x-%A_%a.out
+#SBATCH --error=slurm_logs/%x-%A_%a.err
 
 set -euo pipefail
 

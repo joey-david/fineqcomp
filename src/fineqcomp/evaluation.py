@@ -394,7 +394,7 @@ def evaluate_natural(
 # a lower bound on the real metric -- an equivalent query written differently
 # counts as wrong. That is acceptable here because every arm is scored the same
 # way and the comparison is between arms.
-_EXACT_STRING_TASKS = {"text_to_sql", "xbrl_tags"}
+_EXACT_STRING_TASKS = {"paws", "text_to_sql", "xbrl_tags"}
 
 
 def _normalize_answer_text(text: str) -> str:

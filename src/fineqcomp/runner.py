@@ -9,6 +9,7 @@ import time
 import traceback
 from collections import defaultdict
 from collections.abc import Mapping
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -85,13 +86,29 @@ def partition_runs_weighted(
     return partitions
 
 
-def _wait_for_json(path: Path, timeout_seconds: float = 3600.0) -> dict[str, Any]:
+@contextmanager
+def _claim_or_read_baseline(
+    baseline_dir: Path,
+    timeout_seconds: float = 3600.0,
+    poll_seconds: float = 1.0,
+):
+    """Hold the baseline lock, or read the artifact another holder wrote."""
+    metrics_path = baseline_dir / "metrics.json"
     deadline = time.monotonic() + timeout_seconds
-    while time.monotonic() < deadline:
-        if path.is_file():
-            return read_json(path)
-        time.sleep(1.0)
-    raise TimeoutError(f"timed out waiting for shared artifact: {path}")
+    while True:
+        metrics = read_json(metrics_path)
+        if metrics is not None:
+            yield False, metrics
+            return
+        with claim_run(baseline_dir) as claimed:
+            if claimed:
+                # The file may have appeared between the read and the lock.
+                metrics = read_json(metrics_path)
+                yield metrics is None, metrics
+                return
+        if time.monotonic() >= deadline:
+            raise TimeoutError(f"timed out waiting for shared artifact: {metrics_path}")
+        time.sleep(poll_seconds)
 
 
 def _span_key(part: str, span: str) -> str:
@@ -308,6 +325,7 @@ class RunEngine:
         session: ModelSession,
         run: RunSpec,
         data: dict[str, list[Example]],
+        parts: tuple[str, ...] = ("train", "heldout"),
     ) -> dict[str, Any]:
         rows = int(self.campaign.get("information_rows", 256))
         marker = self._answer_marker(run)
@@ -324,21 +342,22 @@ class RunEngine:
                 marker,
             )
 
+        split_for = {"train": "train", "heldout": "calibration"}
         measured = {
-            "train": measure("train", "all"),
-            "heldout": measure("calibration", "all"),
+            part: measure(split_for[part], "all")
+            for part in parts
         }
         # With a marker the same rows are scored again on each half of the
         # response, which is what separates bits spent on the working from
         # bits spent on the answer.
         for span in self._split_spans(run):
-            measured[f"train_{span}"] = measure("train", span)
-            measured[f"heldout_{span}"] = measure("calibration", span)
-            if not measured[f"heldout_{span}"]["nll_tokens"]:
-                raise ValueError(
-                    f"{run.run_id}: the {span} span scored no tokens; check the"
-                    " dataset answer_marker"
-                )
+            for part in parts:
+                measured[f"{part}_{span}"] = measure(split_for[part], span)
+                if not measured[f"{part}_{span}"]["nll_tokens"]:
+                    raise ValueError(
+                        f"{run.run_id}: the {part} {span} span scored no tokens;"
+                        " check the dataset answer_marker"
+                    )
         return measured
 
     def _answer_marker(self, run: RunSpec) -> str | None:
@@ -435,21 +454,11 @@ class RunEngine:
         # and then failing. `claim_run` holds an flock, which the kernel drops
         # as soon as the process dies, stale or not.
         #
-        # That still leaves the case where the holder is alive but fails: the
-        # waiters poll only for the file, spend the whole timeout, and every
-        # one of them dies too. One bad holder cost eighteen runs an hour of
-        # H100 time that way. So a waiter that times out computes the baseline
-        # itself. Two jobs may then duplicate the work, which is cheap next to
-        # losing the arm, and `write_json` replaces atomically so the loser
-        # writes the same bytes.
-        with claim_run(baseline_dir) as claimed:
+        # A waiter must also retry the lock, not just poll for the file. If the
+        # holder fails, its lock drops at once and the next waiter takes over.
+        with _claim_or_read_baseline(baseline_dir) as (claimed, existing):
             if not claimed:
-                try:
-                    return _wait_for_json(
-                        baseline_dir / "metrics.json", timeout_seconds=1800.0
-                    )
-                except TimeoutError:
-                    pass
+                return existing
             baseline_dir.mkdir(parents=True, exist_ok=True)
             metrics, predictions = self._evaluate_natural(session, run, data["test"])
             write_predictions(baseline_dir / "predictions.jsonl", predictions)
@@ -617,6 +626,20 @@ class RunEngine:
                 list(map(str, self.campaign["multiple_choice_labels"])),
             )
         baseline = self.ensure_baseline(session, run, data, data_metadata)
+        dataset_spec = self.campaign["datasets"][str(run.dataset_key)]
+        if dataset_spec.get("distinct_source_problems") is not None:
+            # These arms share held-out rows and task tests, but select
+            # different training rows. Reuse the costly shared baseline while
+            # measuring base-model train bits on this arm's actual rows.
+            baseline = {
+                **baseline,
+                "information": {
+                    **baseline["information"],
+                    **self._information_measure(
+                        session, run, data, parts=("train",)
+                    ),
+                },
+            }
         screening = self._screening(run, baseline) if baseline else {}
         if screening.get("status") == "too_easy" and self.pilot_rows is None:
             write_json(run_dir / "screening.json", screening)

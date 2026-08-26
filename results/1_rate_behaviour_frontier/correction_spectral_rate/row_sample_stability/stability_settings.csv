@@ -1,0 +1,4 @@
+setting,runs,rank_spearman_vs_reference
+r256_rowsample161803,12,0.979020979020979
+r256_rowsample314159,12,0.9930069930069929
+r256_s1729,12,1.0

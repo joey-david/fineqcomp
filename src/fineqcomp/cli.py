@@ -161,6 +161,11 @@ def _run(args: argparse.Namespace) -> int:
         for run in shown:
             print(run.run_id)
         return 0
+    validate_prepared(
+        campaign,
+        selected if args.limit is None else selected[: args.limit],
+        args.prepared_root,
+    )
     engine = RunEngine(
         campaign,
         args.prepared_root,
@@ -207,6 +212,231 @@ def _dataset_information(args: argparse.Namespace) -> int:
     write_json(args.out, records)
     print(json.dumps(records, indent=2))
     return 0
+
+
+def _relative_information(args: argparse.Namespace) -> int:
+    from fineqcomp.data import load_natural_dataset
+    from fineqcomp.modeling import ModelSession
+    from fineqcomp.relative_info import (
+        SketchSpec,
+        measure_layer_energy,
+        measure_relative_information,
+        sample_examples,
+    )
+
+    campaign = load_campaign(args.config)
+    runs = read_manifest(args.manifest)
+    validate_manifest(runs, campaign)
+    selected = [run for run in runs if run.run_id == args.run_id]
+    if len(selected) != 1:
+        raise ValueError(f"unknown run ID: {args.run_id}")
+    run = selected[0]
+    data = load_natural_dataset(
+        campaign, run.dataset_key, run.seed, args.prepared_root
+    )
+    available_rows = data[args.split]
+    rows = (
+        sample_examples(available_rows, args.rows, seed=args.row_sample_seed)
+        if args.row_sampling == "uniform"
+        else available_rows[: args.rows]
+    )
+    distinct_rows = len({(row.prompt, row.response) for row in available_rows})
+    dataset_spec = campaign["datasets"][str(run.dataset_key)]
+    marker = dataset_spec.get("answer_marker")
+    session = ModelSession.load(run.model)
+    try:
+        measured = measure_relative_information(
+            session,
+            rows,
+            run.model,
+            min(run.training.max_length, args.max_length),
+            args.micro_batch_size,
+            label_span=run.training.label_span,
+            answer_marker=str(marker) if marker else None,
+            sketch=SketchSpec(
+                hidden_dim=args.hidden_dim,
+                residual_dim=args.residual_dim,
+                response_tokens=args.response_tokens,
+                seed=args.sketch_seed,
+                ntk_ridge=args.ntk_ridge,
+            ),
+            population_rows=distinct_rows,
+        )
+        if args.layer_energy_rows:
+            measured.update(
+                measure_layer_energy(
+                    session,
+                    sample_examples(
+                        rows, args.layer_energy_rows, seed=args.row_sample_seed
+                    ),
+                    run.model,
+                    min(run.training.max_length, args.max_length),
+                    label_span=run.training.label_span,
+                    answer_marker=str(marker) if marker else None,
+                    rank=args.layer_energy_rank,
+                    seed=args.sketch_seed,
+                )
+            )
+    finally:
+        try:
+            session.unload()
+        except Exception:
+            pass
+    record = {
+        "run_id": run.run_id,
+        "study": run.study,
+        "model_key": run.model.key,
+        "dataset_key": run.dataset_key,
+        "seed": run.seed,
+        "split": args.split,
+        "requested_rows": args.rows,
+        "measured_rows": len(rows),
+        "available_rows": len(available_rows),
+        "distinct_rows": distinct_rows,
+        "row_sampling": args.row_sampling,
+        "row_sample_seed": args.row_sample_seed,
+        **measured,
+    }
+    write_json(args.out, record)
+    print(json.dumps(record, indent=2))
+    return 0
+
+
+def _relative_information_report(args: argparse.Namespace) -> int:
+    from fineqcomp.relative_info import write_relative_information_report
+
+    summary = write_relative_information_report(
+        Path(args.results),
+        Path(args.runs_root),
+        Path(args.out),
+        permutations=args.permutations,
+        skip_missing_r_star=args.skip_missing_r_star,
+    )
+    print(json.dumps(summary, indent=2, sort_keys=True))
+    return 0
+
+
+def _relative_information_lock(args: argparse.Namespace) -> int:
+    from fineqcomp.relative_validation import write_discovery_lock
+
+    lock = write_discovery_lock(
+        Path(args.results),
+        Path(args.runs_root),
+        Path(args.out),
+        permutations=args.permutations,
+    )
+    print(json.dumps(lock, indent=2, sort_keys=True))
+    return 0 if lock["status"] == "locked" else 1
+
+
+def _relative_information_validate(args: argparse.Namespace) -> int:
+    from fineqcomp.relative_validation import write_locked_prospective_report
+
+    result = write_locked_prospective_report(
+        Path(args.discovery_results),
+        Path(args.prospective_results),
+        Path(args.runs_root),
+        Path(args.lock),
+        Path(args.out),
+        permutations=args.permutations,
+    )
+    print(
+        json.dumps(
+            {key: value for key, value in result.items() if key != "arms"},
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0 if result["status"] == "passed" else 1
+
+
+def _relative_information_channel_validate(args: argparse.Namespace) -> int:
+    from fineqcomp.relative_validation import (
+        write_fixed_channel_prospective_report,
+    )
+
+    result = write_fixed_channel_prospective_report(
+        Path(args.development_results),
+        Path(args.prospective_results),
+        Path(args.prospective_manifest),
+        Path(args.runs_root),
+        Path(args.lock),
+        Path(args.out),
+    )
+    print(
+        json.dumps(
+            {key: value for key, value in result.items() if key != "arms"},
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0 if result["status"] == "passed" else 1
+
+
+def _relative_information_external(args: argparse.Namespace) -> int:
+    from fineqcomp.relative_validation import write_external_receiver_report
+
+    result = write_external_receiver_report(
+        Path(args.discovery_results),
+        Path(args.external_results),
+        Path(args.runs_root),
+        Path(args.out),
+        args.candidate,
+        min_natural_arms=args.min_natural_arms,
+    )
+    print(
+        json.dumps(
+            {key: value for key, value in result.items() if key != "arms"},
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0 if result["status"] == "passed" else 1
+
+
+def _relative_information_stability(args: argparse.Namespace) -> int:
+    from fineqcomp.relative_validation import write_measurement_stability_report
+
+    result = write_measurement_stability_report(
+        Path(args.stability_results),
+        Path(args.reference_results),
+        Path(args.out),
+        args.candidate,
+    )
+    print(
+        json.dumps(
+            {
+                key: value
+                for key, value in result.items()
+                if key not in {"setting_rows", "arm_rows"}
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0 if result["status"] == "passed" else 1
+
+
+def _relative_information_area(args: argparse.Namespace) -> int:
+    from fineqcomp.relative_validation import write_information_area_report
+
+    rows = (64, 128, 256)
+    result = write_information_area_report(
+        dict(zip(rows, map(Path, args.discovery_results), strict=True)),
+        dict(zip(rows, map(Path, args.evaluation_results), strict=True)),
+        Path(args.runs_root),
+        Path(args.out),
+        args.mode,
+        permutations=args.permutations,
+    )
+    print(
+        json.dumps(
+            {key: value for key, value in result.items() if key != "arms"},
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0 if result["status"] == "passed" else 1
 
 
 def _layer_profile(args: argparse.Namespace) -> int:
@@ -324,7 +554,9 @@ def _preflight(args: argparse.Namespace) -> int:
             args.min_gpu_memory_gib,
         ),
         "manifest_runs": len(runs),
-        "prepared_dataset_cells": validate_prepared(runs, args.prepared_root),
+        "prepared_dataset_cells": validate_prepared(
+            campaign, runs, args.prepared_root
+        ),
         "partition": describe_partition(runs, args.shards),
     }
     if args.tokenizers:
@@ -408,6 +640,131 @@ def build_parser() -> argparse.ArgumentParser:
         help="also take the duplication-blind measure, which needs a GPU",
     )
     information.set_defaults(func=_dataset_information)
+
+    relative = subparsers.add_parser(
+        "relative-information",
+        help="measure ten ways the frozen model sees a supervised dataset",
+    )
+    relative.add_argument("--config", required=True)
+    relative.add_argument("--manifest", required=True)
+    relative.add_argument("--run-id", required=True)
+    relative.add_argument("--prepared-root", default="prepared")
+    relative.add_argument("--out", required=True)
+    relative.add_argument("--split", default="train", choices=["train", "calibration"])
+    relative.add_argument("--rows", type=int, default=256)
+    relative.add_argument(
+        "--row-sampling", choices=("uniform", "head"), default="uniform"
+    )
+    relative.add_argument("--row-sample-seed", type=int, default=271_828)
+    relative.add_argument("--max-length", type=int, default=1024)
+    relative.add_argument("--micro-batch-size", type=int, default=1)
+    relative.add_argument("--hidden-dim", type=int, default=64)
+    relative.add_argument("--residual-dim", type=int, default=32)
+    relative.add_argument("--response-tokens", type=int, default=32)
+    relative.add_argument("--sketch-seed", type=int, default=1729)
+    relative.add_argument("--ntk-ridge", type=float, default=0.1)
+    relative.add_argument(
+        "--layer-energy-rows",
+        type=int,
+        default=64,
+        help="rows for the zero-adapter backward pass; zero skips it",
+    )
+    relative.add_argument("--layer-energy-rank", type=int, default=16)
+    relative.set_defaults(func=_relative_information)
+
+    relative_report = subparsers.add_parser(
+        "relative-information-report",
+        help="rank frozen-model information measures against finished R* runs",
+    )
+    relative_report.add_argument(
+        "--results", default="reports/relative_information"
+    )
+    relative_report.add_argument("--runs-root", default="runs")
+    relative_report.add_argument(
+        "--out",
+        default="results/1_rate_behaviour_frontier/relative_information_candidates",
+    )
+    relative_report.add_argument("--permutations", type=int, default=50_000)
+    relative_report.add_argument(
+        "--skip-missing-r-star",
+        action="store_true",
+        help="drop measured cells whose run has no bracketed R*",
+    )
+    relative_report.set_defaults(func=_relative_information_report)
+
+    relative_lock = subparsers.add_parser(
+        "relative-information-lock",
+        help="apply the recorded discovery gates and lock one spectral measure",
+    )
+    relative_lock.add_argument("--results", required=True)
+    relative_lock.add_argument("--runs-root", default="runs")
+    relative_lock.add_argument("--out", required=True)
+    relative_lock.add_argument("--permutations", type=int, default=50_000)
+    relative_lock.set_defaults(func=_relative_information_lock)
+
+    relative_validate = subparsers.add_parser(
+        "relative-information-validate",
+        help="test one locked measure on untouched completed campaigns",
+    )
+    relative_validate.add_argument("--discovery-results", required=True)
+    relative_validate.add_argument("--prospective-results", required=True)
+    relative_validate.add_argument("--runs-root", default="runs")
+    relative_validate.add_argument("--lock", required=True)
+    relative_validate.add_argument("--out", required=True)
+    relative_validate.add_argument("--permutations", type=int, default=100_000)
+    relative_validate.set_defaults(func=_relative_information_validate)
+
+    channel_validate = subparsers.add_parser(
+        "relative-information-channel-validate",
+        help="apply one locked correction-spectrum test to untouched cells",
+    )
+    channel_validate.add_argument("--development-results", required=True)
+    channel_validate.add_argument("--prospective-results", required=True)
+    channel_validate.add_argument("--prospective-manifest", required=True)
+    channel_validate.add_argument("--runs-root", default="runs")
+    channel_validate.add_argument("--lock", required=True)
+    channel_validate.add_argument("--out", required=True)
+    channel_validate.set_defaults(func=_relative_information_channel_validate)
+
+    relative_external = subparsers.add_parser(
+        "relative-information-external",
+        help="apply one fixed correction-volume measure to the unseen receiver",
+    )
+    relative_external.add_argument("--discovery-results", required=True)
+    relative_external.add_argument("--external-results", required=True)
+    relative_external.add_argument("--runs-root", default="runs")
+    relative_external.add_argument("--candidate", required=True)
+    relative_external.add_argument("--min-natural-arms", type=int, default=5)
+    relative_external.add_argument("--out", required=True)
+    relative_external.set_defaults(func=_relative_information_external)
+
+    relative_stability = subparsers.add_parser(
+        "relative-information-stability",
+        help="check one measure across fixed row and sketch settings",
+    )
+    relative_stability.add_argument("--stability-results", required=True)
+    relative_stability.add_argument("--reference-results", required=True)
+    relative_stability.add_argument("--candidate", required=True)
+    relative_stability.add_argument("--out", required=True)
+    relative_stability.set_defaults(func=_relative_information_stability)
+
+    relative_area = subparsers.add_parser(
+        "relative-information-area",
+        help="test the fixed 64/128/256-row correction-information area",
+    )
+    relative_area.add_argument(
+        "--discovery-results", nargs=3, required=True, metavar=("R64", "R128", "R256")
+    )
+    relative_area.add_argument(
+        "--evaluation-results", nargs=3, required=True, metavar=("R64", "R128", "R256")
+    )
+    relative_area.add_argument(
+        "--mode", choices=("development", "external"), required=True
+    )
+    relative_area.add_argument("--runs-root", default="runs")
+    relative_area.add_argument("--out", required=True)
+    relative_area.add_argument("--permutations", type=int, default=100_000)
+    relative_area.set_defaults(func=_relative_information_area)
 
     profile = subparsers.add_parser(
         "layer-profile",

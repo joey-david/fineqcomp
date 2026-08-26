@@ -1,0 +1,12 @@
+{
+  "arms": 12,
+  "gates": {
+    "median_arm_cv_below_0_05": false,
+    "minimum_rank_spearman_at_least_0_95": false
+  },
+  "median_arm_cv": 0.5000890731111307,
+  "minimum_rank_spearman": 0.9020979020979021,
+  "reference_setting": "r256_s1729",
+  "settings": 9,
+  "status": "failed"
+}
