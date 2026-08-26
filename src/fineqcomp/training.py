@@ -15,7 +15,12 @@ from torch.utils.data import DataLoader
 from fineqcomp.adapters import restore_trainable_state, trainable_state
 from fineqcomp.config import ModelSpec, TrainingSpec
 from fineqcomp.data import Example
-from fineqcomp.modeling import CausalExampleDataset, causal_collate, model_device
+from fineqcomp.modeling import (
+    CausalExampleDataset,
+    causal_collate,
+    inference_autocast,
+    model_device,
+)
 
 
 def autocast_dtype(device: torch.device) -> torch.dtype:
@@ -58,7 +63,8 @@ def causal_nll(
     model.eval()
     for batch in loader:
         batch = {key: value.to(device) for key, value in batch.items()}
-        output = model(**batch)
+        with inference_autocast(model, device):
+            output = model(**batch)
         tokens = int((batch["labels"] != -100).sum().item())
         total_loss += float(output.loss.item()) * tokens
         total_tokens += tokens

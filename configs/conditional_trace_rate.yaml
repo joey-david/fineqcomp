@@ -1,0 +1,100 @@
+# Prospective matched-control test of conditional reasoning traces.
+#
+# Each row keeps its prompt and correct final answer. The rationale body comes
+# from another source problem with similar length. This holds the rationale
+# text multiset fixed and changes only whether the trace fits the problem.
+# The aligned arm already finished under cot_panel.yaml and
+# external_llama_panel.yaml, so this file trains only the missing controls.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+codecs:
+  uniform2: {method: uniform, bits: 2}
+  blend1_50: {method: uniform, bits: 1, blend: 0.5}
+  binary: {method: uniform, bits: 1}
+  sub0_08_16: {method: uniform, bits: 0, blend: 0.5}
+models:
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  llama31_8b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/meta-llama/Llama-3.1-8B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+training:
+  cot_full_1ep:
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+    label_span: all
+datasets:
+  cot_math_permuted:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    answer_marker: 'The answer is:'
+    rationale_control: permuted
+    validation_rows: 256
+    train_rows: 32000
+    test_rows: 1319
+    evaluations:
+    - key: gsm8k
+      path: openai/gsm8k
+      name: main
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: test
+      converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.85
+    minimum_validation_nll_gain_bits_per_token: 0.02
+studies:
+  trace_permuted_full:
+    kind: natural
+    models:
+    - mistral_7b_base
+    - qwen25_7b_base
+    - llama31_8b_base
+    datasets:
+    - cot_math_permuted
+    seeds:
+    - 11
+    - 22
+    - 33
+    adapters:
+    - all_linear_r16
+    training: cot_full_1ep

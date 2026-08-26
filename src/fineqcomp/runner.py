@@ -178,6 +178,7 @@ class RunEngine:
         # panel had already written -- and then to contend over them.
         source.pop("group_field", None)
         transform = spec.get("response_transform")
+        rationale_control = spec.get("rationale_control")
         payload = {
             "source": {key: str(source[key]) for key in sorted(source)},
             "validation_rows": spec.get("validation_rows"),
@@ -186,6 +187,9 @@ class RunEngine:
             # the same as an absent transform or every old baseline orphans.
             "response_transform": (
                 None if transform is None or str(transform) == "plain" else str(transform)
+            ),
+            "rationale_control": (
+                None if rationale_control is None else str(rationale_control)
             ),
         }
         digest = hashlib.sha256(

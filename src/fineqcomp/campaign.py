@@ -99,6 +99,10 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                             payload["response_transform"] = str(
                                 dataset_spec["response_transform"]
                             )
+                        if dataset_spec.get("rationale_control") is not None:
+                            payload["rationale_control"] = str(
+                                dataset_spec["rationale_control"]
+                            )
                         if dataset_spec.get("distinct_source_problems") is not None:
                             payload["distinct_source_problems"] = int(
                                 dataset_spec["distinct_source_problems"]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+import json
 from pathlib import Path
 
 import pytest
@@ -37,6 +38,49 @@ def test_campaign_expands_to_fixed_grid(tmp_path):
 
     manifest = write_manifest(runs, tmp_path / "manifest.jsonl")
     assert read_manifest(manifest) == runs
+
+
+def test_conditional_trace_control_matches_the_finished_aligned_grid():
+    control = load_campaign("configs/conditional_trace_rate.yaml")
+    cot = load_campaign("configs/cot_panel.yaml")
+    llama = load_campaign("configs/external_llama_panel.yaml")
+    runs = expand_campaign(control)
+
+    assert len(runs) == 9
+    assert {run.seed for run in runs} == {11, 22, 33}
+    assert {run.model.key for run in runs} == {
+        "mistral_7b_base", "qwen25_7b_base", "llama31_8b_base",
+    }
+    control_training = control["training"]["cot_full_1ep"]
+    control_adapter = control["adapters"]["all_linear_r16"]
+    control_dataset = control["datasets"]["cot_math_permuted"]
+    assert control_dataset["rationale_control"] == "permuted"
+    for aligned in (cot, llama):
+        assert aligned["training"]["cot_full_1ep"] == control_training
+        assert aligned["adapters"]["all_linear_r16"] == control_adapter
+        dataset = aligned["datasets"]["cot_math"]
+        for key in (
+            "train_source", "answer_marker", "validation_rows", "train_rows",
+            "test_rows", "evaluations",
+        ):
+            assert dataset[key] == control_dataset[key]
+    for model in control["models"]:
+        aligned = llama if model == "llama31_8b_base" else cot
+        assert control["models"][model] == aligned["models"][model]
+
+    lock = json.loads(Path(
+        "results/3_chain_of_thought_under_compression/"
+        "conditional_trace_rate_lock.json"
+    ).read_text())
+    assert set(lock["arms"]["permuted"]["run_ids"]) == {
+        run.run_id for run in runs
+    }
+    for arm in lock["arms"]["aligned"]["runs"]:
+        campaign = load_campaign(arm["config"])
+        assert set(arm["run_ids"]) == {
+            run.run_id for run in expand_campaign(campaign)
+            if run.study == arm["study"] and run.model.key == arm["model"]
+        }
 
 
 def test_stale_manifest_is_rejected():

@@ -12,7 +12,12 @@ import torch
 from fineqcomp.config import ModelSpec
 from fineqcomp.data import Example
 from fineqcomp.sandbox import run_humaneval_tests
-from fineqcomp.modeling import model_device, render_prompt, validate_single_token_labels
+from fineqcomp.modeling import (
+    inference_autocast,
+    model_device,
+    render_prompt,
+    validate_single_token_labels,
+)
 
 
 def _batched(rows: list[Any], size: int) -> list[list[Any]]:
@@ -44,7 +49,8 @@ def evaluate_constrained_labels(
         prompts = [render_prompt(tokenizer, row.prompt, model_spec) for row in batch]
         encoded = tokenizer(prompts, return_tensors="pt", padding=True)
         encoded = {key: value.to(device) for key, value in encoded.items()}
-        logits = model(**encoded).logits
+        with inference_autocast(model, device):
+            logits = model(**encoded).logits
         positions = torch.arange(
             encoded["attention_mask"].shape[1], device=device
         ).expand_as(encoded["attention_mask"])
@@ -125,7 +131,8 @@ def evaluate_multiple_choice(
         prompts = [render_prompt(tokenizer, row.prompt, model_spec) for row in batch]
         encoded = tokenizer(prompts, return_tensors="pt", padding=True)
         encoded = {key: value.to(device) for key, value in encoded.items()}
-        logits = model(**encoded).logits
+        with inference_autocast(model, device):
+            logits = model(**encoded).logits
         positions = torch.arange(
             encoded["attention_mask"].shape[1], device=device
         ).expand_as(encoded["attention_mask"])
@@ -194,14 +201,15 @@ def generate_responses(
             ]
             encoded = tokenizer(prompts, return_tensors="pt", padding=True)
             encoded = {key: value.to(device) for key, value in encoded.items()}
-            generated = model.generate(
-                **encoded,
-                do_sample=False,
-                max_new_tokens=max_new_tokens,
-                pad_token_id=tokenizer.pad_token_id,
-                eos_token_id=tokenizer.eos_token_id,
-                use_cache=True,
-            )
+            with inference_autocast(model, device):
+                generated = model.generate(
+                    **encoded,
+                    do_sample=False,
+                    max_new_tokens=max_new_tokens,
+                    pad_token_id=tokenizer.pad_token_id,
+                    eos_token_id=tokenizer.eos_token_id,
+                    use_cache=True,
+                )
             prompt_width = encoded["input_ids"].shape[1]
             for row in generated:
                 outputs.append(

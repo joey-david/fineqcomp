@@ -183,4 +183,12 @@ def load_campaign(path: str | Path) -> dict[str, Any]:
                         f"dataset {dataset_key}: the {span} span needs an"
                         " answer_marker"
                     )
+    for key, dataset in raw["datasets"].items():
+        control = dataset.get("rationale_control")
+        if control is None:
+            continue
+        if control != "permuted":
+            raise ValueError(f"dataset {key}: unknown rationale control {control!r}")
+        if not dataset.get("answer_marker"):
+            raise ValueError(f"dataset {key}: a rationale control needs an answer_marker")
     return raw

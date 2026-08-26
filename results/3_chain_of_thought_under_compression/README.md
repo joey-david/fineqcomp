@@ -12,6 +12,17 @@ against the same base model, so the two are directly comparable.
 | sub-study | status |
 |---|---|
 | [`span_supervision/`](span_supervision/) | complete, 9 Mistral + 9 Qwen runs, 3 seeds |
+| [`conditional_trace_rate_lock.json`](conditional_trace_rate_lock.json) | prospective, 9 matched-control runs locked across Mistral, Qwen, and Llama |
+
+## Locked causal test
+
+The completed span split does not show whether useful reasoning comes from the
+trace text itself or from its fit to the problem. The next test keeps every
+prompt, correct final answer, rationale-body multiset, training setting, and
+codec fixed, then moves each rationale to an unrelated problem of similar
+length. Its target is the lowest exact adapter rate that retains ninety per
+cent of the aligned-minus-permuted GSM8K gap. The lock forbids the old
+per-run gain denominator and fixes the raw and binary gaps before results.
 
 ## What replicates on a second frozen model
 

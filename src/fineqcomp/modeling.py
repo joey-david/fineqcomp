@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from contextlib import nullcontext
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -45,6 +46,20 @@ def compute_dtype() -> torch.dtype:
     if torch.cuda.is_available() and not torch.cuda.is_bf16_supported():
         return torch.float16
     return torch.bfloat16
+
+
+def inference_autocast(model: torch.nn.Module, device: torch.device):
+    """Keep Gemma 2 QLoRA attention inputs in one dtype during inference.
+
+    PEFT prepares non-quantized weights in FP32. Gemma 2's rotary path then
+    promotes the query while its generation cache keeps keys and values in
+    BF16. Its eager attention path under autocast restores the intended BF16
+    compute without changing the stored model or the other model families.
+    """
+    config = getattr(model, "config", None)
+    if device.type == "cuda" and getattr(config, "model_type", None) == "gemma2":
+        return torch.amp.autocast("cuda", dtype=compute_dtype())
+    return nullcontext()
 
 
 def model_device(model: torch.nn.Module) -> torch.device:
@@ -217,6 +232,7 @@ class ModelSession:
     @classmethod
     def load(cls, spec: ModelSpec) -> "ModelSession":
         from transformers import (
+            AutoConfig,
             AutoModelForCausalLM,
             AutoTokenizer,
             BitsAndBytesConfig,
@@ -236,6 +252,12 @@ class ModelSession:
         if tokenizer.pad_token_id is None:
             tokenizer.pad_token = tokenizer.eos_token
         kwargs: dict[str, Any] = dict(pinned_kwargs)
+        config = AutoConfig.from_pretrained(source, **pinned_kwargs)
+        kwargs["config"] = config
+        if getattr(config, "model_type", None) == "gemma2":
+            # Transformers recommends eager attention for Gemma 2 training.
+            # It also lets autocast resolve PEFT's FP32/BF16 inference mix.
+            kwargs["attn_implementation"] = "eager"
         dtype_key = (
             "dtype"
             if int(transformers_version.split(".", maxsplit=1)[0]) >= 5
