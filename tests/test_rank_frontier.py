@@ -138,3 +138,56 @@ def test_padding_restores_the_container_without_changing_the_update(tmp_path):
     assert torch.allclose(small, full, atol=1e-6)
     with pytest.raises(ValueError):
         pad_lora_rank(tensors, 4)
+
+
+def test_truncation_is_scored_against_the_mask_at_the_same_file_size():
+    """The comparison is paired on bytes, which is the only fair axis.
+
+    Both operations keep some rank directions and drop the rest; only the
+    choice differs. So a swept cell is read against the ladder interpolated to
+    that exact file size, and cells outside the ladder's range are dropped
+    rather than extrapolated.
+    """
+    from fineqcomp.rank_frontier import compare_against_random_mask
+
+    record = {
+        "codecs": [
+            {
+                "codec_key": "sub0_250",
+                "bits": 0,
+                "calibration_trials": [
+                    {"file_bits": 1_000_000, "effective_bits_per_value": 0.25}
+                ],
+                "behavioral_write": {"heldout_bits_saved": 100.0},
+            },
+            {
+                "codec_key": "binary",
+                "bits": 1,
+                "calibration_trials": [
+                    {"file_bits": 3_000_000, "effective_bits_per_value": 1.0}
+                ],
+                "behavioral_write": {"heldout_bits_saved": 200.0},
+            },
+        ]
+    }
+    cells = [
+        {
+            "run_id": "r", "model_key": "m", "dataset_key": "d", "seed": 11,
+            "rank": 4, "effective_bits_per_value": 0.5,
+            "file_bits": 2_000_000, "heldout_bits_saved": 180.0,
+            "ceiling_heldout_bits_saved": 400.0,
+        },
+        {  # below the ladder's smallest file: no honest comparison exists
+            "run_id": "r", "model_key": "m", "dataset_key": "d", "seed": 11,
+            "rank": 1, "effective_bits_per_value": 0.5,
+            "file_bits": 500_000, "heldout_bits_saved": 60.0,
+            "ceiling_heldout_bits_saved": 400.0,
+        },
+    ]
+    rows = compare_against_random_mask(cells, record)
+
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["random_mask_bits_saved"] == pytest.approx(150.0)
+    assert row["truncated_bits_saved"] == 180.0
+    assert row["retained_gain_points"] == pytest.approx(7.5)

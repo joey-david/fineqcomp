@@ -346,6 +346,16 @@ def _rank_frontier(args: argparse.Namespace) -> int:
     return 0
 
 
+def _rank_frontier_report(args: argparse.Namespace) -> int:
+    from fineqcomp.rank_frontier import write_rank_frontier_report
+
+    summary = write_rank_frontier_report(
+        Path(args.results), Path(args.runs_root), Path(args.out)
+    )
+    print(json.dumps(summary, indent=2, sort_keys=True))
+    return 0
+
+
 def _relative_law(args: argparse.Namespace) -> int:
     from fineqcomp.relative_validation import write_rate_law_report
 
@@ -673,6 +683,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rank.add_argument("--force", action="store_true")
     rank.set_defaults(func=_rank_frontier)
+
+    rank_report = subparsers.add_parser(
+        "rank-frontier-report",
+        help="join swept adapters and score truncation against the random mask",
+    )
+    rank_report.add_argument("--results", default="reports/rank_frontier")
+    rank_report.add_argument("--runs-root", default="runs")
+    rank_report.add_argument(
+        "--out", default="results/1_rate_behaviour_frontier/rank_frontier"
+    )
+    rank_report.set_defaults(func=_rank_frontier_report)
 
     relative_law = subparsers.add_parser(
         "relative-law",

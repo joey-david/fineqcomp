@@ -228,3 +228,107 @@ def random_mask_ladder(record: dict[str, Any]) -> list[dict[str, Any]]:
             }
         )
     return sorted(rungs, key=lambda rung: rung["file_bits"])
+
+
+def _interpolate(points: list[tuple[float, float]], at: float) -> float | None:
+    ordered = sorted(points)
+    if not ordered or at < ordered[0][0] or at > ordered[-1][0]:
+        return None
+    for index in range(1, len(ordered)):
+        left, right = ordered[index - 1], ordered[index]
+        if left[0] <= at <= right[0]:
+            span = right[0] - left[0]
+            if span <= 0:
+                return right[1]
+            return left[1] + (at - left[0]) * (right[1] - left[1]) / span
+    return None
+
+
+def compare_against_random_mask(
+    cells: list[dict[str, Any]], record: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Informed truncation against the mask the ladder already uses, by bytes.
+
+    The two are the same operation -- keep some rank directions, drop the rest
+    -- differing only in whether the choice looks at the weights. So the
+    comparison is paired at matched file size and needs no model of anything:
+    at this many bytes, does picking the strongest directions beat picking at
+    random, on the same adapter?
+    """
+    ladder = [
+        (float(rung["file_bits"]), float(rung["heldout_bits_saved"]))
+        for rung in random_mask_ladder(record)
+    ]
+    rows = []
+    for cell in sorted(cells, key=lambda cell: cell["file_bits"]):
+        masked = _interpolate(ladder, float(cell["file_bits"]))
+        if masked is None:
+            continue
+        ceiling = float(cell["ceiling_heldout_bits_saved"]) or float("nan")
+        rows.append(
+            {
+                "run_id": cell["run_id"],
+                "model_key": cell["model_key"],
+                "dataset_key": cell["dataset_key"],
+                "seed": cell["seed"],
+                "rank": cell["rank"],
+                "effective_bits_per_value": cell["effective_bits_per_value"],
+                "file_megabytes": cell["file_bits"] / 8e6,
+                "truncated_bits_saved": cell["heldout_bits_saved"],
+                "random_mask_bits_saved": masked,
+                "truncated_retained": cell["heldout_bits_saved"] / ceiling,
+                "random_mask_retained": masked / ceiling,
+                "retained_gain_points": (
+                    100.0 * (cell["heldout_bits_saved"] - masked) / ceiling
+                ),
+            }
+        )
+    return rows
+
+
+def write_rank_frontier_report(
+    results_root: Path, runs_root: Path, out_dir: Path
+) -> dict[str, Any]:
+    """Join every swept adapter and score truncation against the random mask."""
+    from fineqcomp.artifacts import write_json
+    from fineqcomp.relative_validation import _write_csv
+
+    results_root = Path(results_root)
+    cells: list[dict[str, Any]] = []
+    paired: list[dict[str, Any]] = []
+    for run_dir in sorted(path for path in results_root.iterdir() if path.is_dir()):
+        run_cells = [
+            json.loads(path.read_text())
+            for path in sorted(run_dir.glob("r*_b*.json"))
+        ]
+        if not run_cells:
+            continue
+        metrics = Path(runs_root) / run_dir.name / "metrics.json"
+        if not metrics.is_file():
+            continue
+        cells.extend(run_cells)
+        paired.extend(
+            compare_against_random_mask(run_cells, json.loads(metrics.read_text()))
+        )
+    out_dir = Path(out_dir)
+    _write_csv(out_dir / "cells.csv", cells)
+    _write_csv(out_dir / "truncation_vs_random_mask.csv", paired)
+    _write_csv(out_dir / "frontier.csv", frontier(cells))
+    wins = [row["retained_gain_points"] for row in paired]
+    summary = {
+        "adapters": len({row["run_id"] for row in cells}),
+        "cells": len(cells),
+        "paired_comparisons": len(paired),
+        "ranks": sorted({int(row["rank"]) for row in cells}),
+        "median_gain_points_over_random_mask": (
+            float(sorted(wins)[len(wins) // 2]) if wins else None
+        ),
+        "share_where_truncation_wins": (
+            sum(1 for value in wins if value > 0) / len(wins) if wins else None
+        ),
+        "ranks_on_the_frontier": sorted(
+            {int(row["rank"]) for row in frontier(cells)}
+        ),
+    }
+    write_json(out_dir / "summary.json", summary)
+    return summary
