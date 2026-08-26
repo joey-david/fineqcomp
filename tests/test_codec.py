@@ -6,6 +6,7 @@ import torch
 
 from fineqcomp.codec import (
     decode_adapter_tensor_map,
+    truncate_lora_rank,
     encode_loraquant_tensor_map,
     decode_tensor_map,
     encode_tensor_map,
@@ -316,3 +317,35 @@ def test_a_layer_plan_must_cover_every_band(tmp_path):
     tensors = _layered_lora()
     with pytest.raises(ValueError, match="no rate given"):
         encode_layer_groups(tensors, tmp_path / "a", {"g0": (1, 0.0), "gX": (1, 0.0)})
+
+
+def test_rank_truncation_keeps_the_strongest_directions_and_shrinks_the_file():
+    """Truncation must be the best rank-r approximation, and cost r's worth.
+
+    A rank-4 pair built from four orthogonal directions with decreasing weight
+    keeps the top two exactly when truncated to two, and the residual is the
+    energy of the two it dropped -- which is what makes rank comparable to bit
+    width on a byte axis.
+    """
+    torch.manual_seed(0)
+    out_features, in_features, rank = 12, 10, 4
+    left = torch.linalg.qr(torch.randn(out_features, rank))[0]
+    right = torch.linalg.qr(torch.randn(in_features, rank))[0].T
+    weights = torch.tensor([4.0, 3.0, 2.0, 1.0])
+    b = left * weights[None, :]
+    a = right
+    tensors = {"m.lora_A.default.weight": a, "m.lora_B.default.weight": b}
+
+    kept = truncate_lora_rank(tensors, 2)
+
+    assert kept["m.lora_A.default.weight"].shape == (2, in_features)
+    assert kept["m.lora_B.default.weight"].shape == (out_features, 2)
+    full = b @ a
+    approx = kept["m.lora_B.default.weight"] @ kept["m.lora_A.default.weight"]
+    dropped = float((weights[2:] ** 2).sum().sqrt())
+    assert torch.linalg.matrix_norm(full - approx).item() == pytest.approx(
+        dropped, rel=1e-4
+    )
+    assert truncate_lora_rank(tensors, 99)[
+        "m.lora_A.default.weight"
+    ].shape == (rank, in_features)

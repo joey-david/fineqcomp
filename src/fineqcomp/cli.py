@@ -316,6 +316,36 @@ def _relative_information_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def _rank_frontier(args: argparse.Namespace) -> int:
+    from fineqcomp.rank_frontier import frontier, sweep_run
+
+    rows = sweep_run(
+        Path(args.run),
+        Path(args.config),
+        Path(args.prepared_root),
+        Path(args.out),
+        ranks=tuple(args.ranks),
+        force=args.force,
+    )
+    best = frontier(rows)
+    print(
+        json.dumps(
+            {
+                "cells": len(rows),
+                "frontier_points": len(best),
+                "ranks_on_frontier": sorted({row["rank"] for row in best}),
+                "best_bits_saved_per_megabyte": max(
+                    row["heldout_bits_saved"] / (row["file_bits"] / 8e6)
+                    for row in rows
+                ),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 def _relative_law(args: argparse.Namespace) -> int:
     from fineqcomp.relative_validation import write_rate_law_report
 
@@ -629,6 +659,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="drop measured cells whose run has no bracketed R*",
     )
     relative_report.set_defaults(func=_relative_information_report)
+
+    rank = subparsers.add_parser(
+        "rank-frontier",
+        help="sweep rank against rate on a finished adapter; no training",
+    )
+    rank.add_argument("--run", required=True)
+    rank.add_argument("--config", default="configs/campaign.yaml")
+    rank.add_argument("--prepared-root", default="prepared")
+    rank.add_argument("--out", required=True)
+    rank.add_argument(
+        "--ranks", type=int, nargs="+", default=[1, 2, 4, 8, 16]
+    )
+    rank.add_argument("--force", action="store_true")
+    rank.set_defaults(func=_rank_frontier)
 
     relative_law = subparsers.add_parser(
         "relative-law",

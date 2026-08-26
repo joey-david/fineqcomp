@@ -527,6 +527,31 @@ def _balanced_svd(a: torch.Tensor, b: torch.Tensor) -> tuple[torch.Tensor, ...]:
     return new_a, new_b, singular
 
 
+def truncate_lora_rank(
+    tensors: Mapping[str, torch.Tensor], rank: int
+) -> dict[str, torch.Tensor]:
+    """Drop every LoRA pair to its `rank` strongest directions.
+
+    The pair is refactored so its singular values sit on the diagonal and the
+    energy is split evenly between the two factors, then the tail is cut. This
+    is the only way to compare a rank against a bit width on one axis: the
+    serialized file shrinks in proportion to the rank, so a rank-4 adapter at
+    four bits and a rank-16 adapter at one bit are the same number of bytes and
+    the question of which keeps more behaviour becomes a measurement.
+    """
+    if rank < 1:
+        raise ValueError("rank must be at least one")
+    truncated: dict[str, torch.Tensor] = {}
+    for a_name, b_name, a, b in _lora_pairs(tensors):
+        keep = min(rank, int(a.shape[0]))
+        balanced_a, balanced_b, _ = _balanced_svd(a, b)
+        truncated[a_name] = balanced_a[:keep].contiguous().to(tensors[a_name].dtype)
+        truncated[b_name] = (
+            balanced_b[:, :keep].contiguous().to(tensors[b_name].dtype)
+        )
+    return truncated
+
+
 def _oriented_groups(
     tensor: torch.Tensor, transpose: bool, group_size: int
 ) -> tuple[torch.Tensor, tuple[int, int], int]:
