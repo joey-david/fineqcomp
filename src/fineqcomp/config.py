@@ -184,6 +184,11 @@ def load_campaign(path: str | Path) -> dict[str, Any]:
                         " answer_marker"
                     )
     for key, dataset in raw["datasets"].items():
+        generation_limit = dataset.get("evaluation_max_new_tokens")
+        if generation_limit is not None and int(generation_limit) < 1:
+            raise ValueError(
+                f"dataset {key}: evaluation_max_new_tokens must be positive"
+            )
         control = dataset.get("rationale_control")
         if control is None:
             continue

@@ -10,6 +10,7 @@ from fineqcomp.data import Example
 from fineqcomp.relative_info import (
     CANDIDATES,
     _assignment_statistics,
+    _lexical_score_blocks,
     channel_bits_ceiling,
     codec_referenced_retention,
     COVERAGE_CANDIDATES,
@@ -794,3 +795,15 @@ def test_trace_retrieval_marginal_correction_rejects_pure_trace_priors():
 
     assert measured["load_bits"] == pytest.approx(2.0)
     assert measured["log_loss_bits"] == pytest.approx(2.0)
+
+
+def test_trace_retrieval_surface_control_places_copied_words_without_a_model():
+    prompts = [f"find the special token{index}" for index in range(4)]
+    bodies = [f"token{index} is the requested value" for index in range(4)]
+
+    measured = _assignment_statistics(
+        _lexical_score_blocks(prompts, bodies, [list(range(4))])
+    )
+
+    assert measured["accuracy"] == 1.0
+    assert measured["mean_margin_bits"] > 0.0

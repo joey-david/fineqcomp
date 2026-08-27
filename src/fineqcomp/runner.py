@@ -227,6 +227,9 @@ class RunEngine:
         # transforms, and hh-rlhf and Alpaca were gated against MetaMathQA's
         # 0.899 bits per token because all three list gsm8k.
         evaluations = f"{evaluations}-cal{self._calibration_key(spec)}"
+        generation_limit = spec.get("evaluation_max_new_tokens")
+        if generation_limit is not None:
+            evaluations = f"{evaluations}-gen{int(generation_limit)}"
         # A study that splits the response by span needs baseline numbers for
         # each span. Those go in a key of their own rather than growing the
         # shared record in place, so a half-written rewrite can never be
@@ -255,6 +258,9 @@ class RunEngine:
             batch_size=int(self.campaign.get("evaluation_batch_size", 8)),
             multiple_choice_labels=list(
                 map(str, self.campaign.get("multiple_choice_labels", []))
+            ),
+            max_new_tokens=self.campaign["datasets"][str(run.dataset_key)].get(
+                "evaluation_max_new_tokens"
             ),
         )
 

@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "rows_per_sample": 32,
+  "candidates": 8,
+  "token_pattern": "[a-z0-9]+",
+  "samples": [
+    {
+      "seed": 271828,
+      "indices": [
+        215, 430, 1460, 3227, 4112, 5004, 5875, 5991,
+        7037, 7833, 9529, 9610, 12048, 12510, 12744, 17919,
+        18718, 19949, 21650, 22026, 22432, 24818, 26476, 27103,
+        27853, 28548, 29739, 29786, 29889, 31270, 31664, 31905
+      ],
+      "tfidf_retrieval_accuracy": 1.0,
+      "mean_tfidf_margin": 0.5032737358566814,
+      "mean_prompt_vocabulary_repeated_in_body": 0.5424259202574415,
+      "min_prompt_vocabulary_repeated": 0.3225806451612903,
+      "max_prompt_vocabulary_repeated": 0.6785714285714286
+    },
+    {
+      "seed": 161803,
+      "indices": [
+        318, 1265, 2349, 3129, 4009, 4901, 6387, 6486,
+        7290, 7982, 7987, 9010, 9066, 9214, 9426, 11154,
+        11504, 14643, 14766, 15567, 16046, 16457, 16943, 21332,
+        23931, 24088, 24689, 26098, 26681, 29053, 30704, 31456
+      ],
+      "tfidf_retrieval_accuracy": 1.0,
+      "mean_tfidf_margin": 0.47466611964473443,
+      "mean_prompt_vocabulary_repeated_in_body": 0.5279150790988795,
+      "min_prompt_vocabulary_repeated": 0.2857142857142857,
+      "max_prompt_vocabulary_repeated": 0.7
+    }
+  ]
+}

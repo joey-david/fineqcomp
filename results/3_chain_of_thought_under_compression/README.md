@@ -14,6 +14,7 @@ MetaMathQA, then scores GSM8K.
 | [`conditional_trace_rate/`](conditional_trace_rate/) | both locked primary tests pass across 9 matched pairs; half-bit secondary point incomplete |
 | [`reasoning_scaling_battery_lock.json`](reasoning_scaling_battery_lock.json) | prospective native-model, data, GRPO, and scaling-law gates frozen; model and data smokes only |
 | [`reasoning_scaling_battery_amendment_1.json`](reasoning_scaling_battery_amendment_1.json) | pre-pilot correction after the original data gate and first L_rel formula failed |
+| [`reasoning_scaling_battery_amendment_2.json`](reasoning_scaling_battery_amendment_2.json) | surface-control, controlled-generator, fixed-GRPO-buffer, and native-generation gates added after two retrieval smokes |
 | [`reasoning_scaling_smoke/`](reasoning_scaling_smoke/) | stage 2 passes 8 of 9 models; original stage 3 fails, revised data smoke passes; no micro-pilot yet |
 
 ## Locked causal test

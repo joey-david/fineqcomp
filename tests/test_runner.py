@@ -53,6 +53,28 @@ def test_diversity_configs_reuse_panel_baselines():
         assert {engine._baseline_key(run) for run in diversity_runs} == {expected}
 
 
+def test_generation_limit_gets_its_own_baseline_key():
+    campaign = load_campaign("configs/reasoning_native_smoke.yaml")
+    run = expand_campaign(campaign)[0]
+    original = RunEngine(campaign)._baseline_key(run)
+    changed = {
+        **campaign,
+        "datasets": {
+            **campaign["datasets"],
+            "cot_math": {
+                **campaign["datasets"]["cot_math"],
+                "evaluation_max_new_tokens": 2048,
+            },
+        },
+    }
+
+    revised = RunEngine(changed)._baseline_key(run)
+
+    assert original != revised
+    assert "gen2048" in revised
+    assert expand_campaign(changed)[0].run_id != run.run_id
+
+
 def test_saturated_natural_cell_stops_before_adapter_training(tmp_path, monkeypatch):
     campaign = load_campaign("configs/campaign.yaml")
     run = next(

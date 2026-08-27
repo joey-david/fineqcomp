@@ -56,6 +56,7 @@ About seven H100-minutes were spent before cancellation.
 | `model_reports/` | the eight passing preflight reports, with environment and codec detail |
 | `trace_lengths.csv` | token-length quantiles and the fraction fitting each candidate max_length |
 | `data_reports/` | the stage-3 preflight report, measured with the retention gate disabled |
+| `lrel_reports/` | the two corrected retrieval smokes and their surface-only audit |
 | `diagnostics/` | the RoPE and answer-retention gate tracebacks, and the quarantined pre-gate report |
 
 ## Stage 3: the frozen gate failed; the revised smoke passes
@@ -121,12 +122,28 @@ field also measured information the frozen decoder already recovered, not a
 lower bound on adapter size. This job is a method diagnostic, not evidence for
 the scaling claim.
 
-The amended schema scores trace-body tokens only, subtracts each trace's
-log-mean likelihood across its matched prompts, caps the primary load at the
-uniform K-way loss, and reports the raw score, accuracy, Fano directions, and a
-random-assignment check separately. It calls this a fixed predictor candidate,
-not a mutual-information estimate. No panel measurement can start until the
-same 32-row cell and a second frozen sample pass that schema.
+Schema 2 scores trace-body tokens only, subtracts each trace's log-mean
+likelihood across its matched prompts, caps the primary load at the uniform
+K-way loss, and reports the raw score, accuracy, Fano directions, and a random
+assignment check separately. The same cell then passed on two frozen samples:
+
+| row-sample seed | corrected accuracy | bounded load | raw accuracy | raw log loss |
+|---:|---:|---:|---:|---:|
+| 271828 | 100% | 5.19e-11 bits | 68.75% | 13.73 bits |
+| 161803 | 100% | 2.27e-8 bits | 46.88% | 28.83 bits |
+
+Those are not reasoning-load results. A fixed TF-IDF matcher also places all
+32 traces in both samples. The trace repeats a mean 54.2 per cent and 52.8 per
+cent of the prompt vocabulary, respectively. The corrected model score proves
+that donor-only likelihood no longer sets the answer, but it does not beat a
+surface-only control. These 121 H100-seconds therefore establish a
+surface-saturated MetaMathQA cell, not near-zero missing reasoning.
+
+[`../reasoning_scaling_battery_amendment_2.json`](../reasoning_scaling_battery_amendment_2.json)
+makes that surface matcher mandatory and moves the primary controlled load and
+GRPO tests to same-generator, same-difficulty procedural instances. Schema 3
+records the surface score beside every model score. Natural trace corpora stay
+in the battery as external checks.
 
 ## Not done here
 

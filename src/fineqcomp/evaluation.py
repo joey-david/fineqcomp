@@ -181,18 +181,18 @@ def _normalize_number(text: str) -> str | None:
 
 
 @torch.no_grad()
-def generate_responses(
+def generate_response_records(
     model: torch.nn.Module,
     tokenizer: Any,
     examples: list[Example],
     model_spec: ModelSpec,
     batch_size: int,
     max_new_tokens: int,
-) -> list[str]:
+) -> list[dict[str, Any]]:
     device = model_device(model)
     old_padding = tokenizer.padding_side
     tokenizer.padding_side = "left"
-    outputs: list[str] = []
+    outputs: list[dict[str, Any]] = []
     model.eval()
     try:
         for batch in _batched(examples, batch_size):
@@ -212,12 +212,75 @@ def generate_responses(
                 )
             prompt_width = encoded["input_ids"].shape[1]
             for row in generated:
+                completion = row[prompt_width:]
+                eos = tokenizer.eos_token_id
+                eos_positions = (
+                    (completion == int(eos)).nonzero(as_tuple=False).flatten()
+                    if eos is not None
+                    else torch.empty(0, dtype=torch.long, device=completion.device)
+                )
+                terminated = bool(len(eos_positions))
+                token_count = (
+                    int(eos_positions[0].item()) + 1
+                    if terminated
+                    else int(completion.numel())
+                )
                 outputs.append(
-                    tokenizer.decode(row[prompt_width:], skip_special_tokens=True)
+                    {
+                        "response": tokenizer.decode(
+                            completion, skip_special_tokens=True
+                        ),
+                        "completion_tokens": token_count,
+                        "terminated_with_eos": terminated,
+                        "hit_generation_limit": not terminated,
+                    }
                 )
     finally:
         tokenizer.padding_side = old_padding
     return outputs
+
+
+def generate_responses(
+    model: torch.nn.Module,
+    tokenizer: Any,
+    examples: list[Example],
+    model_spec: ModelSpec,
+    batch_size: int,
+    max_new_tokens: int,
+) -> list[str]:
+    """Compatibility wrapper for callers that need response text only."""
+    return [
+        str(record["response"])
+        for record in generate_response_records(
+            model,
+            tokenizer,
+            examples,
+            model_spec,
+            batch_size,
+            max_new_tokens,
+        )
+    ]
+
+
+def _generation_metrics(
+    records: list[dict[str, Any]], max_new_tokens: int
+) -> dict[str, float | int]:
+    rows = max(len(records), 1)
+    return {
+        "max_new_tokens": max_new_tokens,
+        "terminated_fraction": sum(
+            bool(record["terminated_with_eos"]) for record in records
+        )
+        / rows,
+        "hit_generation_limit_fraction": sum(
+            bool(record["hit_generation_limit"]) for record in records
+        )
+        / rows,
+        "mean_completion_tokens": sum(
+            int(record["completion_tokens"]) for record in records
+        )
+        / rows,
+    }
 
 
 def evaluate_natural(
@@ -228,6 +291,7 @@ def evaluate_natural(
     dataset_key: str,
     batch_size: int,
     multiple_choice_labels: list[str] | None = None,
+    max_new_tokens: int | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     evaluators = []
     for example in examples:
@@ -251,6 +315,7 @@ def evaluate_natural(
                 evaluator,
                 batch_size,
                 multiple_choice_labels,
+                max_new_tokens,
             )
             results[evaluator] = metrics
             all_predictions.extend(
@@ -275,16 +340,28 @@ def evaluate_natural(
             multiple_choice_labels,
             batch_size,
         )
-    max_tokens = 512 if dataset_key in {"gsm8k", "math", "mbpp", "humaneval"} else 128
-    responses = generate_responses(
+    max_tokens = (
+        max_new_tokens
+        if max_new_tokens is not None
+        else (512 if dataset_key in {"gsm8k", "math", "mbpp", "humaneval"} else 128)
+    )
+    if max_tokens < 1:
+        raise ValueError("max_new_tokens must be positive")
+    generation_records = generate_response_records(
         model, tokenizer, examples, model_spec, batch_size, max_tokens
     )
+    responses = [str(record["response"]) for record in generation_records]
+    generation_metrics = _generation_metrics(generation_records, max_tokens)
     predictions = []
     if dataset_key == "gsm8k":
         correct = 0
-        for example, response in zip(examples, responses, strict=True):
+        extracted = 0
+        for example, response, generation in zip(
+            examples, responses, generation_records, strict=True
+        ):
             expected = _normalize_number(example.response)
             predicted = _normalize_number(response)
+            extracted += int(predicted is not None)
             is_correct = predicted is not None and predicted == expected
             correct += int(is_correct)
             predictions.append(
@@ -294,16 +371,21 @@ def evaluate_natural(
                     "prediction": predicted,
                     "response": response,
                     "correct": is_correct,
+                    **generation,
                 }
             )
         return {
             "examples": len(examples),
             "exact_match": correct / max(len(examples), 1),
+            "answer_extracted_fraction": extracted / max(len(examples), 1),
+            **generation_metrics,
         }, predictions
     if dataset_key == "humaneval":
         passed = 0
         statuses: dict[str, int] = {}
-        for example, response in zip(examples, responses, strict=True):
+        for example, response, generation in zip(
+            examples, responses, generation_records, strict=True
+        ):
             result = run_humaneval_tests(
                 response,
                 str(example.metadata["code_prefix"]),
@@ -313,12 +395,18 @@ def evaluate_natural(
             passed += int(result["passed"])
             statuses[result["status"]] = statuses.get(result["status"], 0) + 1
             predictions.append(
-                {"example_id": example.example_id, "response": response, **result}
+                {
+                    "example_id": example.example_id,
+                    "response": response,
+                    **generation,
+                    **result,
+                }
             )
         return {
             "examples": len(examples),
             "pass_at_1": passed / max(len(examples), 1),
             "failure_counts": statuses,
+            **generation_metrics,
         }, predictions
     if dataset_key == "math":
         from math_verify import (
@@ -330,13 +418,17 @@ def evaluate_natural(
 
         latex = LatexExtractionConfig(boxed_match_priority=0)
         correct = 0
-        for example, response in zip(examples, responses, strict=True):
+        extracted = 0
+        for example, response, generation in zip(
+            examples, responses, generation_records, strict=True
+        ):
             try:
                 gold = parse(example.response, extraction_config=[latex])
                 answer = parse(
                     response,
                     extraction_config=[latex, ExprExtractionConfig()],
                 )
+                extracted += int(bool(answer))
                 is_correct = bool(gold and answer and verify(gold, answer))
             except (ValueError, TypeError):
                 is_correct = False
@@ -348,11 +440,14 @@ def evaluate_natural(
                     "correct": is_correct,
                     "level": example.metadata.get("level"),
                     "subject": example.metadata.get("subject"),
+                    **generation,
                 }
             )
         return {
             "examples": len(examples),
             "exact_match": correct / max(len(examples), 1),
+            "answer_extracted_fraction": extracted / max(len(examples), 1),
+            **generation_metrics,
         }, predictions
     if dataset_key == "xsum":
         from rouge_score import rouge_scorer
@@ -362,21 +457,27 @@ def evaluate_natural(
             scorer.score(example.response.strip(), response.strip())["rougeL"].fmeasure
             for example, response in zip(examples, responses, strict=True)
         ]
-        for example, response, score in zip(examples, responses, scores, strict=True):
+        for example, response, score, generation in zip(
+            examples, responses, scores, generation_records, strict=True
+        ):
             predictions.append(
                 {
                     "example_id": example.example_id,
                     "response": response,
                     "rouge_l": score,
+                    **generation,
                 }
             )
         return {
             "examples": len(examples),
             "rouge_l": sum(scores) / max(len(scores), 1),
+            **generation_metrics,
         }, predictions
     if dataset_key in _EXACT_STRING_TASKS:
         correct = 0
-        for example, response in zip(examples, responses, strict=True):
+        for example, response, generation in zip(
+            examples, responses, generation_records, strict=True
+        ):
             expected = _normalize_answer_text(example.response)
             predicted = _normalize_answer_text(response)
             is_correct = bool(expected) and predicted == expected
@@ -388,11 +489,13 @@ def evaluate_natural(
                     "prediction": predicted,
                     "response": response,
                     "correct": is_correct,
+                    **generation,
                 }
             )
         return {
             "examples": len(examples),
             "exact_match": correct / max(len(examples), 1),
+            **generation_metrics,
         }, predictions
     raise ValueError(f"unsupported natural evaluation: {dataset_key}")
 
