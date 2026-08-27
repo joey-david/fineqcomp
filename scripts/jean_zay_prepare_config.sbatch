@@ -22,7 +22,15 @@ config="${CONFIG:?set CONFIG}"
 manifest="${MANIFEST:?set MANIFEST}"
 source "$repo_root/scripts/jean_zay_env.sh"
 
-echo "config=$config manifest=$manifest offline=${HF_HUB_OFFLINE:-0}"
+# Only prepost reaches the Hub. Submitting an online prepare to cpu_p1 to skip
+# the prepost queue costs a full queue wait and dies on LocalEntryNotFoundError.
+partition="${SLURM_JOB_PARTITION:-prepost}"
+if [[ "${FINEQCOMP_ONLINE:-0}" == 1 && "$partition" != "prepost" ]]; then
+  echo "fineqcomp: online prepare needs the prepost partition, got '$partition'" >&2
+  exit 2
+fi
+
+echo "config=$config manifest=$manifest offline=${HF_HUB_OFFLINE:-0} partition=$partition"
 prepare_args=(
   -m fineqcomp prepare
   --config "$config" \
