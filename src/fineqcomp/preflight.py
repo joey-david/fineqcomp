@@ -6,6 +6,7 @@ import importlib
 import json
 import os
 import platform
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -291,35 +292,40 @@ def model_smoke(
             micro_batch_size=1,
             max_length=run.training.max_length,
         )
-        training = train_adapter(
-            session.model,
-            session.tokenizer,
-            train,
-            calibration,
-            run.model,
-            smoke_spec,
-            run.seed,
-            Path(prepared_root) / ".preflight_training.jsonl",
-        )
-        tensors = adapter_tensors(session.model, run.adapter.method)
-        path = Path(prepared_root) / ".preflight_adapter.fqcb"
-        storage = encode_tensor_map(tensors, path, 4, metadata={"preflight": True})
-        _, decoded = decode_adapter_tensor_map(path)
-        apply_adapter_tensors(session.model, decoded)
-        path.unlink()
-        loraquant_path = Path(prepared_root) / ".preflight_loraquant.fqcb"
-        loraquant_storage = encode_loraquant_tensor_map(
-            tensors,
-            loraquant_path,
-            high_bits=2,
-            variance_ratio=0.8,
-            group_size=128,
-            optimize_steps=2,
-            metadata={"preflight": True},
-        )
-        _, decoded = decode_adapter_tensor_map(loraquant_path)
-        apply_adapter_tensors(session.model, decoded)
-        loraquant_path.unlink()
+        Path(prepared_root).mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(
+            prefix=f".preflight-{run.model.key}-", dir=prepared_root
+        ) as work:
+            work_dir = Path(work)
+            training = train_adapter(
+                session.model,
+                session.tokenizer,
+                train,
+                calibration,
+                run.model,
+                smoke_spec,
+                run.seed,
+                work_dir / "training.jsonl",
+            )
+            tensors = adapter_tensors(session.model, run.adapter.method)
+            path = work_dir / "adapter.fqcb"
+            storage = encode_tensor_map(
+                tensors, path, 4, metadata={"preflight": True}
+            )
+            _, decoded = decode_adapter_tensor_map(path)
+            apply_adapter_tensors(session.model, decoded)
+            loraquant_path = work_dir / "loraquant.fqcb"
+            loraquant_storage = encode_loraquant_tensor_map(
+                tensors,
+                loraquant_path,
+                high_bits=2,
+                variance_ratio=0.8,
+                group_size=128,
+                optimize_steps=2,
+                metadata={"preflight": True},
+            )
+            _, decoded = decode_adapter_tensor_map(loraquant_path)
+            apply_adapter_tensors(session.model, decoded)
         return {
             "run_id": run.run_id,
             "model_key": run.model.key,
