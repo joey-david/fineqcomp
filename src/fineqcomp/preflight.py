@@ -30,6 +30,8 @@ from fineqcomp.modeling import (
     CausalExampleDataset,
     ModelSession,
     model_source,
+    render_prompt,
+    response_boundary,
     validate_single_token_labels,
 )
 from fineqcomp.training import train_adapter
@@ -235,6 +237,90 @@ def validate_rationale_tokenization(
             "permuted_tokens": permuted_tokens,
             "relative_delta": relative_delta,
         }
+    return reports
+
+
+def validate_answer_retention(
+    campaign: dict[str, Any],
+    runs: list[RunSpec],
+    root: str | Path,
+    minimum: float | None = None,
+) -> dict[str, dict[str, float | int]]:
+    """Measure how often the final answer survives the training length limit.
+
+    `CausalExampleDataset` truncates prompt plus response at `max_length` and
+    keeps the head. A long reasoning trace therefore loses its `</think>` or
+    `\\boxed{}` tail without any error, and the run trains on working that
+    never reaches an answer. Newer trace sources are far longer than
+    MetaMathQA, so this has to be measured before the length is trusted rather
+    than inferred from a clean parse.
+    """
+    cells: dict[tuple[str, str, int, int], RunSpec] = {}
+    for run in runs:
+        if run.dataset_key is None:
+            continue
+        if not campaign["datasets"][run.dataset_key].get("answer_marker"):
+            continue
+        key = (run.model.key, run.dataset_key, run.seed, run.training.max_length)
+        cells.setdefault(key, run)
+    if not cells:
+        return {}
+
+    from transformers import AutoTokenizer
+
+    token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+    reports: dict[str, dict[str, float | int]] = {}
+    for key, run in sorted(cells.items()):
+        spec = campaign["datasets"][str(run.dataset_key)]
+        source = model_source(run.model, token)
+        pinned = (
+            {"revision": run.model.revision, "token": token}
+            if source == run.model.name and not Path(source).is_dir()
+            else {}
+        )
+        tokenizer = AutoTokenizer.from_pretrained(source, use_fast=True, **pinned)
+        marker = str(spec["answer_marker"])
+        from_end = bool(spec.get("answer_marker_from_end", True))
+        examples = load_natural_dataset(
+            campaign, str(run.dataset_key), run.seed, root
+        )["train"]
+        limit = run.training.max_length
+        missing_marker = 0
+        answer_cut = 0
+        for example in examples:
+            prompt_length = len(
+                tokenizer.encode(
+                    render_prompt(tokenizer, example.prompt, run.model),
+                    add_special_tokens=not run.model.chat,
+                )
+            )
+            response_length = len(
+                tokenizer.encode(example.response, add_special_tokens=False)
+            )
+            boundary = response_boundary(
+                tokenizer, example.response, marker, from_end=from_end
+            )
+            if boundary is None:
+                missing_marker += 1
+                continue
+            if prompt_length + response_length > limit:
+                answer_cut += 1
+        rows = len(examples)
+        retained = rows - missing_marker - answer_cut
+        fraction = retained / rows if rows else 0.0
+        name = "/".join(map(str, key))
+        reports[name] = {
+            "rows": rows,
+            "max_length": limit,
+            "missing_marker": missing_marker,
+            "answer_cut_by_max_length": answer_cut,
+            "retained_fraction": fraction,
+        }
+        if minimum is not None and fraction < minimum:
+            raise ValueError(
+                f"{name}: only {fraction:.2%} of training rows keep their answer "
+                f"within max_length {limit}, below the required {minimum:.2%}"
+            )
     return reports
 
 
