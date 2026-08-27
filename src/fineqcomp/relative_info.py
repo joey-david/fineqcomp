@@ -1018,39 +1018,92 @@ def _length_matched_blocks(
     return [block for block in blocks if len(block) > 1], lengths
 
 
-def _retrieval_statistics(
-    scores: list[float], widths: list[int], truth: list[int]
-) -> dict[str, float]:
-    """Cross entropy of the correct candidate, its error rate, and its floor."""
-    bits: list[float] = []
-    errors: list[bool] = []
-    cursor = 0
-    for index, width in enumerate(widths):
-        block = torch.tensor(scores[cursor : cursor + width], dtype=torch.float64)
-        cursor += width
-        posterior = torch.log_softmax(block, dim=0)
-        bits.append(-float(posterior[truth[index]]) / math.log(2))
-        errors.append(int(torch.argmax(block)) != truth[index])
-    error = sum(errors) / len(errors)
-    candidates = sum(widths) / len(widths)
-    ceiling = math.log2(candidates)
-    entropy = (
-        0.0
-        if error in (0.0, 1.0)
-        else -error * math.log2(error) - (1 - error) * math.log2(1 - error)
-    )
+def _binary_entropy(probability: float) -> float:
+    if probability in (0.0, 1.0):
+        return 0.0
+    return -probability * math.log2(probability) - (
+        1.0 - probability
+    ) * math.log2(1.0 - probability)
+
+
+def _assignment_statistics(score_blocks: list[torch.Tensor]) -> dict[str, float]:
+    """Score the diagonal assignment in square problem-by-trace blocks."""
+    losses: list[float] = []
+    errors = 0
+    margins: list[float] = []
+    uniform_bits = 0.0
+    fano_known_bits = 0.0
+    rows = 0
+    for block in score_blocks:
+        width = int(block.shape[0])
+        if block.shape != (width, width) or width < 2:
+            raise ValueError("trace retrieval scores must be square K >= 2 blocks")
+        truth = torch.arange(width)
+        log_posterior = torch.log_softmax(block.to(torch.float64), dim=1)
+        losses.extend((-log_posterior[truth, truth] / math.log(2)).tolist())
+        predictions = torch.argmax(block, dim=1)
+        block_errors = int((predictions != truth).sum().item())
+        errors += block_errors
+        wrong = block.clone().to(torch.float64)
+        wrong[truth, truth] = -torch.inf
+        margins.extend(
+            ((block[truth, truth] - wrong.max(dim=1).values) / math.log(2)).tolist()
+        )
+        error = block_errors / width
+        block_uniform = math.log2(width)
+        known = max(
+            0.0,
+            block_uniform
+            - _binary_entropy(error)
+            - error * math.log2(width - 1),
+        )
+        uniform_bits += width * block_uniform
+        fano_known_bits += width * known
+        rows += width
+    if not rows:
+        raise ValueError("trace retrieval needs at least one score block")
+    mean_uniform = uniform_bits / rows
+    mean_loss = sum(losses) / rows
+    mean_known = fano_known_bits / rows
     return {
-        "bits": sum(bits) / len(bits),
-        "error": error,
-        "candidates": candidates,
-        "ceiling_bits": ceiling,
-        # Fano: a code that must recover the assignment at this error rate
-        # cannot be smaller than this, so it is a floor for the adapter budget
-        # rather than a prediction of it.
-        "fano_bits": max(
-            0.0, ceiling - entropy - error * math.log2(max(candidates - 1, 1))
-        ),
+        "log_loss_bits": mean_loss,
+        "load_bits": min(mean_uniform, mean_loss),
+        "uniform_bits": mean_uniform,
+        "accuracy": 1.0 - errors / rows,
+        "error": errors / rows,
+        "mean_margin_bits": sum(margins) / rows,
+        # Fano bounds information already available to this decoder. It does
+        # not lower-bound how many new bits an adapter must carry.
+        "fano_known_lower_bits": mean_known,
+        "fano_missing_upper_bits": mean_uniform - mean_known,
     }
+
+
+def _assignment_permutation_p(
+    score_blocks: list[torch.Tensor], observed_loss: float, *, draws: int, seed: int
+) -> float:
+    """Block-wise random-assignment test; lower log loss is stronger."""
+    if draws < 1:
+        raise ValueError("trace retrieval permutations must be positive")
+    generator = torch.Generator().manual_seed(seed)
+    at_least_as_good = 0
+    posteriors = [
+        torch.log_softmax(block.to(torch.float64), dim=1)
+        for block in score_blocks
+    ]
+    for _ in range(draws):
+        losses: list[float] = []
+        for posterior in posteriors:
+            width = len(posterior)
+            assignment = torch.randperm(width, generator=generator)
+            losses.extend(
+                (
+                    -posterior[torch.arange(width), assignment] / math.log(2)
+                ).tolist()
+            )
+        if sum(losses) / len(losses) <= observed_loss:
+            at_least_as_good += 1
+    return (1 + at_least_as_good) / (draws + 1)
 
 
 @torch.no_grad()
@@ -1064,29 +1117,26 @@ def trace_retrieval_load(
     marker: str,
     from_end: bool = True,
     candidates: int = 8,
+    permutations: int = 2_000,
+    permutation_seed: int = 314_159,
 ) -> dict[str, float | int]:
-    """L_rel: bits of problem-trace information the frozen model is missing.
+    """Measure a bounded problem-trace retrieval load for a frozen model.
 
-    Each problem keeps its own prompt and its own final answer, and is scored
-    against the reasoning bodies of `candidates` length-matched problems, one
-    of which is its own. Softmaxing the frozen model's sequence log likelihood
-    over that set gives a posterior on the trace index, and the cross entropy
-    of the correct index is the load. It reads zero bits when the frozen model
-    already knows which trace belongs to which problem, and log2(K) bits when
-    it cannot tell them apart at all -- which is the quantity an adapter would
-    have to supply.
+    Each problem is scored against the reasoning bodies of `candidates`
+    length-matched problems, one of which is its own. The K by K matrix uses
+    only body-token log likelihood. For each trace, log-mean-exp over prompts
+    estimates and removes its marginal likelihood. This removes donor-only
+    length and fluency effects before the row softmax tests compatibility.
 
     The manipulation is deliberately the one the trained control performs, so
     the measure and the causal test speak about the same thing. No training
     happens here: it is one forward pass per problem-candidate pair.
 
-    Two scores are reported for the same probes. The summed sequence log
-    likelihood is the literal reading of the measure, and on long traces it is
-    dominated by length: a block spanning a third of its median length differs
-    by hundreds of nats before any reasoning is compared, which saturates the
-    posterior and makes the mean cross entropy a coin flip between nothing and
-    hundreds of bits. The per-token mean removes that first-order term. Where
-    the two disagree, the length effect is doing the work.
+    `load_bits` is the correct-index log loss capped at the uniform K-way loss.
+    It is a fixed predictor candidate, not an estimate of mutual information or
+    a lower bound on adapter size. The uncapped loss, retrieval error, Fano
+    diagnostics, raw uncorrected score, and a random-assignment test remain in
+    the record so a good or bad value cannot hide a scoring artifact.
     """
     if candidates < 2:
         raise ValueError("trace retrieval needs at least two candidates")
@@ -1097,30 +1147,33 @@ def trace_retrieval_load(
         raise ValueError("trace retrieval needs at least two rows")
 
     probes: list[Example] = []
-    truth: list[int] = []
-    widths: list[int] = []
+    expected_body_tokens: list[int] = []
     spreads: list[float] = []
     for block in blocks:
         block_lengths = [lengths[index] for index in block]
         median = sorted(block_lengths)[len(block_lengths) // 2]
         spread = max(abs(length - median) for length in block_lengths) / max(median, 1)
         for recipient in block:
-            _, answer = split[recipient]
-            truth.append(block.index(recipient))
-            widths.append(len(block))
             spreads.append(spread)
             for donor in block:
                 probes.append(
                     Example(
                         example_id=f"{rows[recipient].example_id}|{donor}",
                         prompt=rows[recipient].prompt,
-                        response=bodies[donor] + answer,
+                        response=bodies[donor] + marker,
                         metadata={"recipient": recipient, "donor": donor},
                     )
                 )
+                expected_body_tokens.append(lengths[donor])
 
     dataset = CausalExampleDataset(
-        session.tokenizer, probes, model_spec, max_length, "all"
+        session.tokenizer,
+        probes,
+        model_spec,
+        max_length,
+        "reasoning",
+        marker,
+        from_end,
     )
     if len(dataset.rows) != len(probes):
         raise ValueError("trace retrieval lost a probe row to tokenization")
@@ -1133,7 +1186,7 @@ def trace_retrieval_load(
     device = model_device(session.model)
     session.model.eval()
     totals: list[float] = []
-    counts: list[float] = []
+    scored_counts: list[int] = []
     for batch in loader:
         batch = {key: value.to(device) for key, value in batch.items()}
         output = session.model(
@@ -1148,25 +1201,71 @@ def trace_retrieval_load(
         scored = labels != -100
         token_logprob = token_logprob.squeeze(-1).masked_fill(~scored, 0.0)
         totals.extend(token_logprob.sum(dim=-1).tolist())
-        counts.extend(scored.sum(dim=-1).clamp_min(1).float().tolist())
+        scored_counts.extend(scored.sum(dim=-1).tolist())
 
-    summed = _retrieval_statistics(totals, widths, truth)
-    per_token = _retrieval_statistics(
-        [total / count for total, count in zip(totals, counts, strict=True)],
-        widths,
-        truth,
-    )
+    incomplete = [
+        index
+        for index, (actual, expected) in enumerate(
+            zip(scored_counts, expected_body_tokens, strict=True)
+        )
+        if actual != expected
+    ]
+    if incomplete:
+        raise ValueError(
+            f"trace retrieval truncated or changed {len(incomplete)} body scores; "
+            "raise the predeclared probe length or choose a shorter frozen sample"
+        )
+
+    raw_blocks: list[torch.Tensor] = []
+    cursor = 0
+    for block in blocks:
+        width = len(block)
+        count = width * width
+        raw_blocks.append(
+            torch.tensor(totals[cursor : cursor + count], dtype=torch.float64).reshape(
+                width, width
+            )
+        )
+        cursor += count
+    corrected_blocks = [
+        block - (torch.logsumexp(block, dim=0, keepdim=True) - math.log(len(block)))
+        for block in raw_blocks
+    ]
+    corrected = _assignment_statistics(corrected_blocks)
+    raw = _assignment_statistics(raw_blocks)
+    candidate_rows = sum(map(len, blocks))
     return {
-        "trace_retrieval_bits": summed["bits"],
-        "trace_retrieval_error": summed["error"],
-        "trace_retrieval_fano_bits": summed["fano_bits"],
-        "trace_retrieval_normalized_bits": per_token["bits"],
-        "trace_retrieval_normalized_error": per_token["error"],
-        "trace_retrieval_normalized_fano_bits": per_token["fano_bits"],
-        "trace_retrieval_candidates": summed["candidates"],
-        "trace_retrieval_ceiling_bits": summed["ceiling_bits"],
+        "trace_retrieval_schema": 2,
+        "trace_retrieval_load_bits": corrected["load_bits"],
+        "trace_retrieval_log_loss_bits": corrected["log_loss_bits"],
+        "trace_retrieval_uniform_bits": corrected["uniform_bits"],
+        "trace_retrieval_accuracy": corrected["accuracy"],
+        "trace_retrieval_error": corrected["error"],
+        "trace_retrieval_mean_margin_bits": corrected["mean_margin_bits"],
+        "trace_retrieval_contrastive_gain_bits": (
+            corrected["uniform_bits"] - corrected["log_loss_bits"]
+        ),
+        "trace_retrieval_fano_known_lower_bits": corrected[
+            "fano_known_lower_bits"
+        ],
+        "trace_retrieval_fano_missing_upper_bits": corrected[
+            "fano_missing_upper_bits"
+        ],
+        "trace_retrieval_permutation_p": _assignment_permutation_p(
+            corrected_blocks,
+            corrected["log_loss_bits"],
+            draws=permutations,
+            seed=permutation_seed,
+        ),
+        "trace_retrieval_raw_log_loss_bits": raw["log_loss_bits"],
+        "trace_retrieval_raw_accuracy": raw["accuracy"],
+        "trace_retrieval_candidates": (
+            sum(len(block) ** 2 for block in blocks) / candidate_rows
+        ),
         "trace_retrieval_probes": len(probes),
         "trace_retrieval_length_spread": sum(spreads) / len(spreads),
+        "trace_retrieval_permutations": permutations,
+        "trace_retrieval_permutation_seed": permutation_seed,
     }
 
 

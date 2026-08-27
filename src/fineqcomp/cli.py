@@ -712,7 +712,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     retrieval = subparsers.add_parser(
         "trace-retrieval-load",
-        help="measure L_rel: bits of problem-trace information the model lacks",
+        help="measure the frozen model's bounded problem-trace retrieval load",
     )
     retrieval.add_argument("--config", required=True)
     retrieval.add_argument("--manifest", required=True)
