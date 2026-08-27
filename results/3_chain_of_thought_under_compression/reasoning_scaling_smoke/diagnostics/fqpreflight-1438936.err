@@ -1,0 +1,28 @@
+Loading pytorch-gpu/py3/2.8.0
+  Loading requirement: gcc/11.5.0 cuda/12.8.0 openmpi/4.1.6-cuda
+    nccl/2.27.3-1-cuda cudnn/9.10.2.21-12-cuda intel-oneapi-mkl/2024.1
+    magma/2.9.0-cuda sox/14.4.2 ffmpeg/6.1.1-cuda hdf5/1.12.0-mpi-cuda
+    libjpeg-turbo/2.1.3 libpng/1.6.37 libwebp/1.2.2 graphviz/2.49.0
+Unrecognized keys in `rope_scaling` for 'rope_type'='yarn': {'attn_factor'}
+fineqcomp: model rope_scaling uses 'attn_factor', but Transformers reads 'attention_factor'; refusing to run with a silently changed YaRN scale
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/src/fineqcomp/__main__.py", line 5, in <module>
+    main()
+  File "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/src/fineqcomp/progress_cli.py", line 11, in main
+    _main(argv)
+  File "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/src/fineqcomp/cli.py", line 862, in main
+    status = args.func(args)
+             ^^^^^^^^^^^^^^^
+  File "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/src/fineqcomp/cli.py", line 547, in _preflight
+    report["model_smoke"] = model_smoke(
+                            ^^^^^^^^^^^^
+  File "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/src/fineqcomp/preflight.py", line 259, in model_smoke
+    session = ModelSession.load(run.model)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/src/fineqcomp/modeling.py", line 270, in load
+    validate_rope_config(config)
+  File "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/src/fineqcomp/modeling.py", line 59, in validate_rope_config
+    raise ValueError(
+ValueError: model rope_scaling uses 'attn_factor', but Transformers reads 'attention_factor'; refusing to run with a silently changed YaRN scale

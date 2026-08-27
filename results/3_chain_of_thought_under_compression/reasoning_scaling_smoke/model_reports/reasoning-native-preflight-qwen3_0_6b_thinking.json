@@ -1,0 +1,100 @@
+{
+  "environment": {
+    "gpus": [
+      {
+        "index": 0,
+        "memory_gib": 79.1806640625,
+        "name": "NVIDIA H100 80GB HBM3"
+      }
+    ],
+    "modules": {
+      "accelerate": "1.10.1",
+      "bitsandbytes": "0.47.0",
+      "datasets": "4.0.0",
+      "math_verify": "installed",
+      "matplotlib": "3.10.5",
+      "numpy": "2.2.6",
+      "peft": "0.17.1",
+      "rouge_score": "installed",
+      "torch": "2.8.0",
+      "transformers": "4.55.4",
+      "yaml": "6.0.2"
+    },
+    "platform": "Linux-5.14.0-570.131.1.el9_6.x86_64-x86_64-with-glibc2.34",
+    "python": "3.12.11"
+  },
+  "manifest_runs": 9,
+  "model_smoke": {
+    "dataset_key": "cot_math",
+    "generation_examples": 1,
+    "loraquant_storage": {
+      "bits_per_value": null,
+      "compressed_payload_bits": 13257880,
+      "effective_bits_per_value": 1.5089071694906655,
+      "file_bits": 15228712,
+      "group_size": 128,
+      "header_bits": 1970832,
+      "high_bits": 2,
+      "high_value_count": 5181440,
+      "low_bits": 1,
+      "low_value_count": 4911104,
+      "optimize_steps": 2,
+      "padding_bits": 0,
+      "path": "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/prepared/.preflight-qwen3_0_6b_thinking-lzgluybs/loraquant.fqcb",
+      "raw_payload_bits": 16535552,
+      "scale_bits": 1261568,
+      "tensor_values": 10092544,
+      "value_bits": 15273984,
+      "variance_ratio": 0.8
+    },
+    "model_key": "qwen3_0_6b_thinking",
+    "run_id": "native-model-contract__qwen3-0-6b-thinking__cot-math__all-linear-r16__s11__dbd7e63b15",
+    "storage": {
+      "bits_per_value": 4.0,
+      "blend": 0.0,
+      "compressed_payload_bits": 37332568,
+      "effective_bits_per_value": 3.7698197798295454,
+      "file_bits": 38047072,
+      "header_bits": 714504,
+      "padding_bits": 0,
+      "path": "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/prepared/.preflight-qwen3_0_6b_thinking-lzgluybs/adapter.fqcb",
+      "quantizer": "midrise",
+      "raw_payload_bits": 40470528,
+      "relative_rmse": 0.06308588827117746,
+      "scale_bits": 100352,
+      "tensor_values": 10092544,
+      "value_bits": 40370176
+    },
+    "training": {
+      "adapter_rank": 16,
+      "best_validation_nll": 0.9271393995732069,
+      "elapsed_seconds": 0.8701919079758227,
+      "epochs": 1,
+      "optimizer_updates": 2,
+      "peak_memory_bytes": 1754291712,
+      "restored_best": true,
+      "train_examples": 2,
+      "trainable_parameters": 10092544
+    }
+  },
+  "partition": [
+    {
+      "models": [
+        "qwen3_0_6b_thinking",
+        "qwen3_1_7b_thinking",
+        "qwen3_32b_thinking",
+        "qwen3_8b_thinking",
+        "r1_0528_qwen3_8b",
+        "r1_distill_llama_8b",
+        "r1_distill_qwen_1_5b",
+        "r1_distill_qwen_32b",
+        "r1_distill_qwen_7b"
+      ],
+      "relative_cost": 14999555.09736492,
+      "runs": 9,
+      "shard": 0
+    }
+  ],
+  "prepared_dataset_cells": 1,
+  "rationale_token_contracts": {}
+}

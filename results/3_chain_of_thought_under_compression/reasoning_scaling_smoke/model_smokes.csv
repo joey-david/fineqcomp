@@ -1,0 +1,10 @@
+model,status,dataset,trained_values,optimizer_updates,generation_examples,best_validation_nll,peak_memory_gib,midrise_bits_per_value,midrise_relative_rmse,loraquant_bits_per_value
+qwen3_0_6b_thinking,pass,cot_math,10092544,2,1,0.927139,1.63,3.7698,0.063086,1.5089
+qwen3_1_7b_thinking,pass,cot_math,17432576,2,1,0.884776,3.08,3.6919,0.063125,1.418
+qwen3_32b_thinking,pass,cot_math,134217728,2,1,0.4984,24.67,3.5939,0.063205,1.2951
+qwen3_8b_thinking,pass,cot_math,43646976,2,1,0.699549,10.19,3.6321,0.063176,1.3433
+r1_distill_llama_8b,pass,cot_math,41943040,2,1,1.041974,9.19,3.6178,0.063167,1.3479
+r1_distill_qwen_1_5b,pass,cot_math,18464768,2,1,0.749497,3.47,3.6364,0.063093,1.4097
+r1_distill_qwen_32b,pass,cot_math,134217728,2,1,0.618853,24.66,3.5886,0.06319,1.2938
+r1_distill_qwen_7b,pass,cot_math,40370176,2,1,0.735699,9.2,3.6047,0.063169,1.322
+r1_0528_qwen3_8b,gated_ignored_rope,cot_math,43646976,2,1,0.652459,10.18,3.6415,0.063176,1.3471
