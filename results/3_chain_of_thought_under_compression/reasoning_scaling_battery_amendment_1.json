@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "locked_at": "2026-08-27T21:11:16+02:00",
+  "amends": "reasoning_scaling_battery_lock.json",
+  "original_lock_sha256": "df2ec08ee5579e3603b1f9832a076ca92f6ea5c5fadb39577b3db4d49b37acd6",
+  "status": "prospective_before_micro_pilots",
+  "why_an_amendment_is_needed": [
+    "The original 4096-token data smoke failed on OpenR1-Math because 80 of 128 sampled traces were cut before their final answer.",
+    "NuminaMath-CoT included proof rows with no checkable final answer, outside the exact-match and rationale-boundary estimand.",
+    "The first trace-retrieval implementation returned 8.6318 bits against a claimed 3-bit ceiling. Summed sequence likelihood was a trace-length and fluency score, and its Fano field described information retrieved by the frozen model rather than bits required in an adapter."
+  ],
+  "evidence_opened_before_this_amendment": {
+    "data_gate": "Stage 3 under the original lock failed. The later 40960-token, answer-bearing-only run is a revised technical smoke, not a retrospective pass of the original gate.",
+    "invalid_trace_retrieval_job": 1443827,
+    "invalid_trace_retrieval_cell": "DeepSeek-R1-Distill-Qwen-1.5B on 32 MetaMathQA rows with K=8",
+    "scientific_training_runs": 0
+  },
+  "revised_data_scope": {
+    "scope": "training traces with a checkable final answer and an explicit rationale-answer boundary",
+    "numina_math_cot": "Refill train and calibration arms after excluding proof-only rows without a final answer. Keep the excluded count and type in the ledger.",
+    "openr1_math": "Use max_length 40960, the smallest declared context window in the model panel, for the data smoke. The ceiling adds no padding by itself, but the long rows still raise real training time and memory and need a micro-cost measurement before any rate grid.",
+    "status": "The revised two-row technical smoke passed at 100 percent sampled answer retention. It does not satisfy the original frozen 4096-token gate."
+  },
+  "revised_relative_load": {
+    "name": "bounded contrastive trace-retrieval load",
+    "primary_symbol": "L_rel_K",
+    "frozen_probe": {
+      "rows": 128,
+      "candidate_traces_per_problem": 8,
+      "blocking": "sort by trace-body token length, then form consecutive K-way blocks",
+      "score": "sum frozen-model log probability over trace-body tokens only",
+      "marginal_correction": "for each candidate trace, subtract log-mean-exp of its score across all prompts in the same block",
+      "primary_value": "correct-trace cross entropy after marginal correction, capped at the uniform log2(K) loss",
+      "required_diagnostics": [
+        "uncapped corrected cross entropy",
+        "uniform loss",
+        "retrieval accuracy and mean correct-versus-best-wrong margin",
+        "raw uncorrected cross entropy and accuracy",
+        "Fano lower bound on information already retrieved by the base decoder",
+        "Fano upper bound on its remaining K-way uncertainty",
+        "block-wise random-assignment p-value",
+        "trace-length spread and exact scored-token retention"
+      ]
+    },
+    "interpretation": [
+      "L_rel_K is a fixed model-task predictor candidate. It is not called a mutual-information estimate and it is not itself an adapter-size lower bound.",
+      "A low value means the frozen model's likelihood ratios place the matching trace. A value at log2(K) means the probe gives no usable placement evidence or is confidently wrong.",
+      "Fano applied to base-model retrieval measures information already available to that decoder. A file-size lower bound needs a randomized assignment independent of the frozen side information, or a valid lower bound on conditional assignment entropy."
+    ],
+    "smoke_before_panel": [
+      "Repeat the exact 32-row K=8 cell that exposed the fault with schema 2.",
+      "Require every body token to survive and every field to be finite and within its stated bound.",
+      "Repeat with a second frozen row sample before treating either a positive or null retrieval result as stable.",
+      "Keep K=4 and K=16 sensitivity checks secondary; do not select K after seeing their scaling-law fit."
+    ]
+  },
+  "unchanged": [
+    "the completed conditional-trace causal result",
+    "the model panel and held-out model split",
+    "the exact adapter rate grid",
+    "the fixed-rollout GRPO estimand and matched-credit control",
+    "the symmetric positive, negative, and unexpected-result rules",
+    "the rule that no full grid starts after a failed upstream gate"
+  ]
+}

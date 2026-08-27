@@ -9,6 +9,7 @@ import pytest
 from fineqcomp.data import Example
 from fineqcomp.relative_info import (
     CANDIDATES,
+    _assignment_statistics,
     channel_bits_ceiling,
     codec_referenced_retention,
     COVERAGE_CANDIDATES,
@@ -728,11 +729,11 @@ def test_trace_retrieval_reads_the_ceiling_when_traces_are_interchangeable():
 
     assert measured["trace_retrieval_candidates"] == 4
     assert measured["trace_retrieval_probes"] == 32
-    # Identical bodies leave the posterior uniform, so the load is the ceiling
-    # and no adapter budget can be argued away by the frozen model.
-    assert measured["trace_retrieval_bits"] == pytest.approx(2.0)
-    assert measured["trace_retrieval_normalized_bits"] == pytest.approx(2.0)
-    assert measured["trace_retrieval_ceiling_bits"] == pytest.approx(2.0)
+    # Identical bodies leave the posterior uniform, so the bounded retrieval
+    # load equals the uniform four-way log loss.
+    assert measured["trace_retrieval_load_bits"] == pytest.approx(2.0)
+    assert measured["trace_retrieval_log_loss_bits"] == pytest.approx(2.0)
+    assert measured["trace_retrieval_uniform_bits"] == pytest.approx(2.0)
 
 
 def test_trace_retrieval_falls_when_the_model_can_place_the_trace():
@@ -759,10 +760,37 @@ def test_trace_retrieval_falls_when_the_model_can_place_the_trace():
         _CopyingSession(0.0), rows, spec, 512, 4, marker="ANSWER:", candidates=4
     )
 
-    assert informed["trace_retrieval_bits"] < 0.2
+    assert informed["trace_retrieval_load_bits"] < 0.2
     assert informed["trace_retrieval_error"] == 0.0
-    assert informed["trace_retrieval_normalized_error"] == 0.0
-    assert ignorant["trace_retrieval_bits"] == pytest.approx(2.0)
-    # Fano turns the retrieval error into the floor an adapter would have to
-    # clear; a model that already retrieves perfectly leaves nothing to store.
-    assert informed["trace_retrieval_fano_bits"] == pytest.approx(2.0)
+    assert ignorant["trace_retrieval_load_bits"] == pytest.approx(2.0)
+    # Fano describes what this base decoder already recovers. It is not an
+    # adapter-size lower bound.
+    assert informed["trace_retrieval_fano_known_lower_bits"] == pytest.approx(2.0)
+    assert informed["trace_retrieval_fano_missing_upper_bits"] == pytest.approx(0.0)
+
+
+def test_trace_retrieval_marginal_correction_removes_donor_only_scores():
+    semantic = 6.0 * torch.eye(4, dtype=torch.float64)
+    donor_nuisance = torch.tensor([[-100.0, 80.0, 20.0, -30.0]])
+    raw = semantic + donor_nuisance
+    corrected = raw - (
+        torch.logsumexp(raw, dim=0, keepdim=True) - math.log(len(raw))
+    )
+
+    measured = _assignment_statistics([corrected])
+
+    assert measured["accuracy"] == 1.0
+    assert measured["load_bits"] < 0.02
+
+
+def test_trace_retrieval_marginal_correction_rejects_pure_trace_priors():
+    donor_nuisance = torch.tensor([[-100.0, 80.0, 20.0, -30.0]]).repeat(4, 1)
+    corrected = donor_nuisance - (
+        torch.logsumexp(donor_nuisance, dim=0, keepdim=True)
+        - math.log(len(donor_nuisance))
+    )
+
+    measured = _assignment_statistics([corrected])
+
+    assert measured["load_bits"] == pytest.approx(2.0)
+    assert measured["log_loss_bits"] == pytest.approx(2.0)

@@ -1,0 +1,21 @@
+{
+  "available_rows": 32000,
+  "dataset_key": "cot_math",
+  "max_length": 1024,
+  "measured_rows": 32,
+  "model_key": "r1_distill_qwen_1_5b",
+  "requested_rows": 32,
+  "row_sample_seed": 271828,
+  "row_sampling": "uniform",
+  "run_id": "native-model-contract__r1-distill-qwen-1-5b__cot-math__all-linear-r16__s11__de6a50e165",
+  "seed": 11,
+  "split": "train",
+  "study": "native_model_contract",
+  "trace_retrieval_bits": 8.631759098534939,
+  "trace_retrieval_candidates": 8.0,
+  "trace_retrieval_ceiling_bits": 3.0,
+  "trace_retrieval_error": 0.21875,
+  "trace_retrieval_fano_bits": 1.6280126482615036,
+  "trace_retrieval_length_spread": 0.3481806448441937,
+  "trace_retrieval_probes": 256
+}

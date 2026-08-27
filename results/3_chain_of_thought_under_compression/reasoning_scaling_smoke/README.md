@@ -58,27 +58,34 @@ About seven H100-minutes were spent before cancellation.
 | `data_reports/` | the stage-3 preflight report, measured with the retention gate disabled |
 | `diagnostics/` | the RoPE and answer-retention gate tracebacks, and the quarantined pre-gate report |
 
-## Stage 3: both new trace sources pass
+## Stage 3: the frozen gate failed; the revised smoke passes
 
-The stage-3 pass condition is 128 train, 64 calibration and 64 test rows per new
-source, every trace boundary and answer parsing, and at least 99 per cent of
-sampled rows keeping their answer tokens at the planned maximum length. Both
-sources now reach 100 per cent, and R1-Distill-Qwen-1.5B generated and took two
-finite updates on each. Peak memory was 4.18 GiB on Numina rows and 13.04 GiB on
-the far longer OpenR1 rows.
+The frozen stage-3 condition was 128 train, 64 calibration and 64 test rows per
+new source, every trace boundary and answer parsing, and at least 99 per cent
+of sampled rows keeping their answer tokens at the planned 4,096-token limit.
+It failed. OpenR1-Math retained only 37.5 per cent of sampled final answers and
+NuminaMath-CoT retained 96.88 per cent. The failure remains the result under
+the original lock.
+
+The pre-pilot revision in
+[`../reasoning_scaling_battery_amendment_1.json`](../reasoning_scaling_battery_amendment_1.json)
+sets a panel-wide 40,960-token ceiling and states that this panel covers traces
+with a checkable final answer. Under that revised scope, both sources retain
+100 per cent of sampled answers, and R1-Distill-Qwen-1.5B generated and took
+two finite updates on each. Peak memory was 4.18 GiB on Numina rows and 13.04
+GiB on the far longer OpenR1 rows.
 
 Both sources failed the gate first, for unrelated reasons, and neither failure
 was visible before `validate_answer_retention` measured it.
 
 **OpenR1-Math-220k was truncated.** Its median row is 5,049 tokens and its
 longest 17,040, against a 4,096-token training limit, so 80 of 128 rows lost the
-closing `</think>` and the boxed answer. Chasing the gate by moving the limit to
-16,384 failed again on a freshly drawn sample at 97.66 per cent, which is what a
-limit tuned to one sample does. The limit is now 40,960, the smallest context
-window in the model panel; the R1 distills allow 131,072. This costs nothing:
-`max_length` truncates rather than pads, the collator pads to the longest row in
-the batch, and the micro batch is one row. Truncation is no longer a variable
-in the experiment.
+closing `</think>` and the boxed answer. Moving the limit to 16,384 failed again
+on a fresh sample at 97.66 per cent. The revised limit is 40,960, the smallest
+declared context window in the model panel; the R1 distills allow 131,072. The
+ceiling itself adds no padding because the collator pads only to the longest
+row in a micro batch of one. The long traces still cost more time and memory
+than 4,096-token traces, so a measured micro-pilot cost must pass before a grid.
 
 | max_length | NuminaMath-CoT rows that fit | OpenR1-Math rows that fit |
 |---:|---:|---:|
@@ -104,9 +111,25 @@ One warning is expected and explained: the R1 distill tokenizers declare
 above 16,384 log a tokenizer warning. The rotary embedding covers the full
 length and the smoke trains and generates normally.
 
+## The first relative-load formula failed its own smoke
+
+Job `1443827` scored 32 MetaMathQA rows with K=8 and returned 8.6318 bits
+against a claimed 3-bit ceiling. It retrieved 78.1 per cent of rows, so the
+large log loss came from a few confident errors and from summed sequence
+likelihood being set by trace length and generic fluency. Its 1.628-bit Fano
+field also measured information the frozen decoder already recovered, not a
+lower bound on adapter size. This job is a method diagnostic, not evidence for
+the scaling claim.
+
+The amended schema scores trace-body tokens only, subtracts each trace's
+log-mean likelihood across its matched prompts, caps the primary load at the
+uniform K-way loss, and reports the raw score, accuracy, Fano directions, and a
+random-assignment check separately. It calls this a fixed predictor candidate,
+not a mutual-information estimate. No panel measurement can start until the
+same 32-row cell and a second frozen sample pass that schema.
+
 ## Not done here
 
-Stages 2 and 3 are static and smoke evidence only. No micro-pilot has run, the
-GRPO fixed-rollout gate has not been exercised on a GPU, and nothing yet
-measures the relative reasoning load `L_rel` that the battery's scaling-law
-prediction rests on.
+Stage 2 and the revised stage-3 run are static and smoke evidence only. No
+micro-pilot has run, the GRPO fixed-rollout gate has not been exercised on a
+GPU, and no valid relative-load value exists yet.
