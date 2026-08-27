@@ -13,6 +13,7 @@ from fineqcomp.modeling import (
     causal_collate,
     compute_dtype,
     model_source,
+    validate_rope_config,
 )
 
 
@@ -49,6 +50,29 @@ def test_compute_dtype_falls_back_on_older_cuda(monkeypatch):
     monkeypatch.setattr("torch.cuda.is_available", lambda: True)
     monkeypatch.setattr("torch.cuda.is_bf16_supported", lambda: False)
     assert compute_dtype() == torch.float16
+
+
+def test_unknown_yarn_attention_factor_fails_before_model_load():
+    with pytest.raises(ValueError, match="silently changed YaRN scale"):
+        validate_rope_config(
+            SimpleNamespace(
+                rope_scaling={
+                    "rope_type": "yarn",
+                    "factor": 4.0,
+                    "attn_factor": 0.8782488562869419,
+                }
+            )
+        )
+
+    validate_rope_config(
+        SimpleNamespace(
+            rope_scaling={
+                "rope_type": "yarn",
+                "factor": 4.0,
+                "attention_factor": 0.8782488562869419,
+            }
+        )
+    )
 
 
 def test_offline_model_source_resolves_the_pinned_snapshot(tmp_path, monkeypatch):

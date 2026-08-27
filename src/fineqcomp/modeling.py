@@ -48,6 +48,20 @@ def compute_dtype() -> torch.dtype:
     return torch.bfloat16
 
 
+def validate_rope_config(config: Any) -> None:
+    """Reject a known YaRN key that Transformers warns about and ignores."""
+    rope = getattr(config, "rope_scaling", None)
+    if (
+        isinstance(rope, dict)
+        and "attn_factor" in rope
+        and "attention_factor" not in rope
+    ):
+        raise ValueError(
+            "model rope_scaling uses 'attn_factor', but Transformers reads "
+            "'attention_factor'; refusing to run with a silently changed YaRN scale"
+        )
+
+
 def inference_autocast(model: torch.nn.Module, device: torch.device):
     """Keep Gemma 2 QLoRA attention inputs in one dtype during inference.
 
@@ -253,6 +267,7 @@ class ModelSession:
             tokenizer.pad_token = tokenizer.eos_token
         kwargs: dict[str, Any] = dict(pinned_kwargs)
         config = AutoConfig.from_pretrained(source, **pinned_kwargs)
+        validate_rope_config(config)
         kwargs["config"] = config
         if getattr(config, "model_type", None) == "gemma2":
             # Transformers recommends eager attention for Gemma 2 training.
