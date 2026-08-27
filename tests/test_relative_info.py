@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from types import SimpleNamespace
 
 import torch
 import pytest
@@ -663,3 +664,103 @@ def test_held_out_receiver_scoring_drops_the_held_out_intercept():
     assert rows["signal"]["receiver_held_out_rmse"] < rows["mean"]["receiver_held_out_rmse"]
     assert rows["signal"]["receiver_held_out_spearman"] == pytest.approx(1.0)
     assert rows["noise"]["receiver_held_out_rmse"] >= rows["signal"]["receiver_held_out_rmse"]
+
+
+class _CopyingSession:
+    """A model that scores a token highly once it has seen it in the prompt.
+
+    That is the smallest behaviour a frozen model needs for the trace-retrieval
+    probe to read a low load: it can tell which trace belongs to which problem
+    because the trace repeats what the problem said.
+    """
+
+    class _Tokenizer:
+        eos_token_id = None
+        pad_token_id = 0
+
+        def encode(self, text, add_special_tokens=False):
+            return [3 + (ord(char) % 40) for char in text]
+
+    class _Model(torch.nn.Module):
+        def __init__(self, vocabulary: int, strength: float) -> None:
+            super().__init__()
+            self.embedding = torch.nn.Embedding(vocabulary, 2)
+            self.vocabulary = vocabulary
+            self.strength = strength
+
+        def get_input_embeddings(self):
+            return self.embedding
+
+        def forward(self, input_ids, attention_mask=None, use_cache=None):
+            rows, length = input_ids.shape
+            logits = torch.zeros(rows, length, self.vocabulary)
+            for row in range(rows):
+                seen = torch.zeros(self.vocabulary, dtype=torch.bool)
+                for position in range(length):
+                    logits[row, position] = torch.where(
+                        seen, self.strength, 0.0
+                    )
+                    seen[int(input_ids[row, position])] = True
+            return SimpleNamespace(logits=logits)
+
+    def __init__(self, strength: float) -> None:
+        self.tokenizer = self._Tokenizer()
+        self.model = self._Model(64, strength)
+
+
+def test_trace_retrieval_reads_the_ceiling_when_traces_are_interchangeable():
+    from fineqcomp.relative_info import trace_retrieval_load
+
+    rows = [
+        Example(f"r{index}", f"problem {index}", "same working ANSWER: 1", {})
+        for index in range(8)
+    ]
+
+    measured = trace_retrieval_load(
+        _CopyingSession(4.0),
+        rows,
+        SimpleNamespace(chat=False, disable_thinking=False),
+        512,
+        4,
+        marker="ANSWER:",
+        candidates=4,
+    )
+
+    assert measured["trace_retrieval_candidates"] == 4
+    assert measured["trace_retrieval_probes"] == 32
+    # Identical bodies leave the posterior uniform, so the load is the ceiling
+    # and no adapter budget can be argued away by the frozen model.
+    assert measured["trace_retrieval_bits"] == pytest.approx(2.0)
+    assert measured["trace_retrieval_ceiling_bits"] == pytest.approx(2.0)
+
+
+def test_trace_retrieval_falls_when_the_model_can_place_the_trace():
+    from fineqcomp.relative_info import trace_retrieval_load
+
+    # Letters whose token ids appear nowhere in the fixed wording, so the only
+    # thing linking a trace to its problem is the repeated letter itself.
+    tokens = "acdfhjqs"
+    rows = [
+        Example(
+            f"r{index}",
+            f"problem {letter * 12}",
+            f" working {letter * 12} ANSWER: 1",
+            {},
+        )
+        for index, letter in enumerate(tokens)
+    ]
+    spec = SimpleNamespace(chat=False, disable_thinking=False)
+
+    informed = trace_retrieval_load(
+        _CopyingSession(4.0), rows, spec, 512, 4, marker="ANSWER:", candidates=4
+    )
+    ignorant = trace_retrieval_load(
+        _CopyingSession(0.0), rows, spec, 512, 4, marker="ANSWER:", candidates=4
+    )
+
+    assert informed["trace_retrieval_bits"] < 0.2
+    assert informed["trace_retrieval_error"] == 0.0
+    assert ignorant["trace_retrieval_bits"] == pytest.approx(2.0)
+    # Fano turns the retrieval error into the floor an adapter would have to
+    # clear; a model that already retrieves perfectly leaves nothing to store.
+    assert informed["trace_retrieval_fano_bits"] == pytest.approx(2.0)

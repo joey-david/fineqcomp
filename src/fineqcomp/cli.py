@@ -216,15 +216,10 @@ def _dataset_information(args: argparse.Namespace) -> int:
     return 0
 
 
-def _relative_information(args: argparse.Namespace) -> int:
+def _frozen_measurement_rows(args: argparse.Namespace):
+    """Select one manifest run and the prepared rows a frozen pass will read."""
     from fineqcomp.data import load_natural_dataset
-    from fineqcomp.modeling import ModelSession
-    from fineqcomp.relative_info import (
-        SketchSpec,
-        measure_layer_energy,
-        measure_relative_information,
-        sample_examples,
-    )
+    from fineqcomp.relative_info import sample_examples
 
     campaign = load_campaign(args.config)
     runs = read_manifest(args.manifest)
@@ -242,9 +237,70 @@ def _relative_information(args: argparse.Namespace) -> int:
         if args.row_sampling == "uniform"
         else available_rows[: args.rows]
     )
+    marker = campaign["datasets"][str(run.dataset_key)].get("answer_marker")
+    return run, available_rows, rows, marker
+
+
+def _frozen_measurement_record(args, run, available_rows, rows) -> dict[str, Any]:
+    return {
+        "run_id": run.run_id,
+        "study": run.study,
+        "model_key": run.model.key,
+        "dataset_key": run.dataset_key,
+        "seed": run.seed,
+        "split": args.split,
+        "requested_rows": args.rows,
+        "measured_rows": len(rows),
+        "available_rows": len(available_rows),
+        "row_sampling": args.row_sampling,
+        "row_sample_seed": args.row_sample_seed,
+    }
+
+
+def _trace_retrieval(args: argparse.Namespace) -> int:
+    from fineqcomp.modeling import ModelSession
+    from fineqcomp.relative_info import trace_retrieval_load
+
+    run, available_rows, rows, marker = _frozen_measurement_rows(args)
+    if not marker:
+        raise ValueError(f"dataset {run.dataset_key} declares no answer_marker")
+    session = ModelSession.load(run.model)
+    try:
+        measured = trace_retrieval_load(
+            session,
+            rows,
+            run.model,
+            run.training.max_length,
+            args.micro_batch_size,
+            marker=str(marker),
+            candidates=args.candidates,
+        )
+    finally:
+        try:
+            session.unload()
+        except Exception:
+            pass
+    record = {
+        **_frozen_measurement_record(args, run, available_rows, rows),
+        "max_length": run.training.max_length,
+        **measured,
+    }
+    write_json(args.out, record)
+    print(json.dumps(record, indent=2))
+    return 0
+
+
+def _relative_information(args: argparse.Namespace) -> int:
+    from fineqcomp.modeling import ModelSession
+    from fineqcomp.relative_info import (
+        SketchSpec,
+        measure_layer_energy,
+        measure_relative_information,
+        sample_examples,
+    )
+
+    run, available_rows, rows, marker = _frozen_measurement_rows(args)
     distinct_rows = len({(row.prompt, row.response) for row in available_rows})
-    dataset_spec = campaign["datasets"][str(run.dataset_key)]
-    marker = dataset_spec.get("answer_marker")
     session = ModelSession.load(run.model)
     try:
         measured = measure_relative_information(
@@ -285,18 +341,8 @@ def _relative_information(args: argparse.Namespace) -> int:
         except Exception:
             pass
     record = {
-        "run_id": run.run_id,
-        "study": run.study,
-        "model_key": run.model.key,
-        "dataset_key": run.dataset_key,
-        "seed": run.seed,
-        "split": args.split,
-        "requested_rows": args.rows,
-        "measured_rows": len(rows),
-        "available_rows": len(available_rows),
+        **_frozen_measurement_record(args, run, available_rows, rows),
         "distinct_rows": distinct_rows,
-        "row_sampling": args.row_sampling,
-        "row_sample_seed": args.row_sample_seed,
         **measured,
     }
     write_json(args.out, record)
@@ -663,6 +709,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     relative.add_argument("--layer-energy-rank", type=int, default=16)
     relative.set_defaults(func=_relative_information)
+
+    retrieval = subparsers.add_parser(
+        "trace-retrieval-load",
+        help="measure L_rel: bits of problem-trace information the model lacks",
+    )
+    retrieval.add_argument("--config", required=True)
+    retrieval.add_argument("--manifest", required=True)
+    retrieval.add_argument("--run-id", required=True)
+    retrieval.add_argument("--prepared-root", default="prepared")
+    retrieval.add_argument("--out", required=True)
+    retrieval.add_argument("--split", default="train", choices=["train", "calibration"])
+    retrieval.add_argument("--rows", type=int, default=128)
+    retrieval.add_argument(
+        "--row-sampling", choices=("uniform", "head"), default="uniform"
+    )
+    retrieval.add_argument("--row-sample-seed", type=int, default=271_828)
+    retrieval.add_argument("--micro-batch-size", type=int, default=1)
+    retrieval.add_argument("--candidates", type=int, default=8)
+    retrieval.set_defaults(func=_trace_retrieval)
 
     relative_report = subparsers.add_parser(
         "relative-information-report",

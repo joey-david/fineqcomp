@@ -23,7 +23,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from fineqcomp.data import Example
+from fineqcomp.data import Example, _split_response
 from fineqcomp.modeling import (
     CausalExampleDataset,
     causal_collate,
@@ -992,6 +992,148 @@ def measure_relative_information(
         "sampled_tokens": sampled_tokens,
     }
     return reduced
+
+
+def _length_matched_blocks(
+    bodies: list[str], tokenizer: Any, candidates: int
+) -> tuple[list[list[int]], list[int]]:
+    """Group row indices into length-sorted blocks of `candidates` traces.
+
+    The retrieval probe must not be winnable on length alone. Sorting by
+    tokenized body length and cutting into blocks is the same construction the
+    rationale control uses to pick a donor of similar length, so the measured
+    load and the trained control see the same notion of "comparable trace".
+    """
+    lengths = [
+        len(tokenizer.encode(body, add_special_tokens=False)) for body in bodies
+    ]
+    ordered = sorted(range(len(bodies)), key=lambda index: (lengths[index], index))
+    blocks = [
+        ordered[start : start + candidates]
+        for start in range(0, len(ordered), candidates)
+    ]
+    # A trailing block of one has no distractor to offer, so fold it back.
+    if len(blocks) > 1 and len(blocks[-1]) < 2:
+        blocks[-2].extend(blocks.pop())
+    return [block for block in blocks if len(block) > 1], lengths
+
+
+@torch.no_grad()
+def trace_retrieval_load(
+    session: Any,
+    rows: list[Example],
+    model_spec: Any,
+    max_length: int,
+    micro_batch_size: int,
+    *,
+    marker: str,
+    from_end: bool = True,
+    candidates: int = 8,
+) -> dict[str, float | int]:
+    """L_rel: bits of problem-trace information the frozen model is missing.
+
+    Each problem keeps its own prompt and its own final answer, and is scored
+    against the reasoning bodies of `candidates` length-matched problems, one
+    of which is its own. Softmaxing the frozen model's sequence log likelihood
+    over that set gives a posterior on the trace index, and the cross entropy
+    of the correct index is the load. It reads zero bits when the frozen model
+    already knows which trace belongs to which problem, and log2(K) bits when
+    it cannot tell them apart at all -- which is the quantity an adapter would
+    have to supply.
+
+    The manipulation is deliberately the one the trained control performs, so
+    the measure and the causal test speak about the same thing. No training
+    happens here: it is one forward pass per problem-candidate pair.
+    """
+    if candidates < 2:
+        raise ValueError("trace retrieval needs at least two candidates")
+    split = [_split_response(row.response, marker, from_end=from_end) for row in rows]
+    bodies = [body for body, _ in split]
+    blocks, lengths = _length_matched_blocks(bodies, session.tokenizer, candidates)
+    if not blocks:
+        raise ValueError("trace retrieval needs at least two rows")
+
+    probes: list[Example] = []
+    truth: list[int] = []
+    widths: list[int] = []
+    spreads: list[float] = []
+    for block in blocks:
+        block_lengths = [lengths[index] for index in block]
+        median = sorted(block_lengths)[len(block_lengths) // 2]
+        spread = max(abs(length - median) for length in block_lengths) / max(median, 1)
+        for recipient in block:
+            _, answer = split[recipient]
+            truth.append(block.index(recipient))
+            widths.append(len(block))
+            spreads.append(spread)
+            for donor in block:
+                probes.append(
+                    Example(
+                        example_id=f"{rows[recipient].example_id}|{donor}",
+                        prompt=rows[recipient].prompt,
+                        response=bodies[donor] + answer,
+                        metadata={"recipient": recipient, "donor": donor},
+                    )
+                )
+
+    dataset = CausalExampleDataset(
+        session.tokenizer, probes, model_spec, max_length, "all"
+    )
+    if len(dataset.rows) != len(probes):
+        raise ValueError("trace retrieval lost a probe row to tokenization")
+    loader = DataLoader(
+        dataset,
+        batch_size=micro_batch_size,
+        shuffle=False,
+        collate_fn=lambda batch: causal_collate(batch, session.tokenizer.pad_token_id),
+    )
+    device = model_device(session.model)
+    session.model.eval()
+    scores: list[float] = []
+    for batch in loader:
+        batch = {key: value.to(device) for key, value in batch.items()}
+        output = session.model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"],
+            use_cache=False,
+        )
+        logits = output.logits[:, :-1].float()
+        labels = batch["labels"][:, 1:]
+        chosen = labels.clamp_min(0).unsqueeze(-1)
+        token_logprob = torch.log_softmax(logits, dim=-1).gather(-1, chosen)
+        token_logprob = token_logprob.squeeze(-1).masked_fill(labels == -100, 0.0)
+        scores.extend(token_logprob.sum(dim=-1).tolist())
+
+    bits = []
+    errors = []
+    cursor = 0
+    for index, width in enumerate(widths):
+        block_scores = torch.tensor(scores[cursor : cursor + width])
+        cursor += width
+        posterior = torch.log_softmax(block_scores, dim=0)
+        bits.append(-float(posterior[truth[index]]) / math.log(2))
+        errors.append(int(torch.argmax(block_scores)) != truth[index])
+    error = sum(errors) / len(errors)
+    width = sum(widths) / len(widths)
+    ceiling = math.log2(width)
+    # Fano: a code that must recover the assignment at this error rate cannot
+    # be smaller than this, so it is the floor the adapter budget is compared
+    # against rather than a prediction of it.
+    entropy = 0.0 if error in (0.0, 1.0) else (
+        -error * math.log2(error) - (1 - error) * math.log2(1 - error)
+    )
+    return {
+        "trace_retrieval_bits": sum(bits) / len(bits),
+        "trace_retrieval_error": error,
+        "trace_retrieval_candidates": width,
+        "trace_retrieval_ceiling_bits": ceiling,
+        "trace_retrieval_fano_bits": max(
+            0.0,
+            ceiling - entropy - error * math.log2(max(width - 1, 1)),
+        ),
+        "trace_retrieval_probes": len(probes),
+        "trace_retrieval_length_spread": sum(spreads) / len(spreads),
+    }
 
 
 def measure_layer_energy(
