@@ -13,7 +13,7 @@ MetaMathQA, then scores GSM8K.
 | [`span_supervision/`](span_supervision/) | complete, 9 Mistral + 9 Qwen runs, 3 seeds |
 | [`conditional_trace_rate/`](conditional_trace_rate/) | both locked primary tests pass across 9 matched pairs; half-bit secondary point incomplete |
 | [`reasoning_scaling_battery_lock.json`](reasoning_scaling_battery_lock.json) | prospective native-model, data, GRPO, and scaling-law gates frozen; model and data smokes only |
-| [`reasoning_scaling_smoke/`](reasoning_scaling_smoke/) | stage 2: 8 of 9 panel models pass, 1 gated on an ignored YaRN setting. Stage 3: both new trace sources fail their answer-retention gate |
+| [`reasoning_scaling_smoke/`](reasoning_scaling_smoke/) | stages 2 and 3 pass: 8 of 9 panel models, both new trace sources at 100% answer retention. 1 model gated on an ignored YaRN setting |
 
 ## Locked causal test
 
