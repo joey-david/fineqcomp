@@ -53,11 +53,48 @@ def test_literature_task_converters_keep_train_and_eval_contracts():
         [{"problem": "1+1", "solution": "\\boxed{2}", "level": "1", "type": "Algebra"}],
         "test",
     )
+    openr1 = data._convert_openr1_math(
+        [
+            {
+                "uuid": "u1",
+                "problem": "1+2",
+                "messages": [
+                    {"role": "user", "content": "1+2"},
+                    {
+                        "role": "assistant",
+                        "content": "<think>one plus two</think>\\boxed{3}",
+                    },
+                ],
+                "problem_type": "Algebra",
+                "question_type": "math-word-problem",
+                "source": "olympiads",
+            }
+        ],
+        "train",
+    )
 
     assert "Question: What is 2+2?" in metamath[0].prompt
     assert magicoder[0].response.startswith("\ndef add")
     assert xsum[0].metadata["evaluator"] == "xsum"
     assert math[0].metadata["evaluator"] == "math"
+    assert openr1[0].response.startswith("\n<think>")
+    assert openr1[0].metadata["source_problem"] == "u1"
+
+
+def test_openr1_converter_rejects_a_trace_without_a_reasoning_boundary():
+    with pytest.raises(ValueError, match="lacks </think>"):
+        data._convert_openr1_math(
+            [
+                {
+                    "problem": "1+2",
+                    "messages": [
+                        {"role": "user", "content": "1+2"},
+                        {"role": "assistant", "content": "\\boxed{3}"},
+                    ],
+                }
+            ],
+            "train",
+        )
 
 
 def test_natural_data_is_staged_and_loaded_without_the_hub(tmp_path, monkeypatch):

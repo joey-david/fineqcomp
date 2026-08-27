@@ -12,6 +12,7 @@ MetaMathQA, then scores GSM8K.
 |---|---|
 | [`span_supervision/`](span_supervision/) | complete, 9 Mistral + 9 Qwen runs, 3 seeds |
 | [`conditional_trace_rate/`](conditional_trace_rate/) | both locked primary tests pass across 9 matched pairs; half-bit secondary point incomplete |
+| [`reasoning_scaling_battery_lock.json`](reasoning_scaling_battery_lock.json) | prospective native-model, data, GRPO, and scaling-law gates frozen; model and data smokes only |
 
 ## Locked causal test
 
@@ -52,6 +53,13 @@ This establishes a causal effect for problem--trace assignment on this frozen
 MetaMathQA-to-GSM8K, rank-16 LoRA grid. It does not establish that written
 reasoning is faithful, that the rate is universal, or that the same number
 holds outside these models and tasks.
+
+The next battery widens that claim without treating either one good run or one
+bad run as final. It tests Qwen3 thinking models and DeepSeek-R1 distills from
+0.6B to 32B, adds newer math traces before code and generated task families,
+and defines a fixed-rollout GRPO control that moves reward credit while keeping
+the sampled rollouts fixed. Its exact models, rate grid, gates, stop rules, and
+held-out scaling-law test are frozen in the linked lock above.
 
 The primary result is complete. The rate-at-90% secondary result is not: six
 older aligned Mistral and Qwen runs stored the half-bit adapter but did not

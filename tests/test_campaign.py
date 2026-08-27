@@ -83,6 +83,57 @@ def test_conditional_trace_control_matches_the_finished_aligned_grid():
         }
 
 
+def test_native_reasoning_smoke_is_one_seed_with_a_wide_rate_grid():
+    campaign = load_campaign("configs/reasoning_native_smoke.yaml")
+    runs = expand_campaign(campaign)
+
+    assert len(runs) == 9
+    assert {run.seed for run in runs} == {11}
+    assert {run.dataset_key for run in runs} == {"cot_math"}
+    assert all(run.model.chat and not run.model.disable_thinking for run in runs)
+    assert {run.model.key for run in runs} == set(campaign["models"])
+    rates = {
+        float(codec["bits"]) + float(codec.get("blend", 0.0))
+        for codec in campaign["codecs"].values()
+    }
+    assert rates == {
+        0.0625, 0.125, 0.25, 0.5, 0.75,
+        1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0, 16.0,
+    }
+
+
+def test_reasoning_data_smoke_caps_every_new_trace_source():
+    campaign = load_campaign("configs/reasoning_data_smoke.yaml")
+    runs = expand_campaign(campaign)
+
+    assert len(runs) == 2
+    assert {run.dataset_key for run in runs} == {
+        "numina_math_cot_smoke", "openr1_math_smoke"
+    }
+    for spec in campaign["datasets"].values():
+        assert spec["train_rows"] == 128
+        assert spec["validation_rows"] == 64
+        assert spec["test_rows"] == 64
+
+
+def test_reasoning_scaling_lock_matches_the_smoke_panel_and_rate_grid():
+    lock = json.loads(Path(
+        "results/3_chain_of_thought_under_compression/"
+        "reasoning_scaling_battery_lock.json"
+    ).read_text())
+    campaign = load_campaign(lock["model_panel"]["smoke_config"])
+
+    assert set(lock["model_panel"]["smoke_models"]) == set(campaign["models"])
+    rates = sorted(
+        float(codec["bits"]) + float(codec.get("blend", 0.0))
+        for codec in campaign["codecs"].values()
+    )
+    assert rates == lock["rate_grid"]["coarse_target_bits_per_value"]
+    assert lock["grpo_extension"]["implementation_owner"] == (
+        "src/fineqcomp/grpo_control.py"
+    )
+
+
 def test_stale_manifest_is_rejected():
     campaign = load_campaign("configs/campaign.yaml")
     runs = expand_campaign(campaign)

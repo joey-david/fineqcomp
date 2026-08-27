@@ -23,7 +23,13 @@ manifest="${MANIFEST:?set MANIFEST}"
 source "$repo_root/scripts/jean_zay_env.sh"
 
 echo "config=$config manifest=$manifest offline=${HF_HUB_OFFLINE:-0}"
-exec "$PYTHON" -m fineqcomp prepare \
+prepare_args=(
+  -m fineqcomp prepare
   --config "$config" \
   --manifest "$manifest" \
   --prepared-root prepared
+)
+if [[ "${NO_DATA:-0}" == 1 ]]; then
+  prepare_args+=(--no-data)
+fi
+exec "$PYTHON" "${prepare_args[@]}"

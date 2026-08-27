@@ -30,6 +30,14 @@ report="${REPORT:-prepared/preflight.json}"
 source "$repo_root/scripts/jean_zay_env.sh"
 export PYTHONUNBUFFERED=1
 
+smoke_args=()
+if [[ -n "${MODEL:-}" ]]; then
+  smoke_args+=(--model-smoke-model "$MODEL")
+fi
+if [[ -n "${DATASET:-}" ]]; then
+  smoke_args+=(--model-smoke-dataset "$DATASET")
+fi
+
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 exec "$PYTHON" -m fineqcomp preflight \
   --config "$config" \
@@ -41,4 +49,5 @@ exec "$PYTHON" -m fineqcomp preflight \
   --require-dependencies \
   --gpu-count 1 \
   --min-gpu-memory-gib 75 \
-  --model-smoke
+  --model-smoke \
+  "${smoke_args[@]}"
