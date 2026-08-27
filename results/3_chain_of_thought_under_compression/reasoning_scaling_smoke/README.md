@@ -54,9 +54,53 @@ About seven H100-minutes were spent before cancellation.
 |---|---|
 | `model_smokes.csv` | one row per panel model, pass status and the numbers above |
 | `model_reports/` | the eight passing preflight reports, with environment and codec detail |
-| `diagnostics/` | the RoPE gate traceback and the quarantined pre-gate report |
+| `trace_lengths.csv` | token-length quantiles and the fraction fitting each candidate max_length |
+| `data_reports/` | the stage-3 preflight report, measured with the retention gate disabled |
+| `diagnostics/` | the RoPE and answer-retention gate tracebacks, and the quarantined pre-gate report |
+
+## Stage 3: both new trace sources fail their data gate
+
+The stage-3 pass condition is 128 train, 64 calibration and 64 test rows per new
+source, every trace boundary and answer parsing, and at least 99 per cent of
+sampled rows keeping their answer tokens at the planned maximum length. Both
+sources prepared cleanly. Neither reaches 99 per cent, for different reasons.
+
+| source | rows | keeps its answer at 4096 | no answer marker | answer cut by length |
+|---|---:|---:|---:|---:|
+| NuminaMath-CoT | 128 | 96.88% | 4 | 0 |
+| OpenR1-Math-220k | 128 | 37.50% | 0 | 80 |
+
+NuminaMath-CoT has no length problem at all: its longest sampled row is 1,789
+tokens against a 4,096 limit. Four of its 128 solutions simply never write
+`\boxed{}`. The `math` converter accepts them, so they would have trained as
+traces with no final answer.
+
+OpenR1-Math-220k is the opposite. Every row parses, and 80 of 128 are too long
+for the frozen 4,096-token limit, which cuts the closing `</think>` and the
+boxed answer off the end. Its median row is 5,415 tokens.
+
+| planned max_length | NuminaMath-CoT rows that fit | OpenR1-Math rows that fit |
+|---:|---:|---:|
+| 4,096 | 100.0% | 37.5% |
+| 8,192 | 100.0% | 68.0% |
+| 12,288 | 100.0% | 92.2% |
+| 16,384 | 100.0% | 99.2% |
+| 24,576 | 100.0% | 100.0% |
+
+Reading OpenR1 traces to the 99 per cent bar therefore needs a four-fold rise in
+sequence length, which the frozen rate grid and cost model did not budget for.
+The stop rules forbid raising sequence length to hide a parser failure, so the
+Numina and OpenR1 decisions have to be taken and recorded separately.
+
+The two-row model update itself is fine: with the threshold disabled for
+measurement, R1-Distill-Qwen-1.5B generated one answer and took two finite
+updates on OpenR1 rows in 45 seconds.
+
+`validate_answer_retention` in `src/fineqcomp/preflight.py` now measures this
+before any GPU work, and `scripts/jean_zay_preflight.sbatch` requires the locked
+0.99 by default.
 
 ## Not done here
 
-Stage 3, the new-data smokes over NuminaMath-CoT and OpenR1-Math-220k defined in
-`configs/reasoning_data_smoke.yaml`, has not produced evidence yet.
+No micro-pilot has run. Stage 3 is blocked on the two decisions above, and the
+GRPO fixed-rollout gate has not been exercised on a GPU.
