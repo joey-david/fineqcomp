@@ -50,4 +50,5 @@ exec "$PYTHON" -m fineqcomp preflight \
   --gpu-count 1 \
   --min-gpu-memory-gib 75 \
   --model-smoke \
+  --min-answer-retention "${MIN_ANSWER_RETENTION:-0.99}" \
   "${smoke_args[@]}"

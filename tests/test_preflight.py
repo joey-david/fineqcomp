@@ -6,7 +6,12 @@ from types import SimpleNamespace
 import pytest
 
 from fineqcomp.config import AdapterSpec, CodecSpec, ModelSpec, RunSpec, TrainingSpec
-from fineqcomp.preflight import cache_models, model_smoke
+from fineqcomp.data import Example
+from fineqcomp.preflight import (
+    cache_models,
+    model_smoke,
+    validate_answer_retention,
+)
 
 
 def test_cache_models_downloads_exact_revisions_and_checks_weights(
@@ -75,3 +80,52 @@ def test_model_smoke_filters_before_loading(monkeypatch, tmp_path):
         model_smoke(
             {"datasets": {}}, runs, tmp_path, model_key="missing"
         )
+
+
+def test_answer_retention_counts_answers_lost_to_max_length(monkeypatch, tmp_path):
+    """A trace longer than max_length trains on working with no answer."""
+
+    class CharTokenizer:
+        def encode(self, text, add_special_tokens=True):
+            return [ord(character) for character in text]
+
+    monkeypatch.setitem(
+        sys.modules,
+        "transformers",
+        SimpleNamespace(
+            AutoTokenizer=SimpleNamespace(
+                from_pretrained=lambda *args, **kwargs: CharTokenizer()
+            )
+        ),
+    )
+    examples = [
+        Example("short", "p", "work</think>42", {}),
+        Example("long", "p", "w" * 40 + "</think>42", {}),
+        Example("unmarked", "p", "work with no marker", {}),
+    ]
+    monkeypatch.setattr(
+        "fineqcomp.preflight.load_natural_dataset",
+        lambda campaign, key, seed, root: {"train": examples},
+    )
+    run = RunSpec(
+        run_id="r",
+        study="smoke",
+        kind="natural",
+        model=ModelSpec("small", "org/small", "rev", "bf16"),
+        adapter=AdapterSpec("a", "full_lora", 1, ("q_proj",), None, 2),
+        seed=11,
+        codecs=(CodecSpec("binary", "uniform", bits=1),),
+        training=TrainingSpec(1, 1e-4, 1, 1, 32),
+        dataset_key="traces",
+    )
+    campaign = {"datasets": {"traces": {"answer_marker": "</think>"}}}
+
+    report = validate_answer_retention(campaign, [run], tmp_path)
+
+    cell = report["small/traces/11/32"]
+    assert cell["answer_cut_by_max_length"] == 1
+    assert cell["missing_marker"] == 1
+    assert cell["retained_fraction"] == pytest.approx(1 / 3)
+
+    with pytest.raises(ValueError, match="keep their answer"):
+        validate_answer_retention(campaign, [run], tmp_path, 0.99)

@@ -25,6 +25,7 @@ from fineqcomp.preflight import (
     cache_models,
     environment_report,
     model_smoke,
+    validate_answer_retention,
     validate_rationale_tokenization,
     validate_prepared,
     validate_tokenizers,
@@ -540,6 +541,9 @@ def _preflight(args: argparse.Namespace) -> int:
         "rationale_token_contracts": validate_rationale_tokenization(
             campaign, runs, args.prepared_root
         ),
+        "answer_retention": validate_answer_retention(
+            campaign, runs, args.prepared_root, args.min_answer_retention
+        ),
     }
     if args.tokenizers:
         report["label_token_ids"] = validate_tokenizers(campaign)
@@ -835,6 +839,7 @@ def build_parser() -> argparse.ArgumentParser:
     preflight.add_argument("--gpu-count", type=int, default=2)
     preflight.add_argument("--min-gpu-memory-gib", type=float, default=75.0)
     preflight.add_argument("--tokenizers", action="store_true")
+    preflight.add_argument("--min-answer-retention", type=float, default=None)
     preflight.add_argument("--model-smoke", action="store_true")
     preflight.add_argument(
         "--model-smoke-model",
