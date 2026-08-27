@@ -1,0 +1,108 @@
+{
+  "answer_retention": {
+    "r1_distill_qwen_1_5b/numina_math_cot_smoke/11/4096": {
+      "answer_cut_by_max_length": 0,
+      "max_length": 4096,
+      "missing_marker": 4,
+      "retained_fraction": 0.96875,
+      "rows": 128
+    },
+    "r1_distill_qwen_1_5b/openr1_math_smoke/11/4096": {
+      "answer_cut_by_max_length": 80,
+      "max_length": 4096,
+      "missing_marker": 0,
+      "retained_fraction": 0.375,
+      "rows": 128
+    }
+  },
+  "environment": {
+    "gpus": [
+      {
+        "index": 0,
+        "memory_gib": 79.1806640625,
+        "name": "NVIDIA H100 80GB HBM3"
+      }
+    ],
+    "modules": {
+      "accelerate": "1.10.1",
+      "bitsandbytes": "0.47.0",
+      "datasets": "4.0.0",
+      "math_verify": "installed",
+      "matplotlib": "3.10.5",
+      "numpy": "2.2.6",
+      "peft": "0.17.1",
+      "rouge_score": "installed",
+      "torch": "2.8.0",
+      "transformers": "4.55.4",
+      "yaml": "6.0.2"
+    },
+    "platform": "Linux-5.14.0-570.131.1.el9_6.x86_64-x86_64-with-glibc2.34",
+    "python": "3.12.11"
+  },
+  "manifest_runs": 2,
+  "model_smoke": {
+    "dataset_key": "openr1_math_smoke",
+    "generation_examples": 1,
+    "loraquant_storage": {
+      "bits_per_value": null,
+      "compressed_payload_bits": 24208872,
+      "effective_bits_per_value": 1.4183413514862466,
+      "file_bits": 26189344,
+      "group_size": 128,
+      "header_bits": 1980472,
+      "high_bits": 2,
+      "high_value_count": 11791104,
+      "low_bits": 1,
+      "low_value_count": 6673664,
+      "optimize_steps": 2,
+      "padding_bits": 0,
+      "path": "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/prepared/.preflight-r1_distill_qwen_1_5b-cbmmqy1_/loraquant.fqcb",
+      "raw_payload_bits": 32563968,
+      "scale_bits": 2308096,
+      "tensor_values": 18464768,
+      "value_bits": 30255872,
+      "variance_ratio": 0.8
+    },
+    "model_key": "r1_distill_qwen_1_5b",
+    "run_id": "openr1-data-contract__r1-distill-qwen-1-5b__openr1-math-smoke__all-linear-r16__s11__b24b69bef4",
+    "storage": {
+      "bits_per_value": 4.0,
+      "blend": 0.0,
+      "compressed_payload_bits": 66647704,
+      "effective_bits_per_value": 3.648252065771961,
+      "file_bits": 67364128,
+      "header_bits": 716424,
+      "padding_bits": 0,
+      "path": "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/prepared/.preflight-r1_distill_qwen_1_5b-cbmmqy1_/adapter.fqcb",
+      "quantizer": "midrise",
+      "raw_payload_bits": 73959424,
+      "relative_rmse": 0.0630777810020849,
+      "scale_bits": 100352,
+      "tensor_values": 18464768,
+      "value_bits": 73859072
+    },
+    "training": {
+      "adapter_rank": 16,
+      "best_validation_nll": 0.30636698499830234,
+      "elapsed_seconds": 1.209356746985577,
+      "epochs": 1,
+      "optimizer_updates": 2,
+      "peak_memory_bytes": 11512089088,
+      "restored_best": true,
+      "train_examples": 2,
+      "trainable_parameters": 18464768
+    }
+  },
+  "partition": [
+    {
+      "models": [
+        "r1_distill_qwen_1_5b"
+      ],
+      "relative_cost": 315447.6170639053,
+      "runs": 2,
+      "shard": 0
+    }
+  ],
+  "prepared_dataset_cells": 2,
+  "rationale_token_contracts": {}
+}
