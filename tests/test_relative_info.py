@@ -731,6 +731,7 @@ def test_trace_retrieval_reads_the_ceiling_when_traces_are_interchangeable():
     # Identical bodies leave the posterior uniform, so the load is the ceiling
     # and no adapter budget can be argued away by the frozen model.
     assert measured["trace_retrieval_bits"] == pytest.approx(2.0)
+    assert measured["trace_retrieval_normalized_bits"] == pytest.approx(2.0)
     assert measured["trace_retrieval_ceiling_bits"] == pytest.approx(2.0)
 
 
@@ -760,6 +761,7 @@ def test_trace_retrieval_falls_when_the_model_can_place_the_trace():
 
     assert informed["trace_retrieval_bits"] < 0.2
     assert informed["trace_retrieval_error"] == 0.0
+    assert informed["trace_retrieval_normalized_error"] == 0.0
     assert ignorant["trace_retrieval_bits"] == pytest.approx(2.0)
     # Fano turns the retrieval error into the floor an adapter would have to
     # clear; a model that already retrieves perfectly leaves nothing to store.

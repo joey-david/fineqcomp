@@ -1018,6 +1018,41 @@ def _length_matched_blocks(
     return [block for block in blocks if len(block) > 1], lengths
 
 
+def _retrieval_statistics(
+    scores: list[float], widths: list[int], truth: list[int]
+) -> dict[str, float]:
+    """Cross entropy of the correct candidate, its error rate, and its floor."""
+    bits: list[float] = []
+    errors: list[bool] = []
+    cursor = 0
+    for index, width in enumerate(widths):
+        block = torch.tensor(scores[cursor : cursor + width], dtype=torch.float64)
+        cursor += width
+        posterior = torch.log_softmax(block, dim=0)
+        bits.append(-float(posterior[truth[index]]) / math.log(2))
+        errors.append(int(torch.argmax(block)) != truth[index])
+    error = sum(errors) / len(errors)
+    candidates = sum(widths) / len(widths)
+    ceiling = math.log2(candidates)
+    entropy = (
+        0.0
+        if error in (0.0, 1.0)
+        else -error * math.log2(error) - (1 - error) * math.log2(1 - error)
+    )
+    return {
+        "bits": sum(bits) / len(bits),
+        "error": error,
+        "candidates": candidates,
+        "ceiling_bits": ceiling,
+        # Fano: a code that must recover the assignment at this error rate
+        # cannot be smaller than this, so it is a floor for the adapter budget
+        # rather than a prediction of it.
+        "fano_bits": max(
+            0.0, ceiling - entropy - error * math.log2(max(candidates - 1, 1))
+        ),
+    }
+
+
 @torch.no_grad()
 def trace_retrieval_load(
     session: Any,
@@ -1044,6 +1079,14 @@ def trace_retrieval_load(
     The manipulation is deliberately the one the trained control performs, so
     the measure and the causal test speak about the same thing. No training
     happens here: it is one forward pass per problem-candidate pair.
+
+    Two scores are reported for the same probes. The summed sequence log
+    likelihood is the literal reading of the measure, and on long traces it is
+    dominated by length: a block spanning a third of its median length differs
+    by hundreds of nats before any reasoning is compared, which saturates the
+    posterior and makes the mean cross entropy a coin flip between nothing and
+    hundreds of bits. The per-token mean removes that first-order term. Where
+    the two disagree, the length effect is doing the work.
     """
     if candidates < 2:
         raise ValueError("trace retrieval needs at least two candidates")
@@ -1089,7 +1132,8 @@ def trace_retrieval_load(
     )
     device = model_device(session.model)
     session.model.eval()
-    scores: list[float] = []
+    totals: list[float] = []
+    counts: list[float] = []
     for batch in loader:
         batch = {key: value.to(device) for key, value in batch.items()}
         output = session.model(
@@ -1101,36 +1145,26 @@ def trace_retrieval_load(
         labels = batch["labels"][:, 1:]
         chosen = labels.clamp_min(0).unsqueeze(-1)
         token_logprob = torch.log_softmax(logits, dim=-1).gather(-1, chosen)
-        token_logprob = token_logprob.squeeze(-1).masked_fill(labels == -100, 0.0)
-        scores.extend(token_logprob.sum(dim=-1).tolist())
+        scored = labels != -100
+        token_logprob = token_logprob.squeeze(-1).masked_fill(~scored, 0.0)
+        totals.extend(token_logprob.sum(dim=-1).tolist())
+        counts.extend(scored.sum(dim=-1).clamp_min(1).float().tolist())
 
-    bits = []
-    errors = []
-    cursor = 0
-    for index, width in enumerate(widths):
-        block_scores = torch.tensor(scores[cursor : cursor + width])
-        cursor += width
-        posterior = torch.log_softmax(block_scores, dim=0)
-        bits.append(-float(posterior[truth[index]]) / math.log(2))
-        errors.append(int(torch.argmax(block_scores)) != truth[index])
-    error = sum(errors) / len(errors)
-    width = sum(widths) / len(widths)
-    ceiling = math.log2(width)
-    # Fano: a code that must recover the assignment at this error rate cannot
-    # be smaller than this, so it is the floor the adapter budget is compared
-    # against rather than a prediction of it.
-    entropy = 0.0 if error in (0.0, 1.0) else (
-        -error * math.log2(error) - (1 - error) * math.log2(1 - error)
+    summed = _retrieval_statistics(totals, widths, truth)
+    per_token = _retrieval_statistics(
+        [total / count for total, count in zip(totals, counts, strict=True)],
+        widths,
+        truth,
     )
     return {
-        "trace_retrieval_bits": sum(bits) / len(bits),
-        "trace_retrieval_error": error,
-        "trace_retrieval_candidates": width,
-        "trace_retrieval_ceiling_bits": ceiling,
-        "trace_retrieval_fano_bits": max(
-            0.0,
-            ceiling - entropy - error * math.log2(max(width - 1, 1)),
-        ),
+        "trace_retrieval_bits": summed["bits"],
+        "trace_retrieval_error": summed["error"],
+        "trace_retrieval_fano_bits": summed["fano_bits"],
+        "trace_retrieval_normalized_bits": per_token["bits"],
+        "trace_retrieval_normalized_error": per_token["error"],
+        "trace_retrieval_normalized_fano_bits": per_token["fano_bits"],
+        "trace_retrieval_candidates": summed["candidates"],
+        "trace_retrieval_ceiling_bits": summed["ceiling_bits"],
         "trace_retrieval_probes": len(probes),
         "trace_retrieval_length_spread": sum(spreads) / len(spreads),
     }
