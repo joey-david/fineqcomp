@@ -14,6 +14,8 @@ import csv
 import json
 import math
 import random
+import re
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -1106,6 +1108,50 @@ def _assignment_permutation_p(
     return (1 + at_least_as_good) / (draws + 1)
 
 
+def _lexical_score_blocks(
+    prompts: list[str], bodies: list[str], blocks: list[list[int]]
+) -> list[torch.Tensor]:
+    """TF-IDF cosine control for surface-retrievable trace assignments."""
+
+    def tokens(text: str) -> Counter[str]:
+        return Counter(re.findall(r"[a-z0-9]+", text.casefold()))
+
+    prompt_counts = [tokens(prompt) for prompt in prompts]
+    body_counts = [tokens(body) for body in bodies]
+    documents = [*prompt_counts, *body_counts]
+    frequency: Counter[str] = Counter()
+    for document in documents:
+        frequency.update(document.keys())
+    idf = {
+        token: math.log((1 + len(documents)) / (1 + count)) + 1
+        for token, count in frequency.items()
+    }
+
+    def cosine(left: Counter[str], right: Counter[str]) -> float:
+        shared = left.keys() & right.keys()
+        numerator = sum(
+            left[token] * right[token] * idf[token] ** 2 for token in shared
+        )
+        left_norm = math.sqrt(
+            sum((count * idf[token]) ** 2 for token, count in left.items())
+        )
+        right_norm = math.sqrt(
+            sum((count * idf[token]) ** 2 for token, count in right.items())
+        )
+        return numerator / (left_norm * right_norm) if left_norm and right_norm else 0.0
+
+    return [
+        torch.tensor(
+            [
+                [cosine(prompt_counts[recipient], body_counts[donor]) for donor in block]
+                for recipient in block
+            ],
+            dtype=torch.float64,
+        )
+        for block in blocks
+    ]
+
+
 @torch.no_grad()
 def trace_retrieval_load(
     session: Any,
@@ -1233,9 +1279,13 @@ def trace_retrieval_load(
     ]
     corrected = _assignment_statistics(corrected_blocks)
     raw = _assignment_statistics(raw_blocks)
+    lexical_blocks = _lexical_score_blocks(
+        [row.prompt for row in rows], bodies, blocks
+    )
+    lexical = _assignment_statistics(lexical_blocks)
     candidate_rows = sum(map(len, blocks))
     return {
-        "trace_retrieval_schema": 2,
+        "trace_retrieval_schema": 3,
         "trace_retrieval_load_bits": corrected["load_bits"],
         "trace_retrieval_log_loss_bits": corrected["log_loss_bits"],
         "trace_retrieval_uniform_bits": corrected["uniform_bits"],
@@ -1259,6 +1309,16 @@ def trace_retrieval_load(
         ),
         "trace_retrieval_raw_log_loss_bits": raw["log_loss_bits"],
         "trace_retrieval_raw_accuracy": raw["accuracy"],
+        "trace_retrieval_lexical_accuracy": lexical["accuracy"],
+        "trace_retrieval_lexical_mean_margin_score": lexical[
+            "mean_margin_bits"
+        ] * math.log(2),
+        "trace_retrieval_lexical_permutation_p": _assignment_permutation_p(
+            lexical_blocks,
+            lexical["log_loss_bits"],
+            draws=permutations,
+            seed=permutation_seed,
+        ),
         "trace_retrieval_candidates": (
             sum(len(block) ** 2 for block in blocks) / candidate_rows
         ),

@@ -290,6 +290,40 @@ def _trace_retrieval(args: argparse.Namespace) -> int:
     return 0
 
 
+def _generation_smoke(args: argparse.Namespace) -> int:
+    from fineqcomp.evaluation import evaluate_natural
+    from fineqcomp.modeling import ModelSession
+
+    if args.max_new_tokens < 1:
+        raise ValueError("generation smoke max_new_tokens must be positive")
+    run, available_rows, rows, _ = _frozen_measurement_rows(args)
+    session = ModelSession.load(run.model)
+    try:
+        metrics, predictions = evaluate_natural(
+            session.model,
+            session.tokenizer,
+            rows,
+            run.model,
+            str(run.dataset_key),
+            args.micro_batch_size,
+            multiple_choice_labels=[],
+            max_new_tokens=args.max_new_tokens,
+        )
+    finally:
+        try:
+            session.unload()
+        except Exception:
+            pass
+    record = {
+        **_frozen_measurement_record(args, run, available_rows, rows),
+        "metrics": metrics,
+        "predictions": predictions,
+    }
+    write_json(args.out, record)
+    print(json.dumps(record, indent=2))
+    return 0
+
+
 def _relative_information(args: argparse.Namespace) -> int:
     from fineqcomp.modeling import ModelSession
     from fineqcomp.relative_info import (
@@ -728,6 +762,25 @@ def build_parser() -> argparse.ArgumentParser:
     retrieval.add_argument("--micro-batch-size", type=int, default=1)
     retrieval.add_argument("--candidates", type=int, default=8)
     retrieval.set_defaults(func=_trace_retrieval)
+
+    generation_smoke = subparsers.add_parser(
+        "generation-smoke",
+        help="measure answer and EOS survival at one frozen generation limit",
+    )
+    generation_smoke.add_argument("--config", required=True)
+    generation_smoke.add_argument("--manifest", required=True)
+    generation_smoke.add_argument("--run-id", required=True)
+    generation_smoke.add_argument("--prepared-root", default="prepared")
+    generation_smoke.add_argument("--out", required=True)
+    generation_smoke.add_argument("--split", default="test", choices=["test"])
+    generation_smoke.add_argument("--rows", type=int, default=8)
+    generation_smoke.add_argument(
+        "--row-sampling", choices=("uniform", "head"), default="uniform"
+    )
+    generation_smoke.add_argument("--row-sample-seed", type=int, default=271_828)
+    generation_smoke.add_argument("--micro-batch-size", type=int, default=1)
+    generation_smoke.add_argument("--max-new-tokens", type=int, required=True)
+    generation_smoke.set_defaults(func=_generation_smoke)
 
     relative_report = subparsers.add_parser(
         "relative-information-report",

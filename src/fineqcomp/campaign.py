@@ -107,6 +107,10 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                             payload["distinct_source_problems"] = int(
                                 dataset_spec["distinct_source_problems"]
                             )
+                        if dataset_spec.get("evaluation_max_new_tokens") is not None:
+                            payload["evaluation_max_new_tokens"] = int(
+                                dataset_spec["evaluation_max_new_tokens"]
+                            )
                         # A study named after its dataset would otherwise
                         # repeat the name in every directory.
                         parts = [study_name, model.key]

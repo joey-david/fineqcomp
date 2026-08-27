@@ -7,7 +7,11 @@ import torch
 from fineqcomp.config import ModelSpec
 from fineqcomp.data import Example
 import fineqcomp.evaluation as evaluation
-from fineqcomp.evaluation import evaluate_multiple_choice, evaluate_natural
+from fineqcomp.evaluation import (
+    evaluate_multiple_choice,
+    evaluate_natural,
+    generate_response_records,
+)
 
 
 class _Tokenizer:
@@ -74,9 +78,17 @@ def test_math_and_xsum_share_one_paired_evaluation(monkeypatch):
     answers = {"solve": r"The answer is \boxed{2}.", "summarize": "The cat slept."}
 
     def fake_generate(unused_model, unused_tokenizer, rows, *unused, **unused_kw):
-        return [answers[row.prompt] for row in rows]
+        return [
+            {
+                "response": answers[row.prompt],
+                "completion_tokens": 12,
+                "terminated_with_eos": True,
+                "hit_generation_limit": False,
+            }
+            for row in rows
+        ]
 
-    monkeypatch.setattr(evaluation, "generate_responses", fake_generate)
+    monkeypatch.setattr(evaluation, "generate_response_records", fake_generate)
     model_spec = ModelSpec("model", "model", "revision", "bf16")
 
     metrics, predictions = evaluate_natural(
@@ -84,9 +96,52 @@ def test_math_and_xsum_share_one_paired_evaluation(monkeypatch):
     )
 
     assert metrics["evaluations"]["math"]["exact_match"] == 1.0
+    assert metrics["evaluations"]["math"]["terminated_fraction"] == 1.0
     assert metrics["primary_evaluator"] == "math"
     assert metrics["evaluations"]["xsum"]["rouge_l"] == 1.0
     assert {row["evaluator"] for row in predictions} == {"math", "xsum"}
+
+
+def test_generation_records_distinguish_eos_from_hitting_the_limit():
+    class Tokenizer:
+        padding_side = "right"
+        pad_token_id = 0
+        eos_token_id = 2
+
+        def __call__(self, prompts, return_tensors, padding):
+            return {
+                "input_ids": torch.tensor([[7, 8]] * len(prompts)),
+                "attention_mask": torch.ones((len(prompts), 2), dtype=torch.long),
+            }
+
+        def decode(self, tokens, skip_special_tokens):
+            return " ".join(map(str, tokens.tolist()))
+
+    class Model(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.embedding = torch.nn.Embedding(10, 2)
+
+        def get_input_embeddings(self):
+            return self.embedding
+
+        def generate(self, input_ids, **unused):
+            completion = torch.tensor([[5, 2, 0], [6, 7, 8]])
+            return torch.cat([input_ids, completion], dim=1)
+
+    records = generate_response_records(
+        Model(),
+        Tokenizer(),
+        [Example("a", "p", "r", {}), Example("b", "p", "r", {})],
+        ModelSpec("model", "model", "revision", "bf16"),
+        2,
+        3,
+    )
+
+    assert records[0]["terminated_with_eos"] is True
+    assert records[0]["completion_tokens"] == 2
+    assert records[1]["hit_generation_limit"] is True
+    assert records[1]["completion_tokens"] == 3
 
 
 def test_exact_string_normaliser_cuts_the_continuation():
