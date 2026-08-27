@@ -1,0 +1,111 @@
+{
+  "conditional_trace_rate_90": {
+    "missing_aligned_half_bit_pairs": [
+      {
+        "model_key": "mistral_7b_base",
+        "run_id": "sup-full__mistral-7b-base__cot-math__all-linear-r16__s11__b8a65ecda2",
+        "seed": 11
+      },
+      {
+        "model_key": "mistral_7b_base",
+        "run_id": "sup-full__mistral-7b-base__cot-math__all-linear-r16__s22__6dfac4689b",
+        "seed": 22
+      },
+      {
+        "model_key": "mistral_7b_base",
+        "run_id": "sup-full__mistral-7b-base__cot-math__all-linear-r16__s33__76195e5d01",
+        "seed": 33
+      },
+      {
+        "model_key": "qwen25_7b_base",
+        "run_id": "qwen-sup-full__qwen25-7b-base__cot-math__all-linear-r16__s11__738b8f7b67",
+        "seed": 11
+      },
+      {
+        "model_key": "qwen25_7b_base",
+        "run_id": "qwen-sup-full__qwen25-7b-base__cot-math__all-linear-r16__s22__fde6bef701",
+        "seed": 22
+      },
+      {
+        "model_key": "qwen25_7b_base",
+        "run_id": "qwen-sup-full__qwen25-7b-base__cot-math__all-linear-r16__s33__d9a68500a9",
+        "seed": 33
+      }
+    ],
+    "pairs_reaching_at_blend1_50": 7,
+    "pairs_reaching_at_uniform2": 2,
+    "status": "upper_bound_pending_six_aligned_half_bit_task_evaluations"
+  },
+  "estimand": "GSM8K accuracy aligned minus permuted, paired by model and seed",
+  "learning_gate": {
+    "maximum_observed_gain": 0.9088400343396748,
+    "minimum_observed_gain": 0.44587737465329347,
+    "pairs": 9,
+    "passed_pairs": 9,
+    "required_gain_bits_per_token": 0.02
+  },
+  "lock": "../conditional_trace_rate_lock.json",
+  "mean_gap_by_scored_point": {
+    "binary": {
+      "fraction_of_raw_gap": 0.4974897307165679,
+      "mean_gap": 0.2754612079858479
+    },
+    "blend1_50": {
+      "fraction_of_raw_gap": 0.9537501901719154,
+      "mean_gap": 0.5280936736584955
+    },
+    "raw": {
+      "fraction_of_raw_gap": 1.0,
+      "mean_gap": 0.5537022997220116
+    },
+    "uniform2": {
+      "fraction_of_raw_gap": 0.9933059485775144,
+      "mean_gap": 0.5499957880549239
+    }
+  },
+  "prediction_validation": {
+    "files_checked": 78,
+    "rows_per_file": 1319,
+    "stored_scores_match_correct_flags": true,
+    "unique_example_ids_required": true
+  },
+  "primary_tests": {
+    "binary_alignment_gap": {
+      "ci95": [
+        0.16729845842810218,
+        0.3552396596748378
+      ],
+      "mean_gap": 0.2754612079858479,
+      "model_means": {
+        "llama31_8b_base": 0.3098306798079353,
+        "mistral_7b_base": 0.3510235026535254,
+        "qwen25_7b_base": 0.16552944149608295
+      },
+      "pairs": 9,
+      "passed": true,
+      "positive_pairs": 9
+    },
+    "raw_alignment_gap": {
+      "ci95": [
+        0.5275040013478225,
+        0.5945581669615028
+      ],
+      "mean_gap": 0.5537022997220116,
+      "model_means": {
+        "llama31_8b_base": 0.5342431134698004,
+        "mistral_7b_base": 0.5317159464240586,
+        "qwen25_7b_base": 0.5951478392721757
+      },
+      "pairs": 9,
+      "passed": true,
+      "positive_pairs": 9
+    }
+  },
+  "status": "primary_complete_secondary_half_bit_incomplete",
+  "uncertainty": {
+    "draws": 10000,
+    "method": "hierarchical bootstrap; resample three models, then three seeds within each sampled model",
+    "numpy_seed": 0
+  },
+  "version": 1
+}
