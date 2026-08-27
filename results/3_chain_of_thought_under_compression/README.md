@@ -4,25 +4,60 @@ The question this programme exists to answer: when a fine-tune teaches a model
 to reason, how much of the adapter is the reasoning and how much is everything
 else, and which part survives compression?
 
-Everything here is Mistral-7B-v0.1 on an NF4 base, all-linear LoRA at rank 16,
-MetaMathQA with the response split at `The answer is:` into a *reasoning* span
-and an *answer* span. Held-out bits saved is measured separately on each span
-against the same base model, so the two are directly comparable.
+The span study uses Mistral-7B and Qwen2.5-7B. The causal trace test adds
+Llama-3.1-8B. Every arm uses an NF4 base and all-linear rank-16 LoRA on
+MetaMathQA, then scores GSM8K.
 
 | sub-study | status |
 |---|---|
 | [`span_supervision/`](span_supervision/) | complete, 9 Mistral + 9 Qwen runs, 3 seeds |
-| [`conditional_trace_rate_lock.json`](conditional_trace_rate_lock.json) | prospective, 9 matched-control runs locked across Mistral, Qwen, and Llama |
+| [`conditional_trace_rate/`](conditional_trace_rate/) | both locked primary tests pass across 9 matched pairs; half-bit secondary point incomplete |
 
 ## Locked causal test
 
-The completed span split does not show whether useful reasoning comes from the
-trace text itself or from its fit to the problem. The next test keeps every
+The completed span split did not show whether useful reasoning comes from the
+trace text itself or from its fit to the problem. The locked test keeps every
 prompt, correct final answer, rationale-body multiset, training setting, and
 codec fixed, then moves each rationale to an unrelated problem of similar
 length. Its target is the lowest exact adapter rate that retains ninety per
 cent of the aligned-minus-permuted GSM8K gap. The lock forbids the old
-per-run gain denominator and fixes the raw and binary gaps before results.
+per-run gain denominator and fixed the raw and binary tests before results.
+The full prospective contract remains in
+[`conditional_trace_rate_lock.json`](conditional_trace_rate_lock.json).
+
+## Result: the problem--trace match carries the gain
+
+Aligned traces beat the same marginal trace text assigned to the wrong
+problems by **55.37 GSM8K points** with the raw adapter. The 95% hierarchical
+bootstrap interval is 52.75 to 59.46 points. All nine model--seed gaps are
+positive, and each model mean is above 53 points.
+
+The gap remains **27.55 points** after binary coding at about 1.02 exact bits
+per adapter value, with a 95% interval of 16.73 to 35.52 points. Again, all
+nine pairs are positive. Both tests pass every threshold fixed in the lock.
+
+| exact adapter point | mean aligned--permuted gap | share of raw gap |
+|---|---:|---:|
+| raw BF16 | 55.37 points | 100.0% |
+| binary, about 1.02 bpv | 27.55 points | 49.7% |
+| blended, about 1.50 bpv | 52.81 points | 95.4% |
+| two-bit, about 1.97 bpv | 55.00 points | 99.3% |
+
+The permuted adapters did learn their assigned text: every control passed the
+fixed held-out loss gate, and the weakest gain was 0.446 bits per token against
+a required 0.02. Their low GSM8K scores therefore do not come from a failed
+optimizer run.
+
+This establishes a causal effect for problem--trace assignment on this frozen
+MetaMathQA-to-GSM8K, rank-16 LoRA grid. It does not establish that written
+reasoning is faithful, that the rate is universal, or that the same number
+holds outside these models and tasks.
+
+The primary result is complete. The rate-at-90% secondary result is not: six
+older aligned Mistral and Qwen runs stored the half-bit adapter but did not
+score GSM8K at that point. On the scored grid, seven pairs reach 90% by about
+1.51 bpv and two by about 1.97 bpv. Those are upper bounds until the six
+evaluation-only cells are filled.
 
 ## What replicates on a second frozen model
 
@@ -102,15 +137,18 @@ a test pins the signed behaviour.
 
 ## What is not settled
 
-One dataset, one split point, and now two models rather than one. The answer span is 2,110 held-out
-tokens against 46,554 for reasoning, so the answer-span figures rest on far
-less text. And the split is lexical — everything before `The answer is:` counts
-as reasoning, including restatement of the question.
+The span decomposition still uses one dataset and one lexical split point.
+The answer span is 2,110 held-out tokens against 46,554 for reasoning, so its
+figures rest on far less text. Everything before `The answer is:` counts as
+reasoning, including restatement of the question. The causal result repairs a
+different issue: it isolates the problem--trace match, not semantic faithfulness.
 
 ## Files
 
 | file | contents |
 |---|---|
+| `conditional_trace_rate/pairs.csv` | all 9 paired raw and coded accuracy gaps, exact paired rates, and control learning gains |
+| `conditional_trace_rate/summary.json` | locked primary decisions, hierarchical intervals, curve means, and the incomplete half-bit cells |
 | `span_supervision/span_rate_curves.csv` | 135 rows: arm, seed, codec, rate, signed bits saved on each span |
 | `span_supervision/spans_under_compression.png` | per-span retention curves, and the damage each target does |
 | `span_supervision/qwen_span_rate_curves.csv` | 120 rows: the same measurement on Qwen2.5-7B |
