@@ -27,12 +27,17 @@ adapters:
     alpha: 32
     dropout: 0.0
 training:
+  # 40960 is the smallest context window in the model panel (Qwen3; the R1
+  # distills allow 131072). Set at the panel limit rather than tuned to the
+  # sampled trace lengths, so truncation never decides which rows keep their
+  # answer. It costs nothing: max_length truncates, the collator pads to the
+  # longest row in the batch, and the micro batch is one row.
   data_contract:
     epochs: 1
     learning_rate: 0.0002
     effective_batch_size: 1
     micro_batch_size: 1
-    max_length: 4096
+    max_length: 40960
     warmup_ratio: 0.0
     weight_decay: 0.0
     adam_beta1: 0.9
@@ -50,6 +55,10 @@ datasets:
       split: train
       converter: math
     answer_marker: '\boxed{'
+    # Scope, not cleaning: about 3% of NuminaMath-CoT solutions are olympiad or
+    # AoPS proofs that end in \blacksquare and have no final answer to score or
+    # to split a rationale from. See the sub-study README.
+    answer_bearing_only: true
     validation_rows: 64
     train_rows: 128
     test_rows: 64
@@ -72,6 +81,7 @@ datasets:
       split: train
       converter: openr1_math
     answer_marker: '</think>'
+    answer_bearing_only: true
     validation_rows: 64
     train_rows: 128
     test_rows: 64

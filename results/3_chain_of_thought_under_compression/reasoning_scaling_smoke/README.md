@@ -58,49 +58,55 @@ About seven H100-minutes were spent before cancellation.
 | `data_reports/` | the stage-3 preflight report, measured with the retention gate disabled |
 | `diagnostics/` | the RoPE and answer-retention gate tracebacks, and the quarantined pre-gate report |
 
-## Stage 3: both new trace sources fail their data gate
+## Stage 3: both new trace sources pass
 
 The stage-3 pass condition is 128 train, 64 calibration and 64 test rows per new
 source, every trace boundary and answer parsing, and at least 99 per cent of
 sampled rows keeping their answer tokens at the planned maximum length. Both
-sources prepared cleanly. Neither reaches 99 per cent, for different reasons.
+sources now reach 100 per cent, and R1-Distill-Qwen-1.5B generated and took two
+finite updates on each. Peak memory was 4.18 GiB on Numina rows and 13.04 GiB on
+the far longer OpenR1 rows.
 
-| source | rows | keeps its answer at 4096 | no answer marker | answer cut by length |
-|---|---:|---:|---:|---:|
-| NuminaMath-CoT | 128 | 96.88% | 4 | 0 |
-| OpenR1-Math-220k | 128 | 37.50% | 0 | 80 |
+Both sources failed the gate first, for unrelated reasons, and neither failure
+was visible before `validate_answer_retention` measured it.
 
-NuminaMath-CoT has no length problem at all: its longest sampled row is 1,789
-tokens against a 4,096 limit. Four of its 128 solutions simply never write
-`\boxed{}`. The `math` converter accepts them, so they would have trained as
-traces with no final answer.
+**OpenR1-Math-220k was truncated.** Its median row is 5,049 tokens and its
+longest 17,040, against a 4,096-token training limit, so 80 of 128 rows lost the
+closing `</think>` and the boxed answer. Chasing the gate by moving the limit to
+16,384 failed again on a freshly drawn sample at 97.66 per cent, which is what a
+limit tuned to one sample does. The limit is now 40,960, the smallest context
+window in the model panel; the R1 distills allow 131,072. This costs nothing:
+`max_length` truncates rather than pads, the collator pads to the longest row in
+the batch, and the micro batch is one row. Truncation is no longer a variable
+in the experiment.
 
-OpenR1-Math-220k is the opposite. Every row parses, and 80 of 128 are too long
-for the frozen 4,096-token limit, which cuts the closing `</think>` and the
-boxed answer off the end. Its median row is 5,415 tokens.
-
-| planned max_length | NuminaMath-CoT rows that fit | OpenR1-Math rows that fit |
+| max_length | NuminaMath-CoT rows that fit | OpenR1-Math rows that fit |
 |---:|---:|---:|
-| 4,096 | 100.0% | 37.5% |
-| 8,192 | 100.0% | 68.0% |
-| 12,288 | 100.0% | 92.2% |
-| 16,384 | 100.0% | 99.2% |
-| 24,576 | 100.0% | 100.0% |
+| 4,096 | 100.0% | 41.4% |
+| 8,192 | 100.0% | 74.2% |
+| 12,288 | 100.0% | 89.8% |
+| 16,384 | 100.0% | 97.7% |
+| 20,480 | 100.0% | 100.0% |
+| 40,960 | 100.0% | 100.0% |
 
-Reading OpenR1 traces to the 99 per cent bar therefore needs a four-fold rise in
-sequence length, which the frozen rate grid and cost model did not budget for.
-The stop rules forbid raising sequence length to hide a parser failure, so the
-Numina and OpenR1 decisions have to be taken and recorded separately.
+**NuminaMath-CoT had no length problem at all** — its longest row is 1,303
+tokens. About three per cent of its solutions never write `\boxed{}`, and every
+such row sampled, 22 of 768, was an olympiad or AoPS **proof** ending in
+`\blacksquare`. A proof has no final answer, so those rows cannot be scored by
+exact match and offer no problem-trace boundary for the rationale control to
+permute. The panel therefore covers problems with a checkable final answer only.
+This is a scope criterion, `answer_bearing_only` in the dataset spec, not data
+cleaning: the excluded rows are replaced from a slack pool so the arm keeps its
+128 rows and stays compute-matched.
 
-The two-row model update itself is fine: with the threshold disabled for
-measurement, R1-Distill-Qwen-1.5B generated one answer and took two finite
-updates on OpenR1 rows in 45 seconds.
-
-`validate_answer_retention` in `src/fineqcomp/preflight.py` now measures this
-before any GPU work, and `scripts/jean_zay_preflight.sbatch` requires the locked
-0.99 by default.
+One warning is expected and explained: the R1 distill tokenizers declare
+`model_max_length` of 16,384 while their model configs allow 131,072, so rows
+above 16,384 log a tokenizer warning. The rotary embedding covers the full
+length and the smoke trains and generates normally.
 
 ## Not done here
 
-No micro-pilot has run. Stage 3 is blocked on the two decisions above, and the
-GRPO fixed-rollout gate has not been exercised on a GPU.
+Stages 2 and 3 are static and smoke evidence only. No micro-pilot has run, the
+GRPO fixed-rollout gate has not been exercised on a GPU, and nothing yet
+measures the relative reasoning load `L_rel` that the battery's scaling-law
+prediction rests on.

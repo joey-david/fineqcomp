@@ -1,17 +1,17 @@
 {
   "answer_retention": {
-    "r1_distill_qwen_1_5b/numina_math_cot_smoke/11/4096": {
+    "r1_distill_qwen_1_5b/numina_math_cot_smoke/11/40960": {
       "answer_cut_by_max_length": 0,
-      "max_length": 4096,
-      "missing_marker": 4,
-      "retained_fraction": 0.96875,
+      "max_length": 40960,
+      "missing_marker": 0,
+      "retained_fraction": 1.0,
       "rows": 128
     },
-    "r1_distill_qwen_1_5b/openr1_math_smoke/11/4096": {
-      "answer_cut_by_max_length": 80,
-      "max_length": 4096,
+    "r1_distill_qwen_1_5b/openr1_math_smoke/11/40960": {
+      "answer_cut_by_max_length": 0,
+      "max_length": 40960,
       "missing_marker": 0,
-      "retained_fraction": 0.375,
+      "retained_fraction": 1.0,
       "rows": 128
     }
   },
@@ -41,53 +41,53 @@
   },
   "manifest_runs": 2,
   "model_smoke": {
-    "dataset_key": "openr1_math_smoke",
+    "dataset_key": "numina_math_cot_smoke",
     "generation_examples": 1,
     "loraquant_storage": {
       "bits_per_value": null,
-      "compressed_payload_bits": 24208872,
-      "effective_bits_per_value": 1.4183413514862466,
-      "file_bits": 26189344,
+      "compressed_payload_bits": 24044544,
+      "effective_bits_per_value": 1.4093976160437,
+      "file_bits": 26024200,
       "group_size": 128,
-      "header_bits": 1980472,
+      "header_bits": 1979656,
       "high_bits": 2,
-      "high_value_count": 11791104,
+      "high_value_count": 10652160,
       "low_bits": 1,
-      "low_value_count": 6673664,
+      "low_value_count": 7812608,
       "optimize_steps": 2,
       "padding_bits": 0,
-      "path": "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/prepared/.preflight-r1_distill_qwen_1_5b-cbmmqy1_/loraquant.fqcb",
-      "raw_payload_bits": 32563968,
+      "path": "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/prepared/.preflight-r1_distill_qwen_1_5b-bgo2pa45/loraquant.fqcb",
+      "raw_payload_bits": 31425024,
       "scale_bits": 2308096,
       "tensor_values": 18464768,
-      "value_bits": 30255872,
+      "value_bits": 29116928,
       "variance_ratio": 0.8
     },
     "model_key": "r1_distill_qwen_1_5b",
-    "run_id": "openr1-data-contract__r1-distill-qwen-1-5b__openr1-math-smoke__all-linear-r16__s11__b24b69bef4",
+    "run_id": "numina-data-contract__r1-distill-qwen-1-5b__numina-math-cot-smoke__all-linear-r16__s11__6b77cf24b4",
     "storage": {
       "bits_per_value": 4.0,
       "blend": 0.0,
-      "compressed_payload_bits": 66647704,
-      "effective_bits_per_value": 3.648252065771961,
-      "file_bits": 67364128,
+      "compressed_payload_bits": 66682160,
+      "effective_bits_per_value": 3.6501181060059893,
+      "file_bits": 67398584,
       "header_bits": 716424,
       "padding_bits": 0,
-      "path": "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/prepared/.preflight-r1_distill_qwen_1_5b-cbmmqy1_/adapter.fqcb",
+      "path": "/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/prepared/.preflight-r1_distill_qwen_1_5b-bgo2pa45/adapter.fqcb",
       "quantizer": "midrise",
       "raw_payload_bits": 73959424,
-      "relative_rmse": 0.0630777810020849,
+      "relative_rmse": 0.06309419635145581,
       "scale_bits": 100352,
       "tensor_values": 18464768,
       "value_bits": 73859072
     },
     "training": {
       "adapter_rank": 16,
-      "best_validation_nll": 0.30636698499830234,
-      "elapsed_seconds": 1.209356746985577,
+      "best_validation_nll": 0.7623176976794828,
+      "elapsed_seconds": 1.3802530060056597,
       "epochs": 1,
       "optimizer_updates": 2,
-      "peak_memory_bytes": 11512089088,
+      "peak_memory_bytes": 4483712512,
       "restored_best": true,
       "train_examples": 2,
       "trainable_parameters": 18464768
@@ -98,7 +98,7 @@
       "models": [
         "r1_distill_qwen_1_5b"
       ],
-      "relative_cost": 315447.6170639053,
+      "relative_cost": 513182.75651682046,
       "runs": 2,
       "shard": 0
     }

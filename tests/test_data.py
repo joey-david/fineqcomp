@@ -81,20 +81,34 @@ def test_literature_task_converters_keep_train_and_eval_contracts():
     assert openr1[0].metadata["source_problem"] == "u1"
 
 
-def test_openr1_converter_rejects_a_trace_without_a_reasoning_boundary():
-    with pytest.raises(ValueError, match="lacks </think>"):
+def test_openr1_converter_still_rejects_a_broken_message_pair():
+    with pytest.raises(ValueError, match="expected one user and one assistant"):
         data._convert_openr1_math(
-            [
-                {
-                    "problem": "1+2",
-                    "messages": [
-                        {"role": "user", "content": "1+2"},
-                        {"role": "assistant", "content": "\\boxed{3}"},
-                    ],
-                }
-            ],
+            [{"problem": "1+2", "messages": [{"role": "user", "content": "1+2"}]}],
             "train",
         )
+
+
+class _Rows(list):
+    """The few `datasets.Dataset` methods the row caps use."""
+
+    def select(self, indices):
+        return _Rows(self[index] for index in indices)
+
+
+def test_answer_bearing_rows_replace_solutions_that_never_reach_an_answer():
+    rows = _Rows(
+        {"problem": str(index), "solution": "\\boxed{1}" if index % 4 else "1"}
+        for index in range(16)
+    )
+
+    kept = data.take_answer_bearing_rows(rows, "train", "math", "\\boxed{", 3)
+
+    assert len(kept) == 3
+    assert all("\\boxed{" in example.response for example in kept)
+
+    with pytest.raises(ValueError, match="short of the 13"):
+        data.take_answer_bearing_rows(rows, "train", "math", "\\boxed{", 13)
 
 
 def test_natural_data_is_staged_and_loaded_without_the_hub(tmp_path, monkeypatch):

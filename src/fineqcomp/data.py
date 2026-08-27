@@ -163,11 +163,10 @@ def _convert_openr1_math(rows: Any, split: str) -> list[Example]:
             raise ValueError(
                 f"OpenR1-Math/{split}/{index}: expected one user and one assistant"
             )
+        # A trace with no `</think>` is dropped by the answer-marker filter,
+        # not raised on: the row caps run before conversion, so one bad row in
+        # the pool would otherwise fail the whole prepare.
         response = str(messages[1].get("content", "")).strip()
-        if "</think>" not in response:
-            raise ValueError(
-                f"OpenR1-Math/{split}/{index}: assistant trace lacks </think>"
-            )
         converted.append(
             Example(
                 example_id=f"openr1-math-{split}-{row.get('uuid', index)}",
@@ -651,6 +650,49 @@ def limit_source_problems(
     return rows.select(keep), len(accepted)
 
 
+ANSWER_MARKER_SLACK = 4
+
+
+def take_answer_bearing_rows(
+    rows: Any,
+    split: str,
+    converter: str,
+    marker: str,
+    needed: int | None,
+) -> list[Example]:
+    """Convert rows and keep only those whose solution reaches a final answer.
+
+    This is a scope decision, not data cleaning. About three per cent of
+    NuminaMath-CoT solutions never write `\\boxed{}`, and every one of them
+    sampled was an olympiad or AoPS proof ending in `\\blacksquare`: there is no
+    final answer because a proof has none. Such rows cannot be scored by exact
+    match and have no problem-trace boundary for the rationale control to
+    permute, so the panel covers problems with a checkable answer only.
+
+    The row caps run before conversion, so the excluded rows have to be
+    replaced rather than subtracted: converting a slack multiple and cutting
+    back to `needed` keeps the arm compute-matched to its neighbours.
+    """
+    if needed is None:
+        return [
+            example
+            for example in _convert_natural(rows, split, converter)
+            if marker in example.response
+        ]
+    pool = min(len(rows), needed * ANSWER_MARKER_SLACK)
+    kept = [
+        example
+        for example in _convert_natural(rows.select(range(pool)), split, converter)
+        if marker in example.response
+    ]
+    if len(kept) < needed:
+        raise ValueError(
+            f"{split}: {pool} rows yield only {len(kept)} carrying {marker!r},"
+            f" short of the {needed} the arm needs"
+        )
+    return kept[:needed]
+
+
 def _load_natural_from_hub(
     raw: dict[str, Any], dataset_key: str, seed: int
 ) -> dict[str, list[Example]]:
@@ -665,8 +707,17 @@ def _load_natural_from_hub(
         )
         shuffled = train_dataset[source["split"]].shuffle(seed=seed)
         validation_rows = int(spec["validation_rows"])
-        calibration_rows = shuffled.select(range(validation_rows))
-        train_rows = shuffled.select(range(validation_rows, len(shuffled)))
+        # Excluding rows that carry no final answer needs spare rows to replace
+        # them. Reserving those only when the dataset asks for the criterion
+        # keeps every earlier campaign's split boundary unmoved.
+        required_marker = (
+            str(spec["answer_marker"]) if spec.get("answer_bearing_only") else None
+        )
+        reserved = validation_rows * (
+            ANSWER_MARKER_SLACK if required_marker else 1
+        )
+        calibration_rows = shuffled.select(range(min(reserved, len(shuffled))))
+        train_rows = shuffled.select(range(min(reserved, len(shuffled)), len(shuffled)))
         # `train_rows` bounds the training set so one run fits a bounded job.
         # It reshuffles per seed, unlike the test cap, because seeds should see
         # different training data.
@@ -681,7 +732,11 @@ def _load_natural_from_hub(
                 int(groups),
                 int(limit) if limit is not None else None,
             )
-        if limit is not None and int(limit) < len(train_rows):
+        if (
+            required_marker is None
+            and limit is not None
+            and int(limit) < len(train_rows)
+        ):
             train_rows = train_rows.select(range(int(limit)))
         # `test_rows` caps each evaluation set. The subsample uses a fixed seed,
         # not the run seed, so every seed and codec is scored on exactly the
@@ -706,13 +761,32 @@ def _load_natural_from_hub(
             for example in _convert_natural(rows, "test", evaluation["converter"]):
                 example.metadata["evaluator"] = str(evaluation["key"])
                 tests.append(example)
-        splits = {
-            "train": _convert_natural(train_rows, "train", source["converter"]),
-            "calibration": _convert_natural(
-                calibration_rows, "calibration", source["converter"]
-            ),
-            "test": tests,
-        }
+        if required_marker is None:
+            splits = {
+                "train": _convert_natural(train_rows, "train", source["converter"]),
+                "calibration": _convert_natural(
+                    calibration_rows, "calibration", source["converter"]
+                ),
+                "test": tests,
+            }
+        else:
+            splits = {
+                "train": take_answer_bearing_rows(
+                    train_rows,
+                    "train",
+                    source["converter"],
+                    required_marker,
+                    int(limit) if limit is not None else None,
+                ),
+                "calibration": take_answer_bearing_rows(
+                    calibration_rows,
+                    "calibration",
+                    source["converter"],
+                    required_marker,
+                    validation_rows,
+                ),
+                "test": tests,
+            }
         # The behavioural-change lever rewrites what the adapter is taught to
         # emit, on both the training rows and the held-out rows it is scored
         # on. Test prompts are untouched: the model's own output changes, and
