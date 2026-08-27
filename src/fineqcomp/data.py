@@ -150,6 +150,45 @@ def _convert_math(rows: Any, split: str) -> list[Example]:
     ]
 
 
+def _convert_openr1_math(rows: Any, split: str) -> list[Example]:
+    """Use the curated DeepSeek-R1 trace stored in each OpenR1 message pair."""
+    converted = []
+    for index, row in enumerate(rows):
+        messages = list(row["messages"])
+        if (
+            len(messages) != 2
+            or str(messages[0].get("role")) != "user"
+            or str(messages[1].get("role")) != "assistant"
+        ):
+            raise ValueError(
+                f"OpenR1-Math/{split}/{index}: expected one user and one assistant"
+            )
+        response = str(messages[1].get("content", "")).strip()
+        if "</think>" not in response:
+            raise ValueError(
+                f"OpenR1-Math/{split}/{index}: assistant trace lacks </think>"
+            )
+        converted.append(
+            Example(
+                example_id=f"openr1-math-{split}-{row.get('uuid', index)}",
+                prompt=(
+                    "Solve the problem. Show your reasoning and put the final answer "
+                    "in \\boxed{}.\n\n"
+                    f"Problem: {row['problem']}\nAnswer:"
+                ),
+                response="\n" + response,
+                metadata={
+                    "split": split,
+                    "source_problem": str(row.get("uuid", row["problem"])),
+                    "problem_type": str(row.get("problem_type", "")),
+                    "question_type": str(row.get("question_type", "")),
+                    "source": str(row.get("source", "")),
+                },
+            )
+        )
+    return converted
+
+
 def _convert_humaneval(rows: Any, split: str) -> list[Example]:
     return [
         Example(
@@ -311,6 +350,7 @@ _NATURAL_CONVERTERS = {
     "paws": _convert_paws,
     "magicoder": _convert_magicoder,
     "math": _convert_math,
+    "openr1_math": _convert_openr1_math,
     "metamath": _convert_metamath,
     "humaneval": _convert_humaneval,
     "xsum": _convert_xsum,

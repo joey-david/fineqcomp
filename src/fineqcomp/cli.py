@@ -544,7 +544,13 @@ def _preflight(args: argparse.Namespace) -> int:
     if args.tokenizers:
         report["label_token_ids"] = validate_tokenizers(campaign)
     if args.model_smoke:
-        report["model_smoke"] = model_smoke(campaign, runs, args.prepared_root)
+        report["model_smoke"] = model_smoke(
+            campaign,
+            runs,
+            args.prepared_root,
+            model_key=args.model_smoke_model,
+            dataset_key=args.model_smoke_dataset,
+        )
     write_report(args.report, report)
     print(json.dumps(report, indent=2))
     return 0
@@ -830,6 +836,14 @@ def build_parser() -> argparse.ArgumentParser:
     preflight.add_argument("--min-gpu-memory-gib", type=float, default=75.0)
     preflight.add_argument("--tokenizers", action="store_true")
     preflight.add_argument("--model-smoke", action="store_true")
+    preflight.add_argument(
+        "--model-smoke-model",
+        help="model key to use for the two-row model smoke",
+    )
+    preflight.add_argument(
+        "--model-smoke-dataset",
+        help="dataset key to use for the two-row model smoke",
+    )
     preflight.set_defaults(func=_preflight)
 
     cache = subparsers.add_parser(

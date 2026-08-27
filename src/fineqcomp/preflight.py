@@ -238,9 +238,23 @@ def validate_rationale_tokenization(
 
 
 def model_smoke(
-    campaign: dict[str, Any], runs: list[RunSpec], prepared_root: str | Path
+    campaign: dict[str, Any],
+    runs: list[RunSpec],
+    prepared_root: str | Path,
+    *,
+    model_key: str | None = None,
+    dataset_key: str | None = None,
 ) -> dict[str, Any]:
-    run = runs[0]
+    selected = [
+        run
+        for run in runs
+        if (model_key is None or run.model.key == model_key)
+        and (dataset_key is None or run.dataset_key == dataset_key)
+    ]
+    if not selected:
+        filters = {"model": model_key, "dataset": dataset_key}
+        raise ValueError(f"no run matches the model smoke filters: {filters}")
+    run = selected[0]
     session = ModelSession.load(run.model)
     try:
         if campaign["datasets"][str(run.dataset_key)].get("task_type") == "multiple_choice":
@@ -307,6 +321,9 @@ def model_smoke(
         apply_adapter_tensors(session.model, decoded)
         loraquant_path.unlink()
         return {
+            "run_id": run.run_id,
+            "model_key": run.model.key,
+            "dataset_key": run.dataset_key,
             "generation_examples": len(generated),
             "training": training,
             "storage": storage,

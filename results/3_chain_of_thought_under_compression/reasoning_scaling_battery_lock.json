@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "locked_at": "2026-08-27T10:14:19+02:00",
+  "status": "prospective_gates_only_no_scientific_runs_started",
+  "parent_result": {
+    "commit": "592244475757dd4cdb95ceab8757ddd294546ffa",
+    "result": "results/3_chain_of_thought_under_compression/conditional_trace_rate/summary.json",
+    "completed_claim": "On the locked MetaMathQA-to-GSM8K rank-16 grid, correct problem-trace pairing has a positive raw and binary-coded causal effect across all nine model-seed pairs."
+  },
+  "target_claim": "The exact adapter budget needed to retain useful reasoning is set mainly by the reasoning information missing from a given frozen model on a given task, rather than by one universal bits-per-value threshold.",
+  "claim_limits": [
+    "A result must name the model, task family, training rule, adapter shape, and utility threshold.",
+    "A distilled DeepSeek-R1 model is not evidence about the full 671B DeepSeek-R1 model.",
+    "A fit across development cells is not a scaling law until it predicts untouched model and task families.",
+    "Task accuracy does not prove that a written chain of thought is faithful."
+  ],
+  "operational_objects": {
+    "exact_budget_bits": "B(c) is the coded adapter file size in bits at codec c, including its decoding metadata.",
+    "exact_rate": "R(c) = B(c) / P, where P is the number of trained adapter values.",
+    "sft_alignment_effect": "A_sft(c) = utility(aligned problem-trace pairs, c) - utility(the same prompts, answers, and trace multiset with trace bodies permuted, c).",
+    "grpo_credit_effect": "A_grpo(c) = utility(aligned rollout credit, c) - utility(the same fixed prompts, rollouts, rewards, old-policy scores, and advantage multiset with credit vectors permuted, c).",
+    "retention": "rho(c) = A(c) / A(raw), defined only when the raw effect passes its learning and headroom gates.",
+    "target_budget": "B90 is the smallest measured exact budget on the monotone development envelope with rho at least 0.90. R90 = B90 / P. An untouched test split is scored once at the selected budget."
+  },
+  "theory": {
+    "rate_distortion_object": "Let S be a random assignment of matched traces or rewards, Z the exact adapter code, and D the loss of the aligned causal effect. Define R_D(epsilon) = inf I(S; Z | frozen model) over learners whose expected D is at most epsilon. Since a B-bit file carries at most B bits, every such adapter obeys B >= R_D(epsilon).",
+    "controlled_lower_bound": "In a K-way matched trace-retrieval task with error e, a Fano bound gives B >= log2(K) - h2(e) - e log2(K-1), if retained task utility requires recovery of that assignment. The battery tests that last condition with a held-out trace-retrieval probe; it will not infer it from task score alone.",
+    "relative_load_measure": "Before training, score each problem against K length-matched candidate traces with the frozen model. The cross-entropy of the correct trace index, in bits, is L_rel(model, task). It measures prompt-trace information the frozen model lacks, while K, trace length, and task difficulty are held or recorded.",
+    "prediction": "Total B90 should rise with L_rel and task difficulty. Rate R90 may fall when the adapter has more values. Base-model size may act through L_rel; a direct size term is kept only if it improves held-out family prediction.",
+    "nested_fits": [
+      "constant and model-size-only baselines",
+      "log B90 = alpha + beta log L_rel",
+      "log B90 = alpha + beta log L_rel + gamma log base parameters",
+      "the prior fit plus fixed task difficulty and median target-trace tokens"
+    ],
+    "law_gate": "Call it a scaling law only with at least 24 independent model-task strata, at least three model families and four task families, beta positive, at least 10 percent lower leave-one-model-family-out and leave-one-task-family-out error than both baselines, and a final untouched confirmation set with its interval fixed before opening."
+  },
+  "model_panel": {
+    "smoke_config": "configs/reasoning_native_smoke.yaml",
+    "smoke_models": [
+      "qwen3_0_6b_thinking",
+      "qwen3_1_7b_thinking",
+      "qwen3_8b_thinking",
+      "qwen3_32b_thinking",
+      "r1_distill_qwen_1_5b",
+      "r1_distill_qwen_7b",
+      "r1_distill_llama_8b",
+      "r1_0528_qwen3_8b",
+      "r1_distill_qwen_32b"
+    ],
+    "development_anchors": [
+      "qwen3_0_6b_thinking",
+      "qwen3_1_7b_thinking",
+      "qwen3_8b_thinking",
+      "r1_distill_qwen_1_5b",
+      "r1_distill_qwen_7b",
+      "r1_distill_llama_8b"
+    ],
+    "heldout_confirmation": [
+      "qwen3_32b_thinking",
+      "r1_0528_qwen3_8b",
+      "r1_distill_qwen_32b"
+    ],
+    "full_r1": "Deferred to a separate multi-node design. The one-H100 LoRA path cannot load or train the full DeepSeek-R1 model, so no distill result may fill this cell."
+  },
+  "task_panel": {
+    "math_development": [
+      "MetaMathQA traces to GSM8K",
+      "NuminaMath-CoT traces to MATH-500",
+      "OpenR1-Math-220k DeepSeek-R1 traces to MATH-500"
+    ],
+    "code_development": "OpenR1 CodeForces-CoTs, only after a pinned compile-and-test evaluator passes hand-audited rows and a time-limited sandbox smoke.",
+    "controlled_grpo_development": "Reasoning Gym tasks from arithmetic, algebra, logic, algorithmic, and planning or game families, with generator seed and difficulty fixed and each exact verifier tested on right, wrong, malformed, and timed-out answers.",
+    "heldout_task_family": "Chosen only after the development parsers pass, then frozen before any result from that family is scored.",
+    "contamination_gate": "Hash exact and normalized prompts across train, calibration, development, and test. Reject direct overlap. Report near-duplicate rates by source and inspect every high-similarity cross-split pair before use."
+  },
+  "rate_grid": {
+    "base_no_adapter": 0.0,
+    "coarse_target_bits_per_value": [
+      0.0625,
+      0.125,
+      0.25,
+      0.5,
+      0.75,
+      1.0,
+      1.25,
+      1.5,
+      1.75,
+      2.0,
+      3.0,
+      4.0,
+      8.0,
+      16.0
+    ],
+    "reported_axis": "Use measured exact file bits and exact bits per trained value, not target width.",
+    "refinement": "Use development rows to bisect only the first coarse interval that brackets 90 percent retention. Freeze at most two added rates per cell before opening its untouched test rows. If no coarse point brackets the crossing, report a bound instead of extrapolating."
+  },
+  "grpo_extension": {
+    "stage_1_fixed_rollout": "Generate one shared rollout buffer from the frozen start policy. Record prompts, completions, rewards, old log probabilities, token masks, and the trainer-computed group advantages. Train aligned and permuted-credit LoRA arms on that same buffer for the same update count.",
+    "credit_control": "Within length- and reward-spread-matched blocks, give each prompt the full advantage vector from one unrelated prompt. Donor prompts and donor rollouts form bijections. Prompt text, completion text, rewards, token masks, and the global advantage multiset cannot change.",
+    "implementation_owner": "src/fineqcomp/grpo_control.py",
+    "fixed_rollout_gate": {
+      "minimum_prompt_groups": 32,
+      "completions_per_prompt": 4,
+      "maximum_zero_reward_spread_fraction": 0.25,
+      "minimum_changed_advantage_fraction": 0.75,
+      "maximum_mean_donor_token_delta_fraction_of_median": 0.20,
+      "finite_loss_and_gradient_norm": true
+    },
+    "stage_2_on_policy": "After the fixed-rollout causal test passes, run normal on-policy GRPO from the same checkpoint and seeds. Treat this as an end-to-end replication, since policy paths diverge and exact rollout matching no longer holds.",
+    "required_logs": [
+      "reward mean and standard deviation by prompt and verifier",
+      "fraction of prompt groups with zero reward spread",
+      "completion length and clipped-completion fraction",
+      "policy KL, clip ratio, entropy, loss, and gradient norm",
+      "rollout and donor IDs needed to recheck the control"
+    ]
+  },
+  "stages": [
+    {
+      "name": "static_contracts",
+      "gpu_limit_hours": 0,
+      "pass": "Configs, revisions, manifests, parser fixtures, control bijections, answer markers, exact codec round trips, split hashes, and task verifiers all pass."
+    },
+    {
+      "name": "two_row_model_smokes",
+      "gpu_limit_hours": 4.5,
+      "pass": "Each named model loads on one H100, renders its thinking chat template, generates, takes at least one finite adapter update, and round-trips both codec types."
+    },
+    {
+      "name": "new_data_smokes",
+      "gpu_limit_hours": 1.0,
+      "pass": "Only 128 train, 64 calibration, and 64 test rows per new source; every trace boundary and answer parses, at least 99 percent of sampled rows retain answer tokens at the planned maximum length, and a two-row model update finishes."
+    },
+    {
+      "name": "micro_pilots",
+      "gpu_limit_hours": 12.0,
+      "pass": "One seed at anchor cells only. Raw aligned and control arms both improve held-out response loss by at least 0.02 bits per token; the aligned task gain has headroom; rate points straddle the development crossing; GRPO also passes its fixed-rollout gate."
+    },
+    {
+      "name": "replicated_anchors",
+      "gpu_limit_hours": 72.0,
+      "pass": "Three seeds, at least two model families and two task families. The pre-set paired effect interval excludes zero at raw and at one compressed point, with every run passing its own learning, parser, and headroom gates."
+    },
+    {
+      "name": "scaling_grid_and_confirmation",
+      "gpu_limit_hours": 240.0,
+      "pass": "Only cells whose prior stage passed may expand. Fit on development cells, freeze the law and confirmation cells, then open confirmation once."
+    }
+  ],
+  "symmetric_inference": {
+    "positive_result": "Needs a paired effect interval, passed learning and headroom gates, replication across at least two model and task families, and untouched confirmation. A single good model, seed, codec, or benchmark is a pilot only.",
+    "negative_result": "Needs usable raw headroom, successful aligned and control learning, a rate grid that includes no adapter through raw, enough test rows to rule out the minimum effect, valid parsers and rewards, no severe truncation, and replication across at least two model and task families. Otherwise label the cell uninformative, not a limit.",
+    "unexpected_result": "Repeat the exact cell, inspect raw generations and rewards, run a matched seed replacement, vary one suspected artifact at a time, and use a second model-task pairing before changing the global claim.",
+    "multiplicity": "Raw and one compressed paired effect are primary within each frozen family panel. Full curves, per-model crossings, and predictor searches are secondary until confirmed on held-out families."
+  },
+  "stop_rules": [
+    "Do not submit a full grid after any failed upstream gate.",
+    "Do not raise sequence length, sample count, or model size to hide a parser, reward, or no-learning failure.",
+    "Do not use test scores to pick added rate points or scaling predictors.",
+    "Do not pool a failed or missing cell as zero effect.",
+    "Stop a job on non-finite loss, repeated out-of-memory error, more than 5 percent missing answer markers, or more than 10 percent verifier disagreement in the hand audit."
+  ]
+}
