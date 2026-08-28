@@ -34,6 +34,10 @@ uv pip install --python .venv/bin/python \
   'rouge-score==0.1.2'
 
 export PYTHON="$repo_root/.venv/bin/python"
+if [[ "${INSTALL_ONLY:-0}" == 1 ]]; then
+  "$PYTHON" -c 'import importlib.metadata; print(importlib.metadata.version("reasoning-gym"))'
+  exit 0
+fi
 "$PYTHON" -m fineqcomp prepare --config configs/campaign.yaml
 "$PYTHON" -m fineqcomp cache-models --config configs/campaign.yaml
 "$PYTHON" -m fineqcomp preflight --require-dependencies --tokenizers --shards 16 \
