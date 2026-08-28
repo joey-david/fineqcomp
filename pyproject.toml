@@ -25,6 +25,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest==9.1.1"]
+reasoning = ["reasoning-gym==0.1.25"]
 
 [project.scripts]
 fineqcomp = "fineqcomp.progress_cli:main"

@@ -30,7 +30,8 @@ if [[ ! -x .venv/bin/python ]]; then
   uv venv --system-site-packages --python "$module_python" .venv
 fi
 uv pip install --python .venv/bin/python \
-  'math-verify[antlr4_13_2]==0.9.0' 'rouge-score==0.1.2'
+  'math-verify[antlr4_13_2]==0.9.0' 'reasoning-gym==0.1.25' \
+  'rouge-score==0.1.2'
 
 export PYTHON="$repo_root/.venv/bin/python"
 "$PYTHON" -m fineqcomp prepare --config configs/campaign.yaml

@@ -145,6 +145,36 @@ GRPO tests to same-generator, same-difficulty procedural instances. Schema 3
 records the surface score beside every model score. Natural trace corpora stay
 in the battery as external checks.
 
+## The procedural contract rejected two more tempting cells
+
+The provisional `propositional_logic` generator has no target answer, and its
+scorer can give an unrelated string credit while giving its own null answer
+none. Fixed-difficulty `tower_of_hanoi` has only 6 distinct problems at three
+or five disks and 12 at seven disks with four pegs. Neither can supply the
+locked 32 distinct prompt groups.
+
+[`reasoning_task_contract.json`](reasoning_task_contract.json) instead freezes
+arithmetic, algebra, logic, path, and planning families as `chain_sum`,
+`polynomial_equations`, `knights_knaves`, `shortest_path`, and three-jug
+`jugs`. All 15 family--difficulty cells replay exactly, contain 32 distinct
+prompts, score every stored answer as 1, and score empty and unrelated answers
+as 0. The rewards remain task-specific: some valid but incomplete or
+suboptimal answers receive partial credit.
+
+## Native generation needs more than 512 tokens
+
+On the same eight GSM8K prompts, DeepSeek-R1-Distill-Qwen-1.5B hit the
+512-token cap once. That response stopped mid-solution and scored wrong. With
+a 2,048-token ceiling, all eight responses ended with EOS; the clipped case
+finished at 683 tokens and became correct. The two raw reports are in
+[`generation_reports/`](generation_reports/). This selects 2,048 as the
+candidate ceiling for this model, not as a universal value for every native
+reasoner.
+
+[`../reasoning_scaling_battery_amendment_3.json`](../reasoning_scaling_battery_amendment_3.json)
+records both generator rejections, the replacement panel, and the first
+procedural model smoke before its result is opened.
+
 ## Not done here
 
 Stage 2 and the revised stage-3 run are static and smoke evidence only. No

@@ -1,0 +1,104 @@
+{
+  "available_rows": 1319,
+  "dataset_key": "cot_math",
+  "measured_rows": 8,
+  "metrics": {
+    "answer_extracted_fraction": 1.0,
+    "exact_match": 0.5,
+    "examples": 8,
+    "hit_generation_limit_fraction": 0.125,
+    "max_new_tokens": 512,
+    "mean_completion_tokens": 339.125,
+    "terminated_fraction": 0.875
+  },
+  "model_key": "r1_distill_qwen_1_5b",
+  "predictions": [
+    {
+      "completion_tokens": 512,
+      "correct": false,
+      "example_id": "gsm8k-test-13",
+      "expected": "18",
+      "hit_generation_limit": true,
+      "prediction": "2",
+      "response": "First, let's determine how many vacuum cleaners Melanie sold at the green house. She sold a third of her initial stock at the green house.\n\nNext, she sold 2 more at the red house. After these sales, she had some vacuum cleaners left.\n\nThen, she sold half of the remaining vacuum cleaners at the orange house. After this sale, she has 5 vacuum cleaners left.\n\nLet's denote the initial number of vacuum cleaners Melanie had as \\( x \\).\n\nAfter selling a third at the green house, she has \\( \\frac{2}{3}x \\) left.\n\nShe then sold 2 more at the red house, leaving her with \\( \\frac{2}{3}x - 2 \\).\n\nFinally, she sold half of the remaining vacuum cleaners at the orange house, leaving her with \\( \\frac{1}{2} \\times \\left( \\frac{2}{3}x - 2 \\right) = 5 \\).\n\nSolving the equation \\( \\frac{1}{2} \\times \\left( \\frac{2}{3}x - 2 \\right) = 5 \\) will give us the initial number of vacuum cleaners Melanie had.\n</think>\n\nLet's determine how many vacuum cleaners Melanie started with.\n\n**Step 1: Define the variables**\n\nLet \\( x \\) be the initial number of vacuum cleaners Melanie had.\n\n**Step 2: Break down the sales**\n\n1. **Green House:** Melanie sold a third of her vacuum cleaners.\n   \\[\n   \\text{Vacuums sold at green house} = \\frac{1}{3}x\n   \\]\n   Remaining after green house:\n   \\[\n   x - \\frac{1}{3}x = \\frac{2}{3}x\n   \\]\n\n2. **Red House:** She sold 2 more vacuum cleaners.\n   \\[\n   \\text{Vacuums sold at red house} = 2\n   \\]\n   Remaining after red house:\n   \\[\n   \\frac{2}{3}x - 2\n   \\]\n\n3. **Orange House:** She sold half of the remaining vacuum cleaners.\n   \\[\n   \\text{Vacuums sold at orange house} = \\frac{1}{2} \\left( \\frac{2}{3}x - 2 \\right)\n   \\]\n   Remaining after orange house:\n   \\[\n   \\frac{1}{2} \\left( \\frac{2}{",
+      "terminated_with_eos": false
+    },
+    {
+      "completion_tokens": 268,
+      "correct": true,
+      "example_id": "gsm8k-test-91",
+      "expected": "28",
+      "hit_generation_limit": false,
+      "prediction": "28",
+      "response": "First, determine how many pets Cindy has, which is given as 4.\n\nNext, calculate Marcia's pets by adding 2 to Cindy's pets: 4 + 2 = 6.\n\nThen, find Jan's pets by multiplying Marcia's pets by 3: 6 \u00d7 3 = 18.\n\nFinally, add up all the pets: 4 (Cindy) + 6 (Marcia) + 18 (Jan) = 28.\n</think>\n\n**Solution:**\n\nLet's break down the problem step by step.\n\n1. **Cindy's Pets:**\n   - Cindy has **4** pets.\n\n2. **Marcia's Pets:**\n   - Marcia has **2** more pets than Cindy.\n   - So, Marcia has \\( 4 + 2 = 6 \\) pets.\n\n3. **Jan's Pets:**\n   - Jan has **3** times the number of pets as Marcia.\n   - So, Jan has \\( 6 \\times 3 = 18 \\) pets.\n\n4. **Total Pets:**\n   - Add up all the pets: \\( 4 + 6 + 18 = 28 \\).\n\n**Final Answer:**\n\\[\n\\boxed{28}\n\\]",
+      "terminated_with_eos": true
+    },
+    {
+      "completion_tokens": 336,
+      "correct": true,
+      "example_id": "gsm8k-test-201",
+      "expected": "114200",
+      "hit_generation_limit": false,
+      "prediction": "114200",
+      "response": "First, determine the weekly salary increase by calculating 5% of $2000, which equals $100. Adding this to the original salary gives a new weekly salary of $2100.\n\nNext, calculate the total earnings for the year by multiplying the new weekly salary by the number of weeks in a year, which is 52 weeks.\n\nFinally, add the initial $5000 monetary reward to the total earnings from the weekly salary to find the total amount John made that year.\n</think>\n\n**Solution:**\n\n1. **Calculate the weekly salary increase:**\n   \n   \\[\n   \\text{Weekly Increase} = 5\\% \\text{ of } \\$2000 = 0.05 \\times 2000 = \\$100\n   \\]\n\n2. **Determine the new weekly salary:**\n   \n   \\[\n   \\text{New Weekly Salary} = \\$2000 + \\$100 = \\$2100\n   \\]\n\n3. **Calculate the total earnings for the year:**\n   \n   \\[\n   \\text{Total Earnings} = \\$2100 \\times 52 \\text{ weeks} = \\$109,200\n   \\]\n\n4. **Add the initial monetary reward:**\n   \n   \\[\n   \\text{Total Amount} = \\$109,200 + \\$5,000 = \\$114,200\n   \\]\n\n**Final Answer:**\n\n\\[\n\\boxed{114200}\n\\]",
+      "terminated_with_eos": true
+    },
+    {
+      "completion_tokens": 423,
+      "correct": true,
+      "example_id": "gsm8k-test-257",
+      "expected": "5600",
+      "hit_generation_limit": false,
+      "prediction": "5600",
+      "response": "First, determine the total weight of the entire redwood tree by multiplying the number of 10-foot sections by the weight of each section.\n\nNext, calculate the weight of the wood that the termites ate by finding 30% of the total weight.\n\nFinally, subtract the weight of the wood eaten from the total weight to find the remaining weight of the redwood.\n</think>\n\n**Solution:**\n\n1. **Determine the total number of 10-foot sections in the redwood tree:**\n   \n   The tree is 200 feet tall, and each section is 10 feet tall.\n   \n   \\[\n   \\text{Number of sections} = \\frac{200 \\text{ feet}}{10 \\text{ feet/section}} = 20 \\text{ sections}\n   \\]\n\n2. **Calculate the total weight of the redwood tree:**\n   \n   Each section weighs 400 pounds.\n   \n   \\[\n   \\text{Total weight} = 20 \\text{ sections} \\times 400 \\text{ pounds/section} = 8000 \\text{ pounds}\n   \\]\n\n3. **Determine the weight of the wood eaten by the termites:**\n   \n   The termites ate 30% of the total weight.\n   \n   \\[\n   \\text{Weight eaten} = 30\\% \\times 8000 \\text{ pounds} = 0.3 \\times 8000 = 2400 \\text{ pounds}\n   \\]\n\n4. **Calculate the remaining weight of the redwood:**\n   \n   Subtract the weight eaten from the total weight.\n   \n   \\[\n   \\text{Remaining weight} = 8000 \\text{ pounds} - 2400 \\text{ pounds} = 5600 \\text{ pounds}\n   \\]\n\n**Final Answer:**\n\\[\n\\boxed{5600 \\text{ pounds}}\n\\]",
+      "terminated_with_eos": true
+    },
+    {
+      "completion_tokens": 220,
+      "correct": true,
+      "example_id": "gsm8k-test-312",
+      "expected": "32",
+      "hit_generation_limit": false,
+      "prediction": "32",
+      "response": "First, I know that Quinn is 30 years old.\n\nJane is 3 years younger than Quinn, so Jane's age is 30 minus 3, which equals 27.\n\nTrent is 5 years older than Jane, so Trent's age is 27 plus 5, which equals 32.\n</think>\n\n**Solution:**\n\nLet's determine how old Trent is step by step.\n\n1. **Quinn's Age:**\n   - Given that Quinn is 30 years old.\n\n2. **Jane's Age:**\n   - Jane is 3 years younger than Quinn.\n   - Therefore, Jane's age = Quinn's age - 3\n   - Jane's age = 30 - 3 = 27\n\n3. **Trent's Age:**\n   - Trent is 5 years older than Jane.\n   - Therefore, Trent's age = Jane's age + 5\n   - Trent's age = 27 + 5 = 32\n\n**Final Answer:** \\boxed{32}",
+      "terminated_with_eos": true
+    },
+    {
+      "completion_tokens": 186,
+      "correct": false,
+      "example_id": "gsm8k-test-374",
+      "expected": "45",
+      "hit_generation_limit": false,
+      "prediction": "2",
+      "response": "First, Mary has a total of 30 sheep.\n\nShe divides her sheep into two equal groups, each containing 15 sheep.\n\nEach group produces 1 kg of milk per day.\n\nTherefore, the total milk collected daily is 1 kg + 1 kg = 2 kg.\n</think>\n\n**Solution:**\n\nMary has a total of **30 sheep**.\n\nShe divides her sheep into two equal groups:\n- **First group:** 15 sheep\n- **Second group:** 15 sheep\n\nEach group produces:\n- **First group:** 1 kg of milk per day\n- **Second group:** 1 kg of milk per day\n\n**Total milk collected daily:**\n\\[\n1\\ \\text{kg} + 1\\ \\text{kg} = 2\\ \\text{kg}\n\\]\n\n\\[\n\\boxed{2\\ \\text{kg}}\n\\]",
+      "terminated_with_eos": true
+    },
+    {
+      "completion_tokens": 369,
+      "correct": false,
+      "example_id": "gsm8k-test-489",
+      "expected": "-10",
+      "hit_generation_limit": false,
+      "prediction": "-6.7",
+      "response": "First, I need to identify the highest temperatures recorded in each of the three countries: Southlandia, Northlandia, and Midlandia.\n\nSouthlandia has a highest temperature of -48 degrees Fahrenheit.\n\nNorthlandia has a highest temperature of 21 degrees Fahrenheit.\n\nMidlandia has a highest temperature of -3 degrees Fahrenheit.\n\nNext, I'll calculate the total sum of these temperatures by adding them together: -48 + 21 + (-3) = -20 degrees Fahrenheit.\n\nThen, to find the average temperature, I'll divide the total sum by the number of countries, which is 3. So, -20 divided by 3 equals approximately -6.67 degrees Fahrenheit.\n\nFinally, I'll round the result to one decimal place to get the average temperature.\n</think>\n\nTo find the average highest temperature of the three countries, follow these steps:\n\n1. **List the highest temperatures:**\n   - Southlandia: \\(-48^\\circ \\text{F}\\)\n   - Northlandia: \\(21^\\circ \\text{F}\\)\n   - Midlandia: \\(-3^\\circ \\text{F}\\)\n\n2. **Calculate the total sum of these temperatures:**\n   \\[\n   -48 + 21 + (-3) = -20\n   \\]\n\n3. **Divide the total sum by the number of countries (3) to find the average:**\n   \\[\n   \\text{Average} = \\frac{-20}{3} \\approx -6.67^\\circ \\text{F}\n   \\]\n\n4. **Round the result to one decimal place:**\n   \\[\n   \\boxed{-6.7^\\circ \\text{F}}\n   \\]",
+      "terminated_with_eos": true
+    },
+    {
+      "completion_tokens": 399,
+      "correct": false,
+      "example_id": "gsm8k-test-796",
+      "expected": "2880000",
+      "hit_generation_limit": false,
+      "prediction": "26400000",
+      "response": "First, determine the number of employees after each month by adding 20 new hires each month.\n\nAfter the first month: 200 + 20 = 220 employees.\n\nAfter the second month: 220 + 20 = 240 employees.\n\nAfter the third month: 240 + 20 = 260 employees.\n\nNext, calculate the total number of employees over the three months: 200 + 220 + 240 = 660 employees.\n\nThen, calculate the total salary by multiplying the number of employees by the monthly salary: 660 * $4000 = $26,400,000.\n</think>\n\n**Solution:**\n\nLet's break down the problem step by step.\n\n1. **Initial Number of Employees:**\n   - The company starts with **200 employees**.\n\n2. **Monthly Hiring:**\n   - The company hires **20 new employees** every month.\n\n3. **Number of Employees Over Three Months:**\n   - **First Month:** 200 + 20 = **220 employees**\n   - **Second Month:** 220 + 20 = **240 employees**\n   - **Third Month:** 240 + 20 = **260 employees**\n\n4. **Total Number of Employees Over Three Months:**\n   - **Total = 200 + 220 + 240 = 660 employees**\n\n5. **Total Salary Calculation:**\n   - Each employee is paid **\\$4,000** per month.\n   - **Total Salary = 660 employees * \\$4,000 = \\$26,400,000**\n\n**Final Answer:**\n\\boxed{26400000}",
+      "terminated_with_eos": true
+    }
+  ],
+  "requested_rows": 8,
+  "row_sample_seed": 271828,
+  "row_sampling": "uniform",
+  "run_id": "native-model-contract__r1-distill-qwen-1-5b__cot-math__all-linear-r16__s11__de6a50e165",
+  "seed": 11,
+  "split": "test",
+  "study": "native_model_contract"
+}
