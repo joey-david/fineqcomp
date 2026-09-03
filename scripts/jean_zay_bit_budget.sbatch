@@ -14,6 +14,12 @@
 #               sbatch --array=0-0 --export=ALL,MODE=manifest \
 #                 scripts/jean_zay_bit_budget.sbatch
 #
+#   check     prove every cell has a finished adapter to predict and a prepared
+#             corpus to read. Non-zero exit stops the chain before any GPU is
+#             claimed, which is the whole point of running it first.
+#               sbatch --array=0-0 --export=ALL,MODE=check \
+#                 scripts/jean_zay_bit_budget.sbatch
+#
 #   probes    train the 33 capped runs, one receiver per task. One optimizer
 #             update over a 256-row batch, or eight for the ladder.
 #               sbatch --array=0-6%7 --export=ALL,MODE=probes \
@@ -83,6 +89,14 @@ manifest)
   command=("$PYTHON" -m fineqcomp prepare
     --config "$config" --manifest "$manifest" --no-data)
   ;;
+check)
+  # Runs first and holds the chain. This study predicts adapters other
+  # campaigns trained and reads corpora they prepared, so both are things it
+  # can only find. A missing one is silent at submit time and fatal an hour
+  # into the night; here it is a non-zero exit before any GPU is claimed.
+  command=("$PYTHON" -m fineqcomp bit-budget --check
+    --config "$config" --runs-root "$runs_root")
+  ;;
 probes | sweep)
   if ((task < 0 || task >= ${#models[@]})); then
     echo "array task $task is outside 0-$((${#models[@]} - 1))" >&2
@@ -114,7 +128,7 @@ report)
     --out results/5_predicting_the_bit_budget)
   ;;
 *)
-  echo "unknown MODE=$mode; expected manifest, probes, sweep or report" >&2
+  echo "unknown MODE=$mode; expected check, manifest, probes, sweep or report" >&2
   exit 2
   ;;
 esac

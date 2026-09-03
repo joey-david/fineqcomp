@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import json
 import math
+import sys
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -326,10 +327,55 @@ def find_targets(
         if key in wanted and key not in found:
             if (path.parent / "raw_channel.pt").is_file():
                 found[key] = (path.parent, other)
-    missing = sorted(key for key in wanted if key not in found)
-    for key in missing:
-        print(f"no finished adapter to predict for {key}", flush=True)
+    for key in sorted(key for key in wanted if key not in found):
+        # stderr, so a caller can read this command's stdout as JSON.
+        print(f"no finished adapter to predict for {key}", file=sys.stderr,
+              flush=True)
     return list(found.values())
+
+
+def check_panel(
+    config_path: Path, runs_root: Path, prepared_root: Path
+) -> dict[str, Any]:
+    """Prove the panel can run before a single GPU is asked for.
+
+    This study predicts adapters other campaigns trained and reads corpora
+    other campaigns prepared, so both are things it can only find, never make.
+    A missing one is silent at submit time and fatal an hour later, so the
+    chain runs this first and stops on any gap.
+    """
+    from fineqcomp.campaign import expand_campaign
+    from fineqcomp.data import load_natural_dataset
+
+    campaign = load_campaign(config_path)
+    panel = expand_campaign(campaign)
+    paired = {
+        (spec.model.key, str(spec.dataset_key), spec.seed)
+        for _, spec in find_targets(panel, Path(runs_root))
+    }
+    orphans = sorted(
+        {
+            (run.model.key, str(run.dataset_key), run.seed)
+            for run in panel
+            if (run.model.key, str(run.dataset_key), run.seed) not in paired
+        }
+    )
+    unprepared = []
+    for dataset_key, seed in sorted(
+        {(str(run.dataset_key), run.seed) for run in panel}
+    ):
+        try:
+            load_natural_dataset(campaign, dataset_key, seed, Path(prepared_root))
+        except Exception as error:
+            unprepared.append({"dataset": dataset_key, "seed": seed,
+                               "error": repr(error)})
+    return {
+        "probe_cells": len(panel),
+        "cells_with_a_target": len(paired),
+        "orphan_cells": orphans,
+        "unprepared_cells": unprepared,
+        "ready": not orphans and not unprepared,
+    }
 
 
 def sweep_many(
