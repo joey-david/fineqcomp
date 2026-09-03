@@ -308,6 +308,7 @@ def _generation_smoke(args: argparse.Namespace) -> int:
             args.micro_batch_size,
             multiple_choice_labels=[],
             max_new_tokens=args.max_new_tokens,
+            generation_seed=run.seed,
         )
     finally:
         try:
@@ -331,54 +332,6 @@ def _reasoning_task_smoke(args: argparse.Namespace) -> int:
     write_json(args.out, report)
     print(json.dumps(report, indent=2))
     return 0 if report["passed"] else 1
-
-
-def _procedural_generation_smoke(args: argparse.Namespace) -> int:
-    from fineqcomp.modeling import ModelSession
-    from fineqcomp.reasoning_tasks import evaluate_reasoning_generation
-
-    if args.max_new_tokens < 1:
-        raise ValueError("generation smoke max_new_tokens must be positive")
-    campaign = load_campaign(args.config)
-    runs = read_manifest(args.manifest)
-    validate_manifest(runs, campaign)
-    selected = [run for run in runs if run.run_id == args.run_id]
-    if len(selected) != 1:
-        raise ValueError(f"unknown run ID: {args.run_id}")
-    run = selected[0]
-    session = ModelSession.load(run.model)
-    try:
-        metrics, predictions = evaluate_reasoning_generation(
-            session.model,
-            session.tokenizer,
-            run.model,
-            args.families,
-            args.difficulties,
-            args.rows_per_cell,
-            args.seed,
-            args.micro_batch_size,
-            args.max_new_tokens,
-        )
-    finally:
-        try:
-            session.unload()
-        except Exception:
-            pass
-    record = {
-        "schema": 1,
-        "study": "procedural_generation_smoke",
-        "run_id": run.run_id,
-        "model_key": run.model.key,
-        "families": args.families,
-        "difficulties": args.difficulties,
-        "rows_per_cell": args.rows_per_cell,
-        "seed": args.seed,
-        "metrics": metrics,
-        "predictions": predictions,
-    }
-    write_json(args.out, record)
-    print(json.dumps(record, indent=2))
-    return 0
 
 
 def _relative_information(args: argparse.Namespace) -> int:
@@ -847,31 +800,6 @@ def build_parser() -> argparse.ArgumentParser:
     task_smoke.add_argument("--rows", type=int, default=32)
     task_smoke.add_argument("--seed", type=int, default=20_260_828)
     task_smoke.set_defaults(func=_reasoning_task_smoke)
-
-    procedural_generation = subparsers.add_parser(
-        "procedural-generation-smoke",
-        help="measure native-model answer and reward survival on procedural tasks",
-    )
-    procedural_generation.add_argument("--config", required=True)
-    procedural_generation.add_argument("--manifest", required=True)
-    procedural_generation.add_argument("--run-id", required=True)
-    procedural_generation.add_argument("--prepared-root", default="prepared")
-    procedural_generation.add_argument("--out", required=True)
-    procedural_generation.add_argument(
-        "--families",
-        nargs="+",
-        default=["arithmetic", "algebra", "logic", "algorithmic", "planning"],
-    )
-    procedural_generation.add_argument(
-        "--difficulties", nargs="+", default=["medium"]
-    )
-    procedural_generation.add_argument("--rows-per-cell", type=int, default=8)
-    procedural_generation.add_argument("--seed", type=int, default=20_260_828)
-    procedural_generation.add_argument("--micro-batch-size", type=int, default=1)
-    procedural_generation.add_argument(
-        "--max-new-tokens", type=int, required=True
-    )
-    procedural_generation.set_defaults(func=_procedural_generation_smoke)
 
     relative_report = subparsers.add_parser(
         "relative-information-report",

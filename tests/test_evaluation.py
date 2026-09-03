@@ -11,6 +11,7 @@ from fineqcomp.evaluation import (
     evaluate_multiple_choice,
     evaluate_natural,
     generate_response_records,
+    repeated_ngram_fraction,
 )
 
 
@@ -142,6 +143,69 @@ def test_generation_records_distinguish_eos_from_hitting_the_limit():
     assert records[0]["completion_tokens"] == 2
     assert records[1]["hit_generation_limit"] is True
     assert records[1]["completion_tokens"] == 3
+
+
+def test_generation_uses_the_seeded_model_decoding_contract():
+    class Tokenizer:
+        padding_side = "right"
+        pad_token_id = 0
+        eos_token_id = 2
+
+        def __call__(self, prompts, return_tensors, padding):
+            return {
+                "input_ids": torch.tensor([[7, 8]] * len(prompts)),
+                "attention_mask": torch.ones((len(prompts), 2), dtype=torch.long),
+            }
+
+        def decode(self, tokens, skip_special_tokens):
+            return " ".join(map(str, tokens.tolist()))
+
+    class Model(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.embedding = torch.nn.Embedding(10, 2)
+            self.generation_kwargs = None
+
+        def get_input_embeddings(self):
+            return self.embedding
+
+        def generate(self, input_ids, **kwargs):
+            self.generation_kwargs = kwargs
+            sampled = torch.randint(3, 9, (len(input_ids), 1))
+            eos = torch.full((len(input_ids), 1), 2)
+            return torch.cat([input_ids, sampled, eos], dim=1)
+
+    model = Model()
+    spec = ModelSpec(
+        "model",
+        "model",
+        "revision",
+        "bf16",
+        generation_profile="qwen3_thinking",
+    )
+    examples = [Example("a", "p", "r", {})]
+
+    first = generate_response_records(
+        model, Tokenizer(), examples, spec, 1, 3, generation_seed=11
+    )
+    second = generate_response_records(
+        model, Tokenizer(), examples, spec, 1, 3, generation_seed=11
+    )
+
+    assert first == second
+    assert model.generation_kwargs["do_sample"] is True
+    assert model.generation_kwargs["temperature"] == 0.6
+    assert model.generation_kwargs["top_p"] == 0.95
+    assert model.generation_kwargs["top_k"] == 20
+    assert model.generation_kwargs["min_p"] == 0.0
+
+
+def test_repetition_metric_separates_a_loop_from_short_normal_text():
+    normal = "First add four and six. Then add eighteen. The answer is twenty eight."
+    loop = " ".join(["The answer is 28."] * 40)
+
+    assert repeated_ngram_fraction(normal) == 0.0
+    assert repeated_ngram_fraction(loop) > 0.8
 
 
 def test_exact_string_normaliser_cuts_the_continuation():

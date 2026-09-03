@@ -103,6 +103,22 @@ def render_prompt(tokenizer: Any, prompt: str, model_spec: ModelSpec) -> str:
         )
 
 
+def generation_policy(model_spec: ModelSpec) -> dict[str, Any]:
+    """Resolve a frozen model-card decoding profile for Transformers."""
+    profiles = {
+        "greedy": {"do_sample": False},
+        "qwen3_thinking": {
+            "do_sample": True,
+            "temperature": 0.6,
+            "top_p": 0.95,
+            "top_k": 20,
+            "min_p": 0.0,
+        },
+        "deepseek_r1": {"do_sample": True, "temperature": 0.6, "top_p": 0.95},
+    }
+    return dict(profiles[model_spec.generation_profile])
+
+
 def validate_single_token_labels(tokenizer: Any, labels: list[str]) -> list[int]:
     ids = []
     for label in labels:

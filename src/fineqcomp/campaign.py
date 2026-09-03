@@ -89,6 +89,8 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                             "test_rows": dataset_spec.get("test_rows"),
                             "epochs": training_key,
                         }
+                        if model.generation_profile != "greedy":
+                            payload["generation_profile"] = model.generation_profile
                         # Two arms that differ only in how many distinct source
                         # problems their rows cover are different runs; without
                         # this they hash alike and the second silently reuses

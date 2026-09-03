@@ -372,6 +372,7 @@ def evaluate_reasoning_generation(
         model_spec,
         batch_size,
         max_new_tokens,
+        seed,
     )
     predictions = []
     grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)

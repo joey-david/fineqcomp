@@ -14,6 +14,7 @@ AdapterMethod = Literal["seeded_b", "full_lora"]
 CodecMethod = Literal["uniform", "loraquant"]
 Quantizer = Literal["midrise", "midtread"]
 RunKind = Literal["natural"]
+GenerationProfile = Literal["greedy", "qwen3_thinking", "deepseek_r1"]
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,7 @@ class ModelSpec:
     backbone: Backbone
     chat: bool = False
     disable_thinking: bool = False
+    generation_profile: GenerationProfile = "greedy"
 
 
 @dataclass(frozen=True)
@@ -135,6 +137,11 @@ def load_campaign(path: str | Path) -> dict[str, Any]:
     codecs = raw.get("codecs")
     if not isinstance(codecs, dict) or not codecs:
         raise ValueError("codecs must be a non-empty mapping")
+    profiles = {"greedy", "qwen3_thinking", "deepseek_r1"}
+    for key, model in raw["models"].items():
+        profile = str(model.get("generation_profile", "greedy"))
+        if profile not in profiles:
+            raise ValueError(f"model {key}: unknown generation profile {profile!r}")
     for key, codec in codecs.items():
         if codec.get("method") == "uniform":
             bits = int(codec.get("bits", 0))
