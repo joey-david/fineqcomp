@@ -56,6 +56,15 @@ class TrainingSpec:
     # Score the held-out split every N optimizer updates as well as at each
     # epoch end, so best-state restore has fine-grained candidates.
     eval_every_updates: int | None = None
+    # Hard cap on optimizer updates, whatever the epoch count implies. Two
+    # things need it: an arm comparison that varies the training rows, which
+    # has to hold the update budget fixed and cannot reach one budget through
+    # epochs alone when the row counts differ by orders of magnitude; and the
+    # capped probes of the bit-budget study, where a run of one update over a
+    # large batch is the correction the corpus asks of the frozen model. The
+    # cosine schedule is built over the capped total, so a capped run still
+    # ends on a decayed learning rate.
+    max_updates: int | None = None
     # Whether to end on the best scored state or on the last one. Turning it
     # off separates logging from selection: a study can watch the loss curve
     # without the raw adapter becoming a maximum over checkpoints scored on

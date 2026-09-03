@@ -64,6 +64,33 @@ def test_training_runs_partial_accumulation_group_and_records_cost(tmp_path):
     assert (tmp_path / "training.jsonl").read_text().count("\n") == 1
 
 
+def test_update_cap_holds_arms_of_different_size_to_one_budget(tmp_path):
+    """Row counts two orders of magnitude apart must spend the same descent."""
+    budgets = []
+    for rows in (4, 40):
+        model = TinyLM()
+        examples = [Example(str(index), f"p{index}", " a", {}) for index in range(rows)]
+        metrics = train_adapter(
+            model,
+            Tokenizer(),
+            examples,
+            examples[:2],
+            ModelSpec("tiny", "tiny", "local", "bf16"),
+            TrainingSpec(
+                epochs=8,
+                learning_rate=1e-3,
+                effective_batch_size=4,
+                micro_batch_size=2,
+                max_length=16,
+                max_updates=6,
+            ),
+            seed=11,
+            log_path=tmp_path / f"training-{rows}.jsonl",
+        )
+        budgets.append(int(metrics["optimizer_updates"]))
+    assert budgets == [6, 6]
+
+
 def test_checkpoint_count_does_not_depend_on_epoch_count():
     """Arms reaching the same updates by different epoch counts must tie.
 

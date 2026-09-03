@@ -363,7 +363,9 @@ def test_a_response_transform_forces_its_own_baseline():
     def run(key):
         return SimpleNamespace(
             dataset_key=key, seed=11,
-            model=SimpleNamespace(key="mistral_7b_base", backbone="nf4"),
+            model=SimpleNamespace(
+                key="mistral_7b_base", backbone="nf4", generation_profile="greedy"
+            ),
             training=SimpleNamespace(label_span="all"),
         )
 
