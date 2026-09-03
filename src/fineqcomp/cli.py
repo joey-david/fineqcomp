@@ -416,7 +416,15 @@ def _bit_budget(args: argparse.Namespace) -> int:
     """Sweep the budget surface of finished runs, probes and targets alike."""
     from fineqcomp.budget_probe import sweep_many
 
-    directories = sorted(Path(path) for path in args.runs)
+    if args.check:
+        from fineqcomp.budget_probe import check_panel
+
+        report = check_panel(
+            Path(args.config), Path(args.runs_root), Path(args.prepared_root)
+        )
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return 0 if report["ready"] else 1
+    directories = sorted(Path(path) for path in args.runs or ())
     if not directories:
         print(json.dumps({"swept": 0}))
         return 0
@@ -870,7 +878,13 @@ def build_parser() -> argparse.ArgumentParser:
         "bit-budget",
         help="sweep the rank-by-precision budget surface of one adapter",
     )
-    budget.add_argument("--runs", nargs="+", required=True, help="run directories")
+    budget.add_argument("--runs", nargs="+", help="run directories")
+    budget.add_argument("--runs-root", default="runs")
+    budget.add_argument(
+        "--check",
+        action="store_true",
+        help="prove every panel cell has a target and prepared data, then exit",
+    )
     budget.add_argument("--config", default="configs/bit_budget.yaml")
     budget.add_argument("--prepared-root", default="prepared")
     budget.add_argument("--out", default="reports/bit_budget")
