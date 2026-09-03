@@ -1,0 +1,11 @@
+{
+  "best_probe": {},
+  "bracketed_runs": 12,
+  "p1_budgets_are_bracketed": true,
+  "p2_probe_orders_the_arms": false,
+  "p3_identity_beats_the_corpus_mean": false,
+  "p4_probe_orders_receivers_on_one_corpus": false,
+  "passed": false,
+  "scores": [],
+  "swept_runs": 12
+}

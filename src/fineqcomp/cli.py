@@ -18,6 +18,7 @@ from fineqcomp.campaign import (
     write_manifest,
 )
 from fineqcomp.config import load_campaign
+from fineqcomp.rank_frontier import DEFAULT_RATES
 from fineqcomp.data import prepare_all_natural
 from fineqcomp.dataset_info import measure_arms
 from fineqcomp.rstar import report as rstar_report
@@ -70,6 +71,9 @@ def _run(args: argparse.Namespace) -> int:
     campaign = load_campaign(args.config)
     runs = read_manifest(args.manifest)
     validate_manifest(runs, campaign)
+    if args.studies:
+        study_keys = set(args.studies)
+        runs = [run for run in runs if run.study in study_keys]
     if args.models:
         model_keys = set(args.models)
         runs = [run for run in runs if run.model.key in model_keys]
@@ -408,6 +412,46 @@ def _relative_information_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def _bit_budget(args: argparse.Namespace) -> int:
+    """Sweep the budget surface of finished runs, probes and targets alike."""
+    from fineqcomp.budget_probe import sweep_many
+
+    directories = sorted(Path(path) for path in args.runs)
+    if not directories:
+        print(json.dumps({"swept": 0}))
+        return 0
+    rates = tuple(
+        (int(rung.split(":")[0]), float(rung.split(":")[1])) for rung in args.rates
+    )
+    summaries = sweep_many(
+        directories,
+        Path(args.config),
+        Path(args.prepared_root),
+        Path(args.out),
+        ranks=tuple(args.ranks),
+        rates=rates,
+        models=tuple(args.models or ()),
+        with_targets=args.with_targets,
+        force=args.force,
+    )
+    print(json.dumps(summaries, indent=2, sort_keys=True))
+    return 0
+
+
+def _bit_budget_report(args: argparse.Namespace) -> int:
+    import yaml
+
+    from fineqcomp.budget_probe import write_budget_report
+
+    gates = yaml.safe_load(Path(args.config).read_text())["gates"]
+    report = write_budget_report(
+        Path(args.sweeps), Path(args.runs_root), Path(args.out), gates
+    )
+    print(json.dumps({key: value for key, value in report.items() if key != "scores"},
+                     indent=2, sort_keys=True))
+    return 0 if report["passed"] else 1
+
+
 def _rank_frontier(args: argparse.Namespace) -> int:
     from fineqcomp.rank_frontier import frontier, sweep_run
 
@@ -679,6 +723,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--shards", type=int, default=2)
     run.add_argument("--worker", type=int)
     run.add_argument("--worker-weights", type=float, nargs="+")
+    run.add_argument("--studies", nargs="+")
     run.add_argument("--models", nargs="+")
     run.add_argument("--adapters", nargs="+")
     run.add_argument("--datasets", nargs="+")
@@ -820,6 +865,47 @@ def build_parser() -> argparse.ArgumentParser:
         help="drop measured cells whose run has no bracketed R*",
     )
     relative_report.set_defaults(func=_relative_information_report)
+
+    budget = subparsers.add_parser(
+        "bit-budget",
+        help="sweep the rank-by-precision budget surface of one adapter",
+    )
+    budget.add_argument("--runs", nargs="+", required=True, help="run directories")
+    budget.add_argument("--config", default="configs/bit_budget.yaml")
+    budget.add_argument("--prepared-root", default="prepared")
+    budget.add_argument("--out", default="reports/bit_budget")
+    budget.add_argument("--ranks", type=int, nargs="+", default=[1, 2, 4, 8, 16])
+    budget.add_argument(
+        "--rates",
+        nargs="+",
+        default=[f"{bits}:{blend}" for bits, blend in DEFAULT_RATES],
+        help="rungs as bits:blend, e.g. 1:0.5 for one and a half bits",
+    )
+    budget.add_argument(
+        "--models",
+        nargs="+",
+        help="sweep only these receivers; the shard unit, because loading a"
+        " receiver costs more than sweeping one of its adapters",
+    )
+    budget.add_argument(
+        "--with-targets",
+        action="store_true",
+        help="also sweep the finished run each capped probe is predicting",
+    )
+    budget.add_argument("--force", action="store_true")
+    budget.set_defaults(func=_bit_budget)
+
+    budget_report = subparsers.add_parser(
+        "bit-budget-report",
+        help="join probes to finished runs and read the pre-registered gates",
+    )
+    budget_report.add_argument("--sweeps", default="reports/bit_budget")
+    budget_report.add_argument("--runs-root", default="runs")
+    budget_report.add_argument("--config", default="configs/bit_budget.yaml")
+    budget_report.add_argument(
+        "--out", default="results/5_predicting_the_bit_budget"
+    )
+    budget_report.set_defaults(func=_bit_budget_report)
 
     rank = subparsers.add_parser(
         "rank-frontier",

@@ -128,6 +128,10 @@ def train_adapter(
     )
     updates_per_epoch = math.ceil(len(loader) / accumulation)
     total_updates = updates_per_epoch * spec.epochs
+    if spec.max_updates is not None:
+        total_updates = min(total_updates, int(spec.max_updates))
+    if total_updates < 1:
+        raise ValueError("training was asked for fewer than one optimizer update")
     warmup_steps = int(total_updates * spec.warmup_ratio)
     from transformers import get_cosine_schedule_with_warmup
 
@@ -205,10 +209,18 @@ def train_adapter(
                     # the duplicated arms a better checkpoint for free, biased
                     # along the axis the experiment is testing.
                     cadence = spec.eval_every_updates
-                    if (cadence and update % cadence == 0) or update == total_updates:
+                    if (cadence and update % cadence == 0) or update >= total_updates:
                         checkpoint(
                             epoch + 1, running_loss / max(micro_steps, 1), log
                         )
+                    # The cap is what lets arms with 128 and 10,128 rows spend
+                    # the same budget. Without it the larger arm would buy both
+                    # more data and more gradient steps, and the experiment
+                    # could not tell the two apart.
+                    if update >= total_updates:
+                        break
+            if update >= total_updates:
+                break
     if best_state is None:
         raise RuntimeError("training did not produce a validation state")
     if spec.restore_best:
