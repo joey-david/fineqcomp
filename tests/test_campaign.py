@@ -91,6 +91,16 @@ def test_native_reasoning_smoke_is_one_seed_with_a_wide_rate_grid():
     assert {run.seed for run in runs} == {11}
     assert {run.dataset_key for run in runs} == {"cot_math"}
     assert all(run.model.chat and not run.model.disable_thinking for run in runs)
+    assert {
+        run.model.generation_profile
+        for run in runs
+        if run.model.key.startswith("qwen3_")
+    } == {"qwen3_thinking"}
+    assert {
+        run.model.generation_profile
+        for run in runs
+        if run.model.key.startswith("r1_")
+    } == {"deepseek_r1"}
     assert {run.model.key for run in runs} == set(campaign["models"])
     rates = {
         float(codec["bits"]) + float(codec.get("blend", 0.0))

@@ -25,7 +25,11 @@ from fineqcomp.codec import (
 from fineqcomp.config import CodecSpec, RunSpec
 from fineqcomp.data import Example, load_natural_dataset
 from fineqcomp.evaluation import evaluate_natural, write_predictions
-from fineqcomp.modeling import ModelSession, validate_single_token_labels
+from fineqcomp.modeling import (
+    ModelSession,
+    generation_policy,
+    validate_single_token_labels,
+)
 from fineqcomp.training import causal_nll, train_adapter
 
 
@@ -230,6 +234,8 @@ class RunEngine:
         generation_limit = spec.get("evaluation_max_new_tokens")
         if generation_limit is not None:
             evaluations = f"{evaluations}-gen{int(generation_limit)}"
+        if run.model.generation_profile != "greedy":
+            evaluations = f"{evaluations}-dec{run.model.generation_profile}"
         # A study that splits the response by span needs baseline numbers for
         # each span. Those go in a key of their own rather than growing the
         # shared record in place, so a half-written rewrite can never be
@@ -262,6 +268,7 @@ class RunEngine:
             max_new_tokens=self.campaign["datasets"][str(run.dataset_key)].get(
                 "evaluation_max_new_tokens"
             ),
+            generation_seed=run.seed,
         )
 
     def _screening(self, run: RunSpec, baseline: dict[str, Any]) -> dict[str, Any]:

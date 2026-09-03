@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import re
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,7 @@ from fineqcomp.sandbox import run_humaneval_tests
 from fineqcomp.modeling import (
     inference_autocast,
     model_device,
+    generation_policy,
     render_prompt,
     validate_single_token_labels,
 )
@@ -180,6 +182,18 @@ def _normalize_number(text: str) -> str | None:
     return str(int(number)) if number.is_integer() else str(number)
 
 
+def repeated_ngram_fraction(text: str, width: int = 8) -> float:
+    """Fraction of word or punctuation n-grams repeated after first use."""
+    if width < 1:
+        raise ValueError("repetition n-gram width must be positive")
+    tokens = re.findall(r"\w+|[^\w\s]", text.lower())
+    count = len(tokens) - width + 1
+    if count <= 0:
+        return 0.0
+    ngrams = [tuple(tokens[start : start + width]) for start in range(count)]
+    return 1.0 - len(set(ngrams)) / len(ngrams)
+
+
 @torch.no_grad()
 def generate_response_records(
     model: torch.nn.Module,
@@ -188,53 +202,71 @@ def generate_response_records(
     model_spec: ModelSpec,
     batch_size: int,
     max_new_tokens: int,
+    generation_seed: int | None = None,
 ) -> list[dict[str, Any]]:
     device = model_device(model)
     old_padding = tokenizer.padding_side
     tokenizer.padding_side = "left"
     outputs: list[dict[str, Any]] = []
     model.eval()
+    cuda_devices = (
+        list(range(torch.cuda.device_count())) if torch.cuda.is_available() else []
+    )
+    rng = (
+        torch.random.fork_rng(devices=cuda_devices)
+        if generation_seed is not None
+        else nullcontext()
+    )
     try:
-        for batch in _batched(examples, batch_size):
-            prompts = [
-                render_prompt(tokenizer, row.prompt, model_spec) for row in batch
-            ]
-            encoded = tokenizer(prompts, return_tensors="pt", padding=True)
-            encoded = {key: value.to(device) for key, value in encoded.items()}
-            with inference_autocast(model, device):
-                generated = model.generate(
-                    **encoded,
-                    do_sample=False,
-                    max_new_tokens=max_new_tokens,
-                    pad_token_id=tokenizer.pad_token_id,
-                    eos_token_id=tokenizer.eos_token_id,
-                    use_cache=True,
-                )
-            prompt_width = encoded["input_ids"].shape[1]
-            for row in generated:
-                completion = row[prompt_width:]
-                eos = tokenizer.eos_token_id
-                eos_positions = (
-                    (completion == int(eos)).nonzero(as_tuple=False).flatten()
-                    if eos is not None
-                    else torch.empty(0, dtype=torch.long, device=completion.device)
-                )
-                terminated = bool(len(eos_positions))
-                token_count = (
-                    int(eos_positions[0].item()) + 1
-                    if terminated
-                    else int(completion.numel())
-                )
-                outputs.append(
-                    {
-                        "response": tokenizer.decode(
-                            completion, skip_special_tokens=True
-                        ),
-                        "completion_tokens": token_count,
-                        "terminated_with_eos": terminated,
-                        "hit_generation_limit": not terminated,
-                    }
-                )
+        with rng:
+            if generation_seed is not None:
+                torch.manual_seed(generation_seed)
+            for batch in _batched(examples, batch_size):
+                prompts = [
+                    render_prompt(tokenizer, row.prompt, model_spec) for row in batch
+                ]
+                encoded = tokenizer(prompts, return_tensors="pt", padding=True)
+                encoded = {key: value.to(device) for key, value in encoded.items()}
+                with inference_autocast(model, device):
+                    generated = model.generate(
+                        **encoded,
+                        **generation_policy(model_spec),
+                        max_new_tokens=max_new_tokens,
+                        pad_token_id=tokenizer.pad_token_id,
+                        eos_token_id=tokenizer.eos_token_id,
+                        use_cache=True,
+                    )
+                prompt_width = encoded["input_ids"].shape[1]
+                for row in generated:
+                    completion = row[prompt_width:]
+                    eos = tokenizer.eos_token_id
+                    eos_positions = (
+                        (completion == int(eos)).nonzero(as_tuple=False).flatten()
+                        if eos is not None
+                        else torch.empty(
+                            0, dtype=torch.long, device=completion.device
+                        )
+                    )
+                    terminated = bool(len(eos_positions))
+                    token_count = (
+                        int(eos_positions[0].item()) + 1
+                        if terminated
+                        else int(completion.numel())
+                    )
+                    response = tokenizer.decode(
+                        completion, skip_special_tokens=True
+                    )
+                    outputs.append(
+                        {
+                            "response": response,
+                            "completion_tokens": token_count,
+                            "terminated_with_eos": terminated,
+                            "hit_generation_limit": not terminated,
+                            "repeated_8gram_fraction": repeated_ngram_fraction(
+                                response
+                            ),
+                        }
+                    )
     finally:
         tokenizer.padding_side = old_padding
     return outputs
@@ -247,6 +279,7 @@ def generate_responses(
     model_spec: ModelSpec,
     batch_size: int,
     max_new_tokens: int,
+    generation_seed: int | None = None,
 ) -> list[str]:
     """Compatibility wrapper for callers that need response text only."""
     return [
@@ -258,6 +291,7 @@ def generate_responses(
             model_spec,
             batch_size,
             max_new_tokens,
+            generation_seed,
         )
     ]
 
@@ -266,6 +300,22 @@ def _generation_metrics(
     records: list[dict[str, Any]], max_new_tokens: int
 ) -> dict[str, float | int]:
     rows = max(len(records), 1)
+    clipped = [record for record in records if record["hit_generation_limit"]]
+    terminated = [record for record in records if record["terminated_with_eos"]]
+
+    def mean_repetition(rows: list[dict[str, Any]]) -> float | None:
+        if not rows:
+            return None
+        return sum(
+            float(
+                row.get(
+                    "repeated_8gram_fraction",
+                    repeated_ngram_fraction(str(row.get("response", ""))),
+                )
+            )
+            for row in rows
+        ) / len(rows)
+
     return {
         "max_new_tokens": max_new_tokens,
         "terminated_fraction": sum(
@@ -280,6 +330,9 @@ def _generation_metrics(
             int(record["completion_tokens"]) for record in records
         )
         / rows,
+        "mean_repeated_8gram_fraction": mean_repetition(records),
+        "clipped_mean_repeated_8gram_fraction": mean_repetition(clipped),
+        "terminated_mean_repeated_8gram_fraction": mean_repetition(terminated),
     }
 
 
@@ -292,6 +345,7 @@ def evaluate_natural(
     batch_size: int,
     multiple_choice_labels: list[str] | None = None,
     max_new_tokens: int | None = None,
+    generation_seed: int | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     evaluators = []
     for example in examples:
@@ -316,6 +370,7 @@ def evaluate_natural(
                 batch_size,
                 multiple_choice_labels,
                 max_new_tokens,
+                generation_seed,
             )
             results[evaluator] = metrics
             all_predictions.extend(
@@ -348,10 +403,18 @@ def evaluate_natural(
     if max_tokens < 1:
         raise ValueError("max_new_tokens must be positive")
     generation_records = generate_response_records(
-        model, tokenizer, examples, model_spec, batch_size, max_tokens
+        model,
+        tokenizer,
+        examples,
+        model_spec,
+        batch_size,
+        max_tokens,
+        generation_seed,
     )
     responses = [str(record["response"]) for record in generation_records]
     generation_metrics = _generation_metrics(generation_records, max_tokens)
+    generation_metrics["generation_policy"] = generation_policy(model_spec)
+    generation_metrics["generation_seed"] = generation_seed
     predictions = []
     if dataset_key == "gsm8k":
         correct = 0

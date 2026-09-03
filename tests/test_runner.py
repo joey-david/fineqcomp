@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from contextlib import contextmanager
+from dataclasses import replace
 from types import SimpleNamespace
 
 from fineqcomp import runner
@@ -73,6 +74,36 @@ def test_generation_limit_gets_its_own_baseline_key():
     assert original != revised
     assert "gen2048" in revised
     assert expand_campaign(changed)[0].run_id != run.run_id
+
+
+def test_sampled_decoding_gets_its_own_run_and_baseline_keys():
+    campaign = load_campaign("configs/reasoning_native_smoke.yaml")
+    run = expand_campaign(campaign)[0]
+    changed_run = replace(
+        run,
+        model=replace(run.model, generation_profile="deepseek_r1"),
+    )
+
+    assert RunEngine(campaign)._baseline_key(run) != RunEngine(
+        campaign
+    )._baseline_key(changed_run)
+
+    changed = {
+        **campaign,
+        "models": {
+            **campaign["models"],
+            run.model.key: {
+                **campaign["models"][run.model.key],
+                "generation_profile": "deepseek_r1",
+            },
+        },
+    }
+    changed_manifest_run = next(
+        candidate
+        for candidate in expand_campaign(changed)
+        if candidate.model.key == run.model.key
+    )
+    assert changed_manifest_run.run_id != run.run_id
 
 
 def test_saturated_natural_cell_stops_before_adapter_training(tmp_path, monkeypatch):
