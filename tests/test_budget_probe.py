@@ -116,6 +116,7 @@ def _budget_row(model, dataset, kind, bits, seed=11, updates=None):
         "seed": seed,
         "kind": kind,
         "probe_updates": updates,
+        "probe_adapter": "all_linear_r16",
         "cells": 45,
         "budget_bracketed": True,
         "budget_file_bits": bits * 1000,
@@ -158,12 +159,13 @@ def test_the_score_is_the_identity_line_and_not_a_correlation():
             "model_key": model,
             "dataset_key": "code",
             "probe_updates": 1,
+            "probe_adapter": "all_linear_r16",
             "probe_bits_per_value": value + 1.0,
             "target_bits_per_value": value,
         }
         for model, value in (("a", 0.4), ("b", 0.6), ("c", 0.8))
     ]
-    score = score_probe(paired, 1)
+    score = score_probe(paired, 1, "all_linear_r16")
     assert score["spearman"] == pytest.approx(1.0)
     assert score["identity_rmse"] == pytest.approx(1.0)
     assert score["receiver_pair_sign_accuracy"] == pytest.approx(1.0)
@@ -176,6 +178,7 @@ def test_gates_reject_a_probe_that_ranks_without_predicting():
             "model_key": model,
             "dataset_key": "code",
             "probe_updates": 1,
+            "probe_adapter": "all_linear_r16",
             "probe_bits_per_value": value + 1.0,
             "target_bits_per_value": value,
         }
@@ -195,6 +198,7 @@ def test_gates_accept_a_probe_that_lands_on_the_identity_line():
             "model_key": model,
             "dataset_key": "code",
             "probe_updates": 1,
+            "probe_adapter": "all_linear_r16",
             "probe_bits_per_value": value + 0.01,
             "target_bits_per_value": value,
         }
@@ -416,3 +420,66 @@ def test_a_probe_no_wider_than_its_target_is_left_alone(monkeypatch):
     assert fitted is tensors
     assert ceiling == 500.0
     assert engine.calls == 0
+
+
+def test_two_containers_at_one_update_count_are_two_arms(tmp_path):
+    """A repair and the thing it repairs share an update count and differ only
+    in the container, so pooling them would average the two and show neither."""
+    rows = [
+        _budget_row("a", "code", "trained", 0.8),
+        {**_budget_row("a", "code", "probe", 0.7, updates=1)},
+        {
+            **_budget_row("a", "code", "probe", 0.5, updates=1),
+            "run_id": "a-code-probe-wide",
+            "probe_adapter": "probe_wide_r64",
+        },
+    ]
+    paired = pair_budgets(rows)
+    assert len(paired) == 2
+    assert {row["probe_adapter"] for row in paired} == {
+        "all_linear_r16",
+        "probe_wide_r64",
+    }
+    narrow = score_probe(paired, 1, "all_linear_r16")
+    wide = score_probe(paired, 1, "probe_wide_r64")
+    assert narrow["arms"] == 1 and wide["arms"] == 1
+    assert narrow["identity_rmse"] != wide["identity_rmse"]
+
+
+def test_a_panel_missing_cells_cannot_pass_the_first_gate():
+    """A sweep that failed is absent from the rows, not present and failing, so
+    without the expected set the gates are read on a shrunken panel."""
+    rows = [_budget_row("a", "code", "trained", 0.8)]
+    paired = [
+        {
+            "model_key": model,
+            "dataset_key": "code",
+            "probe_updates": 1,
+            "probe_adapter": "all_linear_r16",
+            "probe_bits_per_value": value + 0.01,
+            "target_bits_per_value": value,
+        }
+        for model, value in (("a", 0.4), ("b", 0.6), ("c", 0.8))
+    ]
+    complete = check_gates(rows, paired, CONFIG["gates"])
+    assert complete["passed"]
+    short = check_gates(
+        rows, paired, CONFIG["gates"], expected={"a-code-trained-11", "never-swept"}
+    )
+    assert short["missing_probes"] == ["never-swept"]
+    assert not short["p1_budgets_are_bracketed"]
+    assert not short["passed"]
+
+
+def test_a_probe_seed_without_a_matching_target_seed_is_dropped():
+    """Averaging a probe's seeds against a target's separately would turn a
+    missing seed into a comparison of two different populations."""
+    rows = [
+        _budget_row("a", "code", "trained", 0.8, seed=11),
+        _budget_row("a", "code", "probe", 0.7, seed=11, updates=1),
+        _budget_row("a", "code", "probe", 0.2, seed=22, updates=1),
+    ]
+    paired = pair_budgets(rows)
+    assert len(paired) == 1
+    assert paired[0]["probe_seeds"] == 1
+    assert paired[0]["probe_bits_per_value"] == pytest.approx(0.7)

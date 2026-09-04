@@ -241,6 +241,51 @@ co-adapt, and the honest claim becomes "eight updates predict two thousand". If
 neither closes it, a one-step direction is not the object that sets the budget,
 and the study reports that.
 
+## What the factorial said: the repair was wrong, the ladder was right
+
+Status: **complete for k=1 and k=8 on the panel below.** 53 probes, 82 swept
+adapters, 80 bracketed, no cell missing.
+
+On the five cells all four arms cover -- the only comparison that is not
+confounded by which corpora an arm happens to reach:
+
+| arm | identity RMSE | mean over-prediction |
+|---|---:|---:|
+| k=1, rank 16 | 0.222 | 2.13x |
+| k=1, rank 64 cut to 16 | 0.510 | 3.44x |
+| k=8, rank 16 | **0.187** | **1.68x** |
+| k=8, rank 64 cut to 16 | 0.317 | 2.52x |
+| corpus mean baseline | 0.076 | -- |
+
+**Sketching wider makes it worse, at both update counts.** The hypothesis was
+that a rank-16 sketch of the correction is too narrow, so its leading
+directions are a poor estimate and truncation punishes the spread. Sketching
+into 64 and cutting back doubles the error instead of halving it. Whatever
+makes a one-step direction hard to truncate, it is not the width of the
+container it was sketched into, and the mechanism written above is refuted.
+
+**More updates help, monotonically and not enough.** Eight updates cut the
+error from 0.222 to 0.187 and the over-prediction from 2.13x to 1.68x, and on
+the wider k=8 panel reach Spearman 0.867 and pair sign accuracy 0.833. But
+0.187 is still 2.5 times the corpus-mean baseline, so P3 fails.
+
+Over the whole panel: P1, P2 and P4 pass, P3 fails.
+
+| arm | arms | corpora | identity RMSE | corpus mean | Spearman | sign accuracy |
+|---|---:|---:|---:|---:|---:|---:|
+| k=1, rank 16 | 26 | 6 | 0.420 | 0.078 | 0.515 | 0.733 |
+| k=1, wide | 6 | 1 | 0.963 | 0.102 | 0.543 | 0.733 |
+| k=8, rank 16 | 10 | 2 | 0.142 | 0.101 | 0.867 | 0.833 |
+| k=8, wide | 6 | 1 | 0.999 | 0.079 | 0.829 | 0.867 |
+
+The k=1 row spans six corpora and the k=8 row two, so those two RMSEs are not
+comparable to each other; only the matched table above is.
+
+What this leaves is a probe that orders receivers well and prices them badly,
+with the only lever that moves it being optimizer steps. The open question is
+whether the error keeps falling with k -- and if it does, where it crosses the
+baseline, because that crossing is the price of a usable prediction.
+
 ## Gates
 
 | gate | statement |

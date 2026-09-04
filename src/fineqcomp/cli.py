@@ -453,7 +453,8 @@ def _bit_budget_report(args: argparse.Namespace) -> int:
 
     gates = yaml.safe_load(Path(args.config).read_text())["gates"]
     report = write_budget_report(
-        Path(args.sweeps), Path(args.runs_root), Path(args.out), gates
+        Path(args.sweeps), Path(args.runs_root), Path(args.out), gates,
+        Path(args.config),
     )
     print(json.dumps({key: value for key, value in report.items() if key != "scores"},
                      indent=2, sort_keys=True))

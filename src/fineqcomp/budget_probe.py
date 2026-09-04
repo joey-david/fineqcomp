@@ -616,11 +616,19 @@ def shipped_ladder_budget(
     return {"bits_per_value": float("nan"), "file_bits": float("nan")}
 
 
-def _run_kind(run_dir: Path) -> tuple[str, int | None]:
-    """Whether a swept run is a target or a probe, from its own config."""
+def _run_kind(run_dir: Path) -> tuple[str, int | None, str]:
+    """Whether a swept run is a target or a probe, and in which container.
+
+    The container is part of the answer because two probe arms can share an
+    update count and differ only in the container they were built in, and
+    pooling those two would average a repair with the thing it repairs.
+    """
     config = json.loads((run_dir / "config.json").read_text())
     updates = (config.get("training") or {}).get("max_updates")
-    return ("probe", int(updates)) if updates is not None else ("trained", None)
+    adapter = str((config.get("adapter") or {}).get("key", ""))
+    if updates is None:
+        return ("trained", None, adapter)
+    return ("probe", int(updates), adapter)
 
 
 def collect_budgets(
@@ -638,7 +646,7 @@ def collect_budgets(
         run_dir = Path(runs_root) / cell_dir.name
         if not (run_dir / "config.json").is_file():
             continue
-        kind, updates = _run_kind(run_dir)
+        kind, updates, adapter = _run_kind(run_dir)
         budget = budget_at(cells, retention)
         # Only a finished run has a shipped ladder to compare against: a capped
         # probe rarely clears the learning gate, so it never writes a record.
@@ -659,6 +667,7 @@ def collect_budgets(
                 "seed": int(cells[0]["seed"]),
                 "kind": kind,
                 "probe_updates": updates,
+                "probe_adapter": adapter,
                 "probe_scale": search.get("scale"),
                 "probe_scale_at_edge": search.get("at_search_edge"),
                 "cells": len(cells),
@@ -688,7 +697,7 @@ def pair_budgets(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ladder means one target can have several probes, one per update budget.
     """
     targets: dict[tuple[str, str], list[dict[str, Any]]] = {}
-    probes: dict[tuple[str, str, int], list[dict[str, Any]]] = {}
+    probes: dict[tuple[str, str, int, str], list[dict[str, Any]]] = {}
     for row in rows:
         if not row["budget_bracketed"]:
             continue
@@ -696,10 +705,20 @@ def pair_budgets(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if row["kind"] == "trained":
             targets.setdefault(key, []).append(row)
         else:
-            probes.setdefault((*key, int(row["probe_updates"])), []).append(row)
+            # An arm is an update count *and* a container. Two probes that
+            # share a budget but were built at rank 16 and rank 64 are the
+            # repair and the thing it repairs, and averaging them hides both.
+            probes.setdefault(
+                (*key, int(row["probe_updates"]), str(row["probe_adapter"])), []
+            ).append(row)
     paired = []
-    for (model_key, dataset_key, updates), group in sorted(probes.items()):
-        target = targets.get((model_key, dataset_key))
+    for (model_key, dataset_key, updates, adapter), group in sorted(probes.items()):
+        # Join on the seed before averaging. Averaging a probe's seed set
+        # against a target's separately turns a missing seed into a comparison
+        # of two different populations that still looks like a valid pair.
+        by_seed = {row["seed"]: row for row in targets.get((model_key, dataset_key), [])}
+        group = [row for row in group if row["seed"] in by_seed]
+        target = [by_seed[row["seed"]] for row in group]
         if not target:
             continue
         paired.append(
@@ -707,6 +726,7 @@ def pair_budgets(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "model_key": model_key,
                 "dataset_key": dataset_key,
                 "probe_updates": updates,
+                "probe_adapter": adapter,
                 "probe_seeds": len(group),
                 "target_seeds": len(target),
                 "probe_file_bits": _mean([row["budget_file_bits"] for row in group]),
@@ -766,7 +786,9 @@ def _rmse(predicted: list[float], observed: list[float]) -> float:
     return math.sqrt(sum((a - b) ** 2 for a, b in pairs) / len(pairs))
 
 
-def score_probe(paired: list[dict[str, Any]], updates: int) -> dict[str, Any]:
+def score_probe(
+    paired: list[dict[str, Any]], updates: int, adapter: str
+) -> dict[str, Any]:
     """Identity-line accuracy of one probe budget against the receiver mean.
 
     The comparison is not a correlation.  `predicted` is the probe's own
@@ -775,9 +797,13 @@ def score_probe(paired: list[dict[str, Any]], updates: int) -> dict[str, Any]:
     the leave-one-out mean of the other receivers on the same corpus, which is
     what someone who had measured nothing would say.
     """
-    group = [row for row in paired if row["probe_updates"] == updates]
+    group = [
+        row
+        for row in paired
+        if row["probe_updates"] == updates and row["probe_adapter"] == adapter
+    ]
     if not group:
-        return {"probe_updates": updates, "arms": 0}
+        return {"probe_updates": updates, "probe_adapter": adapter, "arms": 0}
     predicted = [row["probe_bits_per_value"] for row in group]
     observed = [row["target_bits_per_value"] for row in group]
     baseline = []
@@ -803,6 +829,7 @@ def score_probe(paired: list[dict[str, Any]], updates: int) -> dict[str, Any]:
                 signs.append((predicted_gap > 0) == (observed_gap > 0))
     return {
         "probe_updates": updates,
+        "probe_adapter": adapter,
         "arms": len(group),
         "corpora": len({row["dataset_key"] for row in group}),
         "receivers": len({row["model_key"] for row in group}),
@@ -817,14 +844,26 @@ def score_probe(paired: list[dict[str, Any]], updates: int) -> dict[str, Any]:
 
 
 def check_gates(
-    rows: list[dict[str, Any]], paired: list[dict[str, Any]], gates: dict[str, Any]
+    rows: list[dict[str, Any]],
+    paired: list[dict[str, Any]],
+    gates: dict[str, Any],
+    expected: set[str] | None = None,
 ) -> dict[str, Any]:
-    """The pre-registered decision rule, read off whatever has finished."""
+    """The pre-registered decision rule, read off whatever has finished.
+
+    `expected` is every probe the panel declares. A cell that failed its sweep,
+    or whose run record never arrived, is absent from `rows` rather than
+    present and failing, so without this the gates are read on a shrunken panel
+    and a partial run can pass everything. Missing cells fail P1 outright.
+    """
     swept = [row for row in rows if row["cells"]]
     bracketed = [row for row in swept if row["budget_bracketed"]]
+    missing = sorted(expected - {row["run_id"] for row in swept}) if expected else []
     scores = [
-        score_probe(paired, updates)
-        for updates in sorted({row["probe_updates"] for row in paired})
+        score_probe(paired, updates, adapter)
+        for updates, adapter in sorted(
+            {(row["probe_updates"], row["probe_adapter"]) for row in paired}
+        )
     ]
     best = max(
         (score for score in scores if score.get("arms")),
@@ -835,7 +874,11 @@ def check_gates(
         ),
         default={},
     )
-    p1 = bool(swept) and len(bracketed) / len(swept) >= float(gates["bracketed_share"])
+    p1 = (
+        bool(swept)
+        and not missing
+        and len(bracketed) / len(swept) >= float(gates["bracketed_share"])
+    )
     p2 = bool(best) and best.get("spearman", float("nan")) >= float(
         gates["probe_spearman"]
     )
@@ -848,6 +891,8 @@ def check_gates(
     return {
         "swept_runs": len(swept),
         "bracketed_runs": len(bracketed),
+        "expected_probes": len(expected) if expected else None,
+        "missing_probes": missing,
         "scores": scores,
         "best_probe": best,
         "p1_budgets_are_bracketed": p1,
@@ -863,14 +908,22 @@ def write_budget_report(
     runs_root: Path,
     out_dir: Path,
     gates: dict[str, Any],
+    config_path: Path,
     retention: float = DEFAULT_RETENTION,
 ) -> dict[str, Any]:
     from fineqcomp.artifacts import write_json
     from fineqcomp.relative_validation import _write_csv
 
+    from fineqcomp.campaign import expand_campaign
+
     rows = collect_budgets(Path(sweep_root), Path(runs_root), retention)
     paired = pair_budgets(rows)
-    report = check_gates(rows, paired, gates)
+    expected = {
+        run.run_id
+        for run in expand_campaign(load_campaign(config_path))
+        if run.training.max_updates is not None
+    }
+    report = check_gates(rows, paired, gates, expected)
     out_dir = Path(out_dir)
     _write_csv(out_dir / "budgets.csv", rows)
     _write_csv(out_dir / "probe_vs_trained.csv", paired)
