@@ -1,0 +1,73 @@
+{
+  "best_probe": {
+    "arms": 10,
+    "corpora": 2,
+    "corpus_mean_rmse": 0.10487019724922575,
+    "identity_rmse": 0.14178018838996506,
+    "probe_adapter": "all_linear_r16",
+    "probe_updates": 8,
+    "receiver_pair_sign_accuracy": 0.875,
+    "receiver_pairs": 24,
+    "receivers": 7,
+    "spearman": 0.8787878787878789
+  },
+  "bracketed_runs": 80,
+  "expected_probes": 53,
+  "missing_probes": [],
+  "p1_budgets_are_bracketed": true,
+  "p2_probe_orders_the_arms": true,
+  "p3_identity_beats_the_corpus_mean": false,
+  "p4_probe_orders_receivers_on_one_corpus": true,
+  "passed": false,
+  "scores": [
+    {
+      "arms": 26,
+      "corpora": 6,
+      "corpus_mean_rmse": 0.07761700731566223,
+      "identity_rmse": 0.4201946945725737,
+      "probe_adapter": "all_linear_r16",
+      "probe_updates": 1,
+      "receiver_pair_sign_accuracy": 0.7333333333333333,
+      "receiver_pairs": 60,
+      "receivers": 7,
+      "spearman": 0.5145299145299145
+    },
+    {
+      "arms": 6,
+      "corpora": 1,
+      "corpus_mean_rmse": 0.10178384049497692,
+      "identity_rmse": 0.9633154638379825,
+      "probe_adapter": "probe_wide_r64",
+      "probe_updates": 1,
+      "receiver_pair_sign_accuracy": 0.7333333333333333,
+      "receiver_pairs": 15,
+      "receivers": 6,
+      "spearman": 0.5428571428571427
+    },
+    {
+      "arms": 10,
+      "corpora": 2,
+      "corpus_mean_rmse": 0.10487019724922575,
+      "identity_rmse": 0.14178018838996506,
+      "probe_adapter": "all_linear_r16",
+      "probe_updates": 8,
+      "receiver_pair_sign_accuracy": 0.875,
+      "receiver_pairs": 24,
+      "receivers": 7,
+      "spearman": 0.8787878787878789
+    },
+    {
+      "arms": 6,
+      "corpora": 1,
+      "corpus_mean_rmse": 0.0787219277249049,
+      "identity_rmse": 0.9987782478508468,
+      "probe_adapter": "probe_wide_r64",
+      "probe_updates": 8,
+      "receiver_pair_sign_accuracy": 0.8666666666666667,
+      "receiver_pairs": 15,
+      "receivers": 6,
+      "spearman": 0.8285714285714285
+    }
+  ],
+  "swept_runs": 82
+}

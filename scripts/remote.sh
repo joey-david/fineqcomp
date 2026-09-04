@@ -82,9 +82,13 @@ pull-budget)
   # The report classifies a swept adapter by reading its own run record, so the
   # probe run directories have to come down too -- their small files only, not
   # the 160MB adapter each one wrote.
+  # Every run directory, small files only. Naming the probe studies here was
+  # the same mistake the sweep stage made with its glob: the panel grew a
+  # `repair_*` family, the pattern did not match it, and the report silently
+  # classified twenty-one swept adapters as strangers.
   mkdir -p runs
   rsync -avz --prune-empty-dirs \
-    --include 'probe1-*/' --include 'probe8-*/' \
+    --include '*/' \
     --include 'config.json' --include 'status.json' \
     --include 'metrics.json' --include 'training_metrics.json' \
     --include 'learning_gate.json' \
