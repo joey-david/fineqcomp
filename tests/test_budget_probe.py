@@ -117,6 +117,7 @@ def _budget_row(model, dataset, kind, bits, seed=11, updates=None):
         "kind": kind,
         "probe_updates": updates,
         "probe_adapter": "all_linear_r16",
+        "probe_batch": 256,
         "cells": 45,
         "budget_bracketed": True,
         "budget_file_bits": bits * 1000,
@@ -160,12 +161,13 @@ def test_the_score_is_the_identity_line_and_not_a_correlation():
             "dataset_key": "code",
             "probe_updates": 1,
             "probe_adapter": "all_linear_r16",
+            "probe_batch": 256,
             "probe_bits_per_value": value + 1.0,
             "target_bits_per_value": value,
         }
         for model, value in (("a", 0.4), ("b", 0.6), ("c", 0.8))
     ]
-    score = score_probe(paired, 1, "all_linear_r16")
+    score = score_probe(paired, 1, "all_linear_r16", 256)
     assert score["spearman"] == pytest.approx(1.0)
     assert score["identity_rmse"] == pytest.approx(1.0)
     assert score["receiver_pair_sign_accuracy"] == pytest.approx(1.0)
@@ -179,6 +181,7 @@ def test_gates_reject_a_probe_that_ranks_without_predicting():
             "dataset_key": "code",
             "probe_updates": 1,
             "probe_adapter": "all_linear_r16",
+            "probe_batch": 256,
             "probe_bits_per_value": value + 1.0,
             "target_bits_per_value": value,
         }
@@ -199,6 +202,7 @@ def test_gates_accept_a_probe_that_lands_on_the_identity_line():
             "dataset_key": "code",
             "probe_updates": 1,
             "probe_adapter": "all_linear_r16",
+            "probe_batch": 256,
             "probe_bits_per_value": value + 0.01,
             "target_bits_per_value": value,
         }
@@ -440,8 +444,8 @@ def test_two_containers_at_one_update_count_are_two_arms(tmp_path):
         "all_linear_r16",
         "probe_wide_r64",
     }
-    narrow = score_probe(paired, 1, "all_linear_r16")
-    wide = score_probe(paired, 1, "probe_wide_r64")
+    narrow = score_probe(paired, 1, "all_linear_r16", 256)
+    wide = score_probe(paired, 1, "probe_wide_r64", 256)
     assert narrow["arms"] == 1 and wide["arms"] == 1
     assert narrow["identity_rmse"] != wide["identity_rmse"]
 
@@ -456,6 +460,7 @@ def test_a_panel_missing_cells_cannot_pass_the_first_gate():
             "dataset_key": "code",
             "probe_updates": 1,
             "probe_adapter": "all_linear_r16",
+            "probe_batch": 256,
             "probe_bits_per_value": value + 0.01,
             "target_bits_per_value": value,
         }
@@ -483,3 +488,21 @@ def test_a_probe_seed_without_a_matching_target_seed_is_dropped():
     assert len(paired) == 1
     assert paired[0]["probe_seeds"] == 1
     assert paired[0]["probe_bits_per_value"] == pytest.approx(0.7)
+
+
+def test_one_update_count_at_two_batch_sizes_is_two_arms():
+    """Holding updates fixed and varying the rows is the comparison that
+    separates co-adaptation from simply having seen more data, so the two must
+    not pool into one arm."""
+    rows = [
+        _budget_row("a", "code", "trained", 0.8),
+        _budget_row("a", "code", "probe", 0.7, updates=64),
+        {
+            **_budget_row("a", "code", "probe", 0.4, updates=64),
+            "run_id": "a-code-probe-small",
+            "probe_batch": 16,
+        },
+    ]
+    paired = pair_budgets(rows)
+    assert len(paired) == 2
+    assert {row["probe_rows"] for row in paired} == {64 * 256, 64 * 16}

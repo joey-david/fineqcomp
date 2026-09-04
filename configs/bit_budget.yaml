@@ -198,6 +198,24 @@ training:
   probe_8:
     <<: *probe_1
     max_updates: 8
+  # The ladder. Steps are the only lever that moved the error, so the axis is
+  # extended -- but eight updates over a 256-row batch also saw eight times the
+  # data, and those two are not the same cause. The small-batch blocks use the
+  # target's own batch of sixteen, so 64 and 256 updates cost 1,024 and 4,096
+  # rows: many more steps on far less data. The large-batch 64 holds the steps
+  # of `probe_64_small` and multiplies the rows by sixteen. Between them the
+  # two causes come apart.
+  probe_64:
+    <<: *probe_1
+    max_updates: 64
+  probe_64_small:
+    <<: *probe_1
+    effective_batch_size: 16
+    max_updates: 64
+  probe_256_small:
+    <<: *probe_1
+    effective_batch_size: 16
+    max_updates: 256
 
 datasets:
   # The three development corpora, byte-identical to the transposed panel so
@@ -380,3 +398,27 @@ studies:
     seeds: [11]
     adapters: *wide
     training: probe_8
+  # ---- the update ladder ----------------------------------------------------
+  # Sketching wider was refuted; steps were not. On kind_code, whose targets are
+  # swept and whose k=1 and k=8 arms are already measured.
+  ladder_k64:
+    kind: natural
+    models: *development
+    datasets: [kind_code]
+    seeds: [11]
+    adapters: *container
+    training: probe_64
+  ladder_k64_small:
+    kind: natural
+    models: *development
+    datasets: [kind_code]
+    seeds: [11]
+    adapters: *container
+    training: probe_64_small
+  ladder_k256_small:
+    kind: natural
+    models: *development
+    datasets: [kind_code]
+    seeds: [11]
+    adapters: *container
+    training: probe_256_small
