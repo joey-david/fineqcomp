@@ -342,12 +342,41 @@ studies:
     seeds: [11]
     adapters: *container
     training: probe_8
-  # The repair, piloted on the two receivers that bracket the failure: Mistral
-  # over-predicted by 1.6x and Qwen2.5-Math by 4.4x on this corpus.
-  probe1_wide_container:
+  # ---- the repair -----------------------------------------------------------
+  # The k=1, rank-16 probe ranks receivers (Spearman 0.75, pair sign accuracy
+  # 0.81) and over-predicts the budget by 1.4x to 4.4x. Two causes are
+  # available and they are not the same cause, so this is a factorial and not
+  # a sequence of guesses. Both are parameter-free; rescaling by the observed
+  # factor is the repair deliberately not attempted, because the factor is not
+  # constant across receivers.
+  #
+  #   width  While B is zero the gradient with respect to A is zero, so the
+  #          probe's correction is a random sketch of the real one into as many
+  #          dimensions as its container has. Sketch into 64 and cut back to
+  #          16, and the leading directions are a better estimate.
+  #   steps  Eight updates let A move, so the pair begins to co-adapt and the
+  #          correction begins to concentrate the way a trained one does.
+  #
+  # All of it on kind_code, which is the corpus the failure was measured on and
+  # whose seven targets are already swept, so no target has to be recomputed.
+  repair_wide_k1:
     kind: natural
-    models: [mistral_7b_base, qwen25_math_7b_base]
+    models: *development
     datasets: [kind_code]
     seeds: [11]
-    adapters: [probe_wide_r64]
+    adapters: &wide [probe_wide_r64]
     training: probe_1
+  repair_narrow_k8:
+    kind: natural
+    models: *development
+    datasets: [kind_code]
+    seeds: [11]
+    adapters: *container
+    training: probe_8
+  repair_wide_k8:
+    kind: natural
+    models: *development
+    datasets: [kind_code]
+    seeds: [11]
+    adapters: *wide
+    training: probe_8

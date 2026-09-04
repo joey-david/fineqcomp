@@ -108,9 +108,15 @@ probes | sweep)
       --config "$config" --manifest "$manifest" --runs-root "$runs_root"
       --shards 1 --models "$receiver")
   else
+    # From the manifest, not from a glob on study names: the panel grew a
+    # `repair_*` family that no `probe*` pattern would have matched, and a
+    # sweep that silently skips half the panel is worse than one that fails.
+    mapfile -t ids < <("$PYTHON" -c 'import json,sys
+for line in open(sys.argv[1]):
+    print(json.loads(line)["run_id"])' "$manifest")
     probes=()
-    for path in "$runs_root"/probe1-* "$runs_root"/probe8-*; do
-      [[ -f "$path/raw_channel.pt" ]] && probes+=("$path")
+    for id in "${ids[@]}"; do
+      [[ -f "$runs_root/$id/raw_channel.pt" ]] && probes+=("$runs_root/$id")
     done
     if ((${#probes[@]} == 0)); then
       echo "no swept-able probes under $runs_root; run MODE=probes first" >&2
