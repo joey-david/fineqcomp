@@ -172,6 +172,75 @@ What this budget does **not** buy is a receiver nobody has fine-tuned, or a
 container other than rank-16 all-linear. Both need full-length training runs.
 They are the next thing to spend on, and only if the gates below hold.
 
+## First read, and the repair it forced
+
+Status of this section: **partial.** `kind_code` is the one corpus whose seven
+receivers have all been swept; the other five were still sweeping when this was
+written, and nothing here is the panel's verdict.
+
+The k=1, rank-16 probe **ranks receivers and misprices them**.
+
+| gate | value | threshold | |
+|---|---|---|---|
+| P2 Spearman of B\*_probe against B\*_trained | 0.75 | 0.60 | pass |
+| P4 receiver-pair sign accuracy, 21 pairs | 0.81 | 0.70 | pass |
+| P3 identity RMSE against the corpus mean | 0.227 vs 0.095 | 0.75x | **fail** |
+
+That is the case the pre-registration named in advance: the probe ranks but
+does not predict. It over-predicts the budget everywhere, by 1.39, 1.58, 1.60,
+1.62, 1.69 and 1.87 on six receivers and by 4.37 on Qwen2.5-Math.
+
+The cause is in the construction and is visible in the cells. While B is zero
+the gradient with respect to A is zero, so a one-update probe's correction is
+`B @ A0` with A0 the random initialisation -- a rank-dimensional *random
+sketch* of the correction the corpus actually asks for. A random sketch is well
+conditioned exactly where a trained pair is concentrated, and truncation is the
+operation that punishes being well conditioned. Retained gain at rank 1 and 3
+bits, probe against the target it predicts:
+
+| receiver | target | probe | over-prediction |
+|---|---:|---:|---:|
+| Qwen2.5-Math-7B | 0.943 | 0.783 | 4.37x |
+| Gemma-2-9B | 0.841 | 0.790 | 1.87x |
+| Llama-3.1-8B | 0.877 | 0.823 | 1.69x |
+| Gemma-2-9B-it | 0.890 | 0.831 | 1.62x |
+| Mistral-7B | 0.856 | 0.834 | 1.58x |
+| Qwen2.5-7B | 0.968 | 0.989 | 1.39x |
+
+A few points of retention become a large factor in file size because the 90%
+crossing sits on a steep part of the curve. Qwen2.5-Math is the clearest case:
+its target already clears 0.90 at rank 1, its probe needs rank 4, and rank 4 is
+four times the file.
+
+## The repair, as a factorial
+
+Two causes are available and they are not the same cause, so both are tested at
+once on `kind_code`, whose targets are already swept.
+
+| arm | container | updates | what it removes |
+|---|---|---|---|
+| `probe1_core` | 16 | 1 | nothing; the measurement above |
+| `repair_wide_k1` | 64, cut to 16 | 1 | the sketch is 64-dimensional, so its leading directions estimate the real ones |
+| `repair_narrow_k8` | 16 | 8 | A moves, so the pair begins to co-adapt |
+| `repair_wide_k8` | 64, cut to 16 | 8 | both |
+
+Cutting back to 16 goes through the same balanced SVD the sweep already uses,
+and the sweep no longer forces a container rank into a grid that stops below
+it, so a wide probe is scored on exactly the files its target is scored on.
+
+Both repairs are parameter-free. **Rescaling by the observed factor is the
+repair deliberately not attempted**: it would put back the fitted receiver term
+this design exists to avoid, and it could not work anyway, because six
+receivers cluster near 1.6 and one sits at 4.4. That the factor is not constant
+is the reason P3 fails rather than a rescaled probe passing.
+
+Reading the factorial: if width alone closes it, the failure was a sketching
+artifact and the k=1 probe is salvageable at no extra training cost. If only
+steps close it, the budget of a fine-tune is not visible until the factors
+co-adapt, and the honest claim becomes "eight updates predict two thousand". If
+neither closes it, a one-step direction is not the object that sets the budget,
+and the study reports that.
+
 ## Gates
 
 | gate | statement |
