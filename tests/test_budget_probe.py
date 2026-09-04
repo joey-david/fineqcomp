@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import json
 import math
 from pathlib import Path
@@ -243,6 +244,15 @@ def test_every_probe_cell_has_a_finished_run_to_predict():
             continue
         for run in runs:
             trained.add((run.model.key, run.dataset_key, run.seed))
+    # A cell a campaign declared but screened out was never trained, so it can
+    # never be a target. The panel must not ask for one: the cluster preflight
+    # cannot tell "the adapter was cleaned up" from "the adapter was never
+    # made", and it stops the chain either way.
+    for path in Path("results").rglob("screened*.csv"):
+        for row in csv.DictReader(path.open()):
+            trained.discard(
+                (row["model_key"], row["dataset_key"], int(row["seed"]))
+            )
     orphans = sorted(
         {
             (run.model.key, str(run.dataset_key), run.seed)
