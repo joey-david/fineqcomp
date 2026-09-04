@@ -274,9 +274,27 @@ studies:
     - qwen25_math_7b_base
     - gemma2_9b_base
     - gemma2_9b_instruct
-    datasets: [kind_code, panel_math, xbrl_tags]
+    datasets: [kind_code, xbrl_tags]
     seeds: [11]
     adapters: &container [all_linear_r16]
+    training: probe_1
+  # Mathematics carries six of the seven. Qwen3-8B already answers GSM8K above
+  # the campaign's saturation threshold, so the transposed panel screened it out
+  # at every seed and there is no finished adapter on that cell for a probe to
+  # predict. Asking for it anyway would be asking for a target that cannot
+  # exist, not discovering one that is missing.
+  probe1_math:
+    kind: natural
+    models:
+    - mistral_7b_base
+    - llama31_8b_base
+    - qwen25_7b_base
+    - qwen25_math_7b_base
+    - gemma2_9b_base
+    - gemma2_9b_instruct
+    datasets: [panel_math]
+    seeds: [11]
+    adapters: *container
     training: probe_1
   # Three more corpora on the two receivers that already have finished adapters
   # for them, so the corpus axis is six wide and not three.
