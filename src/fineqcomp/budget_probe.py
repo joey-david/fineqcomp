@@ -616,7 +616,7 @@ def shipped_ladder_budget(
     return {"bits_per_value": float("nan"), "file_bits": float("nan")}
 
 
-def _run_kind(run_dir: Path) -> tuple[str, int | None, str]:
+def _run_kind(run_dir: Path) -> tuple[str, int | None, str, int]:
     """Whether a swept run is a target or a probe, and in which container.
 
     The container is part of the answer because two probe arms can share an
@@ -626,9 +626,13 @@ def _run_kind(run_dir: Path) -> tuple[str, int | None, str]:
     config = json.loads((run_dir / "config.json").read_text())
     updates = (config.get("training") or {}).get("max_updates")
     adapter = str((config.get("adapter") or {}).get("key", ""))
+    # The batch is part of the arm too. Two probes can share an update count
+    # and a container and still differ by sixteen times the rows seen, which is
+    # the whole point of holding updates fixed and varying data.
+    batch = int((config.get("training") or {}).get("effective_batch_size", 0))
     if updates is None:
-        return ("trained", None, adapter)
-    return ("probe", int(updates), adapter)
+        return ("trained", None, adapter, batch)
+    return ("probe", int(updates), adapter, batch)
 
 
 def collect_budgets(
@@ -646,7 +650,7 @@ def collect_budgets(
         run_dir = Path(runs_root) / cell_dir.name
         if not (run_dir / "config.json").is_file():
             continue
-        kind, updates, adapter = _run_kind(run_dir)
+        kind, updates, adapter, batch = _run_kind(run_dir)
         budget = budget_at(cells, retention)
         # Only a finished run has a shipped ladder to compare against: a capped
         # probe rarely clears the learning gate, so it never writes a record.
@@ -668,6 +672,7 @@ def collect_budgets(
                 "kind": kind,
                 "probe_updates": updates,
                 "probe_adapter": adapter,
+                "probe_batch": batch,
                 "probe_scale": search.get("scale"),
                 "probe_scale_at_edge": search.get("at_search_edge"),
                 "cells": len(cells),
@@ -709,10 +714,18 @@ def pair_budgets(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
             # share a budget but were built at rank 16 and rank 64 are the
             # repair and the thing it repairs, and averaging them hides both.
             probes.setdefault(
-                (*key, int(row["probe_updates"]), str(row["probe_adapter"])), []
+                (
+                    *key,
+                    int(row["probe_updates"]),
+                    str(row["probe_adapter"]),
+                    int(row.get("probe_batch") or 0),
+                ),
+                [],
             ).append(row)
     paired = []
-    for (model_key, dataset_key, updates, adapter), group in sorted(probes.items()):
+    for (model_key, dataset_key, updates, adapter, batch), group in sorted(
+        probes.items()
+    ):
         # Join on the seed before averaging. Averaging a probe's seed set
         # against a target's separately turns a missing seed into a comparison
         # of two different populations that still looks like a valid pair.
@@ -727,6 +740,8 @@ def pair_budgets(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "dataset_key": dataset_key,
                 "probe_updates": updates,
                 "probe_adapter": adapter,
+                "probe_batch": batch,
+                "probe_rows": updates * batch,
                 "probe_seeds": len(group),
                 "target_seeds": len(target),
                 "probe_file_bits": _mean([row["budget_file_bits"] for row in group]),
@@ -787,7 +802,7 @@ def _rmse(predicted: list[float], observed: list[float]) -> float:
 
 
 def score_probe(
-    paired: list[dict[str, Any]], updates: int, adapter: str
+    paired: list[dict[str, Any]], updates: int, adapter: str, batch: int = 0
 ) -> dict[str, Any]:
     """Identity-line accuracy of one probe budget against the receiver mean.
 
@@ -800,10 +815,17 @@ def score_probe(
     group = [
         row
         for row in paired
-        if row["probe_updates"] == updates and row["probe_adapter"] == adapter
+        if row["probe_updates"] == updates
+        and row["probe_adapter"] == adapter
+        and (not batch or row.get("probe_batch") == batch)
     ]
     if not group:
-        return {"probe_updates": updates, "probe_adapter": adapter, "arms": 0}
+        return {
+            "probe_updates": updates,
+            "probe_adapter": adapter,
+            "probe_batch": batch,
+            "arms": 0,
+        }
     predicted = [row["probe_bits_per_value"] for row in group]
     observed = [row["target_bits_per_value"] for row in group]
     baseline = []
@@ -830,6 +852,8 @@ def score_probe(
     return {
         "probe_updates": updates,
         "probe_adapter": adapter,
+        "probe_batch": batch,
+        "probe_rows": updates * batch,
         "arms": len(group),
         "corpora": len({row["dataset_key"] for row in group}),
         "receivers": len({row["model_key"] for row in group}),
@@ -860,9 +884,12 @@ def check_gates(
     bracketed = [row for row in swept if row["budget_bracketed"]]
     missing = sorted(expected - {row["run_id"] for row in swept}) if expected else []
     scores = [
-        score_probe(paired, updates, adapter)
-        for updates, adapter in sorted(
-            {(row["probe_updates"], row["probe_adapter"]) for row in paired}
+        score_probe(paired, updates, adapter, batch)
+        for updates, adapter, batch in sorted(
+            {
+                (row["probe_updates"], row["probe_adapter"], row["probe_batch"])
+                for row in paired
+            }
         )
     ]
     best = max(
