@@ -79,6 +79,17 @@ pull-budget)
     results/5_predicting_the_bit_budget/
   rsync -avz --prune-empty-dirs --include 'fqbudget-*' --exclude '*' \
     "$host:$remote_root/slurm_logs/" slurm_logs/ || true
+  # The report classifies a swept adapter by reading its own run record, so the
+  # probe run directories have to come down too -- their small files only, not
+  # the 160MB adapter each one wrote.
+  mkdir -p runs
+  rsync -avz --prune-empty-dirs \
+    --include 'probe1-*/' --include 'probe8-*/' \
+    --include 'config.json' --include 'status.json' \
+    --include 'metrics.json' --include 'training_metrics.json' \
+    --include 'learning_gate.json' \
+    --exclude '*' \
+    "$host:$remote_root/runs/" runs/
   ;;
 pull-logs)
   mkdir -p slurm_logs

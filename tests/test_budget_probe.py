@@ -13,6 +13,7 @@ from fineqcomp.budget_probe import (
     budget_at,
     check_gates,
     find_targets,
+    training_contract,
     pair_budgets,
     scaled_adapter,
     score_probe,
@@ -328,3 +329,20 @@ def test_a_finished_run_without_its_adapter_is_not_a_target(tmp_path):
     probe_dir = _write_run(tmp_path, "probe", updates=1)
     probe = RunSpec.from_dict(json.loads((probe_dir / "config.json").read_text()))
     assert find_targets([probe], tmp_path) == []
+
+
+def test_targets_trained_under_different_budgets_are_not_interchangeable(tmp_path):
+    """Two runs on one cell must agree on what they spent, or the receiver
+    axis is carrying a difference in training recipe instead."""
+    from fineqcomp.config import RunSpec
+
+    one = _write_run(tmp_path, "four-epochs", updates=None)
+    two = _write_run(tmp_path, "eight-epochs", updates=None, model="n")
+    spec = json.loads((two / "config.json").read_text())
+    spec["training"]["epochs"] = 8
+    (two / "config.json").write_text(json.dumps(spec))
+    contracts = {
+        training_contract(RunSpec.from_dict(json.loads((path / "config.json").read_text())))
+        for path in (one, two)
+    }
+    assert len(contracts) == 2

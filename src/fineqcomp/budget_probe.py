@@ -334,6 +334,28 @@ def find_targets(
     return list(found.values())
 
 
+def training_contract(spec: RunSpec) -> tuple[Any, ...]:
+    """What a run spent, as the tuple two targets have to agree on.
+
+    Targets are matched by receiver, corpus, seed and container, because that
+    is what a probe cell names. It is not enough on its own: several campaigns
+    trained the same cell under their own study names, and if two of them had
+    used different budgets the receiver axis would be carrying a difference in
+    training recipe. They do not -- every target in this panel is four epochs
+    at a batch of sixteen -- and the preflight now checks that rather than
+    trusting it.
+    """
+    training = spec.training
+    return (
+        training.epochs,
+        training.effective_batch_size,
+        training.micro_batch_size,
+        training.max_length,
+        training.learning_rate,
+        training.label_span,
+    )
+
+
 def check_panel(
     config_path: Path, runs_root: Path, prepared_root: Path
 ) -> dict[str, Any]:
@@ -349,10 +371,11 @@ def check_panel(
 
     campaign = load_campaign(config_path)
     panel = expand_campaign(campaign)
+    targets = find_targets(panel, Path(runs_root))
     paired = {
-        (spec.model.key, str(spec.dataset_key), spec.seed)
-        for _, spec in find_targets(panel, Path(runs_root))
+        (spec.model.key, str(spec.dataset_key), spec.seed) for _, spec in targets
     }
+    contracts = sorted({training_contract(spec) for _, spec in targets})
     orphans = sorted(
         {
             (run.model.key, str(run.dataset_key), run.seed)
@@ -374,7 +397,8 @@ def check_panel(
         "cells_with_a_target": len(paired),
         "orphan_cells": orphans,
         "unprepared_cells": unprepared,
-        "ready": not orphans and not unprepared,
+        "target_contracts": [list(contract) for contract in contracts],
+        "ready": not orphans and not unprepared and len(contracts) == 1,
     }
 
 
