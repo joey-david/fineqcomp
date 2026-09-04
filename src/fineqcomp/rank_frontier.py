@@ -111,10 +111,15 @@ def sweep_tensors(
     full_rank = max(
         int(tensor.shape[0]) for name, tensor in raw.items() if ".lora_A." in name
     )
-    # The container's own rank is always swept: it is the only cell that can
-    # reach the uncoded gain, so leaving it out would make the 90% crossing
-    # unreachable on any adapter whose rank is not in the requested grid.
-    grid = {min(int(value), full_rank) for value in ranks} | {full_rank}
+    # The container's own rank is normally swept, because it is the only cell
+    # that can reach the uncoded gain and leaving it out would make the 90%
+    # crossing unreachable. It is left out when the caller asked for a grid
+    # that stops below it: a probe built in a wider container than the adapter
+    # it predicts has to be scored on the same containers as that adapter, or
+    # the two budgets are files of different kinds.
+    grid = {min(int(value), full_rank) for value in ranks}
+    if full_rank <= max(int(value) for value in ranks):
+        grid.add(full_rank)
     for rank in sorted(grid):
         truncated = truncate_lora_rank(raw, rank)
         for bits, blend in rates:

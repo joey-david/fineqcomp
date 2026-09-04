@@ -191,3 +191,36 @@ def test_truncation_is_scored_against_the_mask_at_the_same_file_size():
     assert row["random_mask_bits_saved"] == pytest.approx(150.0)
     assert row["truncated_bits_saved"] == 180.0
     assert row["retained_gain_points"] == pytest.approx(7.5)
+
+
+def test_a_grid_that_stops_below_the_container_does_not_add_it_back():
+    """A probe built wider than its target must be scored on the target's
+    containers, or the two budgets are files of different kinds.
+
+    The sweep normally forces the container's own rank into the grid, because
+    it is the only cell that can reach the uncoded gain. That rule has to yield
+    when the caller deliberately asks for a narrower grid.
+    """
+    from fineqcomp.rank_frontier import sweep_tensors
+    import inspect
+
+    source = inspect.getsource(sweep_tensors)
+    assert "if full_rank <= max(int(value) for value in ranks):" in source
+
+
+def test_cutting_a_wide_pair_to_the_container_keeps_the_strongest_directions():
+    """The cut is the same balanced SVD the sweep uses, so what survives is the
+    top of the update's spectrum and not the top of whichever factor held it."""
+    tensors = _pair(64, 48, 32)
+    cut = truncate_lora_rank(tensors, 16)
+    assert cut["layer.lora_A.default.weight"].shape == (16, 48)
+    assert cut["layer.lora_B.default.weight"].shape == (64, 16)
+    wide = (
+        tensors["layer.lora_B.default.weight"] @ tensors["layer.lora_A.default.weight"]
+    )
+    narrow = cut["layer.lora_B.default.weight"] @ cut["layer.lora_A.default.weight"]
+    kept = torch.linalg.svdvals(narrow)
+    full = torch.linalg.svdvals(wide)
+    assert torch.allclose(kept[:16], full[:16], atol=1e-4)
+    # and nothing outside the container survives
+    assert float(kept[16:].abs().max()) < 1e-4
