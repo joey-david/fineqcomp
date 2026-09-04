@@ -296,6 +296,11 @@ def _sweep_one(
     session.attach(run.adapter, run.seed)
     try:
         trained = torch.load(adapter_path, map_location="cpu", weights_only=True)
+        attached_rank = max(
+            int(tensor.shape[0])
+            for name, tensor in trained.items()
+            if ".lora_A." in name
+        )
         if run.training.max_updates is None:
             record = json.loads((run_dir / "metrics.json").read_text())
             baseline_bits = baseline_heldout_bits(record)
@@ -337,6 +342,7 @@ def _sweep_one(
             ceiling=ceiling,
             ranks=ranks,
             rates=rates,
+            apply_rank=attached_rank,
             force=force,
         )
     finally:
@@ -546,6 +552,7 @@ def sweep_many(
                         out_root / run.run_id,
                         ranks=ranks,
                         rates=rates,
+                        container_rank=container_rank,
                         force=force,
                     )
                 )
