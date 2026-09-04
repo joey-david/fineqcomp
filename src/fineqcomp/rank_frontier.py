@@ -94,6 +94,7 @@ def sweep_tensors(
     ceiling: float,
     ranks: Iterable[int] = DEFAULT_RANKS,
     rates: Iterable[tuple[int, float]] = DEFAULT_RATES,
+    apply_rank: int | None = None,
     force: bool = False,
 ) -> list[dict[str, Any]]:
     """Score every (rank, rate) cell of one adapter tensor map.
@@ -111,6 +112,14 @@ def sweep_tensors(
     full_rank = max(
         int(tensor.shape[0]) for name, tensor in raw.items() if ".lora_A." in name
     )
+    # The container the session is attached with, which is not always the rank
+    # of the map being swept: a probe built wide and cut back to its target's
+    # container is a narrow map living in a wide attachment.
+    attached = int(apply_rank) if apply_rank else full_rank
+    if attached < full_rank:
+        raise ValueError(
+            f"cannot apply a rank-{full_rank} map to a rank-{attached} adapter"
+        )
     # The container's own rank is normally swept, because it is the only cell
     # that can reach the uncoded gain and leaving it out would make the 90%
     # crossing unreachable. It is left out when the caller asked for a grid
@@ -138,7 +147,7 @@ def sweep_tensors(
             # back into that container. The file on disk stays the small
             # one, which is the number this sweep is about.
             apply_adapter_tensors(
-                session.model, pad_lora_rank(decoded, full_rank)
+                session.model, pad_lora_rank(decoded, attached)
             )
             measured = engine._information_measure(
                 session, run, data, parts=("heldout",)

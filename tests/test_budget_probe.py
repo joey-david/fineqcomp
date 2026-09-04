@@ -13,6 +13,7 @@ from fineqcomp.budget_probe import (
     budget_at,
     check_gates,
     find_targets,
+    fit_to_container,
     training_contract,
     pair_budgets,
     scaled_adapter,
@@ -346,3 +347,72 @@ def test_targets_trained_under_different_budgets_are_not_interchangeable(tmp_pat
         for path in (one, two)
     }
     assert len(contracts) == 2
+
+
+class _StubSession:
+    """Just enough model to record what the cut applied."""
+
+    def __init__(self):
+        self.model = None
+        self.applied = None
+
+
+class _StubEngine:
+    """Returns a fixed held-out total, so the ceiling arithmetic is checkable."""
+
+    def __init__(self, total):
+        self.total = total
+        self.calls = 0
+
+    def _information_measure(self, session, run, data, parts=()):
+        self.calls += 1
+        return {"heldout": {"total_bits": self.total}}
+
+
+def _wide_pair(rank):
+    torch.manual_seed(3)
+    weights = torch.linspace(4.0, 1.0, rank)
+    left = torch.linalg.qr(torch.randn(32, rank))[0] * weights[None, :]
+    right = torch.linalg.qr(torch.randn(24, rank))[0].T
+    return {
+        "layer.lora_A.default.weight": right,
+        "layer.lora_B.default.weight": left,
+    }
+
+
+def test_a_probe_wider_than_its_target_is_cut_and_its_ceiling_remeasured(monkeypatch):
+    """The cut is the whole repair, and the gain it reaches is not the gain the
+    wider container reached, so it has to be measured again."""
+    import fineqcomp.budget_probe as module
+
+    applied = {}
+    monkeypatch.setattr(
+        module, "apply_adapter_tensors",
+        lambda model, tensors: applied.update(tensors),
+    )
+    engine = _StubEngine(total=700.0)
+    fitted, ceiling = fit_to_container(
+        engine, _StubSession(), None, None, _wide_pair(16),
+        baseline_bits=1000.0, ceiling=500.0, container_rank=4,
+    )
+    assert fitted["layer.lora_A.default.weight"].shape == (4, 24)
+    assert ceiling == pytest.approx(300.0)  # 1000 baseline - 700 measured
+    assert ceiling != 500.0
+    assert engine.calls == 1
+    # The model is loaded with the cut adapter padded back to its container.
+    assert applied["layer.lora_A.default.weight"].shape == (16, 24)
+
+
+def test_a_probe_no_wider_than_its_target_is_left_alone(monkeypatch):
+    import fineqcomp.budget_probe as module
+
+    monkeypatch.setattr(module, "apply_adapter_tensors", lambda model, tensors: None)
+    engine = _StubEngine(total=700.0)
+    tensors = _wide_pair(4)
+    fitted, ceiling = fit_to_container(
+        engine, _StubSession(), None, None, tensors,
+        baseline_bits=1000.0, ceiling=500.0, container_rank=16,
+    )
+    assert fitted is tensors
+    assert ceiling == 500.0
+    assert engine.calls == 0
