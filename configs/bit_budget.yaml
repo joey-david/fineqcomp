@@ -134,6 +134,10 @@ models:
     revision: dsdir-shared-store
     backbone: nf4
     chat: false
+# Every target was trained in this container, so every probe is scored in it,
+# whatever container the probe itself was built in.
+target_adapter: all_linear_r16
+
 adapters:
   all_linear_r16:
     method: full_lora
@@ -141,6 +145,20 @@ adapters:
     target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
     last_n_layers: null
     alpha: 32
+    dropout: 0.0
+  # A probe container only. One update moves B and not A, because the gradient
+  # with respect to A is zero while B is zero, so the probe's correction is a
+  # random sketch of the real one into as many dimensions as the container has.
+  # Sixteen is too few: the sketch comes out well conditioned where a trained
+  # pair is concentrated, and truncation punishes exactly that. Sketching into
+  # sixty-four and cutting back to sixteen keeps the estimate and drops the
+  # width, so the budget stays a file of the same kind.
+  probe_wide_r64:
+    method: full_lora
+    rank: 64
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 128
     dropout: 0.0
 training:
   # The shared contract, copied unchanged from the transposed panel so the
@@ -324,3 +342,12 @@ studies:
     seeds: [11]
     adapters: *container
     training: probe_8
+  # The repair, piloted on the two receivers that bracket the failure: Mistral
+  # over-predicted by 1.6x and Qwen2.5-Math by 4.4x on this corpus.
+  probe1_wide_container:
+    kind: natural
+    models: [mistral_7b_base, qwen25_math_7b_base]
+    datasets: [kind_code]
+    seeds: [11]
+    adapters: [probe_wide_r64]
+    training: probe_1

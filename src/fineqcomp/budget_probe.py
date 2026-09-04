@@ -212,6 +212,60 @@ def scale_search(
     }
 
 
+def fit_to_container(
+    engine: Any,
+    session: ModelSession,
+    run: RunSpec,
+    data: dict[str, list[Any]],
+    tensors: dict[str, torch.Tensor],
+    baseline_bits: float,
+    ceiling: float,
+    container_rank: int,
+) -> tuple[dict[str, torch.Tensor], float]:
+    """Cut a probe down to the container of the adapter it predicts.
+
+    A one-update probe moves only B, because the gradient with respect to A is
+    zero while B is zero, so its update is `B @ A0` with A0 the random init.
+    That makes the probe's correction a `rank`-dimensional random sketch of the
+    correction the corpus actually asks for, and a random sketch is well
+    conditioned where a trained pair is not: it spreads its energy evenly over
+    every direction, which is exactly what truncation punishes.
+
+    Probing in a wider container sketches the same correction into more
+    dimensions, so its leading directions are a better estimate of the real
+    ones.  Cutting back to the target's container -- through the same balanced
+    SVD the sweep uses -- keeps the estimate and throws away the extra width,
+    so the two budgets remain files of the same kind.  The ceiling has to be
+    remeasured here: what the probe can reach inside the container is the gain
+    its own cells are scored against, and it is not the gain the wider
+    container reached.
+    """
+    from fineqcomp.codec import pad_lora_rank, truncate_lora_rank
+
+    full_rank = max(
+        int(tensor.shape[0]) for name, tensor in tensors.items() if ".lora_A." in name
+    )
+    if full_rank <= container_rank:
+        return tensors, ceiling
+    fitted = truncate_lora_rank(tensors, container_rank)
+    apply_adapter_tensors(session.model, pad_lora_rank(fitted, full_rank))
+    reached = baseline_bits - _heldout_total(engine, session, run, data)
+    print(
+        f"  cut from rank {full_rank} to {container_rank}:"
+        f" {reached:10.1f} held-out bits",
+        flush=True,
+    )
+    return fitted, reached
+
+
+def _heldout_total(engine: Any, session: ModelSession, run: RunSpec, data: Any) -> float:
+    return float(
+        engine._information_measure(session, run, data, parts=("heldout",))[
+            "heldout"
+        ]["total_bits"]
+    )
+
+
 def _sweep_one(
     engine: Any,
     session: ModelSession,
@@ -222,6 +276,7 @@ def _sweep_one(
     *,
     ranks: Iterable[int],
     rates: Iterable[tuple[int, float]],
+    container_rank: int | None,
     force: bool,
 ) -> dict[str, Any]:
     """Sweep one adapter, building the probe first when the run was capped.
@@ -257,6 +312,13 @@ def _sweep_one(
             baseline_bits = search["baseline_heldout_bits"]
             tensors = scaled_adapter(initial, update, search["scale"])
             ceiling = search["heldout_bits_saved"]
+            if container_rank is not None:
+                tensors, ceiling = fit_to_container(
+                    engine, session, run, data, tensors,
+                    baseline_bits, ceiling, container_rank,
+                )
+                search["container_rank"] = container_rank
+                search["container_heldout_bits_saved"] = ceiling
             # Cells are cached by rank and rate so an interrupted sweep can
             # resume, but they are cells of one particular adapter. A search
             # that lands somewhere new makes every stored cell stale.
@@ -300,7 +362,7 @@ def _sweep_one(
 
 
 def find_targets(
-    specs: list[RunSpec], runs_root: Path
+    specs: list[RunSpec], runs_root: Path, container: str | None = None
 ) -> list[tuple[Path, RunSpec]]:
     """The finished run each capped probe is trying to predict.
 
@@ -311,7 +373,7 @@ def find_targets(
     what is matched, and only against runs that were never capped.
     """
     wanted = {
-        (spec.model.key, str(spec.dataset_key), spec.seed, spec.adapter.key)
+        (spec.model.key, str(spec.dataset_key), spec.seed, container or spec.adapter.key)
         for spec in specs
         if spec.training.max_updates is not None
     }
@@ -371,7 +433,9 @@ def check_panel(
 
     campaign = load_campaign(config_path)
     panel = expand_campaign(campaign)
-    targets = find_targets(panel, Path(runs_root))
+    targets = find_targets(
+        panel, Path(runs_root), campaign.get("target_adapter")
+    )
     paired = {
         (spec.model.key, str(spec.dataset_key), spec.seed) for _, spec in targets
     }
@@ -427,8 +491,17 @@ def sweep_many(
         RunSpec.from_dict(json.loads((path / "config.json").read_text()))
         for path in directories
     ]
+    campaign = load_campaign(config_path)
+    # The container every probe is scored in: the adapter the targets were
+    # trained with, which a probe may be built wider than but never scored in.
+    container = campaign.get("target_adapter")
+    container_rank = (
+        int(campaign["adapters"][container]["rank"]) if container else None
+    )
     if with_targets:
-        for path, spec in find_targets(specs, directories[0].parent):
+        for path, spec in find_targets(
+            specs, directories[0].parent, container
+        ):
             if path not in directories:
                 directories.append(path)
                 specs.append(spec)
@@ -443,7 +516,7 @@ def sweep_many(
         specs = [spec for _, spec in pairs]
     if not directories:
         return []
-    engine = RunEngine(load_campaign(config_path), prepared_root, directories[0].parent)
+    engine = RunEngine(campaign, prepared_root, directories[0].parent)
     order = sorted(
         range(len(specs)),
         key=lambda index: (specs[index].model.key, str(specs[index].dataset_key)),
