@@ -1,0 +1,4616 @@
+{
+  "status": "retrospective_development",
+  "boundary": "One receiver, corpus, fixed compute and codec family. Seeds and codec rows are not independent datasets. Budget labels use prior interpolated crossings.",
+  "inputs": {
+    "r_star_by_arm.csv": "038143236aab664990615806ff63fdd44fab13000e5f3fd1f7d2ee8876b7db90",
+    "per_seed_points.csv": "3ace4568bc1282d5adae5ea69ce9ab47a34666a3fb655a218e64906cac1048e5"
+  },
+  "scores": [
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "constant",
+      "rmse": 0.4134945055392044,
+      "bias": -0.40211666666666673,
+      "rows": 6
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "largest_scale",
+      "rmse": 0.3560622222464932,
+      "bias": -0.3427833333333334,
+      "rows": 6
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "log_data",
+      "rmse": 0.2989877498884084,
+      "bias": -0.2861583333333336,
+      "rows": 6
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "power",
+      "rmse": 0.29203669149965716,
+      "bias": -0.27918425259832635,
+      "rows": 6
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "constant",
+      "rmse": 0.23891781013561958,
+      "bias": -0.21949999999999995,
+      "rows": 6
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "largest_scale",
+      "rmse": 0.22912640616044236,
+      "bias": -0.20879999999999999,
+      "rows": 6
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "log_data",
+      "rmse": 0.16200637204546442,
+      "bias": -0.14062500000000033,
+      "rows": 6
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "power",
+      "rmse": 0.15548601105203608,
+      "bias": -0.13440191879701963,
+      "rows": 6
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "rmse": 0.05354700253166466,
+      "bias": 0.046125103174603166,
+      "rows": 84
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "rmse": 0.05248766269785809,
+      "bias": 0.04567009523809519,
+      "rows": 84
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "rmse": 0.035021361590617604,
+      "bias": 0.02835322817460249,
+      "rows": 84
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "constant",
+      "rmse": 0.37633171842360935,
+      "bias": -0.36385833333333356,
+      "rows": 3
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "largest_scale",
+      "rmse": 0.13841776138439257,
+      "bias": -0.09963333333333317,
+      "rows": 3
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "log_data",
+      "rmse": 0.1098555326579209,
+      "bias": -0.05324999999999972,
+      "rows": 3
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "power",
+      "rmse": 0.1024053109410411,
+      "bias": -0.03541429306615843,
+      "rows": 3
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "constant",
+      "rmse": 0.2711592440338333,
+      "bias": -0.2707916666666666,
+      "rows": 3
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "largest_scale",
+      "rmse": 0.170452026486438,
+      "bias": -0.16986666666666675,
+      "rows": 3
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "log_data",
+      "rmse": 0.139034920673429,
+      "bias": -0.13831666666666678,
+      "rows": 3
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "power",
+      "rmse": 0.1324793937290233,
+      "bias": -0.13172539950184506,
+      "rows": 3
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "rmse": 0.058409386416882744,
+      "bias": 0.05356781547619048,
+      "rows": 42
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "rmse": 0.0341091180305999,
+      "bias": 0.030358380952380942,
+      "rows": 42
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "rmse": 0.027103441503750384,
+      "bias": 0.023249630952380886,
+      "rows": 42
+    }
+  ],
+  "predictions": [
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "constant",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.7733,
+      "predicted": 0.6979000000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "constant",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.8158,
+      "predicted": 0.6979000000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "constant",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.9083,
+      "predicted": 0.6979000000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "constant",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.0096,
+      "predicted": 0.6979000000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "constant",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.9826,
+      "predicted": 0.6979000000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "constant",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.0148,
+      "predicted": 0.6979000000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "largest_scale",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.7733,
+      "predicted": 0.7086
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "largest_scale",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.8158,
+      "predicted": 0.7086
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "largest_scale",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.9083,
+      "predicted": 0.7086
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "largest_scale",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.0096,
+      "predicted": 0.7086
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "largest_scale",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.9826,
+      "predicted": 0.7086
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "largest_scale",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.0148,
+      "predicted": 0.7086
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "log_data",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.7733,
+      "predicted": 0.7609999999999997
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "log_data",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.8158,
+      "predicted": 0.7609999999999997
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "log_data",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.9083,
+      "predicted": 0.7609999999999997
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "log_data",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.0096,
+      "predicted": 0.7925499999999996
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "log_data",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.9826,
+      "predicted": 0.7925499999999996
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "log_data",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.0148,
+      "predicted": 0.7925499999999996
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "power",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.7733,
+      "predicted": 0.7645795955930264
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "power",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.8158,
+      "predicted": 0.7645795955930264
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "power",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.9083,
+      "predicted": 0.7645795955930264
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "power",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.0096,
+      "predicted": 0.8014165668129344
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "power",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.9826,
+      "predicted": 0.8014165668129344
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_bits_axis",
+      "family": "power",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.0148,
+      "predicted": 0.8014165668129344
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "constant",
+      "seed": 11,
+      "n": 16000,
+      "observed": 1.2068,
+      "predicted": 0.9461333333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "constant",
+      "seed": 22,
+      "n": 16000,
+      "observed": 1.3285,
+      "predicted": 0.9461333333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "constant",
+      "seed": 33,
+      "n": 16000,
+      "observed": 1.36,
+      "predicted": 0.9461333333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "constant",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.5338,
+      "predicted": 0.9461333333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "constant",
+      "seed": 22,
+      "n": 32000,
+      "observed": 1.3358,
+      "predicted": 0.9461333333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "constant",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.3246,
+      "predicted": 0.9461333333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "largest_scale",
+      "seed": 11,
+      "n": 16000,
+      "observed": 1.2068,
+      "predicted": 1.0054666666666667
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "largest_scale",
+      "seed": 22,
+      "n": 16000,
+      "observed": 1.3285,
+      "predicted": 1.0054666666666667
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "largest_scale",
+      "seed": 33,
+      "n": 16000,
+      "observed": 1.36,
+      "predicted": 1.0054666666666667
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "largest_scale",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.5338,
+      "predicted": 1.0054666666666667
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "largest_scale",
+      "seed": 22,
+      "n": 32000,
+      "observed": 1.3358,
+      "predicted": 1.0054666666666667
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "largest_scale",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.3246,
+      "predicted": 1.0054666666666667
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "log_data",
+      "seed": 11,
+      "n": 16000,
+      "observed": 1.2068,
+      "predicted": 1.0388999999999997
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "log_data",
+      "seed": 22,
+      "n": 16000,
+      "observed": 1.3285,
+      "predicted": 1.0388999999999997
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "log_data",
+      "seed": 33,
+      "n": 16000,
+      "observed": 1.36,
+      "predicted": 1.0388999999999997
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "log_data",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.5338,
+      "predicted": 1.0852833333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "log_data",
+      "seed": 22,
+      "n": 32000,
+      "observed": 1.3358,
+      "predicted": 1.0852833333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "log_data",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.3246,
+      "predicted": 1.0852833333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "power",
+      "seed": 11,
+      "n": 16000,
+      "observed": 1.2068,
+      "predicted": 1.0425598091868942
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "power",
+      "seed": 22,
+      "n": 16000,
+      "observed": 1.3285,
+      "predicted": 1.0425598091868942
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "power",
+      "seed": 33,
+      "n": 16000,
+      "observed": 1.36,
+      "predicted": 1.0425598091868942
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "power",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.5338,
+      "predicted": 1.0955716856164532
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "power",
+      "seed": 22,
+      "n": 32000,
+      "observed": 1.3358,
+      "predicted": 1.0955716856164532
+    },
+    {
+      "cutoff": 8000,
+      "target": "r_star_accuracy_axis",
+      "family": "power",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.3246,
+      "predicted": 1.0955716856164532
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "binary",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.949555,
+      "predicted": 0.9858423333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "binary",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.94686,
+      "predicted": 0.9858423333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "binary",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.922321,
+      "predicted": 0.9858423333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "binary",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.902343,
+      "predicted": 0.9858423333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "binary",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.908591,
+      "predicted": 0.9858423333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "binary",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.901683,
+      "predicted": 0.9858423333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "binary",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.949555,
+      "predicted": 0.9778190000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "binary",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.94686,
+      "predicted": 0.9778190000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "binary",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.922321,
+      "predicted": 0.9778190000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "binary",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.902343,
+      "predicted": 0.9778190000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "binary",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.908591,
+      "predicted": 0.9778190000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "binary",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.901683,
+      "predicted": 0.9778190000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "binary",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.949555,
+      "predicted": 0.9584153333333325
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "binary",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.94686,
+      "predicted": 0.9584153333333325
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "binary",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.922321,
+      "predicted": 0.9584153333333325
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "binary",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.902343,
+      "predicted": 0.9447018333333324
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "binary",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.908591,
+      "predicted": 0.9447018333333324
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "binary",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.901683,
+      "predicted": 0.9447018333333324
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_25",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.973554,
+      "predicted": 1.0067534444444444
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_25",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.973029,
+      "predicted": 1.0067534444444444
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_25",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.953515,
+      "predicted": 1.0067534444444444
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_25",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.931631,
+      "predicted": 1.0067534444444444
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_25",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.938527,
+      "predicted": 1.0067534444444444
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_25",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.935944,
+      "predicted": 1.0067534444444444
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_25",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.973554,
+      "predicted": 0.9998119999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_25",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.973029,
+      "predicted": 0.9998119999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_25",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.953515,
+      "predicted": 0.9998119999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_25",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.931631,
+      "predicted": 0.9998119999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_25",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.938527,
+      "predicted": 0.9998119999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_25",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.935944,
+      "predicted": 0.9998119999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_25",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.973554,
+      "predicted": 0.983035777777777
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_25",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.973029,
+      "predicted": 0.983035777777777
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_25",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.953515,
+      "predicted": 0.983035777777777
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_25",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.931631,
+      "predicted": 0.9711769444444435
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_25",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.938527,
+      "predicted": 0.9711769444444435
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_25",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.935944,
+      "predicted": 0.9711769444444435
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_50",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.989632,
+      "predicted": 1.0199493333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_50",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.992188,
+      "predicted": 1.0199493333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_50",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.977478,
+      "predicted": 1.0199493333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_50",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.95576,
+      "predicted": 1.0199493333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_50",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.963891,
+      "predicted": 1.0199493333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_50",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.961742,
+      "predicted": 1.0199493333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_50",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.989632,
+      "predicted": 1.0141179999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_50",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.992188,
+      "predicted": 1.0141179999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_50",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.977478,
+      "predicted": 1.0141179999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_50",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.95576,
+      "predicted": 1.0141179999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_50",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.963891,
+      "predicted": 1.0141179999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_50",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.961742,
+      "predicted": 1.0141179999999999
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_50",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.989632,
+      "predicted": 0.9999513333333321
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_50",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.992188,
+      "predicted": 0.9999513333333321
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_50",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.977478,
+      "predicted": 0.9999513333333321
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_50",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.95576,
+      "predicted": 0.9899523333333319
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_50",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.963891,
+      "predicted": 0.9899523333333319
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_50",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.961742,
+      "predicted": 0.9899523333333319
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_75",
+      "seed": 11,
+      "n": 16000,
+      "observed": 1.001052,
+      "predicted": 1.024784111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_75",
+      "seed": 22,
+      "n": 16000,
+      "observed": 1.004672,
+      "predicted": 1.024784111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_75",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.990052,
+      "predicted": 1.024784111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_75",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.976579,
+      "predicted": 1.024784111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_75",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.981412,
+      "predicted": 1.024784111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_75",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.977029,
+      "predicted": 1.024784111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_75",
+      "seed": 11,
+      "n": 16000,
+      "observed": 1.001052,
+      "predicted": 1.0193006666666664
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_75",
+      "seed": 22,
+      "n": 16000,
+      "observed": 1.004672,
+      "predicted": 1.0193006666666664
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_75",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.990052,
+      "predicted": 1.0193006666666664
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_75",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.976579,
+      "predicted": 1.0193006666666664
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_75",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.981412,
+      "predicted": 1.0193006666666664
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_75",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.977029,
+      "predicted": 1.0193006666666664
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_75",
+      "seed": 11,
+      "n": 16000,
+      "observed": 1.001052,
+      "predicted": 1.0075794444444437
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_75",
+      "seed": 22,
+      "n": 16000,
+      "observed": 1.004672,
+      "predicted": 1.0075794444444437
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_75",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.990052,
+      "predicted": 1.0075794444444437
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_75",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.976579,
+      "predicted": 0.9989771111111102
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_75",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.981412,
+      "predicted": 0.9989771111111102
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_75",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.977029,
+      "predicted": 0.9989771111111102
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_0625",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.114685,
+      "predicted": 0.11514688888888888
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_0625",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.097187,
+      "predicted": 0.11514688888888888
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_0625",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.126466,
+      "predicted": 0.11514688888888888
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_0625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.113976,
+      "predicted": 0.11514688888888888
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_0625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.101681,
+      "predicted": 0.11514688888888888
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_0625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.108499,
+      "predicted": 0.11514688888888888
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_0625",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.114685,
+      "predicted": 0.11926433333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_0625",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.097187,
+      "predicted": 0.11926433333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_0625",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.126466,
+      "predicted": 0.11926433333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_0625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.113976,
+      "predicted": 0.11926433333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_0625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.101681,
+      "predicted": 0.11926433333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_0625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.108499,
+      "predicted": 0.11926433333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_0625",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.114685,
+      "predicted": 0.11821455555555548
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_0625",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.097187,
+      "predicted": 0.11821455555555548
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_0625",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.126466,
+      "predicted": 0.11821455555555548
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_0625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.113976,
+      "predicted": 0.1197483888888888
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_0625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.101681,
+      "predicted": 0.1197483888888888
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_0625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.108499,
+      "predicted": 0.1197483888888888
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_125",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.237511,
+      "predicted": 0.24955033333333335
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_125",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.211395,
+      "predicted": 0.24955033333333335
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_125",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.248367,
+      "predicted": 0.24955033333333335
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_125",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.235004,
+      "predicted": 0.24955033333333335
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_125",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.210011,
+      "predicted": 0.24955033333333335
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_125",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.21912,
+      "predicted": 0.24955033333333335
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_125",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.237511,
+      "predicted": 0.255662
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_125",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.211395,
+      "predicted": 0.255662
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_125",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.248367,
+      "predicted": 0.255662
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_125",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.235004,
+      "predicted": 0.255662
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_125",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.210011,
+      "predicted": 0.255662
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_125",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.21912,
+      "predicted": 0.255662
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_125",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.237511,
+      "predicted": 0.2490929999999998
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_125",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.211395,
+      "predicted": 0.2490929999999998
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_125",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.248367,
+      "predicted": 0.2490929999999998
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_125",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.235004,
+      "predicted": 0.2488643333333331
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_125",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.210011,
+      "predicted": 0.2488643333333331
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_125",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.21912,
+      "predicted": 0.2488643333333331
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_1875",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.366723,
+      "predicted": 0.38583833333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_1875",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.36059,
+      "predicted": 0.38583833333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_1875",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.378042,
+      "predicted": 0.38583833333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_1875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.355938,
+      "predicted": 0.38583833333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_1875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.328948,
+      "predicted": 0.38583833333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_1875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.328192,
+      "predicted": 0.38583833333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_1875",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.366723,
+      "predicted": 0.3973913333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_1875",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.36059,
+      "predicted": 0.3973913333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_1875",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.378042,
+      "predicted": 0.3973913333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_1875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.355938,
+      "predicted": 0.3973913333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_1875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.328948,
+      "predicted": 0.3973913333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_1875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.328192,
+      "predicted": 0.3973913333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_1875",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.366723,
+      "predicted": 0.39335166666666654
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_1875",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.36059,
+      "predicted": 0.39335166666666654
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_1875",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.378042,
+      "predicted": 0.39335166666666654
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_1875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.355938,
+      "predicted": 0.3971083333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_1875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.328948,
+      "predicted": 0.3971083333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_1875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.328192,
+      "predicted": 0.3971083333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_250",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.476835,
+      "predicted": 0.5037170000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_250",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.482457,
+      "predicted": 0.5037170000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_250",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.473868,
+      "predicted": 0.5037170000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_250",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.460374,
+      "predicted": 0.5037170000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_250",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.432243,
+      "predicted": 0.5037170000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_250",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.434142,
+      "predicted": 0.5037170000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_250",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.476835,
+      "predicted": 0.5170463333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_250",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.482457,
+      "predicted": 0.5170463333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_250",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.473868,
+      "predicted": 0.5170463333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_250",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.460374,
+      "predicted": 0.5170463333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_250",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.432243,
+      "predicted": 0.5170463333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_250",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.434142,
+      "predicted": 0.5170463333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_250",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.476835,
+      "predicted": 0.5080866666666662
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_250",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.482457,
+      "predicted": 0.5080866666666662
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_250",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.473868,
+      "predicted": 0.5080866666666662
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_250",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.460374,
+      "predicted": 0.5102714999999995
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_250",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.432243,
+      "predicted": 0.5102714999999995
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_250",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.434142,
+      "predicted": 0.5102714999999995
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_375",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.679631,
+      "predicted": 0.6828402222222222
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_375",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.630482,
+      "predicted": 0.6828402222222222
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_375",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.639242,
+      "predicted": 0.6828402222222222
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_375",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.623497,
+      "predicted": 0.6828402222222222
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_375",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.614921,
+      "predicted": 0.6828402222222222
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_375",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.597246,
+      "predicted": 0.6828402222222222
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_375",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.679631,
+      "predicted": 0.6897003333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_375",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.630482,
+      "predicted": 0.6897003333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_375",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.639242,
+      "predicted": 0.6897003333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_375",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.623497,
+      "predicted": 0.6897003333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_375",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.614921,
+      "predicted": 0.6897003333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_375",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.597246,
+      "predicted": 0.6897003333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_375",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.679631,
+      "predicted": 0.6709245555555549
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_375",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.630482,
+      "predicted": 0.6709245555555549
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_375",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.639242,
+      "predicted": 0.6709245555555549
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_375",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.623497,
+      "predicted": 0.6649667222222214
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_375",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.614921,
+      "predicted": 0.6649667222222214
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_375",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.597246,
+      "predicted": 0.6649667222222214
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_500",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.794016,
+      "predicted": 0.8053393333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_500",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.769372,
+      "predicted": 0.8053393333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_500",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.740898,
+      "predicted": 0.8053393333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_500",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.734122,
+      "predicted": 0.8053393333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_500",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.713393,
+      "predicted": 0.8053393333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_500",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.705431,
+      "predicted": 0.8053393333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_500",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.794016,
+      "predicted": 0.8039586666666666
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_500",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.769372,
+      "predicted": 0.8039586666666666
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_500",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.740898,
+      "predicted": 0.8039586666666666
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_500",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.734122,
+      "predicted": 0.8039586666666666
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_500",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.713393,
+      "predicted": 0.8039586666666666
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_500",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.705431,
+      "predicted": 0.8039586666666666
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_500",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.794016,
+      "predicted": 0.7852333333333327
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_500",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.769372,
+      "predicted": 0.7852333333333327
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_500",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.740898,
+      "predicted": 0.7852333333333327
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_500",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.734122,
+      "predicted": 0.7751803333333325
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_500",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.713393,
+      "predicted": 0.7751803333333325
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_500",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.705431,
+      "predicted": 0.7751803333333325
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_625",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.860151,
+      "predicted": 0.88234
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_625",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.839397,
+      "predicted": 0.88234
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_625",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.818422,
+      "predicted": 0.88234
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.804964,
+      "predicted": 0.88234
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.78835,
+      "predicted": 0.88234
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.780649,
+      "predicted": 0.88234
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_625",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.860151,
+      "predicted": 0.8776430000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_625",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.839397,
+      "predicted": 0.8776430000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_625",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.818422,
+      "predicted": 0.8776430000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.804964,
+      "predicted": 0.8776430000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.78835,
+      "predicted": 0.8776430000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.780649,
+      "predicted": 0.8776430000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_625",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.860151,
+      "predicted": 0.8540526666666661
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_625",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.839397,
+      "predicted": 0.8540526666666661
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_625",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.818422,
+      "predicted": 0.8540526666666661
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.804964,
+      "predicted": 0.8399089999999995
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.78835,
+      "predicted": 0.8399089999999995
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.780649,
+      "predicted": 0.8399089999999995
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_750",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.900308,
+      "predicted": 0.9299080000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_750",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.887402,
+      "predicted": 0.9299080000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_750",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.867153,
+      "predicted": 0.9299080000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_750",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.846623,
+      "predicted": 0.9299080000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_750",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.846059,
+      "predicted": 0.9299080000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_750",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.836099,
+      "predicted": 0.9299080000000001
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_750",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.900308,
+      "predicted": 0.9256213333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_750",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.887402,
+      "predicted": 0.9256213333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_750",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.867153,
+      "predicted": 0.9256213333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_750",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.846623,
+      "predicted": 0.9256213333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_750",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.846059,
+      "predicted": 0.9256213333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_750",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.836099,
+      "predicted": 0.9256213333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_750",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.900308,
+      "predicted": 0.9055803333333327
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_750",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.887402,
+      "predicted": 0.9055803333333327
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_750",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.867153,
+      "predicted": 0.9055803333333327
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_750",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.846623,
+      "predicted": 0.8934164999999992
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_750",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.846059,
+      "predicted": 0.8934164999999992
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_750",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.836099,
+      "predicted": 0.8934164999999992
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_875",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.929008,
+      "predicted": 0.9639661111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_875",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.925356,
+      "predicted": 0.9639661111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_875",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.898301,
+      "predicted": 0.9639661111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.87981,
+      "predicted": 0.9639661111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.88214,
+      "predicted": 0.9639661111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.874589,
+      "predicted": 0.9639661111111111
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_875",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.929008,
+      "predicted": 0.9575883333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_875",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.925356,
+      "predicted": 0.9575883333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_875",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.898301,
+      "predicted": 0.9575883333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.87981,
+      "predicted": 0.9575883333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.88214,
+      "predicted": 0.9575883333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.874589,
+      "predicted": 0.9575883333333333
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_875",
+      "seed": 11,
+      "n": 16000,
+      "observed": 0.929008,
+      "predicted": 0.9376254444444437
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_875",
+      "seed": 22,
+      "n": 16000,
+      "observed": 0.925356,
+      "predicted": 0.9376254444444437
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_875",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.898301,
+      "predicted": 0.9376254444444437
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.87981,
+      "predicted": 0.9244551111111102
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.88214,
+      "predicted": 0.9244551111111102
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.874589,
+      "predicted": 0.9244551111111102
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "uniform2",
+      "seed": 11,
+      "n": 16000,
+      "observed": 1.004027,
+      "predicted": 1.0227773333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "uniform2",
+      "seed": 22,
+      "n": 16000,
+      "observed": 1.007375,
+      "predicted": 1.0227773333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "uniform2",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.997955,
+      "predicted": 1.0227773333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "uniform2",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.987527,
+      "predicted": 1.0227773333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "uniform2",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.991668,
+      "predicted": 1.0227773333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "uniform2",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.99113,
+      "predicted": 1.0227773333333334
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "uniform2",
+      "seed": 11,
+      "n": 16000,
+      "observed": 1.004027,
+      "predicted": 1.0174573333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "uniform2",
+      "seed": 22,
+      "n": 16000,
+      "observed": 1.007375,
+      "predicted": 1.0174573333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "uniform2",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.997955,
+      "predicted": 1.0174573333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "uniform2",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.987527,
+      "predicted": 1.0174573333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "uniform2",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.991668,
+      "predicted": 1.0174573333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "uniform2",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.99113,
+      "predicted": 1.0174573333333332
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "uniform2",
+      "seed": 11,
+      "n": 16000,
+      "observed": 1.004027,
+      "predicted": 1.0085636666666657
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "uniform2",
+      "seed": 22,
+      "n": 16000,
+      "observed": 1.007375,
+      "predicted": 1.0085636666666657
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "uniform2",
+      "seed": 33,
+      "n": 16000,
+      "observed": 0.997955,
+      "predicted": 1.0085636666666657
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "uniform2",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.987527,
+      "predicted": 1.0014568333333322
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "uniform2",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.991668,
+      "predicted": 1.0014568333333322
+    },
+    {
+      "cutoff": 8000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "uniform2",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.99113,
+      "predicted": 1.0014568333333322
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "constant",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.0096,
+      "predicted": 0.7315416666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "constant",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.9826,
+      "predicted": 0.7315416666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "constant",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.0148,
+      "predicted": 0.7315416666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "largest_scale",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.0096,
+      "predicted": 0.8324666666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "largest_scale",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.9826,
+      "predicted": 0.8324666666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "largest_scale",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.0148,
+      "predicted": 0.8324666666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "log_data",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.0096,
+      "predicted": 0.8640166666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "log_data",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.9826,
+      "predicted": 0.8640166666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "log_data",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.0148,
+      "predicted": 0.8640166666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "power",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.0096,
+      "predicted": 0.8706079338314883
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "power",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.9826,
+      "predicted": 0.8706079338314883
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_bits_axis",
+      "family": "power",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.0148,
+      "predicted": 0.8706079338314883
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "constant",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.5338,
+      "predicted": 1.0342083333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "constant",
+      "seed": 22,
+      "n": 32000,
+      "observed": 1.3358,
+      "predicted": 1.0342083333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "constant",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.3246,
+      "predicted": 1.0342083333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "largest_scale",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.5338,
+      "predicted": 1.2984333333333336
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "largest_scale",
+      "seed": 22,
+      "n": 32000,
+      "observed": 1.3358,
+      "predicted": 1.2984333333333336
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "largest_scale",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.3246,
+      "predicted": 1.2984333333333336
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "log_data",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.5338,
+      "predicted": 1.344816666666667
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "log_data",
+      "seed": 22,
+      "n": 32000,
+      "observed": 1.3358,
+      "predicted": 1.344816666666667
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "log_data",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.3246,
+      "predicted": 1.344816666666667
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "power",
+      "seed": 11,
+      "n": 32000,
+      "observed": 1.5338,
+      "predicted": 1.3626523736005083
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "power",
+      "seed": 22,
+      "n": 32000,
+      "observed": 1.3358,
+      "predicted": 1.3626523736005083
+    },
+    {
+      "cutoff": 16000,
+      "target": "r_star_accuracy_axis",
+      "family": "power",
+      "seed": 33,
+      "n": 32000,
+      "observed": 1.3246,
+      "predicted": 1.3626523736005083
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "binary",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.902343,
+      "predicted": 0.9742764166666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "binary",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.908591,
+      "predicted": 0.9742764166666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "binary",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.901683,
+      "predicted": 0.9742764166666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "binary",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.902343,
+      "predicted": 0.9395786666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "binary",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.908591,
+      "predicted": 0.9395786666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "binary",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.901683,
+      "predicted": 0.9395786666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "binary",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.902343,
+      "predicted": 0.9258651666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "binary",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.908591,
+      "predicted": 0.9258651666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "binary",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.901683,
+      "predicted": 0.9258651666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_25",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.931631,
+      "predicted": 0.9967399166666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_25",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.938527,
+      "predicted": 0.9967399166666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_25",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.935944,
+      "predicted": 0.9967399166666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_25",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.931631,
+      "predicted": 0.9666993333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_25",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.938527,
+      "predicted": 0.9666993333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_25",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.935944,
+      "predicted": 0.9666993333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_25",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.931631,
+      "predicted": 0.9548405
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_25",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.938527,
+      "predicted": 0.9548405
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_25",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.935944,
+      "predicted": 0.9548405
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_50",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.95576,
+      "predicted": 1.0115701666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_50",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.963891,
+      "predicted": 1.0115701666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_50",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.961742,
+      "predicted": 1.0115701666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_50",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.95576,
+      "predicted": 0.9864326666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_50",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.963891,
+      "predicted": 0.9864326666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_50",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.961742,
+      "predicted": 0.9864326666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_50",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.95576,
+      "predicted": 0.9764336666666662
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_50",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.963891,
+      "predicted": 0.9764336666666662
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_50",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.961742,
+      "predicted": 0.9764336666666662
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_75",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.976579,
+      "predicted": 1.0182360833333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_75",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.981412,
+      "predicted": 1.0182360833333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "blend1_75",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.977029,
+      "predicted": 1.0182360833333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_75",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.976579,
+      "predicted": 0.9985919999999999
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_75",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.981412,
+      "predicted": 0.9985919999999999
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "blend1_75",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.977029,
+      "predicted": 0.9985919999999999
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_75",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.976579,
+      "predicted": 0.9899896666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_75",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.981412,
+      "predicted": 0.9899896666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "blend1_75",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.977029,
+      "predicted": 0.9899896666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_0625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.113976,
+      "predicted": 0.11455499999999998
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_0625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.101681,
+      "predicted": 0.11455499999999998
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_0625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.108499,
+      "predicted": 0.11455499999999998
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_0625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.113976,
+      "predicted": 0.11277933333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_0625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.101681,
+      "predicted": 0.11277933333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_0625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.108499,
+      "predicted": 0.11277933333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_0625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.113976,
+      "predicted": 0.11431316666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_0625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.101681,
+      "predicted": 0.11431316666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_0625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.108499,
+      "predicted": 0.11431316666666665
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_125",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.235004,
+      "predicted": 0.24526883333333335
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_125",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.210011,
+      "predicted": 0.24526883333333335
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_125",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.21912,
+      "predicted": 0.24526883333333335
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_125",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.235004,
+      "predicted": 0.23242433333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_125",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.210011,
+      "predicted": 0.23242433333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_125",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.21912,
+      "predicted": 0.23242433333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_125",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.235004,
+      "predicted": 0.23219566666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_125",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.210011,
+      "predicted": 0.23219566666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_125",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.21912,
+      "predicted": 0.23219566666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_1875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.355938,
+      "predicted": 0.3814916666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_1875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.328948,
+      "predicted": 0.3814916666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_1875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.328192,
+      "predicted": 0.3814916666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_1875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.355938,
+      "predicted": 0.3684516666666667
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_1875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.328948,
+      "predicted": 0.3684516666666667
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_1875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.328192,
+      "predicted": 0.3684516666666667
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_1875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.355938,
+      "predicted": 0.37220833333333336
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_1875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.328948,
+      "predicted": 0.37220833333333336
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_1875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.328192,
+      "predicted": 0.37220833333333336
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_250",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.460374,
+      "predicted": 0.4972177500000001
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_250",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.432243,
+      "predicted": 0.4972177500000001
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_250",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.434142,
+      "predicted": 0.4972177500000001
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_250",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.460374,
+      "predicted": 0.47772
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_250",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.432243,
+      "predicted": 0.47772
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_250",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.434142,
+      "predicted": 0.47772
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_250",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.460374,
+      "predicted": 0.4799048333333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_250",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.432243,
+      "predicted": 0.4799048333333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_250",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.434142,
+      "predicted": 0.4799048333333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_375",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.623497,
+      "predicted": 0.6745764166666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_375",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.614921,
+      "predicted": 0.6745764166666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_375",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.597246,
+      "predicted": 0.6745764166666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_375",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.623497,
+      "predicted": 0.649785
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_375",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.614921,
+      "predicted": 0.649785
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_375",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.597246,
+      "predicted": 0.649785
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_375",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.623497,
+      "predicted": 0.6438271666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_375",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.614921,
+      "predicted": 0.6438271666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_375",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.597246,
+      "predicted": 0.6438271666666668
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_500",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.734122,
+      "predicted": 0.7960283333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_500",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.713393,
+      "predicted": 0.7960283333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_500",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.705431,
+      "predicted": 0.7960283333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_500",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.734122,
+      "predicted": 0.7680953333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_500",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.713393,
+      "predicted": 0.7680953333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_500",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.705431,
+      "predicted": 0.7680953333333332
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_500",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.734122,
+      "predicted": 0.7580423333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_500",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.713393,
+      "predicted": 0.7580423333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_500",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.705431,
+      "predicted": 0.7580423333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.804964,
+      "predicted": 0.8715858333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.78835,
+      "predicted": 0.8715858333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.780649,
+      "predicted": 0.8715858333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.804964,
+      "predicted": 0.8393233333333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.78835,
+      "predicted": 0.8393233333333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.780649,
+      "predicted": 0.8393233333333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_625",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.804964,
+      "predicted": 0.8251796666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_625",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.78835,
+      "predicted": 0.8251796666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_625",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.780649,
+      "predicted": 0.8251796666666666
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_750",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.846623,
+      "predicted": 0.9186695833333335
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_750",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.846059,
+      "predicted": 0.9186695833333335
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_750",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.836099,
+      "predicted": 0.9186695833333335
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_750",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.846623,
+      "predicted": 0.8849543333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_750",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.846059,
+      "predicted": 0.8849543333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_750",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.836099,
+      "predicted": 0.8849543333333334
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_750",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.846623,
+      "predicted": 0.8727904999999998
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_750",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.846059,
+      "predicted": 0.8727904999999998
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_750",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.836099,
+      "predicted": 0.8727904999999998
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.87981,
+      "predicted": 0.9523633333333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.88214,
+      "predicted": 0.9523633333333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "sub0_875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.874589,
+      "predicted": 0.9523633333333333
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.87981,
+      "predicted": 0.917555
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.88214,
+      "predicted": 0.917555
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "sub0_875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.874589,
+      "predicted": 0.917555
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_875",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.87981,
+      "predicted": 0.9043846666666664
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_875",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.88214,
+      "predicted": 0.9043846666666664
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "sub0_875",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.874589,
+      "predicted": 0.9043846666666664
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "uniform2",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.987527,
+      "predicted": 1.0178627500000001
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "uniform2",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.991668,
+      "predicted": 1.0178627500000001
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "constant",
+      "codec": "uniform2",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.99113,
+      "predicted": 1.0178627500000001
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "uniform2",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.987527,
+      "predicted": 1.003119
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "uniform2",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.991668,
+      "predicted": 1.003119
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "largest_scale",
+      "codec": "uniform2",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.99113,
+      "predicted": 1.003119
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "uniform2",
+      "seed": 11,
+      "n": 32000,
+      "observed": 0.987527,
+      "predicted": 0.9960121666666669
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "uniform2",
+      "seed": 22,
+      "n": 32000,
+      "observed": 0.991668,
+      "predicted": 0.9960121666666669
+    },
+    {
+      "cutoff": 16000,
+      "target": "retention_curve",
+      "family": "log_data",
+      "codec": "uniform2",
+      "seed": 33,
+      "n": 32000,
+      "observed": 0.99113,
+      "predicted": 0.9960121666666669
+    }
+  ]
+}
