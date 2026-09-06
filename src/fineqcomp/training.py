@@ -6,6 +6,7 @@ import json
 import math
 import time
 from contextlib import nullcontext
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -87,6 +88,7 @@ def train_adapter(
     log_path: str | Path,
     answer_marker: str | None = None,
     answer_marker_from_end: bool = True,
+    on_update: Callable[[int, torch.optim.Optimizer], None] | None = None,
 ) -> dict[str, Any]:
     """Train only marked adapter tensors, ending on the best or the last state.
 
@@ -201,6 +203,8 @@ def train_adapter(
                     scheduler.step()
                     optimizer.zero_grad(set_to_none=True)
                     update += 1
+                    if on_update is not None:
+                        on_update(update, optimizer)
                     # Score on a fixed update cadence and at the very last
                     # update, never at epoch ends. Arms that reach the same
                     # update count through different epoch counts must get the
