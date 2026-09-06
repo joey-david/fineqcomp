@@ -1,0 +1,60 @@
+# Fixed follow-up to the seed-11 recovery; no training or calibration selection of test arms.
+version: 1
+source_lock: results/3_chain_of_thought_under_compression/conditional_trace_rate_lock.json
+models:
+- qwen25_7b_base
+seeds:
+- 11
+- 22
+- 33
+arms:
+- permuted
+checkpoints:
+- 8
+- 32
+- 128
+- 512
+- 2000
+updates: 2000
+intervention_step: 128
+intervention_rank: 2
+interventions: []
+ranks:
+- 1
+- 16
+bits:
+- 1
+- 16
+calibration_rows: 128
+gsm8k_test_rows: 1319
+symbolic_instances:
+- 0
+- 1
+- 2
+- 3
+- 4
+symbolic_source: prepared/gsm-symbolic-source.jsonl
+symbolic_sha256: 945055837b232bd9b56827b1e3a5aa019075f29e8ba4669d9a9df8b4439a291f
+generation_batch_size: 32
+max_new_tokens: 512
+retentions:
+- 0.5
+- 0.75
+- 0.9
+minimum_reference_change: 0.05
+equivalence_margin: 0.03
+storage_ratio: 0.75
+bootstrap_draws: 10000
+analysis_seed: 9052026
+field_models: []
+field_config: configs/program_selection.yaml
+field_campaign: configs/transposed_receiver_panel.yaml
+field_target: position_2
+field_incumbent: named_code
+field_exposures:
+- 1
+- 8
+kinds:
+- existing
+test_all_candidates: true
+spectral_controls: true
