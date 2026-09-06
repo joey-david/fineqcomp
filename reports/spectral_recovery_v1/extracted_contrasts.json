@@ -1,0 +1,305 @@
+{
+  "note": "Paired question bootstrap; symbolic clustered by template. Intervals are per seed and unadjusted for multiple contrasts.",
+  "contrasts": [
+    {
+      "seed": 11,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_base",
+      "delta": 0.05761940864291126,
+      "ci95": [
+        0.03639120545868082,
+        0.07884761182714177
+      ]
+    },
+    {
+      "seed": 11,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_raw",
+      "delta": 0.5981804397270659,
+      "ci95": [
+        0.5693707354056103,
+        0.6254738438210766
+      ]
+    },
+    {
+      "seed": 11,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_rank1_16bit",
+      "delta": 0.44579226686884,
+      "ci95": [
+        0.41698256254738436,
+        0.47384382107657314
+      ]
+    },
+    {
+      "seed": 11,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_random_rank1",
+      "delta": 0.03260045489006824,
+      "ci95": [
+        0.012111448066717228,
+        0.05307050796057619
+      ]
+    },
+    {
+      "seed": 11,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_fullrank_1bit",
+      "delta": 0.2880970432145564,
+      "ci95": [
+        0.25928733889310085,
+        0.3169067475360121
+      ]
+    },
+    {
+      "seed": 11,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_base",
+      "delta": 0.05800000000000005,
+      "ci95": [
+        0.014000000000000005,
+        0.10204999999999928
+      ]
+    },
+    {
+      "seed": 11,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_raw",
+      "delta": 0.614,
+      "ci95": [
+        0.5379999999999999,
+        0.6899999999999998
+      ]
+    },
+    {
+      "seed": 11,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_rank1_16bit",
+      "delta": 0.48600000000000004,
+      "ci95": [
+        0.40199999999999997,
+        0.57
+      ]
+    },
+    {
+      "seed": 11,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_random_rank1",
+      "delta": 0.05600000000000005,
+      "ci95": [
+        0.011999999999999997,
+        0.102
+      ]
+    },
+    {
+      "seed": 11,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_fullrank_1bit",
+      "delta": 0.342,
+      "ci95": [
+        0.27399999999999997,
+        0.41600000000000004
+      ]
+    },
+    {
+      "seed": 22,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_base",
+      "delta": 0.05913570887035635,
+      "ci95": [
+        0.03790750568612585,
+        0.0803639120545868
+      ]
+    },
+    {
+      "seed": 22,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_raw",
+      "delta": 0.5905989385898408,
+      "ci95": [
+        0.5617892342683851,
+        0.6178923426838514
+      ]
+    },
+    {
+      "seed": 22,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_rank1_16bit",
+      "delta": 0.31387414708112216,
+      "ci95": [
+        0.28582259287338896,
+        0.3411675511751327
+      ]
+    },
+    {
+      "seed": 22,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_random_rank1",
+      "delta": 0.04397270659590602,
+      "ci95": [
+        0.02350265352539803,
+        0.06444275966641395
+      ]
+    },
+    {
+      "seed": 22,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_fullrank_1bit",
+      "delta": 0.17513267626990148,
+      "ci95": [
+        0.14935557240333586,
+        0.20090978013646701
+      ]
+    },
+    {
+      "seed": 22,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_base",
+      "delta": 0.06600000000000006,
+      "ci95": [
+        0.024000000000000004,
+        0.11
+      ]
+    },
+    {
+      "seed": 22,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_raw",
+      "delta": 0.626,
+      "ci95": [
+        0.5539999999999999,
+        0.698
+      ]
+    },
+    {
+      "seed": 22,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_rank1_16bit",
+      "delta": 0.35400000000000004,
+      "ci95": [
+        0.274,
+        0.43799999999999994
+      ]
+    },
+    {
+      "seed": 22,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_random_rank1",
+      "delta": 0.05800000000000005,
+      "ci95": [
+        0.018000000000000002,
+        0.09999999999999998
+      ]
+    },
+    {
+      "seed": 22,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_fullrank_1bit",
+      "delta": 0.21799999999999997,
+      "ci95": [
+        0.15000000000000002,
+        0.28800000000000003
+      ]
+    },
+    {
+      "seed": 33,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_base",
+      "delta": 0.05382865807429871,
+      "ci95": [
+        0.032600454890068235,
+        0.07505686125852919
+      ]
+    },
+    {
+      "seed": 33,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_raw",
+      "delta": 0.5974222896133434,
+      "ci95": [
+        0.5686125852918877,
+        0.624715693707354
+      ]
+    },
+    {
+      "seed": 33,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_rank1_16bit",
+      "delta": 0.4533737680060652,
+      "ci95": [
+        0.422289613343442,
+        0.4836997725549659
+      ]
+    },
+    {
+      "seed": 33,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_random_rank1",
+      "delta": 0.0181956027293404,
+      "ci95": [
+        -0.001516300227445034,
+        0.03790750568612585
+      ]
+    },
+    {
+      "seed": 33,
+      "split": "gsm8k",
+      "comparison": "r1_b1_minus_fullrank_1bit",
+      "delta": 0.0826383623957544,
+      "ci95": [
+        0.060652009097801364,
+        0.10462471569370735
+      ]
+    },
+    {
+      "seed": 33,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_base",
+      "delta": 0.062000000000000055,
+      "ci95": [
+        0.018,
+        0.10800000000000001
+      ]
+    },
+    {
+      "seed": 33,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_raw",
+      "delta": 0.628,
+      "ci95": [
+        0.5539999999999999,
+        0.7
+      ]
+    },
+    {
+      "seed": 33,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_rank1_16bit",
+      "delta": 0.47400000000000003,
+      "ci95": [
+        0.39599999999999996,
+        0.5539999999999999
+      ]
+    },
+    {
+      "seed": 33,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_random_rank1",
+      "delta": 0.050000000000000044,
+      "ci95": [
+        0.006000000000000003,
+        0.09599999999999997
+      ]
+    },
+    {
+      "seed": 33,
+      "split": "symbolic",
+      "comparison": "r1_b1_minus_fullrank_1bit",
+      "delta": 0.118,
+      "ci95": [
+        0.057999999999999996,
+        0.18000000000000005
+      ]
+    }
+  ]
+}
