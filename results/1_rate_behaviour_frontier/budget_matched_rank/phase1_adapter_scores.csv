@@ -1,0 +1,13 @@
+run_id,model_key,dataset_key,seed,ranks,matched_cells,mean_retained_gain_points
+mistral-kind-code__mistral-7b-base__kind-code__all-linear-r16__s11__aa3871047c,mistral_7b_base,kind_code,11,"[1, 2, 4, 8]",22,30.3986067152081
+mistral-kind-code__mistral-7b-base__kind-code__all-linear-r16__s22__d79db6a95e,mistral_7b_base,kind_code,22,"[1, 2, 4, 8]",22,30.718902594782715
+mistral-kind-code__mistral-7b-base__kind-code__all-linear-r16__s33__d6755d3785,mistral_7b_base,kind_code,33,"[1, 2, 4, 8]",22,30.8060248223709
+mistral-panel-math__mistral-7b-base__panel-math__all-linear-r16__s11__a40ac04e3d,mistral_7b_base,panel_math,11,"[1, 2, 4, 8]",22,25.26216706888567
+mistral-panel-math__mistral-7b-base__panel-math__all-linear-r16__s22__4d40f6fb72,mistral_7b_base,panel_math,22,"[1, 2, 4, 8]",22,24.80450298626771
+mistral-panel-math__mistral-7b-base__panel-math__all-linear-r16__s33__5def8675b7,mistral_7b_base,panel_math,33,"[1, 2, 4, 8]",22,21.94233178214275
+qwen25-kind-code__qwen25-7b-base__kind-code__all-linear-r16__s11__5ebaf38834,qwen25_7b_base,kind_code,11,"[1, 2, 4, 8]",22,46.220250303616226
+qwen25-kind-code__qwen25-7b-base__kind-code__all-linear-r16__s22__4340ebd7bd,qwen25_7b_base,kind_code,22,"[1, 2, 4, 8]",22,46.781053751919586
+qwen25-kind-code__qwen25-7b-base__kind-code__all-linear-r16__s33__c104401224,qwen25_7b_base,kind_code,33,"[1, 2, 4, 8]",22,45.637749401244825
+qwen25-panel-math__qwen25-7b-base__panel-math__all-linear-r16__s11__b456af4c70,qwen25_7b_base,panel_math,11,"[1, 2, 4, 8]",22,19.75951338196607
+qwen25-panel-math__qwen25-7b-base__panel-math__all-linear-r16__s22__df87eb47ab,qwen25_7b_base,panel_math,22,"[1, 2, 4, 8]",22,21.075036285444675
+qwen25-panel-math__qwen25-7b-base__panel-math__all-linear-r16__s33__8c6fb050a1,qwen25_7b_base,panel_math,33,"[1, 2, 4, 8]",22,19.978495257140967

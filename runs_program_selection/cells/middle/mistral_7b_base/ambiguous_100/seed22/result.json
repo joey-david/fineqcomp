@@ -1,0 +1,55 @@
+{
+  "agreement": {
+    "index_1": 0.8681640625,
+    "median": 0.0205078125,
+    "middle": 0.0478515625,
+    "second_smallest": 0.001953125
+  },
+  "argmax_share": {
+    "index_1": 0.900390625,
+    "median": 0.0302734375,
+    "middle": 0.0654296875,
+    "second_smallest": 0.00390625
+  },
+  "arm": "ambiguous_100",
+  "dominant_program": "index_1",
+  "elapsed_seconds": 163.23405839316547,
+  "epochs": 18,
+  "family": "middle",
+  "finished_at": 1788429523.3490055,
+  "influence": null,
+  "mass": {
+    "index_1": 0.8976234658689574,
+    "median": 0.031154117845118602,
+    "middle": 0.06640520070853273,
+    "second_smallest": 0.00481722241005995
+  },
+  "model": "mistral_7b_base",
+  "optimizer_updates": 256,
+  "predicted_post_training_program": "second_smallest",
+  "probe_rows": 1024,
+  "programs": [
+    "index_1",
+    "middle",
+    "median",
+    "second_smallest"
+  ],
+  "seed": 22,
+  "stage": "train",
+  "target_program": "second_smallest",
+  "train_rows": 228,
+  "training": {
+    "adapter_rank": 16,
+    "best_validation_nll": 7.97857365826953e-09,
+    "elapsed_seconds": 129.66766340192407,
+    "epochs": 18,
+    "optimizer_updates": 256,
+    "peak_memory_bytes": 5941252096,
+    "restored_best": false,
+    "train_examples": 228,
+    "trainable_parameters": 41943040
+  },
+  "training_region_accuracy": 1.0,
+  "unmatched_fraction": 0.0615234375,
+  "version": 1
+}

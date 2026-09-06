@@ -1,0 +1,4692 @@
+{
+  "base_argmax_share": {
+    "count_a": 0.0,
+    "count_vowels": 0.0,
+    "parity_a": 0.0078125,
+    "presence_a": 0.9921875
+  },
+  "base_mass": {
+    "count_a": 0.121880312985013,
+    "count_vowels": 0.026366781567048747,
+    "parity_a": 0.26727560273138806,
+    "presence_a": 0.5844773022690788
+  },
+  "candidate_table": [
+    {
+      "difficulty": 3,
+      "example_id": "count-35f302a4abde",
+      "input": {
+        "text": "mimapaolckacav"
+      },
+      "mass_on_dominant": 0.609503448009491,
+      "mean_nll": 5.668869654337565
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-9093d603370a",
+      "input": {
+        "text": "sqiaazhg"
+      },
+      "mass_on_dominant": 0.5626333355903625,
+      "mean_nll": 5.603162129720052
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4c24362805d3",
+      "input": {
+        "text": "sjiabezaxhk"
+      },
+      "mass_on_dominant": 0.4939820170402527,
+      "mean_nll": 5.689270655314128
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5593f7df4a95",
+      "input": {
+        "text": "wduuziaap"
+      },
+      "mass_on_dominant": 0.5341667532920837,
+      "mean_nll": 5.691336313883464
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-feffe77fd500",
+      "input": {
+        "text": "uainiaveo"
+      },
+      "mass_on_dominant": 0.5356091856956482,
+      "mean_nll": 5.655554453531901
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5f46d42b9b7f",
+      "input": {
+        "text": "ufarboakge"
+      },
+      "mass_on_dominant": 0.5695274472236633,
+      "mean_nll": 5.703362782796224
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-946674cd020b",
+      "input": {
+        "text": "dgqpzxiaahnjsd"
+      },
+      "mass_on_dominant": 0.544460117816925,
+      "mean_nll": 5.888339996337891
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-bd7c291c6357",
+      "input": {
+        "text": "aeaxbfaaj"
+      },
+      "mass_on_dominant": 0.6284787654876709,
+      "mean_nll": 5.620463053385417
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-59262caedc63",
+      "input": {
+        "text": "pawcesrczhjgtha"
+      },
+      "mass_on_dominant": 0.5566670298576355,
+      "mean_nll": 5.781002680460612
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-fd30e40e7967",
+      "input": {
+        "text": "weetaexataaw"
+      },
+      "mass_on_dominant": 0.7176404595375061,
+      "mean_nll": 5.556348164876302
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-758ad663d9ce",
+      "input": {
+        "text": "xnjcaerlawcpdhqv"
+      },
+      "mass_on_dominant": 0.4863054156303406,
+      "mean_nll": 5.711505889892578
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-68b8c92d1a38",
+      "input": {
+        "text": "lpazroqcbac"
+      },
+      "mass_on_dominant": 0.6526514291763306,
+      "mean_nll": 5.586969375610352
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-15575414cb84",
+      "input": {
+        "text": "fdaefcrhag"
+      },
+      "mass_on_dominant": 0.5253937840461731,
+      "mean_nll": 5.868094126383464
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-1311efa7107f",
+      "input": {
+        "text": "vqaqoxlytlaxwp"
+      },
+      "mass_on_dominant": 0.5286335349082947,
+      "mean_nll": 5.860991795857747
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a4b016d5ad91",
+      "input": {
+        "text": "opjapcmemav"
+      },
+      "mass_on_dominant": 0.5441104769706726,
+      "mean_nll": 5.677076975504558
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-8900b1e08c5d",
+      "input": {
+        "text": "cfiyxavmwayr"
+      },
+      "mass_on_dominant": 0.5885560512542725,
+      "mean_nll": 5.612647374471028
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-abd071a04a11",
+      "input": {
+        "text": "mwraamgyphsu"
+      },
+      "mass_on_dominant": 0.6053683757781982,
+      "mean_nll": 5.667176564534505
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-124edb4c9ffd",
+      "input": {
+        "text": "usnarvyozbvaiq"
+      },
+      "mass_on_dominant": 0.5940752625465393,
+      "mean_nll": 5.8428802490234375
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-5a4bc0c643c5",
+      "input": {
+        "text": "avxayeaea"
+      },
+      "mass_on_dominant": 0.5459296703338623,
+      "mean_nll": 5.4491316477457685
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-9a1dff82b3cc",
+      "input": {
+        "text": "aeeapuaadp"
+      },
+      "mass_on_dominant": 0.5738372802734375,
+      "mean_nll": 5.662548065185547
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-9c8af757be83",
+      "input": {
+        "text": "iapiurcnarhk"
+      },
+      "mass_on_dominant": 0.5110287666320801,
+      "mean_nll": 5.8285268147786455
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4e37053fa35f",
+      "input": {
+        "text": "xbqcsalsolbpvra"
+      },
+      "mass_on_dominant": 0.4836477041244507,
+      "mean_nll": 5.657850901285808
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-fc3f7374b927",
+      "input": {
+        "text": "uaeapuaa"
+      },
+      "mass_on_dominant": 0.5160969495773315,
+      "mean_nll": 5.643793106079102
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-50b127ed3111",
+      "input": {
+        "text": "xdjmacfaoggy"
+      },
+      "mass_on_dominant": 0.5099466443061829,
+      "mean_nll": 5.6349531809488935
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-a85f239c21be",
+      "input": {
+        "text": "jankfaoidksaegpa"
+      },
+      "mass_on_dominant": 0.6186483502388,
+      "mean_nll": 5.8215986887613935
+    },
+    {
+      "difficulty": 5,
+      "example_id": "count-74b684809f7e",
+      "input": {
+        "text": "najjaydaiaaap"
+      },
+      "mass_on_dominant": 0.5787526369094849,
+      "mean_nll": 5.673643112182617
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-918795a7b322",
+      "input": {
+        "text": "pakcpeav"
+      },
+      "mass_on_dominant": 0.5341333746910095,
+      "mean_nll": 5.643758138020833
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-bc3da3e1d1fb",
+      "input": {
+        "text": "yuaxzapjpn"
+      },
+      "mass_on_dominant": 0.5798590183258057,
+      "mean_nll": 5.636603037516276
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-779eb53a9d60",
+      "input": {
+        "text": "daomawqqxqt"
+      },
+      "mass_on_dominant": 0.6061673760414124,
+      "mean_nll": 5.664246241251628
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-b733ace75fd2",
+      "input": {
+        "text": "asoeaapave"
+      },
+      "mass_on_dominant": 0.5704339146614075,
+      "mean_nll": 5.526466369628906
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-d83d5c03367f",
+      "input": {
+        "text": "kmmeapngzakv"
+      },
+      "mass_on_dominant": 0.5976752638816833,
+      "mean_nll": 5.724841435750325
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-c44ad63ab6e3",
+      "input": {
+        "text": "txvlyciaaehm"
+      },
+      "mass_on_dominant": 0.5768661499023438,
+      "mean_nll": 5.637270609537761
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-a2ae473ef06b",
+      "input": {
+        "text": "ixaaaajjr"
+      },
+      "mass_on_dominant": 0.5126293301582336,
+      "mean_nll": 5.54057502746582
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-e29929829036",
+      "input": {
+        "text": "sbhadaqhmgaoeai"
+      },
+      "mass_on_dominant": 0.6874493956565857,
+      "mean_nll": 5.661990483601888
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-c54d0791ccc1",
+      "input": {
+        "text": "wkhcpqaqyxtocxaj"
+      },
+      "mass_on_dominant": 0.5545871257781982,
+      "mean_nll": 5.839968999226888
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-693cfcd6e375",
+      "input": {
+        "text": "tpaajulrmlntqb"
+      },
+      "mass_on_dominant": 0.556039571762085,
+      "mean_nll": 5.793173472086589
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-01c7ba3db73b",
+      "input": {
+        "text": "easadndweqk"
+      },
+      "mass_on_dominant": 0.4831225872039795,
+      "mean_nll": 5.604502360026042
+    },
+    {
+      "difficulty": 5,
+      "example_id": "count-cdfea5cc016c",
+      "input": {
+        "text": "oqnhjhaadaaaa"
+      },
+      "mass_on_dominant": 0.45250532031059265,
+      "mean_nll": 5.564688364664714
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-233e7e286a55",
+      "input": {
+        "text": "ibagjwacv"
+      },
+      "mass_on_dominant": 0.5393897294998169,
+      "mean_nll": 5.6505584716796875
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-e5a3a67ca2ff",
+      "input": {
+        "text": "ciaaiayna"
+      },
+      "mass_on_dominant": 0.6480036973953247,
+      "mean_nll": 5.611001332600911
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f81a77d474b7",
+      "input": {
+        "text": "gfghhaiqljrnfia"
+      },
+      "mass_on_dominant": 0.4812139868736267,
+      "mean_nll": 5.709590911865234
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-675071576d2f",
+      "input": {
+        "text": "idearpaaa"
+      },
+      "mass_on_dominant": 0.5542908310890198,
+      "mean_nll": 5.591145833333333
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-d0b96781e4aa",
+      "input": {
+        "text": "oaqmqraaaim"
+      },
+      "mass_on_dominant": 0.7115927934646606,
+      "mean_nll": 5.7413756052653
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-128339baad21",
+      "input": {
+        "text": "gaaikhbl"
+      },
+      "mass_on_dominant": 0.5212133526802063,
+      "mean_nll": 5.661265691121419
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-8ce54ebc0078",
+      "input": {
+        "text": "pigashvmcernax"
+      },
+      "mass_on_dominant": 0.5617955923080444,
+      "mean_nll": 5.738564809163411
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-75eb21f4ee8f",
+      "input": {
+        "text": "amdtduoaazian"
+      },
+      "mass_on_dominant": 0.6395683288574219,
+      "mean_nll": 5.530749003092448
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-440624627e05",
+      "input": {
+        "text": "jaapaeeoax"
+      },
+      "mass_on_dominant": 0.6870564222335815,
+      "mean_nll": 5.622992833455403
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-2348c1ce4212",
+      "input": {
+        "text": "haaahcifahfsoz"
+      },
+      "mass_on_dominant": 0.593974232673645,
+      "mean_nll": 5.76711908976237
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-8579a37432a9",
+      "input": {
+        "text": "eazphsocakyxxk"
+      },
+      "mass_on_dominant": 0.5211398005485535,
+      "mean_nll": 5.70720100402832
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-131c010764df",
+      "input": {
+        "text": "vqxayuaaheya"
+      },
+      "mass_on_dominant": 0.6276570558547974,
+      "mean_nll": 5.553606033325195
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-eb9d8f9ba8d4",
+      "input": {
+        "text": "keayrmybrhkkpsat"
+      },
+      "mass_on_dominant": 0.49818581342697144,
+      "mean_nll": 5.6308339436848955
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3319e8bd992b",
+      "input": {
+        "text": "xuajpathlb"
+      },
+      "mass_on_dominant": 0.5555949211120605,
+      "mean_nll": 5.69915771484375
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-d7702a7cfc48",
+      "input": {
+        "text": "abyaekiaaszs"
+      },
+      "mass_on_dominant": 0.6651116609573364,
+      "mean_nll": 5.555627822875977
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-0f3e8475c29a",
+      "input": {
+        "text": "xaonaajaoju"
+      },
+      "mass_on_dominant": 0.5980411767959595,
+      "mean_nll": 5.582074483235677
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e6f3f607a60c",
+      "input": {
+        "text": "zmqigaudoaybehpm"
+      },
+      "mass_on_dominant": 0.5721747875213623,
+      "mean_nll": 5.864908854166667
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-ff98f57516fc",
+      "input": {
+        "text": "amqsftiajjcznnos"
+      },
+      "mass_on_dominant": 0.5116028785705566,
+      "mean_nll": 5.74821662902832
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-3e29e9cb1427",
+      "input": {
+        "text": "qwjajiaezawyaup"
+      },
+      "mass_on_dominant": 0.6128347516059875,
+      "mean_nll": 5.906085968017578
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-378e27ea6138",
+      "input": {
+        "text": "itzlgkaadsyg"
+      },
+      "mass_on_dominant": 0.5736163258552551,
+      "mean_nll": 5.708168029785156
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-78d89a896ff0",
+      "input": {
+        "text": "vcvpxwalaobdr"
+      },
+      "mass_on_dominant": 0.5059117078781128,
+      "mean_nll": 5.658948262532552
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e5d54b8d2894",
+      "input": {
+        "text": "pcaawfhnrvewfk"
+      },
+      "mass_on_dominant": 0.46087905764579773,
+      "mean_nll": 5.923256556193034
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-c2c16fd6d75c",
+      "input": {
+        "text": "arxatqniztt"
+      },
+      "mass_on_dominant": 0.6525260210037231,
+      "mean_nll": 5.636025746663411
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-46a6d660c6f7",
+      "input": {
+        "text": "eaydawyz"
+      },
+      "mass_on_dominant": 0.5790264010429382,
+      "mean_nll": 5.670509338378906
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-661738e9a29d",
+      "input": {
+        "text": "ncvujekjqjuaaara"
+      },
+      "mass_on_dominant": 0.5891705751419067,
+      "mean_nll": 5.748821258544922
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-92b4081b54ce",
+      "input": {
+        "text": "fktwsdauia"
+      },
+      "mass_on_dominant": 0.5293231010437012,
+      "mean_nll": 5.839771270751953
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-226275af9915",
+      "input": {
+        "text": "ajmrhxwaij"
+      },
+      "mass_on_dominant": 0.6264169812202454,
+      "mean_nll": 5.722822825113933
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3df82323287d",
+      "input": {
+        "text": "ykkaybsaucsdkq"
+      },
+      "mass_on_dominant": 0.5450230836868286,
+      "mean_nll": 5.753063201904297
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-d2531946c4b1",
+      "input": {
+        "text": "rwcxlpizwtada"
+      },
+      "mass_on_dominant": 0.5620936751365662,
+      "mean_nll": 5.857404708862305
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-90a6ade1b096",
+      "input": {
+        "text": "bxasrliixa"
+      },
+      "mass_on_dominant": 0.589597225189209,
+      "mean_nll": 5.690958658854167
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-785e8727b7d8",
+      "input": {
+        "text": "igdhauuzfaaca"
+      },
+      "mass_on_dominant": 0.59279865026474,
+      "mean_nll": 5.744614283243815
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e6d037374238",
+      "input": {
+        "text": "bdsneaavz"
+      },
+      "mass_on_dominant": 0.5718845725059509,
+      "mean_nll": 5.711343129475911
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a1b153b41c64",
+      "input": {
+        "text": "yplrzlohzqgfaa"
+      },
+      "mass_on_dominant": 0.5026507377624512,
+      "mean_nll": 5.798601150512695
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-c1278c7d1059",
+      "input": {
+        "text": "iapoambiaajm"
+      },
+      "mass_on_dominant": 0.6708819270133972,
+      "mean_nll": 5.834903717041016
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-8b112f09881d",
+      "input": {
+        "text": "ecuhaafwhf"
+      },
+      "mass_on_dominant": 0.5254988074302673,
+      "mean_nll": 5.538930257161458
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-b8f158730f65",
+      "input": {
+        "text": "ejyxsrabax"
+      },
+      "mass_on_dominant": 0.60793536901474,
+      "mean_nll": 5.710896809895833
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-9a93a6c24e5e",
+      "input": {
+        "text": "utipaaaa"
+      },
+      "mass_on_dominant": 0.5195519924163818,
+      "mean_nll": 5.427004496256511
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5a5575b4abfc",
+      "input": {
+        "text": "trautabe"
+      },
+      "mass_on_dominant": 0.6316524744033813,
+      "mean_nll": 5.319172541300456
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-811fbbec7d1e",
+      "input": {
+        "text": "ajhahohktsaa"
+      },
+      "mass_on_dominant": 0.559429943561554,
+      "mean_nll": 5.7006988525390625
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-002b28485087",
+      "input": {
+        "text": "ygqcavpdaej"
+      },
+      "mass_on_dominant": 0.6176377534866333,
+      "mean_nll": 5.658410390218099
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5325554bc942",
+      "input": {
+        "text": "aonijhspa"
+      },
+      "mass_on_dominant": 0.5110906958580017,
+      "mean_nll": 5.621828715006511
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f1454338ee25",
+      "input": {
+        "text": "qlfaaymbfu"
+      },
+      "mass_on_dominant": 0.6045525074005127,
+      "mean_nll": 5.4851531982421875
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-6f4509304b88",
+      "input": {
+        "text": "saqaduvpw"
+      },
+      "mass_on_dominant": 0.5401976704597473,
+      "mean_nll": 5.633097330729167
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-d360b85e8a80",
+      "input": {
+        "text": "brafwafwftje"
+      },
+      "mass_on_dominant": 0.4561462104320526,
+      "mean_nll": 5.761009216308594
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-bdc1e13b4e16",
+      "input": {
+        "text": "jdanchfhaxcmdqfu"
+      },
+      "mass_on_dominant": 0.5047548413276672,
+      "mean_nll": 5.777788798014323
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-18fe5051e251",
+      "input": {
+        "text": "wcxvlixaeafegb"
+      },
+      "mass_on_dominant": 0.4992208778858185,
+      "mean_nll": 5.779555638631185
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-13f98b6229b6",
+      "input": {
+        "text": "negtbreaa"
+      },
+      "mass_on_dominant": 0.6081569194793701,
+      "mean_nll": 5.5653076171875
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-9a1a3aed4ac2",
+      "input": {
+        "text": "earkzlmaehyfdyl"
+      },
+      "mass_on_dominant": 0.544607400894165,
+      "mean_nll": 5.766408920288086
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5fe5252ff331",
+      "input": {
+        "text": "yjwawusaxnkksqgz"
+      },
+      "mass_on_dominant": 0.5011518597602844,
+      "mean_nll": 5.833478291829427
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-c6ce387ca108",
+      "input": {
+        "text": "ankeaeastwapfuj"
+      },
+      "mass_on_dominant": 0.6179041266441345,
+      "mean_nll": 5.768318812052409
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-ddbfb6eac2a9",
+      "input": {
+        "text": "kaiabtnqd"
+      },
+      "mass_on_dominant": 0.575171947479248,
+      "mean_nll": 5.820911407470703
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-165c8dbd1847",
+      "input": {
+        "text": "ceaaordsle"
+      },
+      "mass_on_dominant": 0.5505602359771729,
+      "mean_nll": 5.29115358988444
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a9bd9e9e6ce0",
+      "input": {
+        "text": "zajlqxqmsoza"
+      },
+      "mass_on_dominant": 0.6112971901893616,
+      "mean_nll": 5.765638987223308
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-21740df970b1",
+      "input": {
+        "text": "qxqzanwuaaca"
+      },
+      "mass_on_dominant": 0.6882832646369934,
+      "mean_nll": 5.83245849609375
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-12b9294e637c",
+      "input": {
+        "text": "jdasasbapktabduz"
+      },
+      "mass_on_dominant": 0.6704880595207214,
+      "mean_nll": 5.8100331624348955
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-b63b8ed94a3f",
+      "input": {
+        "text": "oteaaatcajhi"
+      },
+      "mass_on_dominant": 0.6357265710830688,
+      "mean_nll": 5.717187245686849
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-7b95dc4703f0",
+      "input": {
+        "text": "swfiaujaaa"
+      },
+      "mass_on_dominant": 0.5580961108207703,
+      "mean_nll": 5.642445246378581
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f6aa66384cac",
+      "input": {
+        "text": "bvxmlpfkazgao"
+      },
+      "mass_on_dominant": 0.5129511952400208,
+      "mean_nll": 5.872805913289388
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-45379cd8cbbb",
+      "input": {
+        "text": "zfiqctwalzjbyair"
+      },
+      "mass_on_dominant": 0.5647372007369995,
+      "mean_nll": 5.6990966796875
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-8498f46bd2df",
+      "input": {
+        "text": "aahyxgrecanaibjz"
+      },
+      "mass_on_dominant": 0.6449688673019409,
+      "mean_nll": 5.7835845947265625
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-5d2c0427dd3c",
+      "input": {
+        "text": "fkvulshyqvaaaa"
+      },
+      "mass_on_dominant": 0.49259498715400696,
+      "mean_nll": 5.8816172281901045
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-bbb9554f38db",
+      "input": {
+        "text": "axntcqcpraqevcll"
+      },
+      "mass_on_dominant": 0.492133229970932,
+      "mean_nll": 5.670462926228841
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-9efd9d130852",
+      "input": {
+        "text": "oreajfapabrmjroa"
+      },
+      "mass_on_dominant": 0.6607010364532471,
+      "mean_nll": 5.66889762878418
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f240c74ce2bc",
+      "input": {
+        "text": "kagxbfdyuafjsx"
+      },
+      "mass_on_dominant": 0.5169881582260132,
+      "mean_nll": 5.88978640238444
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-60bc0755c28c",
+      "input": {
+        "text": "zlamroai"
+      },
+      "mass_on_dominant": 0.6186929941177368,
+      "mean_nll": 5.643245697021484
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-e28c41687d1d",
+      "input": {
+        "text": "aqzuadeagia"
+      },
+      "mass_on_dominant": 0.6824519038200378,
+      "mean_nll": 5.6047108968098955
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a120bc75f196",
+      "input": {
+        "text": "zrapvagi"
+      },
+      "mass_on_dominant": 0.6436427235603333,
+      "mean_nll": 5.582383473714192
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-af6ec707c632",
+      "input": {
+        "text": "ankxyahyu"
+      },
+      "mass_on_dominant": 0.5589466691017151,
+      "mean_nll": 5.718167622884114
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-72488731241e",
+      "input": {
+        "text": "zeaixardi"
+      },
+      "mass_on_dominant": 0.6746270060539246,
+      "mean_nll": 5.444357554117839
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-3bbc1b95d4d9",
+      "input": {
+        "text": "eaataaicj"
+      },
+      "mass_on_dominant": 0.5853278040885925,
+      "mean_nll": 5.700476328531901
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-c545a36faec5",
+      "input": {
+        "text": "xahongfqlyzlalsp"
+      },
+      "mass_on_dominant": 0.4915408194065094,
+      "mean_nll": 5.726387023925781
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-7dffdd7758af",
+      "input": {
+        "text": "zwtlzukatqa"
+      },
+      "mass_on_dominant": 0.6964251399040222,
+      "mean_nll": 5.852465947469075
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4088bc9dba2f",
+      "input": {
+        "text": "kfifazzammbz"
+      },
+      "mass_on_dominant": 0.5439890623092651,
+      "mean_nll": 5.716570536295573
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-978597325d1a",
+      "input": {
+        "text": "aznmnszcaijbbg"
+      },
+      "mass_on_dominant": 0.5292840600013733,
+      "mean_nll": 5.686707814534505
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-6e151798417b",
+      "input": {
+        "text": "oixatztekarm"
+      },
+      "mass_on_dominant": 0.5715279579162598,
+      "mean_nll": 5.683937708536784
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-63e88e7bdde2",
+      "input": {
+        "text": "zalznwuka"
+      },
+      "mass_on_dominant": 0.643151581287384,
+      "mean_nll": 5.736541748046875
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-777c83ee9d0e",
+      "input": {
+        "text": "kajriacaaikphz"
+      },
+      "mass_on_dominant": 0.611793041229248,
+      "mean_nll": 5.844657897949219
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-ee03c97a54e2",
+      "input": {
+        "text": "yiadllhmaymg"
+      },
+      "mass_on_dominant": 0.5241944193840027,
+      "mean_nll": 5.709269205729167
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-d6d2d8f29b2e",
+      "input": {
+        "text": "skhnucoasa"
+      },
+      "mass_on_dominant": 0.6049960255622864,
+      "mean_nll": 5.553307215372722
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-2fcac2bb2e0f",
+      "input": {
+        "text": "hzaujoam"
+      },
+      "mass_on_dominant": 0.6053499579429626,
+      "mean_nll": 5.676066080729167
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f9eacbcd21cb",
+      "input": {
+        "text": "zrarmuidnbtirazs"
+      },
+      "mass_on_dominant": 0.5783451795578003,
+      "mean_nll": 5.9629770914713545
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-e249fce2e962",
+      "input": {
+        "text": "wpzoaaitanuant"
+      },
+      "mass_on_dominant": 0.6889906525611877,
+      "mean_nll": 5.583841323852539
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4eb23cc6453e",
+      "input": {
+        "text": "fmvazabylppni"
+      },
+      "mass_on_dominant": 0.5696832537651062,
+      "mean_nll": 5.822193145751953
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-b3a3884754d1",
+      "input": {
+        "text": "knkihtaxaabtkab"
+      },
+      "mass_on_dominant": 0.6727898716926575,
+      "mean_nll": 5.780256907145183
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-8465885e000f",
+      "input": {
+        "text": "vlfaioaqyfcpilh"
+      },
+      "mass_on_dominant": 0.4831079840660095,
+      "mean_nll": 5.597313563028972
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-04ad0179d276",
+      "input": {
+        "text": "hapxnane"
+      },
+      "mass_on_dominant": 0.5217894911766052,
+      "mean_nll": 5.489569346110026
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-1c156e6d1f7c",
+      "input": {
+        "text": "wjciaazbhqlwrcfl"
+      },
+      "mass_on_dominant": 0.5217412710189819,
+      "mean_nll": 5.889420827229817
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4ced73b7ae6f",
+      "input": {
+        "text": "hclzaasuqj"
+      },
+      "mass_on_dominant": 0.540627121925354,
+      "mean_nll": 5.550436655680339
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-fe540b7667d6",
+      "input": {
+        "text": "karcwojdonzax"
+      },
+      "mass_on_dominant": 0.6247725486755371,
+      "mean_nll": 5.844748814900716
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5f1cb09bce6d",
+      "input": {
+        "text": "aoagwqbwzwhuhyfx"
+      },
+      "mass_on_dominant": 0.5430158972740173,
+      "mean_nll": 5.949639638264974
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-ec31a565f60e",
+      "input": {
+        "text": "noasqtxaoarpuza"
+      },
+      "mass_on_dominant": 0.6441146731376648,
+      "mean_nll": 5.650362650553386
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-b6214ed742f3",
+      "input": {
+        "text": "gxzaycxfyfamu"
+      },
+      "mass_on_dominant": 0.5435744524002075,
+      "mean_nll": 5.647172927856445
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-5141e2382300",
+      "input": {
+        "text": "gdnhuafaraouab"
+      },
+      "mass_on_dominant": 0.6712963581085205,
+      "mean_nll": 5.825072606404622
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-54c0d0677997",
+      "input": {
+        "text": "hranyfhicplas"
+      },
+      "mass_on_dominant": 0.5182468295097351,
+      "mean_nll": 5.710944493611653
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5630095b8699",
+      "input": {
+        "text": "jjqycasdkulvtaf"
+      },
+      "mass_on_dominant": 0.49041393399238586,
+      "mean_nll": 5.845098495483398
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-0fa45ee02a39",
+      "input": {
+        "text": "xakubsbaj"
+      },
+      "mass_on_dominant": 0.6049501895904541,
+      "mean_nll": 5.694449106852214
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-522af1188631",
+      "input": {
+        "text": "aaaoegzai"
+      },
+      "mass_on_dominant": 0.5120244026184082,
+      "mean_nll": 5.634176890055339
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-0717d2867c24",
+      "input": {
+        "text": "aqpaaguuai"
+      },
+      "mass_on_dominant": 0.6138587594032288,
+      "mean_nll": 5.554181416829427
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-39c11d4d0f20",
+      "input": {
+        "text": "qzaafdklepxqfi"
+      },
+      "mass_on_dominant": 0.545221745967865,
+      "mean_nll": 5.814563115437825
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-312975c8b3fb",
+      "input": {
+        "text": "pbrahakykgnypbe"
+      },
+      "mass_on_dominant": 0.5368613004684448,
+      "mean_nll": 5.841772715250651
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-da70a1e2f69b",
+      "input": {
+        "text": "quxawrnaxhwex"
+      },
+      "mass_on_dominant": 0.559794545173645,
+      "mean_nll": 5.876699447631836
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-9d305534dae2",
+      "input": {
+        "text": "asawirrv"
+      },
+      "mass_on_dominant": 0.5353017449378967,
+      "mean_nll": 5.489091237386067
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-5dbd46174a89",
+      "input": {
+        "text": "xappoopacyappeaw"
+      },
+      "mass_on_dominant": 0.5891389846801758,
+      "mean_nll": 5.697790145874023
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-dc43f50b7d99",
+      "input": {
+        "text": "aaotffatap"
+      },
+      "mass_on_dominant": 0.6602203845977783,
+      "mean_nll": 5.565426508585612
+    },
+    {
+      "difficulty": 5,
+      "example_id": "count-e8951a6ee3a2",
+      "input": {
+        "text": "aagoaaaa"
+      },
+      "mass_on_dominant": 0.5448887348175049,
+      "mean_nll": 5.355532328287761
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-127957c22f72",
+      "input": {
+        "text": "rlrwfyjumhapan"
+      },
+      "mass_on_dominant": 0.5645795464515686,
+      "mean_nll": 5.838900883992513
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-6d0cef0d21b8",
+      "input": {
+        "text": "acpdfowaakqav"
+      },
+      "mass_on_dominant": 0.6318202614784241,
+      "mean_nll": 5.608945846557617
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-80ff245d8a03",
+      "input": {
+        "text": "cmmhnxsaaygikv"
+      },
+      "mass_on_dominant": 0.5053696036338806,
+      "mean_nll": 5.798662821451823
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-da9b88936332",
+      "input": {
+        "text": "akzcawrrgiool"
+      },
+      "mass_on_dominant": 0.5756555795669556,
+      "mean_nll": 5.862318674723308
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5ad3f79e9159",
+      "input": {
+        "text": "yjltpuaa"
+      },
+      "mass_on_dominant": 0.5647032260894775,
+      "mean_nll": 5.602870941162109
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-aa72b5b2ca2d",
+      "input": {
+        "text": "weueviaa"
+      },
+      "mass_on_dominant": 0.5176409482955933,
+      "mean_nll": 5.408545176188151
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-673b4c7fb981",
+      "input": {
+        "text": "qifnspmaa"
+      },
+      "mass_on_dominant": 0.5786063075065613,
+      "mean_nll": 5.647949854532878
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-d13c96cad0d8",
+      "input": {
+        "text": "caokssfa"
+      },
+      "mass_on_dominant": 0.5029768347740173,
+      "mean_nll": 5.382333755493164
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-6a277b05c4b4",
+      "input": {
+        "text": "ojkirqaavaac"
+      },
+      "mass_on_dominant": 0.6643585562705994,
+      "mean_nll": 5.713305155436198
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-90e157879b66",
+      "input": {
+        "text": "qajgdrqkhjea"
+      },
+      "mass_on_dominant": 0.5759674310684204,
+      "mean_nll": 5.798303604125977
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-6d0d3e731784",
+      "input": {
+        "text": "menfqxyuareat"
+      },
+      "mass_on_dominant": 0.5405338406562805,
+      "mean_nll": 5.671781539916992
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-57201ebce2ff",
+      "input": {
+        "text": "awahzuskd"
+      },
+      "mass_on_dominant": 0.6135987639427185,
+      "mean_nll": 5.589654286702474
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-769cdcea8205",
+      "input": {
+        "text": "uamdihcbbrljanbp"
+      },
+      "mass_on_dominant": 0.5173155069351196,
+      "mean_nll": 5.917490641276042
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e440f729f55c",
+      "input": {
+        "text": "rauaulufu"
+      },
+      "mass_on_dominant": 0.5883817672729492,
+      "mean_nll": 5.574210484822591
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-5027e50cf5c7",
+      "input": {
+        "text": "hasmnoaaia"
+      },
+      "mass_on_dominant": 0.6651999354362488,
+      "mean_nll": 5.393538157145183
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-d9d4f36be518",
+      "input": {
+        "text": "azhtlzamyoeaa"
+      },
+      "mass_on_dominant": 0.6920151114463806,
+      "mean_nll": 5.7599302927653
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4d4459303b26",
+      "input": {
+        "text": "cqptalfuwoa"
+      },
+      "mass_on_dominant": 0.5599169135093689,
+      "mean_nll": 5.739153544108073
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-9d026a0ad23b",
+      "input": {
+        "text": "oaxayaause"
+      },
+      "mass_on_dominant": 0.6619911789894104,
+      "mean_nll": 5.54478136698405
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-9e7cc43cdfcd",
+      "input": {
+        "text": "vaapkakmqukal"
+      },
+      "mass_on_dominant": 0.7281464338302612,
+      "mean_nll": 5.751120249430339
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4acdc6c09c22",
+      "input": {
+        "text": "kgtqhlazqersfra"
+      },
+      "mass_on_dominant": 0.5382068753242493,
+      "mean_nll": 5.873653411865234
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-db2de500000b",
+      "input": {
+        "text": "ufkoasiua"
+      },
+      "mass_on_dominant": 0.5301425457000732,
+      "mean_nll": 5.677069981892903
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-e1f2f882645b",
+      "input": {
+        "text": "ypjraizaaafo"
+      },
+      "mass_on_dominant": 0.6053116321563721,
+      "mean_nll": 5.640916188557942
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-02de5a11496d",
+      "input": {
+        "text": "djuvecaqwexvan"
+      },
+      "mass_on_dominant": 0.5688439607620239,
+      "mean_nll": 5.869906107584636
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-94b9e5232c23",
+      "input": {
+        "text": "ylzesldama"
+      },
+      "mass_on_dominant": 0.65248042345047,
+      "mean_nll": 5.618743896484375
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-fe9e5fa9b6e4",
+      "input": {
+        "text": "qiaizytafedd"
+      },
+      "mass_on_dominant": 0.5895305871963501,
+      "mean_nll": 5.88201904296875
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3912585fce73",
+      "input": {
+        "text": "yajhocwalkfxcv"
+      },
+      "mass_on_dominant": 0.498624712228775,
+      "mean_nll": 5.823581059773763
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a94c0ecb8e6a",
+      "input": {
+        "text": "wazaludtqc"
+      },
+      "mass_on_dominant": 0.613264799118042,
+      "mean_nll": 5.688426335652669
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-dc008ce9ebf0",
+      "input": {
+        "text": "dmpwardelqadesp"
+      },
+      "mass_on_dominant": 0.47363558411598206,
+      "mean_nll": 5.720930735270183
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-1034ccea0a4e",
+      "input": {
+        "text": "munxkbapad"
+      },
+      "mass_on_dominant": 0.5968654155731201,
+      "mean_nll": 5.582019805908203
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-b372b83db643",
+      "input": {
+        "text": "catebgmaioaan"
+      },
+      "mass_on_dominant": 0.6545854210853577,
+      "mean_nll": 5.667272567749023
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-b1e695804a51",
+      "input": {
+        "text": "dkaalpdupywt"
+      },
+      "mass_on_dominant": 0.5402976870536804,
+      "mean_nll": 5.844523111979167
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3db35c7171bf",
+      "input": {
+        "text": "wmfksoaibnxca"
+      },
+      "mass_on_dominant": 0.5656690001487732,
+      "mean_nll": 5.812272389729817
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a1c9a9fe5389",
+      "input": {
+        "text": "dzgbzfsewasapg"
+      },
+      "mass_on_dominant": 0.5521045923233032,
+      "mean_nll": 5.774383544921875
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-9e233b1ad3a1",
+      "input": {
+        "text": "rlvxaqaaqpeexach"
+      },
+      "mass_on_dominant": 0.7117835283279419,
+      "mean_nll": 5.898967742919922
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4bb0ccf78632",
+      "input": {
+        "text": "keaquyfafll"
+      },
+      "mass_on_dominant": 0.5404341816902161,
+      "mean_nll": 5.627051035563151
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4a874e5dc70d",
+      "input": {
+        "text": "asrramdehn"
+      },
+      "mass_on_dominant": 0.5596446990966797,
+      "mean_nll": 5.457173665364583
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f895e20a9a7e",
+      "input": {
+        "text": "waostoay"
+      },
+      "mass_on_dominant": 0.6717884540557861,
+      "mean_nll": 5.499619801839192
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-aba08447426c",
+      "input": {
+        "text": "aoljgtaaaui"
+      },
+      "mass_on_dominant": 0.6304059028625488,
+      "mean_nll": 5.750974655151367
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-84c97a0ff20c",
+      "input": {
+        "text": "avjafgucl"
+      },
+      "mass_on_dominant": 0.5201164484024048,
+      "mean_nll": 5.533175150553386
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-68bfe964ba22",
+      "input": {
+        "text": "evatvaeada"
+      },
+      "mass_on_dominant": 0.638515830039978,
+      "mean_nll": 5.457942962646484
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-1f58ca7b45be",
+      "input": {
+        "text": "avreytopjja"
+      },
+      "mass_on_dominant": 0.6160906553268433,
+      "mean_nll": 5.5122222900390625
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5d1bf7e4baa5",
+      "input": {
+        "text": "iqpaxrkwwcjgah"
+      },
+      "mass_on_dominant": 0.5118447542190552,
+      "mean_nll": 5.758713404337565
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-0c5b67ad048f",
+      "input": {
+        "text": "aidyzovnfivwca"
+      },
+      "mass_on_dominant": 0.5357231497764587,
+      "mean_nll": 5.649004618326823
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-923d9715842a",
+      "input": {
+        "text": "aaauuuat"
+      },
+      "mass_on_dominant": 0.49646979570388794,
+      "mean_nll": 5.466561635335286
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f1194eb1f442",
+      "input": {
+        "text": "pkupdcgxycvbaaxb"
+      },
+      "mass_on_dominant": 0.44363826513290405,
+      "mean_nll": 5.911777496337891
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-5ccdac1a153f",
+      "input": {
+        "text": "mewaaovovaa"
+      },
+      "mass_on_dominant": 0.5147997736930847,
+      "mean_nll": 5.669380187988281
+    },
+    {
+      "difficulty": 5,
+      "example_id": "count-37ffb0dce683",
+      "input": {
+        "text": "jgaaeanaqaa"
+      },
+      "mass_on_dominant": 0.5701529383659363,
+      "mean_nll": 5.592948277791341
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5bfa58fee916",
+      "input": {
+        "text": "apbmvabgbqnfyew"
+      },
+      "mass_on_dominant": 0.5067020654678345,
+      "mean_nll": 5.858510335286458
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-dc85c639805c",
+      "input": {
+        "text": "aqulbnfjpkca"
+      },
+      "mass_on_dominant": 0.5411096215248108,
+      "mean_nll": 5.671824137369792
+    },
+    {
+      "difficulty": 5,
+      "example_id": "count-9e76ff404961",
+      "input": {
+        "text": "ahvxaaacaoa"
+      },
+      "mass_on_dominant": 0.5222228169441223,
+      "mean_nll": 5.609691619873047
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-2b406440d07d",
+      "input": {
+        "text": "tnbauqlxchglkcsa"
+      },
+      "mass_on_dominant": 0.5311787724494934,
+      "mean_nll": 5.795417785644531
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-6cc6a42c9ac1",
+      "input": {
+        "text": "fwdplajhavtgu"
+      },
+      "mass_on_dominant": 0.5291457772254944,
+      "mean_nll": 5.905648549397786
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-aeb4f9ca8503",
+      "input": {
+        "text": "dxvaxdhea"
+      },
+      "mass_on_dominant": 0.4532395303249359,
+      "mean_nll": 5.522117614746094
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-54a8154e4f07",
+      "input": {
+        "text": "uaoaotjnyj"
+      },
+      "mass_on_dominant": 0.570799708366394,
+      "mean_nll": 5.8533980051676435
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-46a98543693b",
+      "input": {
+        "text": "fawppbexqrfactyo"
+      },
+      "mass_on_dominant": 0.5027084946632385,
+      "mean_nll": 5.803094863891602
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3710fdd51eb3",
+      "input": {
+        "text": "auglagprpehn"
+      },
+      "mass_on_dominant": 0.590273380279541,
+      "mean_nll": 5.750156402587891
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-11b79be91d7e",
+      "input": {
+        "text": "aakibeaay"
+      },
+      "mass_on_dominant": 0.7606432437896729,
+      "mean_nll": 5.647539138793945
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-140af9abe794",
+      "input": {
+        "text": "expnljxylaslagog"
+      },
+      "mass_on_dominant": 0.5555411577224731,
+      "mean_nll": 5.806590398152669
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-0019a0bf3961",
+      "input": {
+        "text": "tyusgwawsa"
+      },
+      "mass_on_dominant": 0.6762179732322693,
+      "mean_nll": 5.693463643391927
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-bccf10bef9a8",
+      "input": {
+        "text": "poyysjabbhsas"
+      },
+      "mass_on_dominant": 0.5446170568466187,
+      "mean_nll": 5.734059015909831
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-f0e8eeece9c1",
+      "input": {
+        "text": "aasaigtdagj"
+      },
+      "mass_on_dominant": 0.6402803659439087,
+      "mean_nll": 5.747613906860352
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-374213742ff2",
+      "input": {
+        "text": "doaanifc"
+      },
+      "mass_on_dominant": 0.5692888498306274,
+      "mean_nll": 5.650332768758138
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5f4c7e740b6d",
+      "input": {
+        "text": "vyqeywbzkapfqa"
+      },
+      "mass_on_dominant": 0.5627051591873169,
+      "mean_nll": 5.8638121287028
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-18ebf0af8b08",
+      "input": {
+        "text": "ynfejawyfwazw"
+      },
+      "mass_on_dominant": 0.6119564771652222,
+      "mean_nll": 5.741870244344075
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-929306549da0",
+      "input": {
+        "text": "htagdyegsxgdaj"
+      },
+      "mass_on_dominant": 0.5081297159194946,
+      "mean_nll": 5.752098083496094
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-85a79b5ba03a",
+      "input": {
+        "text": "mufwaaaepxojavpd"
+      },
+      "mass_on_dominant": 0.6390804648399353,
+      "mean_nll": 5.842892328898112
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-cb547790eeeb",
+      "input": {
+        "text": "xkuouapkaolju"
+      },
+      "mass_on_dominant": 0.530164361000061,
+      "mean_nll": 5.732449849446614
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-87dd80900a4a",
+      "input": {
+        "text": "spavacbdbhjvxvsu"
+      },
+      "mass_on_dominant": 0.48823028802871704,
+      "mean_nll": 5.756072362263997
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-32deb16f7872",
+      "input": {
+        "text": "oeaauxaha"
+      },
+      "mass_on_dominant": 0.586559534072876,
+      "mean_nll": 5.550561904907227
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-09ec78d4bc1e",
+      "input": {
+        "text": "aqaeagqlyiwxiayy"
+      },
+      "mass_on_dominant": 0.6733816862106323,
+      "mean_nll": 5.758806864420573
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-efe83d1bdc96",
+      "input": {
+        "text": "atcdzhaor"
+      },
+      "mass_on_dominant": 0.6202324628829956,
+      "mean_nll": 5.5167280832926435
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-b01c836a9fb6",
+      "input": {
+        "text": "inalaudl"
+      },
+      "mass_on_dominant": 0.5666601061820984,
+      "mean_nll": 5.385677337646484
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-dd9102ddc5ef",
+      "input": {
+        "text": "ddhuaoabil"
+      },
+      "mass_on_dominant": 0.613834798336029,
+      "mean_nll": 5.707143783569336
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5ed9da083a8a",
+      "input": {
+        "text": "mudaeyvajcmlh"
+      },
+      "mass_on_dominant": 0.5284243822097778,
+      "mean_nll": 5.79450798034668
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-640c95ff0919",
+      "input": {
+        "text": "quzbspaa"
+      },
+      "mass_on_dominant": 0.5909147262573242,
+      "mean_nll": 5.513186136881511
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a86f403a9cf6",
+      "input": {
+        "text": "pzafynlhkwaukk"
+      },
+      "mass_on_dominant": 0.5782788991928101,
+      "mean_nll": 5.769887288411458
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-dfa287edb69f",
+      "input": {
+        "text": "sjcakaxcjbwvoml"
+      },
+      "mass_on_dominant": 0.5217515826225281,
+      "mean_nll": 5.71156628926595
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-d0a1bdfb7ada",
+      "input": {
+        "text": "ciasfvupnap"
+      },
+      "mass_on_dominant": 0.5681793093681335,
+      "mean_nll": 5.688622792561849
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-dcb86eeec119",
+      "input": {
+        "text": "czuoeaaehkoj"
+      },
+      "mass_on_dominant": 0.5337799787521362,
+      "mean_nll": 5.716064453125
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-7f60d2c31af1",
+      "input": {
+        "text": "uqaaeaaod"
+      },
+      "mass_on_dominant": 0.5057073831558228,
+      "mean_nll": 5.530467987060547
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-c4af07d74bca",
+      "input": {
+        "text": "bwaouvadanqqasb"
+      },
+      "mass_on_dominant": 0.6554162502288818,
+      "mean_nll": 5.990160624186198
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-8f7a412cfddb",
+      "input": {
+        "text": "dweiwnapaiava"
+      },
+      "mass_on_dominant": 0.6325112581253052,
+      "mean_nll": 5.784319559733073
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-8c203b6e105f",
+      "input": {
+        "text": "naasmzqoaan"
+      },
+      "mass_on_dominant": 0.6836994886398315,
+      "mean_nll": 5.407124837239583
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-604cc7606a2b",
+      "input": {
+        "text": "yaeecipypfdao"
+      },
+      "mass_on_dominant": 0.5063264966011047,
+      "mean_nll": 5.632882436116536
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-cd2f234bff0f",
+      "input": {
+        "text": "ypeapdca"
+      },
+      "mass_on_dominant": 0.5505666136741638,
+      "mean_nll": 5.12029488881429
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-8352b4b7f5e0",
+      "input": {
+        "text": "aiyaohpn"
+      },
+      "mass_on_dominant": 0.6019694209098816,
+      "mean_nll": 5.5857187906901045
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-9d62585af686",
+      "input": {
+        "text": "abdaeexeaa"
+      },
+      "mass_on_dominant": 0.5040431618690491,
+      "mean_nll": 5.494223276774089
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-bf24e3e8b19b",
+      "input": {
+        "text": "ndbokhgtaamttafa"
+      },
+      "mass_on_dominant": 0.6672555804252625,
+      "mean_nll": 5.557834625244141
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-133fd2f78fd4",
+      "input": {
+        "text": "vslqvdvvacdahdo"
+      },
+      "mass_on_dominant": 0.46426719427108765,
+      "mean_nll": 5.584757486979167
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-203a07315be4",
+      "input": {
+        "text": "odttaaej"
+      },
+      "mass_on_dominant": 0.5453008413314819,
+      "mean_nll": 5.564811070760091
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3f88f343af45",
+      "input": {
+        "text": "htavlpceasynkmf"
+      },
+      "mass_on_dominant": 0.5260989665985107,
+      "mean_nll": 5.796006520589192
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-1c68bda216dd",
+      "input": {
+        "text": "jpzaawaqeaguwobn"
+      },
+      "mass_on_dominant": 0.6552724242210388,
+      "mean_nll": 5.693154017130534
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-551f27f8abb4",
+      "input": {
+        "text": "osevnvavajnvpq"
+      },
+      "mass_on_dominant": 0.5097705721855164,
+      "mean_nll": 5.76040522257487
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-7acfaecf51ce",
+      "input": {
+        "text": "tsawaympraavo"
+      },
+      "mass_on_dominant": 0.7425476312637329,
+      "mean_nll": 5.700450897216797
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-079f27602f39",
+      "input": {
+        "text": "lapliyahkqc"
+      },
+      "mass_on_dominant": 0.6468296051025391,
+      "mean_nll": 5.686866124471028
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-6754d68f8f29",
+      "input": {
+        "text": "aqkgjwomnfarqkn"
+      },
+      "mass_on_dominant": 0.5131765604019165,
+      "mean_nll": 5.767317454020183
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-1fab6e0a1e59",
+      "input": {
+        "text": "aoaideaa"
+      },
+      "mass_on_dominant": 0.565051257610321,
+      "mean_nll": 5.550245920817058
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4b6a6d19a233",
+      "input": {
+        "text": "gxwlntuqwraayxcr"
+      },
+      "mass_on_dominant": 0.5609089136123657,
+      "mean_nll": 5.780714670817058
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-ca24d73ef21b",
+      "input": {
+        "text": "qyyomtaaoava"
+      },
+      "mass_on_dominant": 0.7231166958808899,
+      "mean_nll": 5.692122141520183
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-41b0d2077032",
+      "input": {
+        "text": "ndgflrdjyaaih"
+      },
+      "mass_on_dominant": 0.5384901165962219,
+      "mean_nll": 5.606609344482422
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-8c16abff7e45",
+      "input": {
+        "text": "slbjsamiumwa"
+      },
+      "mass_on_dominant": 0.6181219816207886,
+      "mean_nll": 5.5579376220703125
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-853606c1b92c",
+      "input": {
+        "text": "maihaazaue"
+      },
+      "mass_on_dominant": 0.6310285925865173,
+      "mean_nll": 5.511483510335286
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-230b95550dc2",
+      "input": {
+        "text": "lxatiameahlgawxy"
+      },
+      "mass_on_dominant": 0.6547969579696655,
+      "mean_nll": 5.592586517333984
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-242066fbd375",
+      "input": {
+        "text": "ebnmsaskwknjjmad"
+      },
+      "mass_on_dominant": 0.4424884617328644,
+      "mean_nll": 5.728959401448567
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-1d3a63f7b0a4",
+      "input": {
+        "text": "aydbkrjaaaodpwi"
+      },
+      "mass_on_dominant": 0.6380515694618225,
+      "mean_nll": 5.694725672403972
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-8028dc594a7d",
+      "input": {
+        "text": "ypadaqwyno"
+      },
+      "mass_on_dominant": 0.6197320222854614,
+      "mean_nll": 5.503678639729817
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-c8c1dae29996",
+      "input": {
+        "text": "axhajzcornsms"
+      },
+      "mass_on_dominant": 0.5265015959739685,
+      "mean_nll": 5.740924835205078
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-80d53aa45018",
+      "input": {
+        "text": "onapzekqmaapdas"
+      },
+      "mass_on_dominant": 0.6913092732429504,
+      "mean_nll": 5.579165776570638
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-04891d9e120d",
+      "input": {
+        "text": "adalrxrsirmu"
+      },
+      "mass_on_dominant": 0.5783714056015015,
+      "mean_nll": 5.68617057800293
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-9960b06432a4",
+      "input": {
+        "text": "rnaueaeaba"
+      },
+      "mass_on_dominant": 0.6235982179641724,
+      "mean_nll": 5.742737452189128
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-2d99ac824160",
+      "input": {
+        "text": "kkmsjpsuxlkayabx"
+      },
+      "mass_on_dominant": 0.47000426054000854,
+      "mean_nll": 5.770881652832031
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-bca7e2b4fcb5",
+      "input": {
+        "text": "xcwaefzazqx"
+      },
+      "mass_on_dominant": 0.46315455436706543,
+      "mean_nll": 5.632447560628255
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-823fab339f88",
+      "input": {
+        "text": "oavaulaza"
+      },
+      "mass_on_dominant": 0.6875100135803223,
+      "mean_nll": 5.469706217447917
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-51fd7dad18db",
+      "input": {
+        "text": "pafdkooa"
+      },
+      "mass_on_dominant": 0.5408188700675964,
+      "mean_nll": 5.534576416015625
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-276b168330eb",
+      "input": {
+        "text": "psscawalccqckhov"
+      },
+      "mass_on_dominant": 0.5007697343826294,
+      "mean_nll": 5.606590906778972
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-028d5ef76514",
+      "input": {
+        "text": "pkaaiftvxkto"
+      },
+      "mass_on_dominant": 0.5269554257392883,
+      "mean_nll": 5.8524430592854815
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-eef8dea79de4",
+      "input": {
+        "text": "afapmjvewwy"
+      },
+      "mass_on_dominant": 0.5006909966468811,
+      "mean_nll": 5.6352113087972
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-1da24e012ed7",
+      "input": {
+        "text": "kvbunsaalxsgxbg"
+      },
+      "mass_on_dominant": 0.4958975613117218,
+      "mean_nll": 5.862174352010091
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-ff9ad154b92c",
+      "input": {
+        "text": "zsztaauh"
+      },
+      "mass_on_dominant": 0.5778605937957764,
+      "mean_nll": 5.598377863566081
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-9d3b8f560e91",
+      "input": {
+        "text": "qjnvoama"
+      },
+      "mass_on_dominant": 0.6523512601852417,
+      "mean_nll": 5.628332138061523
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e991c4ac7910",
+      "input": {
+        "text": "gatadigc"
+      },
+      "mass_on_dominant": 0.5306168794631958,
+      "mean_nll": 5.648108164469401
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-5b9a6fbfeef3",
+      "input": {
+        "text": "tubaataa"
+      },
+      "mass_on_dominant": 0.5446729063987732,
+      "mean_nll": 5.522185643513997
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-870033c8d062",
+      "input": {
+        "text": "daqaozzxgmymdcv"
+      },
+      "mass_on_dominant": 0.5133762955665588,
+      "mean_nll": 5.871503829956055
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-c8cae9e2b2ce",
+      "input": {
+        "text": "vdgaexakfapa"
+      },
+      "mass_on_dominant": 0.6104835271835327,
+      "mean_nll": 5.677071889241536
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f4668847992d",
+      "input": {
+        "text": "qbqautpxxdoabe"
+      },
+      "mass_on_dominant": 0.6019882559776306,
+      "mean_nll": 5.808078765869141
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-488da5ac3bad",
+      "input": {
+        "text": "uaattjjz"
+      },
+      "mass_on_dominant": 0.5448933243751526,
+      "mean_nll": 5.673996607462565
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-c65717e56d99",
+      "input": {
+        "text": "waeqaoaa"
+      },
+      "mass_on_dominant": 0.5678651332855225,
+      "mean_nll": 5.429078420003255
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-790572648fde",
+      "input": {
+        "text": "aihiwaaa"
+      },
+      "mass_on_dominant": 0.43944060802459717,
+      "mean_nll": 5.597628911336263
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-b2d3739305af",
+      "input": {
+        "text": "ncapsnanimqqym"
+      },
+      "mass_on_dominant": 0.5561639070510864,
+      "mean_nll": 5.673435211181641
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-ce3dbf560519",
+      "input": {
+        "text": "ahxvxcqbiaqhy"
+      },
+      "mass_on_dominant": 0.5082669854164124,
+      "mean_nll": 5.705701192220052
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-182f65164775",
+      "input": {
+        "text": "uatjaewl"
+      },
+      "mass_on_dominant": 0.6600509881973267,
+      "mean_nll": 5.651602427164714
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-0bdba62ef4a3",
+      "input": {
+        "text": "hcdobcxangaysdw"
+      },
+      "mass_on_dominant": 0.504958987236023,
+      "mean_nll": 5.829385757446289
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-0baed325f6bd",
+      "input": {
+        "text": "epakeqbvamwvgck"
+      },
+      "mass_on_dominant": 0.5269759297370911,
+      "mean_nll": 5.770394643147786
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5a9f64ba3741",
+      "input": {
+        "text": "zotforbzdxabqma"
+      },
+      "mass_on_dominant": 0.5736936926841736,
+      "mean_nll": 5.878415425618489
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-fbef9936046f",
+      "input": {
+        "text": "awqyakillx"
+      },
+      "mass_on_dominant": 0.5839208364486694,
+      "mean_nll": 5.631012598673503
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f950ae7e5757",
+      "input": {
+        "text": "gmlyaalwxpnxui"
+      },
+      "mass_on_dominant": 0.537818431854248,
+      "mean_nll": 5.8849226633707685
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f9d46f66f687",
+      "input": {
+        "text": "xaaojuqv"
+      },
+      "mass_on_dominant": 0.3951680064201355,
+      "mean_nll": 5.623254140218099
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a34bc71e54ec",
+      "input": {
+        "text": "dazbrdzecjatsm"
+      },
+      "mass_on_dominant": 0.552540123462677,
+      "mean_nll": 5.757272084554036
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-059b21e326d1",
+      "input": {
+        "text": "vaafeusrzcqfojm"
+      },
+      "mass_on_dominant": 0.4920196831226349,
+      "mean_nll": 5.725727081298828
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3a9f740ba8c6",
+      "input": {
+        "text": "pagdhiwcwlmaie"
+      },
+      "mass_on_dominant": 0.5873124599456787,
+      "mean_nll": 5.679412841796875
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-f03fae93868e",
+      "input": {
+        "text": "xuaauwaacfvyeryb"
+      },
+      "mass_on_dominant": 0.6379092931747437,
+      "mean_nll": 5.763673146565755
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-9f4e38020b4d",
+      "input": {
+        "text": "abtpbvuglpgrac"
+      },
+      "mass_on_dominant": 0.5688014626502991,
+      "mean_nll": 5.62666130065918
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-42992dd57441",
+      "input": {
+        "text": "aedbfiqsadfbmj"
+      },
+      "mass_on_dominant": 0.44209814071655273,
+      "mean_nll": 5.809886296590169
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-09282472bbd3",
+      "input": {
+        "text": "aaufnmatoalrovwf"
+      },
+      "mass_on_dominant": 0.6145185828208923,
+      "mean_nll": 5.707466125488281
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-bac19f0832e9",
+      "input": {
+        "text": "aakuivaeah"
+      },
+      "mass_on_dominant": 0.6550965905189514,
+      "mean_nll": 5.736972808837891
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-fe84813d8a66",
+      "input": {
+        "text": "asxityedxkaaaj"
+      },
+      "mass_on_dominant": 0.6045882105827332,
+      "mean_nll": 5.664621353149414
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-448c6209080f",
+      "input": {
+        "text": "ahaivmpjmtj"
+      },
+      "mass_on_dominant": 0.49708306789398193,
+      "mean_nll": 5.732861836751302
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-507e362ff193",
+      "input": {
+        "text": "spldpkgawipmvjma"
+      },
+      "mass_on_dominant": 0.4926242530345917,
+      "mean_nll": 5.491776784261067
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-8d0bf0d6b7ad",
+      "input": {
+        "text": "rayeaseaa"
+      },
+      "mass_on_dominant": 0.6295233964920044,
+      "mean_nll": 5.494541168212891
+    },
+    {
+      "difficulty": 5,
+      "example_id": "count-028dbb2d0a99",
+      "input": {
+        "text": "gnqmgaaaaafakho"
+      },
+      "mass_on_dominant": 0.643116295337677,
+      "mean_nll": 5.679625829060872
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-060b5a0463b1",
+      "input": {
+        "text": "ikiaphpsaaatq"
+      },
+      "mass_on_dominant": 0.5876598954200745,
+      "mean_nll": 5.849348068237305
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-703dc967805b",
+      "input": {
+        "text": "liaxgnobac"
+      },
+      "mass_on_dominant": 0.611647367477417,
+      "mean_nll": 5.719123204549153
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-bd5aa9239266",
+      "input": {
+        "text": "yrzyapzbcgaeft"
+      },
+      "mass_on_dominant": 0.5812811255455017,
+      "mean_nll": 5.879937489827474
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-0fd133b368a8",
+      "input": {
+        "text": "aaclaxkeqofaos"
+      },
+      "mass_on_dominant": 0.5842043161392212,
+      "mean_nll": 5.657971064249675
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-c1843e7f9fb3",
+      "input": {
+        "text": "axgzheuaajanbmv"
+      },
+      "mass_on_dominant": 0.6080244183540344,
+      "mean_nll": 5.860618591308594
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-134f5a6a1839",
+      "input": {
+        "text": "byyqzhaamvqtbdu"
+      },
+      "mass_on_dominant": 0.55227130651474,
+      "mean_nll": 5.545848846435547
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-160279fbe06b",
+      "input": {
+        "text": "axwmybaqe"
+      },
+      "mass_on_dominant": 0.5780825018882751,
+      "mean_nll": 5.537855784098308
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-7bd98dfe769d",
+      "input": {
+        "text": "dzsagxidazid"
+      },
+      "mass_on_dominant": 0.46828988194465637,
+      "mean_nll": 5.67729377746582
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-42f7147ed161",
+      "input": {
+        "text": "vxavanfe"
+      },
+      "mass_on_dominant": 0.5114526748657227,
+      "mean_nll": 5.521776835123698
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-432ac8eeb13d",
+      "input": {
+        "text": "arqlwojqalrc"
+      },
+      "mass_on_dominant": 0.6068487763404846,
+      "mean_nll": 5.673285166422526
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-ddd3fdab3699",
+      "input": {
+        "text": "gpiszsjrzlqcoiaa"
+      },
+      "mass_on_dominant": 0.5544195771217346,
+      "mean_nll": 5.816372553507487
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-3b4ea65de309",
+      "input": {
+        "text": "bahrqxaaabo"
+      },
+      "mass_on_dominant": 0.6990203857421875,
+      "mean_nll": 5.686826070149739
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5acc0d53752e",
+      "input": {
+        "text": "ezkjwarfhayj"
+      },
+      "mass_on_dominant": 0.5187435746192932,
+      "mean_nll": 5.657599131266276
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-201e1c7fb741",
+      "input": {
+        "text": "srabpiam"
+      },
+      "mass_on_dominant": 0.6023191809654236,
+      "mean_nll": 5.559733708699544
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-82b6142810a1",
+      "input": {
+        "text": "aduekglna"
+      },
+      "mass_on_dominant": 0.6087193489074707,
+      "mean_nll": 5.517328262329102
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-625f38ff8f03",
+      "input": {
+        "text": "vjoannpiaodrwaaq"
+      },
+      "mass_on_dominant": 0.6683900356292725,
+      "mean_nll": 5.76046625773112
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-b50c267afd3c",
+      "input": {
+        "text": "aavarohea"
+      },
+      "mass_on_dominant": 0.5977596044540405,
+      "mean_nll": 5.599875132242839
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-22f7c2f02a19",
+      "input": {
+        "text": "fzeaaaladvc"
+      },
+      "mass_on_dominant": 0.5190141201019287,
+      "mean_nll": 5.806470235188802
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-64dd270aff50",
+      "input": {
+        "text": "rrsbazoxa"
+      },
+      "mass_on_dominant": 0.5554543137550354,
+      "mean_nll": 5.642726898193359
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4df742a2153b",
+      "input": {
+        "text": "reaoubqhatop"
+      },
+      "mass_on_dominant": 0.6062971353530884,
+      "mean_nll": 5.689716339111328
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f2bcf3a2002c",
+      "input": {
+        "text": "nufadrptqjfa"
+      },
+      "mass_on_dominant": 0.5090203285217285,
+      "mean_nll": 5.702720006306966
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-6cff3aeb36ef",
+      "input": {
+        "text": "aamhiagxtaivwu"
+      },
+      "mass_on_dominant": 0.5529031753540039,
+      "mean_nll": 5.773841222127278
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-d5c58c387570",
+      "input": {
+        "text": "azbaucakasim"
+      },
+      "mass_on_dominant": 0.7013056874275208,
+      "mean_nll": 5.7056223551432295
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-70cbb6a89fd8",
+      "input": {
+        "text": "fbambvhetsvqha"
+      },
+      "mass_on_dominant": 0.4951290488243103,
+      "mean_nll": 5.898997624715169
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-d964701bce59",
+      "input": {
+        "text": "alxfcaawudczuab"
+      },
+      "mass_on_dominant": 0.6035900712013245,
+      "mean_nll": 5.686246236165364
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-d24676f98db4",
+      "input": {
+        "text": "akjauaynua"
+      },
+      "mass_on_dominant": 0.6704488396644592,
+      "mean_nll": 5.722572326660156
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-d00aef5b23d1",
+      "input": {
+        "text": "zfwahahasgdlqia"
+      },
+      "mass_on_dominant": 0.6303195953369141,
+      "mean_nll": 5.753002166748047
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-ab33a2f6d36a",
+      "input": {
+        "text": "pmoaipqarmwwb"
+      },
+      "mass_on_dominant": 0.5532706379890442,
+      "mean_nll": 5.808801015218099
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5a97fb8df734",
+      "input": {
+        "text": "ntapigqcazpdx"
+      },
+      "mass_on_dominant": 0.6359894871711731,
+      "mean_nll": 5.712306976318359
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-811c76910c9c",
+      "input": {
+        "text": "bgajfaaearkyg"
+      },
+      "mass_on_dominant": 0.6543579697608948,
+      "mean_nll": 5.775644302368164
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-572f5b0a5841",
+      "input": {
+        "text": "osmxnicrspmaag"
+      },
+      "mass_on_dominant": 0.5310145020484924,
+      "mean_nll": 5.706114451090495
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f8d2eae683a0",
+      "input": {
+        "text": "mibqbascax"
+      },
+      "mass_on_dominant": 0.587279736995697,
+      "mean_nll": 5.774814605712891
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f7e5b90a5d82",
+      "input": {
+        "text": "xmaasfyxec"
+      },
+      "mass_on_dominant": 0.46656036376953125,
+      "mean_nll": 5.639018376668294
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-1657076360a2",
+      "input": {
+        "text": "trohwylaafqujh"
+      },
+      "mass_on_dominant": 0.5967592000961304,
+      "mean_nll": 5.691272735595703
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-83dd03e15c05",
+      "input": {
+        "text": "mamprhwymauek"
+      },
+      "mass_on_dominant": 0.549575686454773,
+      "mean_nll": 5.769528706868489
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-58b96c11b320",
+      "input": {
+        "text": "atyulaebwatas"
+      },
+      "mass_on_dominant": 0.6928218007087708,
+      "mean_nll": 5.566108067830403
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e958a344c14c",
+      "input": {
+        "text": "tcrcacaifnshyho"
+      },
+      "mass_on_dominant": 0.5316145420074463,
+      "mean_nll": 5.821694056193034
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5923a987248d",
+      "input": {
+        "text": "yuaiaiyhjld"
+      },
+      "mass_on_dominant": 0.5102838277816772,
+      "mean_nll": 5.641567230224609
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-718bc6e0929b",
+      "input": {
+        "text": "aaiswieavma"
+      },
+      "mass_on_dominant": 0.5809261202812195,
+      "mean_nll": 5.665570576985677
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-f28e26bce76c",
+      "input": {
+        "text": "qaewhaava"
+      },
+      "mass_on_dominant": 0.6648073792457581,
+      "mean_nll": 5.6577574412028
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-85601e136f97",
+      "input": {
+        "text": "azaaeudya"
+      },
+      "mass_on_dominant": 0.5965402722358704,
+      "mean_nll": 5.586598714192708
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-db4b861f6026",
+      "input": {
+        "text": "bvcrtulfthcatav"
+      },
+      "mass_on_dominant": 0.46897897124290466,
+      "mean_nll": 5.767107009887695
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-f8154d184111",
+      "input": {
+        "text": "xfqaeaaaoxwmtboc"
+      },
+      "mass_on_dominant": 0.601097047328949,
+      "mean_nll": 5.614927291870117
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e4778d34c339",
+      "input": {
+        "text": "hwqhficxhpkaoga"
+      },
+      "mass_on_dominant": 0.4969256520271301,
+      "mean_nll": 5.728803634643555
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-78e15403b612",
+      "input": {
+        "text": "rxaetktaz"
+      },
+      "mass_on_dominant": 0.678872287273407,
+      "mean_nll": 5.87013308207194
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-84d62ca10105",
+      "input": {
+        "text": "alzravlrikrzpk"
+      },
+      "mass_on_dominant": 0.5746883153915405,
+      "mean_nll": 5.815957387288411
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-89791b3844d1",
+      "input": {
+        "text": "znuwmcxamhzqaz"
+      },
+      "mass_on_dominant": 0.6598392128944397,
+      "mean_nll": 5.80691401163737
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-08590c2219a6",
+      "input": {
+        "text": "avzpyarow"
+      },
+      "mass_on_dominant": 0.6757974624633789,
+      "mean_nll": 5.688751220703125
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-7574da09aaad",
+      "input": {
+        "text": "gaagogwl"
+      },
+      "mass_on_dominant": 0.5688417553901672,
+      "mean_nll": 5.562081019083659
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-e18a08eade92",
+      "input": {
+        "text": "ruaauaka"
+      },
+      "mass_on_dominant": 0.6493508815765381,
+      "mean_nll": 5.642897923787435
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-56273377723d",
+      "input": {
+        "text": "rxajkaoxaa"
+      },
+      "mass_on_dominant": 0.6707625985145569,
+      "mean_nll": 5.616437276204427
+    },
+    {
+      "difficulty": 5,
+      "example_id": "count-01005c51fa6c",
+      "input": {
+        "text": "lajoaavlwaaa"
+      },
+      "mass_on_dominant": 0.5133699178695679,
+      "mean_nll": 5.707426071166992
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-fa8b5c005f95",
+      "input": {
+        "text": "iqatatfjc"
+      },
+      "mass_on_dominant": 0.513774037361145,
+      "mean_nll": 5.767896016438802
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e9cb2c3a1ec1",
+      "input": {
+        "text": "zuauakksdjsyjc"
+      },
+      "mass_on_dominant": 0.49922290444374084,
+      "mean_nll": 5.734877904256185
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-0d24327648a8",
+      "input": {
+        "text": "qeeatvapsaaxq"
+      },
+      "mass_on_dominant": 0.6694484949111938,
+      "mean_nll": 5.892180760701497
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-1c8bbac3f4d3",
+      "input": {
+        "text": "toukiraagmk"
+      },
+      "mass_on_dominant": 0.5995597243309021,
+      "mean_nll": 5.703396479288737
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f4b1da30c015",
+      "input": {
+        "text": "rgryxaouwaw"
+      },
+      "mass_on_dominant": 0.6255875825881958,
+      "mean_nll": 5.724718729654948
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5840237d7367",
+      "input": {
+        "text": "xurkyxaeeya"
+      },
+      "mass_on_dominant": 0.4916658401489258,
+      "mean_nll": 5.626020431518555
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-9a235dc485cf",
+      "input": {
+        "text": "oauaiaafd"
+      },
+      "mass_on_dominant": 0.47950688004493713,
+      "mean_nll": 5.593034108479817
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-6a0b6c58a349",
+      "input": {
+        "text": "uprmhaxa"
+      },
+      "mass_on_dominant": 0.5853949189186096,
+      "mean_nll": 5.51583989461263
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a84ac59c9dcf",
+      "input": {
+        "text": "alhdcilffajpp"
+      },
+      "mass_on_dominant": 0.49453502893447876,
+      "mean_nll": 5.577823638916016
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-3497ea759230",
+      "input": {
+        "text": "vaaslqiaucap"
+      },
+      "mass_on_dominant": 0.708873987197876,
+      "mean_nll": 5.707706451416016
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-b83498ba9900",
+      "input": {
+        "text": "ycajooivrazylaa"
+      },
+      "mass_on_dominant": 0.6678938269615173,
+      "mean_nll": 5.716504414876302
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-9f8335f857f6",
+      "input": {
+        "text": "bomavkmtwxayuggo"
+      },
+      "mass_on_dominant": 0.5556126832962036,
+      "mean_nll": 5.876294453938802
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-7b7a3de4eec7",
+      "input": {
+        "text": "awicpsfasfhqpyhz"
+      },
+      "mass_on_dominant": 0.4835437536239624,
+      "mean_nll": 5.849887847900391
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-b921e3ac9d5c",
+      "input": {
+        "text": "labfaihe"
+      },
+      "mass_on_dominant": 0.5649623274803162,
+      "mean_nll": 5.540981928507487
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-bc294e62e4cc",
+      "input": {
+        "text": "jpglxajaoibktxf"
+      },
+      "mass_on_dominant": 0.5515522360801697,
+      "mean_nll": 5.775458017985026
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-eb0387f46335",
+      "input": {
+        "text": "ddysaiaboezqnr"
+      },
+      "mass_on_dominant": 0.5121737718582153,
+      "mean_nll": 5.697322845458984
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-de7ed11f513c",
+      "input": {
+        "text": "vayuraygytft"
+      },
+      "mass_on_dominant": 0.5608767867088318,
+      "mean_nll": 5.832700729370117
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-41d87d36f328",
+      "input": {
+        "text": "xdebabvmdpjbnabr"
+      },
+      "mass_on_dominant": 0.4296063482761383,
+      "mean_nll": 5.687451680501302
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-c3d381a3d915",
+      "input": {
+        "text": "akkwsccvea"
+      },
+      "mass_on_dominant": 0.45621269941329956,
+      "mean_nll": 5.655303955078125
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-fadf84e226ee",
+      "input": {
+        "text": "gaqiwkwaomc"
+      },
+      "mass_on_dominant": 0.6797826886177063,
+      "mean_nll": 5.8740081787109375
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-46eb19dcef7c",
+      "input": {
+        "text": "agakkaiozvfra"
+      },
+      "mass_on_dominant": 0.5811691880226135,
+      "mean_nll": 5.73533312479655
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-41365985ff0c",
+      "input": {
+        "text": "dcasmrfyeyaz"
+      },
+      "mass_on_dominant": 0.5674792528152466,
+      "mean_nll": 5.769702911376953
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-88fdddf70f09",
+      "input": {
+        "text": "dalrwfzia"
+      },
+      "mass_on_dominant": 0.646908164024353,
+      "mean_nll": 5.529092152913411
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-16fc65542da6",
+      "input": {
+        "text": "prvikcuaa"
+      },
+      "mass_on_dominant": 0.5327829122543335,
+      "mean_nll": 5.467746734619141
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-d1be38229776",
+      "input": {
+        "text": "amavoaiqa"
+      },
+      "mass_on_dominant": 0.6598842144012451,
+      "mean_nll": 5.572231928507487
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a938ea2af120",
+      "input": {
+        "text": "woawcereta"
+      },
+      "mass_on_dominant": 0.592948317527771,
+      "mean_nll": 5.368618011474609
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-42b55538a193",
+      "input": {
+        "text": "ecijaagmaae"
+      },
+      "mass_on_dominant": 0.5945919156074524,
+      "mean_nll": 5.6497802734375
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-13c0494e6928",
+      "input": {
+        "text": "muerckacoa"
+      },
+      "mass_on_dominant": 0.5683460235595703,
+      "mean_nll": 5.656837463378906
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-7cf85deb375e",
+      "input": {
+        "text": "zancdyaofqbaijba"
+      },
+      "mass_on_dominant": 0.6966227293014526,
+      "mean_nll": 5.774308522542317
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-33a7e468622e",
+      "input": {
+        "text": "rqedhetxaaekl"
+      },
+      "mass_on_dominant": 0.5767167210578918,
+      "mean_nll": 5.772317886352539
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-73c99ecb1c32",
+      "input": {
+        "text": "usdaflhuoba"
+      },
+      "mass_on_dominant": 0.563745379447937,
+      "mean_nll": 5.622568130493164
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-6dfd6d8afa5c",
+      "input": {
+        "text": "otcnjqpananw"
+      },
+      "mass_on_dominant": 0.5966060757637024,
+      "mean_nll": 5.604347864786784
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-6afcd96bbcd6",
+      "input": {
+        "text": "dyrnxpaapdifmnn"
+      },
+      "mass_on_dominant": 0.49820294976234436,
+      "mean_nll": 5.797691345214844
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-df9b52add3d1",
+      "input": {
+        "text": "waxaeocaad"
+      },
+      "mass_on_dominant": 0.5932426452636719,
+      "mean_nll": 5.555290857950847
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-ac9eed85e8ee",
+      "input": {
+        "text": "aeeavwebargal"
+      },
+      "mass_on_dominant": 0.6236869096755981,
+      "mean_nll": 5.64523442586263
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-31c8e40c50a4",
+      "input": {
+        "text": "uzrxajudaysqbdu"
+      },
+      "mass_on_dominant": 0.5266723036766052,
+      "mean_nll": 5.838883717854817
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-831726437ffa",
+      "input": {
+        "text": "aaadaiby"
+      },
+      "mass_on_dominant": 0.6501947641372681,
+      "mean_nll": 5.582364400227864
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3f7c5bef86c7",
+      "input": {
+        "text": "mtoaiahco"
+      },
+      "mass_on_dominant": 0.5902466773986816,
+      "mean_nll": 5.613884607950847
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-4ecdb0bca1af",
+      "input": {
+        "text": "otcababaedzaf"
+      },
+      "mass_on_dominant": 0.6445509791374207,
+      "mean_nll": 5.599651336669922
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-89ff6096bebb",
+      "input": {
+        "text": "ilanfuavqck"
+      },
+      "mass_on_dominant": 0.5636361241340637,
+      "mean_nll": 5.759512583414714
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-f74d283aa398",
+      "input": {
+        "text": "iuirgaaaaf"
+      },
+      "mass_on_dominant": 0.52024245262146,
+      "mean_nll": 5.706549962361653
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-0bdb5c84af1f",
+      "input": {
+        "text": "nrhtelwkagjfnba"
+      },
+      "mass_on_dominant": 0.5116047859191895,
+      "mean_nll": 5.813575108846028
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3c4472b99a41",
+      "input": {
+        "text": "adoasgoc"
+      },
+      "mass_on_dominant": 0.5549841523170471,
+      "mean_nll": 5.648378372192383
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e2d81d273779",
+      "input": {
+        "text": "olrgkaamj"
+      },
+      "mass_on_dominant": 0.6597570180892944,
+      "mean_nll": 5.507447560628255
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-6c058eb9ba1f",
+      "input": {
+        "text": "oamsmoca"
+      },
+      "mass_on_dominant": 0.6054719686508179,
+      "mean_nll": 5.52725346883138
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-c500cd67edbd",
+      "input": {
+        "text": "aevwgaezabjkay"
+      },
+      "mass_on_dominant": 0.7015292048454285,
+      "mean_nll": 5.827105204264323
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-0262c34e5f2e",
+      "input": {
+        "text": "brggiuwxata"
+      },
+      "mass_on_dominant": 0.5625084638595581,
+      "mean_nll": 5.601002375284831
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3cf0ac6ee744",
+      "input": {
+        "text": "acogmsqazp"
+      },
+      "mass_on_dominant": 0.6169039011001587,
+      "mean_nll": 5.6918080647786455
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-fcbac520346b",
+      "input": {
+        "text": "ekkwmapsfgac"
+      },
+      "mass_on_dominant": 0.5054181218147278,
+      "mean_nll": 5.600797653198242
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-bfae7fef55f5",
+      "input": {
+        "text": "dvhplaataloypvao"
+      },
+      "mass_on_dominant": 0.6685916781425476,
+      "mean_nll": 5.764797210693359
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-369eeca3eb9a",
+      "input": {
+        "text": "gdfiagrav"
+      },
+      "mass_on_dominant": 0.6172192096710205,
+      "mean_nll": 5.563625335693359
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-bdea17959985",
+      "input": {
+        "text": "fsuazpthwtapmnkm"
+      },
+      "mass_on_dominant": 0.45737701654434204,
+      "mean_nll": 5.878913879394531
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-2714be5093a5",
+      "input": {
+        "text": "waykoeehytuzmalo"
+      },
+      "mass_on_dominant": 0.5688728094100952,
+      "mean_nll": 5.729668299357097
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a5e66e6d45be",
+      "input": {
+        "text": "dhoaazzil"
+      },
+      "mass_on_dominant": 0.5867552161216736,
+      "mean_nll": 5.649489720662435
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-1df09b1d8d7e",
+      "input": {
+        "text": "iaahoaamq"
+      },
+      "mass_on_dominant": 0.601637065410614,
+      "mean_nll": 5.810997009277344
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-13415a7cd7e7",
+      "input": {
+        "text": "vxkyeaytekutatij"
+      },
+      "mass_on_dominant": 0.5221989154815674,
+      "mean_nll": 5.72015380859375
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-cd4d9ebdcc0b",
+      "input": {
+        "text": "aaacoufah"
+      },
+      "mass_on_dominant": 0.5980181097984314,
+      "mean_nll": 5.598676045735677
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-9c2436cac501",
+      "input": {
+        "text": "yrhiaboieuacc"
+      },
+      "mass_on_dominant": 0.6099641919136047,
+      "mean_nll": 5.686969757080078
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-89f884e39086",
+      "input": {
+        "text": "iyevxvevqfexaora"
+      },
+      "mass_on_dominant": 0.4657924473285675,
+      "mean_nll": 5.799344380696614
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-6e93cf427f0c",
+      "input": {
+        "text": "erhdgitcfakadte"
+      },
+      "mass_on_dominant": 0.5381224155426025,
+      "mean_nll": 5.589818954467773
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-290e7176f357",
+      "input": {
+        "text": "zufjbxpaoqxeabqk"
+      },
+      "mass_on_dominant": 0.5123180747032166,
+      "mean_nll": 5.80633544921875
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5344f218d43d",
+      "input": {
+        "text": "fojffvaoam"
+      },
+      "mass_on_dominant": 0.5263195633888245,
+      "mean_nll": 5.7366078694661455
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-3d6ad6e00a5a",
+      "input": {
+        "text": "iyataaau"
+      },
+      "mass_on_dominant": 0.5447180867195129,
+      "mean_nll": 5.627382914225261
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-5affad8f13b9",
+      "input": {
+        "text": "ikaqayvcndkb"
+      },
+      "mass_on_dominant": 0.5423828959465027,
+      "mean_nll": 5.835990269978841
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-fdba5c9da122",
+      "input": {
+        "text": "flqaabmnev"
+      },
+      "mass_on_dominant": 0.5059242844581604,
+      "mean_nll": 5.641970952351888
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-3f34278afb90",
+      "input": {
+        "text": "javakwyebdxqaaz"
+      },
+      "mass_on_dominant": 0.6640304923057556,
+      "mean_nll": 5.876589457194011
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-69b112e98825",
+      "input": {
+        "text": "akoeauafqwda"
+      },
+      "mass_on_dominant": 0.5649586915969849,
+      "mean_nll": 5.728587468465169
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4cc6785f7ef3",
+      "input": {
+        "text": "aciqjbarysfybg"
+      },
+      "mass_on_dominant": 0.5214545130729675,
+      "mean_nll": 5.6794891357421875
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f01773984aa4",
+      "input": {
+        "text": "jyckaacwqu"
+      },
+      "mass_on_dominant": 0.5804309248924255,
+      "mean_nll": 5.810207366943359
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-ceede683e628",
+      "input": {
+        "text": "aaaaiijdpxb"
+      },
+      "mass_on_dominant": 0.517677903175354,
+      "mean_nll": 5.8793519337972
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f1bdb43a3d9f",
+      "input": {
+        "text": "maivleaet"
+      },
+      "mass_on_dominant": 0.5768366456031799,
+      "mean_nll": 5.633501688639323
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-b235c5eee889",
+      "input": {
+        "text": "foabhvaow"
+      },
+      "mass_on_dominant": 0.5878076553344727,
+      "mean_nll": 5.646034240722656
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-bfaef8002fb9",
+      "input": {
+        "text": "ftsqkhmsaoga"
+      },
+      "mass_on_dominant": 0.5140758156776428,
+      "mean_nll": 5.774400075276692
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-cdfc95e96703",
+      "input": {
+        "text": "iptaqnzxpogzai"
+      },
+      "mass_on_dominant": 0.6023414134979248,
+      "mean_nll": 5.7918275197347
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-bdd91a83f554",
+      "input": {
+        "text": "mqauaainfeaj"
+      },
+      "mass_on_dominant": 0.7501746416091919,
+      "mean_nll": 5.627773284912109
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-c7938703657a",
+      "input": {
+        "text": "aukaasihnah"
+      },
+      "mass_on_dominant": 0.7029164433479309,
+      "mean_nll": 5.765753428141276
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-d205e9c8d463",
+      "input": {
+        "text": "aauaaubdyhj"
+      },
+      "mass_on_dominant": 0.5709163546562195,
+      "mean_nll": 5.757937749226888
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-380ad765d3db",
+      "input": {
+        "text": "zalbqcdgpea"
+      },
+      "mass_on_dominant": 0.5737497210502625,
+      "mean_nll": 5.738351186116536
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-b7e7436c5eb8",
+      "input": {
+        "text": "oldiawabaa"
+      },
+      "mass_on_dominant": 0.6377171277999878,
+      "mean_nll": 5.635250091552734
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-129cdd91865f",
+      "input": {
+        "text": "acaapvaeir"
+      },
+      "mass_on_dominant": 0.6751761436462402,
+      "mean_nll": 5.664439519246419
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3e7eda3f9ab9",
+      "input": {
+        "text": "vkvqqobnfaxntav"
+      },
+      "mass_on_dominant": 0.5236131548881531,
+      "mean_nll": 5.869146982828776
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-fbaee98c7d7c",
+      "input": {
+        "text": "auaaawnij"
+      },
+      "mass_on_dominant": 0.6068641543388367,
+      "mean_nll": 5.553757349650065
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-123babc12ff7",
+      "input": {
+        "text": "aplayfjswlyuxt"
+      },
+      "mass_on_dominant": 0.5009381771087646,
+      "mean_nll": 5.802979787190755
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-0fe7e014cd09",
+      "input": {
+        "text": "juaazfdc"
+      },
+      "mass_on_dominant": 0.5021252632141113,
+      "mean_nll": 5.625896453857422
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-c3f584f85d08",
+      "input": {
+        "text": "frbsaseavzw"
+      },
+      "mass_on_dominant": 0.49597659707069397,
+      "mean_nll": 5.810132344563802
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-fd4811428997",
+      "input": {
+        "text": "kcfsfmrlmguada"
+      },
+      "mass_on_dominant": 0.5006036162376404,
+      "mean_nll": 5.677865346272786
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-86cbf95ad55d",
+      "input": {
+        "text": "iaacdnejcbkckn"
+      },
+      "mass_on_dominant": 0.4924654960632324,
+      "mean_nll": 5.893944422403972
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-1b018dc931f1",
+      "input": {
+        "text": "kaaobkreiuo"
+      },
+      "mass_on_dominant": 0.49837061762809753,
+      "mean_nll": 5.7474320729573565
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-a0359f9f023f",
+      "input": {
+        "text": "aayhlhaxvanjsre"
+      },
+      "mass_on_dominant": 0.6013359427452087,
+      "mean_nll": 5.821590423583984
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-31fcbd243999",
+      "input": {
+        "text": "eabcznzajsxcij"
+      },
+      "mass_on_dominant": 0.49029597640037537,
+      "mean_nll": 5.863934834798177
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-c54dfab8f92a",
+      "input": {
+        "text": "mdjxspbgfuboawa"
+      },
+      "mass_on_dominant": 0.5384786128997803,
+      "mean_nll": 5.684981028238933
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-770de8c182d3",
+      "input": {
+        "text": "ombnasafzttncj"
+      },
+      "mass_on_dominant": 0.5410056114196777,
+      "mean_nll": 5.717662811279297
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-2baa92484e96",
+      "input": {
+        "text": "aooihakahwa"
+      },
+      "mass_on_dominant": 0.5750154852867126,
+      "mean_nll": 5.591602325439453
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-0867168ec53f",
+      "input": {
+        "text": "bbbaaayinagiy"
+      },
+      "mass_on_dominant": 0.563979983329773,
+      "mean_nll": 5.728843053181966
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e5233e1034bd",
+      "input": {
+        "text": "ahaduhofmiee"
+      },
+      "mass_on_dominant": 0.4865736663341522,
+      "mean_nll": 5.514382680257161
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-4977f6b1c402",
+      "input": {
+        "text": "ahlwfymrksqagun"
+      },
+      "mass_on_dominant": 0.4938306212425232,
+      "mean_nll": 5.668946584065755
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-65b36c0e49c6",
+      "input": {
+        "text": "aughcuacgkdvb"
+      },
+      "mass_on_dominant": 0.4850115180015564,
+      "mean_nll": 5.922220865885417
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f70d8e7f5384",
+      "input": {
+        "text": "rifaoamijzcdq"
+      },
+      "mass_on_dominant": 0.5085089802742004,
+      "mean_nll": 5.761850357055664
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-cd28f068025a",
+      "input": {
+        "text": "sudbaazo"
+      },
+      "mass_on_dominant": 0.6781293749809265,
+      "mean_nll": 5.464491526285808
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-cfc1dc05a6f7",
+      "input": {
+        "text": "avsvgojaxej"
+      },
+      "mass_on_dominant": 0.537569522857666,
+      "mean_nll": 5.686972300211589
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-ff6b17c3ac51",
+      "input": {
+        "text": "aogafspdsaa"
+      },
+      "mass_on_dominant": 0.501772403717041,
+      "mean_nll": 5.5649566650390625
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-beebeb6432d7",
+      "input": {
+        "text": "aebatqeaa"
+      },
+      "mass_on_dominant": 0.5813413262367249,
+      "mean_nll": 5.591590881347656
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-232d0e965557",
+      "input": {
+        "text": "uuhaakaa"
+      },
+      "mass_on_dominant": 0.5343592166900635,
+      "mean_nll": 5.499310811360677
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-ddb294cf9c5a",
+      "input": {
+        "text": "knajfuypbaadajw"
+      },
+      "mass_on_dominant": 0.6715435981750488,
+      "mean_nll": 5.901172637939453
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-3c91d29895f4",
+      "input": {
+        "text": "sxaaccnpju"
+      },
+      "mass_on_dominant": 0.481087327003479,
+      "mean_nll": 5.753114064534505
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f6265c590a23",
+      "input": {
+        "text": "qfbayovqva"
+      },
+      "mass_on_dominant": 0.6191636323928833,
+      "mean_nll": 5.7471974690755205
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e7e838699837",
+      "input": {
+        "text": "qafmsazic"
+      },
+      "mass_on_dominant": 0.5815152525901794,
+      "mean_nll": 5.615004857381185
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-30a9b8cb92fe",
+      "input": {
+        "text": "iaaniqvaa"
+      },
+      "mass_on_dominant": 0.6138879060745239,
+      "mean_nll": 5.724673589070638
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a8206dea2e11",
+      "input": {
+        "text": "kspflhgiyaqajz"
+      },
+      "mass_on_dominant": 0.5920243263244629,
+      "mean_nll": 5.795855204264323
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-b1be6e64d78d",
+      "input": {
+        "text": "juupaiqaava"
+      },
+      "mass_on_dominant": 0.6942371726036072,
+      "mean_nll": 5.736651102701823
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-ed427478a569",
+      "input": {
+        "text": "iaxfguagj"
+      },
+      "mass_on_dominant": 0.5701157450675964,
+      "mean_nll": 5.739287694295247
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-2ffcf7fe9af4",
+      "input": {
+        "text": "apwclawhexjfywbt"
+      },
+      "mass_on_dominant": 0.4945535957813263,
+      "mean_nll": 5.735612233479817
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-ab7b9e59ab0f",
+      "input": {
+        "text": "ajgddchfqomcah"
+      },
+      "mass_on_dominant": 0.49631452560424805,
+      "mean_nll": 5.718681971232097
+    },
+    {
+      "difficulty": 5,
+      "example_id": "count-9e14987d7182",
+      "input": {
+        "text": "axaqadaaayuh"
+      },
+      "mass_on_dominant": 0.6013011336326599,
+      "mean_nll": 5.497255961100261
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-a2da3f004630",
+      "input": {
+        "text": "yiaajaaejprxcy"
+      },
+      "mass_on_dominant": 0.6253687739372253,
+      "mean_nll": 5.754367192586263
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-2712eab15314",
+      "input": {
+        "text": "exhhahraflhhty"
+      },
+      "mass_on_dominant": 0.4266745150089264,
+      "mean_nll": 5.5929520924886065
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f9bc1bd90bd7",
+      "input": {
+        "text": "agyljdszfdkbvxea"
+      },
+      "mass_on_dominant": 0.4755559265613556,
+      "mean_nll": 5.827047983805339
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-fdddce9467d3",
+      "input": {
+        "text": "aiahtajumta"
+      },
+      "mass_on_dominant": 0.6590319871902466,
+      "mean_nll": 5.598105112711589
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-b0758ea17e3c",
+      "input": {
+        "text": "mafadeftdpltkph"
+      },
+      "mass_on_dominant": 0.5065852999687195,
+      "mean_nll": 5.778697331746419
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e724b6a7f0a9",
+      "input": {
+        "text": "axdharotfj"
+      },
+      "mass_on_dominant": 0.5618099570274353,
+      "mean_nll": 5.622426350911458
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-8a079b720ba1",
+      "input": {
+        "text": "aogdhoaixbxrnqu"
+      },
+      "mass_on_dominant": 0.5002515912055969,
+      "mean_nll": 5.866537729899089
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e9a187cbed7d",
+      "input": {
+        "text": "kanhafqe"
+      },
+      "mass_on_dominant": 0.6109538078308105,
+      "mean_nll": 5.47563107808431
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-9b4913a68006",
+      "input": {
+        "text": "caaabgtjyiad"
+      },
+      "mass_on_dominant": 0.5680277943611145,
+      "mean_nll": 6.078379313151042
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f3fb6a0c1bcf",
+      "input": {
+        "text": "arusaordwnvon"
+      },
+      "mass_on_dominant": 0.57220059633255,
+      "mean_nll": 5.695943196614583
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-bc89eb8d58ee",
+      "input": {
+        "text": "aunuiyaaabd"
+      },
+      "mass_on_dominant": 0.5675756335258484,
+      "mean_nll": 5.699668884277344
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-e338605f899c",
+      "input": {
+        "text": "aajxlmleptsv"
+      },
+      "mass_on_dominant": 0.5104906558990479,
+      "mean_nll": 5.804338455200195
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-a1c629c3dbe5",
+      "input": {
+        "text": "ztolaaicuaa"
+      },
+      "mass_on_dominant": 0.6463042497634888,
+      "mean_nll": 5.7298838297526045
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-e5f22a1ee932",
+      "input": {
+        "text": "tahpfxahgaewaslx"
+      },
+      "mass_on_dominant": 0.6814703345298767,
+      "mean_nll": 5.782593409220378
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-191fca1d2a0c",
+      "input": {
+        "text": "nwmgladamlpsu"
+      },
+      "mass_on_dominant": 0.5487512350082397,
+      "mean_nll": 5.582651138305664
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-cce900f73123",
+      "input": {
+        "text": "taauwaazc"
+      },
+      "mass_on_dominant": 0.6737898588180542,
+      "mean_nll": 5.486275990804036
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-9cbb7080feb4",
+      "input": {
+        "text": "afizmcakpipgpp"
+      },
+      "mass_on_dominant": 0.49936339259147644,
+      "mean_nll": 5.611886342366536
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f82e34dbf80d",
+      "input": {
+        "text": "lwehbaabr"
+      },
+      "mass_on_dominant": 0.6069543361663818,
+      "mean_nll": 5.555034001668294
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-65a0b20ff54f",
+      "input": {
+        "text": "pohabprzfua"
+      },
+      "mass_on_dominant": 0.5982330441474915,
+      "mean_nll": 5.768224716186523
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-9c86877f8538",
+      "input": {
+        "text": "pabafsle"
+      },
+      "mass_on_dominant": 0.5878392457962036,
+      "mean_nll": 5.584908803304036
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-040470fa2b1a",
+      "input": {
+        "text": "dujoifaausb"
+      },
+      "mass_on_dominant": 0.5721729397773743,
+      "mean_nll": 5.713720957438151
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-36bb3b2c94ef",
+      "input": {
+        "text": "aalhoanejuqafx"
+      },
+      "mass_on_dominant": 0.5680665969848633,
+      "mean_nll": 5.8183746337890625
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-c9356ff3c876",
+      "input": {
+        "text": "yadyasggdkunnx"
+      },
+      "mass_on_dominant": 0.5231673717498779,
+      "mean_nll": 5.703625996907552
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-456c6f880d45",
+      "input": {
+        "text": "jaahfgrhkuykt"
+      },
+      "mass_on_dominant": 0.5974696278572083,
+      "mean_nll": 5.758541107177734
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-af1eb8308c54",
+      "input": {
+        "text": "rniiabfaodbo"
+      },
+      "mass_on_dominant": 0.6179295182228088,
+      "mean_nll": 5.759070078531901
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-d2295b51a726",
+      "input": {
+        "text": "azcmccnoafphng"
+      },
+      "mass_on_dominant": 0.48792576789855957,
+      "mean_nll": 5.531215667724609
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-1499231489ff",
+      "input": {
+        "text": "ilkaasnii"
+      },
+      "mass_on_dominant": 0.5495867729187012,
+      "mean_nll": 5.637840270996094
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-1d7f022bdc43",
+      "input": {
+        "text": "gaeaebcaia"
+      },
+      "mass_on_dominant": 0.6431887149810791,
+      "mean_nll": 5.806053161621094
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-b654c2261f42",
+      "input": {
+        "text": "vuntxksaa"
+      },
+      "mass_on_dominant": 0.5187883377075195,
+      "mean_nll": 5.640482584635417
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a89debec8edc",
+      "input": {
+        "text": "xdxhaunbta"
+      },
+      "mass_on_dominant": 0.4978693723678589,
+      "mean_nll": 5.544111887613933
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-c1e802f13055",
+      "input": {
+        "text": "auauania"
+      },
+      "mass_on_dominant": 0.5896883606910706,
+      "mean_nll": 5.46835199991862
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-c30c38cd856c",
+      "input": {
+        "text": "xaaofqgrqjh"
+      },
+      "mass_on_dominant": 0.5277317762374878,
+      "mean_nll": 5.6673024495442705
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-c0cbd2501a69",
+      "input": {
+        "text": "vjaykgzhxwdxxiag"
+      },
+      "mass_on_dominant": 0.5303956270217896,
+      "mean_nll": 5.8265425364176435
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-020056aa4005",
+      "input": {
+        "text": "cdayiarwnuv"
+      },
+      "mass_on_dominant": 0.5698269009590149,
+      "mean_nll": 5.718499501546224
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-58467860e6a4",
+      "input": {
+        "text": "aubueauj"
+      },
+      "mass_on_dominant": 0.4770333170890808,
+      "mean_nll": 5.610196431477864
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-9681d47bed2e",
+      "input": {
+        "text": "aoduihpfaxaaj"
+      },
+      "mass_on_dominant": 0.6110582947731018,
+      "mean_nll": 5.722440083821614
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-a084e2103119",
+      "input": {
+        "text": "levatvarv"
+      },
+      "mass_on_dominant": 0.5414678454399109,
+      "mean_nll": 5.631009419759114
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-40c9e056bf37",
+      "input": {
+        "text": "uuraoaaa"
+      },
+      "mass_on_dominant": 0.4239775538444519,
+      "mean_nll": 5.629793167114258
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-2a17502a2362",
+      "input": {
+        "text": "wuatatbfuahqae"
+      },
+      "mass_on_dominant": 0.6585674285888672,
+      "mean_nll": 5.745299021402995
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-eba638017b6d",
+      "input": {
+        "text": "pzusaqjgzlahb"
+      },
+      "mass_on_dominant": 0.6231526732444763,
+      "mean_nll": 5.853422164916992
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-6f5fa59fbcb8",
+      "input": {
+        "text": "ebyyalkcha"
+      },
+      "mass_on_dominant": 0.5904535055160522,
+      "mean_nll": 5.5996958414713545
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-fa9f74c922c1",
+      "input": {
+        "text": "aisiuaaa"
+      },
+      "mass_on_dominant": 0.4451473355293274,
+      "mean_nll": 5.398783365885417
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-54cf0d615a90",
+      "input": {
+        "text": "ejvauehaei"
+      },
+      "mass_on_dominant": 0.6004832983016968,
+      "mean_nll": 5.619893391927083
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-c2b9ee0856e2",
+      "input": {
+        "text": "nisakwaeaua"
+      },
+      "mass_on_dominant": 0.5105518698692322,
+      "mean_nll": 5.57302983601888
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-407be85f0aa5",
+      "input": {
+        "text": "oyolajhizaarwna"
+      },
+      "mass_on_dominant": 0.7141227722167969,
+      "mean_nll": 5.650856018066406
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-7b39ccf3c4b3",
+      "input": {
+        "text": "vmkmsahahpyuv"
+      },
+      "mass_on_dominant": 0.48163604736328125,
+      "mean_nll": 5.794434229532878
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-e49a77fb7249",
+      "input": {
+        "text": "kaooaamav"
+      },
+      "mass_on_dominant": 0.5990358591079712,
+      "mean_nll": 5.62101936340332
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-f98554309c29",
+      "input": {
+        "text": "uoycxdabaj"
+      },
+      "mass_on_dominant": 0.5925448536872864,
+      "mean_nll": 5.9696400960286455
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-993ded929c33",
+      "input": {
+        "text": "kfasmxloparb"
+      },
+      "mass_on_dominant": 0.5640384554862976,
+      "mean_nll": 5.826981862386067
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-c43d64f77cd8",
+      "input": {
+        "text": "iaqvyaqaafsmx"
+      },
+      "mass_on_dominant": 0.6626015305519104,
+      "mean_nll": 5.943733851114909
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-659cc1c72b2a",
+      "input": {
+        "text": "uacybspajbbkry"
+      },
+      "mass_on_dominant": 0.5484420657157898,
+      "mean_nll": 5.917219161987305
+    },
+    {
+      "difficulty": 1,
+      "example_id": "count-7bf4d5488910",
+      "input": {
+        "text": "ontklfndkhoaaiz"
+      },
+      "mass_on_dominant": 0.556850016117096,
+      "mean_nll": 5.764723459879558
+    },
+    {
+      "difficulty": 3,
+      "example_id": "count-6e520dfca61a",
+      "input": {
+        "text": "dzatauuaae"
+      },
+      "mass_on_dominant": 0.6092246770858765,
+      "mean_nll": 5.536159515380859
+    }
+  ],
+  "controls": {
+    "matched_difficulty": {
+      "difficulty": 3,
+      "example_id": "count-5d2c0427dd3c",
+      "input": {
+        "text": "fkvulshyqvaaaa"
+      },
+      "mass_on_dominant": 0.49259498715400696,
+      "matched_on": "difficulty",
+      "matched_value": 3.0,
+      "mean_nll": 5.8816172281901045
+    },
+    "matched_loss": {
+      "difficulty": 1,
+      "example_id": "count-c3d381a3d915",
+      "input": {
+        "text": "akkwsccvea"
+      },
+      "mass_on_dominant": 0.45621269941329956,
+      "matched_on": "mean_nll",
+      "matched_value": 5.647539138793945,
+      "mean_nll": 5.655303955078125
+    },
+    "random_distinguishing": {
+      "difficulty": 1,
+      "example_id": "count-a938ea2af120",
+      "input": {
+        "text": "woawcereta"
+      },
+      "mass_on_dominant": 0.592948317527771,
+      "mean_nll": 5.368618011474609
+    }
+  },
+  "diagnostic_rows": 512,
+  "diagnostic_shots": 8,
+  "dominant_program": "presence_a",
+  "elapsed_seconds": 46.9217930638697,
+  "family": "count",
+  "finished_at": 1788422217.926584,
+  "matched_window": 32,
+  "model": "mistral_7b_base",
+  "model_name": "/lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1",
+  "predicted_post_training_program": "parity_a",
+  "program_order": [
+    "presence_a",
+    "parity_a",
+    "count_a",
+    "count_vowels"
+  ],
+  "programs": [
+    "count_a",
+    "parity_a",
+    "presence_a",
+    "count_vowels"
+  ],
+  "seed": 11,
+  "stage": "diagnose",
+  "target_program": "parity_a",
+  "targeted": {
+    "difficulty": 3,
+    "example_id": "count-11b79be91d7e",
+    "input": {
+      "text": "aakibeaay"
+    },
+    "mass_on_dominant": 0.7606432437896729,
+    "mean_nll": 5.647539138793945
+  },
+  "version": 1
+}

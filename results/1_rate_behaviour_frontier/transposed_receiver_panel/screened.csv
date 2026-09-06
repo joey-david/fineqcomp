@@ -1,0 +1,4 @@
+run_id,model_key,dataset_key,seed,reason
+transposed-math__qwen3-8b-base__panel-math__all-linear-r16__s11__adb28e32df,qwen3_8b_base,panel_math,11,base model exceeds the fixed saturation threshold
+transposed-math__qwen3-8b-base__panel-math__all-linear-r16__s22__c5dd1da026,qwen3_8b_base,panel_math,22,base model exceeds the fixed saturation threshold
+transposed-math__qwen3-8b-base__panel-math__all-linear-r16__s33__a4dc94ef89,qwen3_8b_base,panel_math,33,base model exceeds the fixed saturation threshold

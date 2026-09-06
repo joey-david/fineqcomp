@@ -1,0 +1,55 @@
+{
+  "agreement": {
+    "cap3": 0.0,
+    "mod4": 0.0,
+    "one": 1.0,
+    "steps": 0.0
+  },
+  "argmax_share": {
+    "cap3": 0.0,
+    "mod4": 0.0,
+    "one": 1.0,
+    "steps": 0.0
+  },
+  "arm": "base",
+  "dominant_program": "mod4",
+  "elapsed_seconds": 151.26704900199547,
+  "epochs": 32,
+  "family": "chain",
+  "finished_at": 1788424192.8716981,
+  "influence": null,
+  "mass": {
+    "cap3": 7.570106368421694e-09,
+    "mod4": 8.039619021386092e-06,
+    "one": 0.9999919545953162,
+    "steps": 3.662574729318256e-13
+  },
+  "model": "llama31_8b_base",
+  "optimizer_updates": 256,
+  "predicted_post_training_program": "cap3",
+  "probe_rows": 1024,
+  "programs": [
+    "steps",
+    "one",
+    "mod4",
+    "cap3"
+  ],
+  "seed": 33,
+  "stage": "train",
+  "target_program": "cap3",
+  "train_rows": 128,
+  "training": {
+    "adapter_rank": 16,
+    "best_validation_nll": 0.00027546319377728685,
+    "elapsed_seconds": 121.0904198520002,
+    "epochs": 32,
+    "optimizer_updates": 256,
+    "peak_memory_bytes": 10010534400,
+    "restored_best": false,
+    "train_examples": 128,
+    "trainable_parameters": 41943040
+  },
+  "training_region_accuracy": 1.0,
+  "unmatched_fraction": 0.0,
+  "version": 1
+}

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "status": "method_diagnostic_not_model_comparison",
+  "model": "Qwen3-0.6B thinking",
+  "dataset": "GSM8K",
+  "prompts": 8,
+  "row_sample_seed": 271828,
+  "decoding": "greedy",
+  "runs": [
+    {
+      "job": 1497990,
+      "max_new_tokens": 2048,
+      "terminated_fraction": 0.5,
+      "hit_generation_limit_fraction": 0.5,
+      "exact_match": 0.5,
+      "clipped_mean_repeated_8gram_fraction": 0.7218710724142134,
+      "terminated_mean_repeated_8gram_fraction": 0.116124272552844
+    },
+    {
+      "job": 1498464,
+      "max_new_tokens": 4096,
+      "terminated_fraction": 0.625,
+      "hit_generation_limit_fraction": 0.375,
+      "exact_match": 0.5,
+      "clipped_mean_repeated_8gram_fraction": 0.8971030803634754,
+      "terminated_mean_repeated_8gram_fraction": 0.19361174680939847
+    }
+  ],
+  "raw_pattern": "Every 4096-token clipped response repeats a short answer or arithmetic phrase. Increasing the ceiling raises the clipped responses' repeated 8-gram fraction rather than completing them.",
+  "external_contract": {
+    "source": "https://huggingface.co/Qwen/Qwen3-0.6B",
+    "recommendation": "Thinking mode uses sampling with temperature 0.6, top-p 0.95, top-k 20, and min-p 0. The model card warns that greedy decoding can cause endless repetition."
+  },
+  "decision": "Do not raise the greedy ceiling again. Mark both jobs as decoder diagnostics and rerun the same prompts with the model's pinned sampled policy and seed."
+}

@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "status": "analysis_locked_before_current_outcome_inspection",
+  "locked_at": "2026-09-01",
+  "existing_output_inventory": {
+    "created": "2026-08-26 to 2026-08-27",
+    "complete_runs": 60,
+    "screened_out_runs": 3,
+    "screened_out_arm": "qwen3_8b_base on panel_math at every seed",
+    "note": "The outputs predate this lock. The current analysis has not inspected receiver R-star orderings, but this is not a prospectively generated panel."
+  },
+  "question": "Can a frozen-model correction measure predict the rate needed to retain a fixed corpus update across receivers?",
+  "frozen_measurement": {
+    "config": "configs/transposed_receiver_panel.yaml",
+    "manifest": "prepared/transposed-manifest.jsonl",
+    "seed": 11,
+    "cells": 21,
+    "role": "One pre-fine-tuning measurement per receiver-corpus cell; the value is shared by all three training seeds.",
+    "blind_rule": "Do not inspect receiver R-star ordering until all 21 frozen measurements finish and this analysis lock is synced."
+  },
+  "primary_target": {
+    "name": "r_star_bits_per_value",
+    "definition": "Smallest exact reloadable adapter rate retaining 90% of held-out NLL gain.",
+    "note": "This rate already removes the mechanical adapter-size difference across receivers."
+  },
+  "secondary_targets": [
+    "file_bits_at_r90",
+    "r50",
+    "r75",
+    "r95"
+  ],
+  "primary_predictor": {
+    "name": "dataset_fisher_log_volume",
+    "selection": "Highest partial development correlation after the fixed token-count and text-redundancy controls."
+  },
+  "comparators": [
+    "correction_channel_bits",
+    "tokenizer_fertility_relative",
+    "base_codelength_bits_per_token",
+    "base_head_hidden_alignment",
+    "trainable_parameter_count",
+    "achieved_validation_nll_gain_bits_per_token"
+  ],
+  "quality_gates": {
+    "minimum_validation_nll_gain_bits_per_token": 0.02,
+    "require_bracketed_r_star": true,
+    "require_exact_reload": true,
+    "pilot_continuation_depends_only_on_quality": true
+  },
+  "analysis": {
+    "blocks": "corpus",
+    "fixed_contrasts": [
+      "qwen25_7b_base vs qwen25_math_7b_base",
+      "gemma2_9b_base vs gemma2_9b_instruct"
+    ],
+    "do_not_treat_cells_as_independent": true,
+    "do_not_claim_population_p_value_from_this_panel": true,
+    "success_requires_correction_improvement_over_tokenizer_fertility": {
+      "pooled_within_corpus_spearman": 0.10,
+      "paired_sign_accuracy_points": 0.10
+    }
+  },
+  "claim_boundary": "This development panel can establish receiver-axis signal and justify a fully untouched corpus. Because its training outputs predate the analysis lock, it cannot count as a prospective prediction or by itself establish prediction on a new receiver-task pair."
+}

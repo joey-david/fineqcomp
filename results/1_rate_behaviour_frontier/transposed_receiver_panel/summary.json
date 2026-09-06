@@ -1,0 +1,34 @@
+{
+  "arms": 20,
+  "cells": 60,
+  "claim_boundary": "This development panel can establish receiver-axis signal and justify a fully untouched corpus. Because its training outputs predate the analysis lock, it cannot count as a prospective prediction or by itself establish prediction on a new receiver-task pair.",
+  "gates": {
+    "all_20_arms_have_three_seeds": true,
+    "all_60_trained_cells_present": true,
+    "all_codec_ladders_complete": true,
+    "all_learning_gains_above_0_02": true,
+    "all_r_stars_bracketed": true,
+    "sign_accuracy_improvement_over_fertility": true,
+    "spearman_improvement_over_fertility": true
+  },
+  "predictive_gate_passed": true,
+  "primary": {
+    "arms": 20,
+    "candidate": "dataset_fisher_log_volume",
+    "held_out_receivers": 7,
+    "mae": 0.13429241882176574,
+    "pooled_within_corpus_spearman": -0.26530612244897955,
+    "receiver_pair_sign_accuracy": 0.38596491228070173,
+    "rmse": 0.18779839647999308
+  },
+  "screened_runs": 3,
+  "tokenizer_fertility": {
+    "arms": 20,
+    "candidate": "tokenizer_fertility_relative",
+    "held_out_receivers": 7,
+    "mae": 0.14821346978927483,
+    "pooled_within_corpus_spearman": -0.7823129251700679,
+    "receiver_pair_sign_accuracy": 0.14035087719298245,
+    "rmse": 0.19447196471752415
+  }
+}

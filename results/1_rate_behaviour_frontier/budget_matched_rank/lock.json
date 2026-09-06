@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "status": "analysis_locked_before_current_output_inspection",
+  "locked_at": "2026-09-02",
+  "existing_output_inventory": {
+    "created_before_lock": true,
+    "latest_mtime": "2026-08-26T20:31:44+02:00",
+    "adapters": 12,
+    "cells": 540,
+    "outcomes_inspected_before_reducer_lock": false
+  },
+  "question": "At a fixed serialized budget, should an adapter keep fewer well-resolved directions or more coarsely coded directions?",
+  "phase_1": {
+    "operation": "SVD-truncate 12 existing rank-16 adapters to ranks 1, 2, 4, and 8; then use the existing exact codec and held-out NLL scorer.",
+    "blocks": "2 receivers x 2 corpora x 3 seeds",
+    "control": "the same rank-16 adapter with a true zero-bit random rank mask at matched file size; ordinary one-bit and higher quantization rungs are excluded",
+    "reducer": "Within each training seed, average matched cells within rank and then average ranks 1, 2, 4, and 8 equally. Average the three seed scores within each receiver-corpus block. The interval resamples four blocks and then three seeds within each selected block.",
+    "training": "none"
+  },
+  "phase_2_gate": {
+    "proceed_only_if": "SVD truncation beats random masking within at least three of four receiver-corpus blocks and its seed-block bootstrap interval for the mean retained-gain difference excludes zero.",
+    "if_passed": "Train only rank 4 and rank 8: 2 receivers x 2 corpora x 2 ranks x 3 seeds = 24 jobs. Reuse the existing rank-16 runs.",
+    "if_failed": "Do not launch new rank training."
+  },
+  "trained_rank_primary_test": {
+    "comparison": "rank 8 trained directly versus byte-matched pruning of the existing rank-16 adapter",
+    "minimum_mean_gain_points": 5.0,
+    "minimum_winning_blocks": 3,
+    "require_seed_block_interval_above_zero": true,
+    "denominator": "gain reached by the existing trained rank-16 adapter"
+  },
+  "claim_boundary": "The phase-1 SVD screen measures post-training compressibility, not the effect of adapter rank during learning. Only phase 2 can support a trained-rank claim."
+}

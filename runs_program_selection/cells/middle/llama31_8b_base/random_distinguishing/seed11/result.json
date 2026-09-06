@@ -1,0 +1,55 @@
+{
+  "agreement": {
+    "index_1": 0.2265625,
+    "median": 0.2939453125,
+    "middle": 0.015625,
+    "second_smallest": 0.21484375
+  },
+  "argmax_share": {
+    "index_1": 0.3154296875,
+    "median": 0.3701171875,
+    "middle": 0.033203125,
+    "second_smallest": 0.28125
+  },
+  "arm": "random_distinguishing",
+  "dominant_program": "second_smallest",
+  "elapsed_seconds": 146.17561379401013,
+  "epochs": 29,
+  "family": "middle",
+  "finished_at": 1788424457.4232187,
+  "influence": null,
+  "mass": {
+    "index_1": 0.31750893810120717,
+    "median": 0.3613059452995417,
+    "middle": 0.03778058399141071,
+    "second_smallest": 0.2834045344273613
+  },
+  "model": "llama31_8b_base",
+  "optimizer_updates": 256,
+  "predicted_post_training_program": "median",
+  "probe_rows": 1024,
+  "programs": [
+    "index_1",
+    "middle",
+    "median",
+    "second_smallest"
+  ],
+  "seed": 11,
+  "stage": "train",
+  "target_program": "median",
+  "train_rows": 129,
+  "training": {
+    "adapter_rank": 16,
+    "best_validation_nll": 1.8626450382086546e-09,
+    "elapsed_seconds": 113.94775197398849,
+    "epochs": 29,
+    "optimizer_updates": 256,
+    "peak_memory_bytes": 10128280064,
+    "restored_best": false,
+    "train_examples": 129,
+    "trainable_parameters": 41943040
+  },
+  "training_region_accuracy": 1.0,
+  "unmatched_fraction": 0.2490234375,
+  "version": 1
+}
