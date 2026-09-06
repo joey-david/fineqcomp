@@ -1,0 +1,466 @@
+{
+  "cells": [
+    {
+      "arm": "permuted",
+      "id": 0,
+      "kind": "existing",
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 2,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "uniform2",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          },
+          {
+            "bits": 1,
+            "blend": 0.5,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "blend1_50",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          },
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          },
+          {
+            "bits": 0,
+            "blend": 0.5,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "sub0_08_16",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "cot_math_permuted",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_7b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s11__4cb8d87ae9",
+        "seed": 11,
+        "study": "trace_permuted_full",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 1,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 1024,
+          "max_updates": null,
+          "micro_batch_size": 4,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "qwen25_7b_base/permuted/seed11/existing"
+    },
+    {
+      "arm": "permuted",
+      "id": 1,
+      "kind": "existing",
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 2,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "uniform2",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          },
+          {
+            "bits": 1,
+            "blend": 0.5,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "blend1_50",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          },
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          },
+          {
+            "bits": 0,
+            "blend": 0.5,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "sub0_08_16",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "cot_math_permuted",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_7b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s22__e4b91b820b",
+        "seed": 22,
+        "study": "trace_permuted_full",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 1,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 1024,
+          "max_updates": null,
+          "micro_batch_size": 4,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "qwen25_7b_base/permuted/seed22/existing"
+    },
+    {
+      "arm": "permuted",
+      "id": 2,
+      "kind": "existing",
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 2,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "uniform2",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          },
+          {
+            "bits": 1,
+            "blend": 0.5,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "blend1_50",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          },
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          },
+          {
+            "bits": 0,
+            "blend": 0.5,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "sub0_08_16",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "cot_math_permuted",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_7b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s33__347ec18132",
+        "seed": 33,
+        "study": "trace_permuted_full",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 1,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 1024,
+          "max_updates": null,
+          "micro_batch_size": 4,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "qwen25_7b_base/permuted/seed33/existing"
+    }
+  ],
+  "config": {
+    "analysis_seed": 9052026,
+    "arms": [
+      "permuted"
+    ],
+    "bits": [
+      1
+    ],
+    "bootstrap_draws": 10000,
+    "calibration_rows": 128,
+    "checkpoints": [
+      8,
+      32,
+      128,
+      512,
+      2000
+    ],
+    "equivalence_margin": 0.03,
+    "field_campaign": "configs/transposed_receiver_panel.yaml",
+    "field_config": "configs/program_selection.yaml",
+    "field_exposures": [
+      1,
+      8
+    ],
+    "field_incumbent": "named_code",
+    "field_models": [],
+    "field_target": "position_2",
+    "generation_batch_size": 32,
+    "gsm8k_test_rows": 1319,
+    "intervention_rank": 2,
+    "intervention_step": 128,
+    "interventions": [],
+    "kinds": [
+      "existing"
+    ],
+    "max_new_tokens": 512,
+    "minimum_reference_change": 0.05,
+    "models": [
+      "qwen25_7b_base"
+    ],
+    "ranks": [
+      1
+    ],
+    "retentions": [
+      0.5,
+      0.75,
+      0.9
+    ],
+    "scale_controls": true,
+    "scale_sweep": [
+      0.01,
+      0.03,
+      0.1,
+      0.3,
+      1.0
+    ],
+    "seeds": [
+      11,
+      22,
+      33
+    ],
+    "source_lock": "results/3_chain_of_thought_under_compression/conditional_trace_rate_lock.json",
+    "spectral_controls": false,
+    "storage_ratio": 0.75,
+    "symbolic_instances": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "symbolic_sha256": "945055837b232bd9b56827b1e3a5aa019075f29e8ba4669d9a9df8b4439a291f",
+    "symbolic_source": "prepared/gsm-symbolic-source.jsonl",
+    "test_all_candidates": true,
+    "updates": 2000,
+    "version": 1
+  },
+  "implementation": {
+    "src/fineqcomp/__init__.py": "bfd5257de7c5608391ac3d1bfe55c5e68d44a0c0f971ee9050b883c366a54d6c",
+    "src/fineqcomp/__main__.py": "2d00442d4fa9a9f500b4558a4e786e87a29aff93b77625a0853381c7b22d1572",
+    "src/fineqcomp/adapters.py": "c20768aed91d3278cf5eb112fc15546167c39bb934370b478c1479502fa39bec",
+    "src/fineqcomp/analysis.py": "f07930d36218d809ba9155398a2d44bd959d6d9d5df945600675533b72816670",
+    "src/fineqcomp/artifacts.py": "94243d2e081e3334321a73e8fe9fa9cbe8d070e8bffa66504437de3d45677f1b",
+    "src/fineqcomp/behavioral_trajectory.py": "68f8b710f3b3abd403b97934f35997b0a0d18647affa2fdf42065d771a9e3468",
+    "src/fineqcomp/budget_probe.py": "df48a8ed874ac30866941159b7b9516d6ffdc5d5bb5f98d2cc98f1afa73341b3",
+    "src/fineqcomp/campaign.py": "339e22d3d727c605fd64d0ee2b767c2fce9b4b2e0ad2cfcf7934415f0e219888",
+    "src/fineqcomp/cli.py": "6a43ea0ae3a17de0ddacce1fbe6e42181913560352a1b3eb85a411731d5e83f8",
+    "src/fineqcomp/codec.py": "5e63844c33f1d946e55b37733c477b8f48c763dab3ef4152dd53fbd54501abd0",
+    "src/fineqcomp/config.py": "34bda6d32a7e709b29f073ae0e6a1943bf977d310e7711838be8bdd9bf3789da",
+    "src/fineqcomp/data.py": "37b52f04e19122c4767eef5ece34c0bc3815c8c20f2fa9f5166ff07624b5988c",
+    "src/fineqcomp/dataset_info.py": "cba75241480486af5634a8b102fcf539d9a7799f0db2b3a1fa74db304f6007d8",
+    "src/fineqcomp/evaluation.py": "bc7efc51ddafa43b89bba05acd94c4c31ab587e7360c23370a8a3642579860cb",
+    "src/fineqcomp/figures.py": "08898e76b41037355a1a02fe96cbf50f6dfa8ef367349c07f8f29f27478601c0",
+    "src/fineqcomp/grpo_control.py": "eab6313c3bb360ea40c567b6e259a2b3ebd7dbdb6b0d83b5b073f75329688b3e",
+    "src/fineqcomp/information_scaling.py": "e46eb451bf3dd25e6c26c11594114fec2b9947fae7967f2d240c3d142c4d0c77",
+    "src/fineqcomp/layer_profile.py": "e6f1316037f14c03ada2aa3082718ec0b0f17e0ba63724d03d39297a7b30768a",
+    "src/fineqcomp/modeling.py": "403fc618a12310af628efdd8c1108956bb423f161f43dd010a29e63a03a4044b",
+    "src/fineqcomp/pareto.py": "242472173b1a177f8130a64acda720da4f9c942d4ffe8dbcbee2a93986705370",
+    "src/fineqcomp/preflight.py": "fc36803e733f84ebba35497dd6bf81772776173fd0ca44581aeeabfae9e2e296",
+    "src/fineqcomp/program_selection.py": "fba78df16ff7fc5d21d7585c7d9a6971ec36748b5a350d87084b8c3f605f8c5f",
+    "src/fineqcomp/progress.py": "58dade684b5dec083fd45efc9bf4b9c130b9ea4d5d95350c6912e740435fd3c3",
+    "src/fineqcomp/progress_cli.py": "fabcffa0f119bab7477da8670ad06f83dc0d4e78088a4e0d5a833d7351aca355",
+    "src/fineqcomp/rank_frontier.py": "de4b998bdc31d6b928010947ec1a02f7e31ba6bdf76951ca80e87d1809cf810c",
+    "src/fineqcomp/reasoning_tasks.py": "24d57e911c932f2e070da75f41319959c6fdc810c962e6b41586d80f6860bf28",
+    "src/fineqcomp/relative_info.py": "b0c50f9086f4b7ddc8361df78dfc287ef9ae4abbbdae7a46f3b3c94f87a4dd3f",
+    "src/fineqcomp/relative_validation.py": "1062ce27d805b78af31a0a4638a3acfd2822f4b11171f5562e04610e98aa9f96",
+    "src/fineqcomp/rstar.py": "830ed59098b12f78a738011778a33158ce9705627781cad449f6393b806bcbae",
+    "src/fineqcomp/runner.py": "dd5dc93530669d8e8a19e27259e9190e8573fe029cbfdb779b718fdbafac6fb6",
+    "src/fineqcomp/sandbox.py": "6342edf880f1c12e11654fd50907af8cd8f55cd0e663b49bf89534bcc25c6eb6",
+    "src/fineqcomp/training.py": "d1892f62b1415ce979348f5880e3f742e4fced8fb9cdc88d5dff7ec5a5949ce2"
+  },
+  "inputs": {
+    "configs/program_selection.yaml": "18cf0636a17223ae675c5ffa63c18372c3dd50b339fb59860c8fe639e3e94cd1",
+    "configs/transposed_receiver_panel.yaml": "fc73f60932cf6e64211b33cb52c90ff4a12b0ba5d9455dedde551292ead12dc1",
+    "prepared/gsm-symbolic-source.jsonl": "945055837b232bd9b56827b1e3a5aa019075f29e8ba4669d9a9df8b4439a291f",
+    "prepared/natural/cot_math_permuted/seed11/calibration.jsonl": "f60279af49dbcbf3f1a77382b2ea3e4de1b321b0104675d7364290c3256b5f41",
+    "prepared/natural/cot_math_permuted/seed11/test.jsonl": "4227874b73a7778b12cfe0e7acef574e372950625191bfe4da89f14860829327",
+    "prepared/natural/cot_math_permuted/seed11/train.jsonl": "aaa2e9a106d76bd122bad4e1a2463f12246d4d4d31304508c4c2c195c357bad9",
+    "prepared/natural/cot_math_permuted/seed22/calibration.jsonl": "ba66f2f87c4a5d7ce954c869b908baf38e37956ede6518b8abd5502b04cede69",
+    "prepared/natural/cot_math_permuted/seed22/test.jsonl": "4227874b73a7778b12cfe0e7acef574e372950625191bfe4da89f14860829327",
+    "prepared/natural/cot_math_permuted/seed22/train.jsonl": "d7576f38e9406da523f8bc6dff8988e4cece50b2347b85d1a0334704c75d4371",
+    "prepared/natural/cot_math_permuted/seed33/calibration.jsonl": "83a48206759a270308801a00a7b221c0ad3430454476873e86be7989f8fc4a45",
+    "prepared/natural/cot_math_permuted/seed33/test.jsonl": "4227874b73a7778b12cfe0e7acef574e372950625191bfe4da89f14860829327",
+    "prepared/natural/cot_math_permuted/seed33/train.jsonl": "499b353db31c704980ad42105ced040a778866a7b9844c42b3d53ff8f49fd681",
+    "results/3_chain_of_thought_under_compression/conditional_trace_rate_lock.json": "4cc2d7757ce3251726f3c487f14b3260ce50ce900dfb714f81b5f00997ad3821",
+    "runs/trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s11__4cb8d87ae9/config.json": "e97bf93d29989aae13ce9b954ac381d128391738bda453ba7792f4cfc0aaf7a1",
+    "runs/trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s22__e4b91b820b/config.json": "90f7850e7e66e97e3b242e39d8c575440c0a99d853ba496d669dfe53fe69a18c",
+    "runs/trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s33__347ec18132/config.json": "9c600ae1ca17a8714618dde566a536bc89540913c769c513c153815b39633820"
+  }
+}

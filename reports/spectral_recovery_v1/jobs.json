@@ -1,0 +1,40 @@
+{
+  "smoke": {
+    "job_id": "1797265",
+    "phase": "smoke",
+    "cells": [
+      0
+    ]
+  },
+  "recovery": {
+    "job_id": "1797312",
+    "phase": "evaluate",
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqrecover-recovery",
+      "--kill-on-invalid-dep=yes",
+      "--export=ALL,MODE=evaluate,STUDY_CONFIG=configs/spectral_recovery.yaml,STUDY_OUT=reports/spectral_recovery_v1",
+      "--array=0-2%3",
+      "--time=10:00:00",
+      "--dependency=afterok:1797265",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ],
+    "submitted_at": 1788641370.8626008
+  },
+  "report": {
+    "job_id": "1797313",
+    "phase": "report",
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqrecover-report",
+      "--kill-on-invalid-dep=yes",
+      "--export=ALL,MODE=report,STUDY_CONFIG=configs/spectral_recovery.yaml,STUDY_OUT=reports/spectral_recovery_v1",
+      "--time=00:15:00",
+      "--dependency=afterany:1797312",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ],
+    "submitted_at": 1788641370.9200072
+  }
+}

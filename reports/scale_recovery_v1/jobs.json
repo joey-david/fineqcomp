@@ -1,0 +1,48 @@
+{
+  "smoke": {
+    "job_id": "1812419",
+    "phase": "smoke",
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqscale-smoke",
+      "--kill-on-invalid-dep=yes",
+      "--export=ALL,MODE=smoke,STUDY_CONFIG=configs/scale_recovery.yaml,STUDY_OUT=reports/scale_recovery_v1",
+      "--array=0",
+      "--time=00:20:00",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ],
+    "submitted_at": 1788681160.6836967
+  },
+  "evaluate": {
+    "job_id": "1812421",
+    "phase": "evaluate",
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqscale-evaluate",
+      "--kill-on-invalid-dep=yes",
+      "--export=ALL,MODE=evaluate,STUDY_CONFIG=configs/scale_recovery.yaml,STUDY_OUT=reports/scale_recovery_v1",
+      "--array=0-2%3",
+      "--time=10:00:00",
+      "--dependency=afterok:1812419",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ],
+    "submitted_at": 1788681160.762691
+  },
+  "report": {
+    "job_id": "1812423",
+    "phase": "report",
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqscale-report",
+      "--kill-on-invalid-dep=yes",
+      "--export=ALL,MODE=report,STUDY_CONFIG=configs/scale_recovery.yaml,STUDY_OUT=reports/scale_recovery_v1",
+      "--time=00:15:00",
+      "--dependency=afterany:1812421",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ],
+    "submitted_at": 1788681160.8540964
+  }
+}

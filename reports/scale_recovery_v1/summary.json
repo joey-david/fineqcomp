@@ -1,0 +1,1691 @@
+{
+  "candidate_results": [
+    {
+      "accuracy": 0.8332069749810462,
+      "base_accuracy": 0.775587566338135,
+      "bits": 1,
+      "calibration_accuracy": 0.8671875,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.05761940864291126,
+      "change_from_raw": 0.5981804397270659,
+      "change_from_raw_ci95": [
+        0.5693707354056103,
+        0.6254738438210766
+      ],
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "rank": 1,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.772,
+      "base_accuracy": 0.714,
+      "bits": 1,
+      "calibration_accuracy": 0.8671875,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.05800000000000005,
+      "change_from_raw": 0.614,
+      "change_from_raw_ci95": [
+        0.5379999999999999,
+        0.6899999999999998
+      ],
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "rank": 1,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.8036391205458681,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.796875,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.028051554207733087,
+      "change_from_raw": 0.5686125852918877,
+      "change_from_raw_ci95": [
+        0.5390447308567097,
+        0.5974222896133434
+      ],
+      "file_bits": 38071552,
+      "key": "binary_norm_head_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.752,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.796875,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.038000000000000034,
+      "change_from_raw": 0.594,
+      "change_from_raw_ci95": [
+        0.518,
+        0.6679999999999999
+      ],
+      "file_bits": 38071552,
+      "key": "binary_norm_head_b16",
+      "rank": 1,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7862016679302501,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.359375,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.010614101592115177,
+      "change_from_raw": 0.5511751326762698,
+      "change_from_raw_ci95": [
+        0.5216072782410918,
+        0.5799848369977255
+      ],
+      "file_bits": 37854944,
+      "key": "scale_head_0.01_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.71,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.359375,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": -0.0040000000000000036,
+      "change_from_raw": 0.5519999999999999,
+      "change_from_raw_ci95": [
+        0.47600000000000003,
+        0.6259999999999999
+      ],
+      "file_bits": 37854944,
+      "key": "scale_head_0.01_b16",
+      "rank": 1,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7983320697498104,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.3515625,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.022744503411675443,
+      "change_from_raw": 0.5633055344958301,
+      "change_from_raw_ci95": [
+        0.5344958301743745,
+        0.5913570887035633
+      ],
+      "file_bits": 38408952,
+      "key": "scale_head_0.03_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.72,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.3515625,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.006000000000000005,
+      "change_from_raw": 0.5619999999999999,
+      "change_from_raw_ci95": [
+        0.488,
+        0.634
+      ],
+      "file_bits": 38408952,
+      "key": "scale_head_0.03_b16",
+      "rank": 1,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7998483699772555,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.46875,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.02426080363912053,
+      "change_from_raw": 0.5648218347232752,
+      "change_from_raw_ci95": [
+        0.5360121304018196,
+        0.5936315390447309
+      ],
+      "file_bits": 38440424,
+      "key": "scale_head_0.1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.72,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.46875,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.006000000000000005,
+      "change_from_raw": 0.5619999999999999,
+      "change_from_raw_ci95": [
+        0.48400000000000015,
+        0.636
+      ],
+      "file_bits": 38440424,
+      "key": "scale_head_0.1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.819560272934041,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.84375,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.04397270659590602,
+      "change_from_raw": 0.5845337376800607,
+      "change_from_raw_ci95": [
+        0.555724033358605,
+        0.6125852918877938
+      ],
+      "file_bits": 38223368,
+      "key": "scale_head_0.3_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.758,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.84375,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.04400000000000004,
+      "change_from_raw": 0.6,
+      "change_from_raw_ci95": [
+        0.524,
+        0.674
+      ],
+      "file_bits": 38223368,
+      "key": "scale_head_0.3_b16",
+      "rank": 1,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.38741470811220624,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.4765625,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": -0.38817285822592873,
+      "change_from_raw": 0.15238817285822595,
+      "change_from_raw_ci95": [
+        0.12282031842304776,
+        0.1819560272934041
+      ],
+      "file_bits": 38029536,
+      "key": "scale_head_1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.286,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.4765625,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": -0.428,
+      "change_from_raw": 0.12799999999999997,
+      "change_from_raw_ci95": [
+        0.052000000000000005,
+        0.206
+      ],
+      "file_bits": 38029536,
+      "key": "scale_head_1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.6497346474601972,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.640625,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": -0.1258529188779378,
+      "change_from_raw": 0.41470811220621684,
+      "change_from_raw_ci95": [
+        0.38514025777103866,
+        0.444275966641395
+      ],
+      "file_bits": 597350368,
+      "key": "binary_norm_full_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.514,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.640625,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": -0.19999999999999996,
+      "change_from_raw": 0.356,
+      "change_from_raw_ci95": [
+        0.284,
+        0.426
+      ],
+      "file_bits": 597350368,
+      "key": "binary_norm_full_b16",
+      "rank": 16,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7892342683851402,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.3671875,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.013646702047005244,
+      "change_from_raw": 0.5542077331311599,
+      "change_from_raw_ci95": [
+        0.5246398786959818,
+        0.5830174374526156
+      ],
+      "file_bits": 572034440,
+      "key": "scale_full_0.01_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.71,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.3671875,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": -0.0040000000000000036,
+      "change_from_raw": 0.5519999999999999,
+      "change_from_raw_ci95": [
+        0.47400000000000003,
+        0.6259999999999999
+      ],
+      "file_bits": 572034440,
+      "key": "scale_full_0.01_b16",
+      "rank": 16,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7952994692949203,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.4140625,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.019711902956785377,
+      "change_from_raw": 0.56027293404094,
+      "change_from_raw_ci95": [
+        0.530705079605762,
+        0.5890826383623957
+      ],
+      "file_bits": 589896000,
+      "key": "scale_full_0.03_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.71,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.4140625,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": -0.0040000000000000036,
+      "change_from_raw": 0.5519999999999999,
+      "change_from_raw_ci95": [
+        0.474,
+        0.628
+      ],
+      "file_bits": 589896000,
+      "key": "scale_full_0.03_b16",
+      "rank": 16,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.8165276724791509,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.5078125,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.04094010614101595,
+      "change_from_raw": 0.5815011372251706,
+      "change_from_raw_ci95": [
+        0.5526914329037149,
+        0.6095526914329037
+      ],
+      "file_bits": 596240000,
+      "key": "scale_full_0.1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.726,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.5078125,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.01200000000000001,
+      "change_from_raw": 0.568,
+      "change_from_raw_ci95": [
+        0.49000000000000005,
+        0.642
+      ],
+      "file_bits": 596240000,
+      "key": "scale_full_0.1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7892342683851402,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.7578125,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.013646702047005244,
+      "change_from_raw": 0.5542077331311599,
+      "change_from_raw_ci95": [
+        0.5261561789234268,
+        0.5815200909780134
+      ],
+      "file_bits": 597287688,
+      "key": "scale_full_0.3_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.746,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.7578125,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.03200000000000003,
+      "change_from_raw": 0.588,
+      "change_from_raw_ci95": [
+        0.514,
+        0.66
+      ],
+      "file_bits": 597287688,
+      "key": "scale_full_0.3_b16",
+      "rank": 16,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.23805913570887036,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.703125,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": -0.5375284306292646,
+      "change_from_raw": 0.0030326004548900665,
+      "change_from_raw_ci95": [
+        -0.001516300227445034,
+        0.0075815011372251705
+      ],
+      "file_bits": 597401792,
+      "key": "scale_full_1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2350265352539803,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.162,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.703125,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": -0.5519999999999999,
+      "change_from_raw": 0.0040000000000000036,
+      "change_from_raw_ci95": [
+        -0.004,
+        0.012000000000000002
+      ],
+      "file_bits": 597401792,
+      "key": "scale_full_1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.158,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.8347232752084913,
+      "base_accuracy": 0.775587566338135,
+      "bits": 1,
+      "calibration_accuracy": 0.8046875,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.05913570887035635,
+      "change_from_raw": 0.5905989385898408,
+      "change_from_raw_ci95": [
+        0.5617892342683851,
+        0.6178923426838514
+      ],
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "rank": 1,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.78,
+      "base_accuracy": 0.714,
+      "bits": 1,
+      "calibration_accuracy": 0.8046875,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.06600000000000006,
+      "change_from_raw": 0.626,
+      "change_from_raw_ci95": [
+        0.5539999999999999,
+        0.698
+      ],
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "rank": 1,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.819560272934041,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.765625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.04397270659590602,
+      "change_from_raw": 0.5754359363153905,
+      "change_from_raw_ci95": [
+        0.5458680818802123,
+        0.6027293404094011
+      ],
+      "file_bits": 38071016,
+      "key": "binary_norm_head_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.774,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.765625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.06000000000000005,
+      "change_from_raw": 0.62,
+      "change_from_raw_ci95": [
+        0.55,
+        0.688
+      ],
+      "file_bits": 38071016,
+      "key": "binary_norm_head_b16",
+      "rank": 1,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7854435178165277,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.5390625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.009855951478392688,
+      "change_from_raw": 0.5413191811978771,
+      "change_from_raw_ci95": [
+        0.5125094768764216,
+        0.5701288855193328
+      ],
+      "file_bits": 37854568,
+      "key": "scale_head_0.01_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.722,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.5390625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.008000000000000007,
+      "change_from_raw": 0.568,
+      "change_from_raw_ci95": [
+        0.49599999999999994,
+        0.638
+      ],
+      "file_bits": 37854568,
+      "key": "scale_head_0.01_b16",
+      "rank": 1,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7922668688400303,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.546875,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.01667930250189531,
+      "change_from_raw": 0.5481425322213798,
+      "change_from_raw_ci95": [
+        0.5185746777862017,
+        0.5769522365428355
+      ],
+      "file_bits": 38406928,
+      "key": "scale_head_0.03_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.718,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.546875,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.0040000000000000036,
+      "change_from_raw": 0.564,
+      "change_from_raw_ci95": [
+        0.49,
+        0.634
+      ],
+      "file_bits": 38406928,
+      "key": "scale_head_0.03_b16",
+      "rank": 1,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.800606520090978,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.5625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.02501895375284302,
+      "change_from_raw": 0.5564821834723275,
+      "change_from_raw_ci95": [
+        0.5276724791508719,
+        0.5860500379075056
+      ],
+      "file_bits": 38439008,
+      "key": "scale_head_0.1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.726,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.5625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.01200000000000001,
+      "change_from_raw": 0.572,
+      "change_from_raw_ci95": [
+        0.5,
+        0.642
+      ],
+      "file_bits": 38439008,
+      "key": "scale_head_0.1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.8233510235026535,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.7578125,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.047763457164518575,
+      "change_from_raw": 0.579226686884003,
+      "change_from_raw_ci95": [
+        0.5504169825625473,
+        0.6072782410917361
+      ],
+      "file_bits": 38223352,
+      "key": "scale_head_0.3_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.764,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.7578125,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.050000000000000044,
+      "change_from_raw": 0.61,
+      "change_from_raw_ci95": [
+        0.534,
+        0.6839999999999999
+      ],
+      "file_bits": 38223352,
+      "key": "scale_head_0.3_b16",
+      "rank": 1,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.5208491281273692,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.5234375,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": -0.2547384382107658,
+      "change_from_raw": 0.27672479150871865,
+      "change_from_raw_ci95": [
+        0.24639878695981804,
+        0.3070507960576194
+      ],
+      "file_bits": 38033544,
+      "key": "scale_head_1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.426,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.5234375,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": -0.288,
+      "change_from_raw": 0.272,
+      "change_from_raw_ci95": [
+        0.18600000000000003,
+        0.358
+      ],
+      "file_bits": 38033544,
+      "key": "scale_head_1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7217589082638363,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.5859375,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": -0.05382865807429871,
+      "change_from_raw": 0.47763457164518575,
+      "change_from_raw_ci95": [
+        0.4473085670962851,
+        0.5079605761940864
+      ],
+      "file_bits": 597358152,
+      "key": "binary_norm_full_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.606,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.5859375,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": -0.10799999999999998,
+      "change_from_raw": 0.45199999999999996,
+      "change_from_raw_ci95": [
+        0.374,
+        0.5299999999999998
+      ],
+      "file_bits": 597358152,
+      "key": "binary_norm_full_b16",
+      "rank": 16,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7892342683851402,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.515625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.013646702047005244,
+      "change_from_raw": 0.5451099317664897,
+      "change_from_raw_ci95": [
+        0.5163002274450341,
+        0.5739196360879454
+      ],
+      "file_bits": 572144080,
+      "key": "scale_full_0.01_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.714,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.515625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.0,
+      "change_from_raw": 0.5599999999999999,
+      "change_from_raw_ci95": [
+        0.488,
+        0.6299999999999999
+      ],
+      "file_bits": 572144080,
+      "key": "scale_full_0.01_b16",
+      "rank": 16,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7968157695223654,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.5546875,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.021228203184230465,
+      "change_from_raw": 0.5526914329037149,
+      "change_from_raw_ci95": [
+        0.5231235784685367,
+        0.5822592873388931
+      ],
+      "file_bits": 590012104,
+      "key": "scale_full_0.03_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.712,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.5546875,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": -0.0020000000000000018,
+      "change_from_raw": 0.5579999999999999,
+      "change_from_raw_ci95": [
+        0.484,
+        0.6299999999999999
+      ],
+      "file_bits": 590012104,
+      "key": "scale_full_0.03_b16",
+      "rank": 16,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.819560272934041,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.65625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.04397270659590602,
+      "change_from_raw": 0.5754359363153905,
+      "change_from_raw_ci95": [
+        0.5458680818802123,
+        0.6050037907505686
+      ],
+      "file_bits": 596271840,
+      "key": "scale_full_0.1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.704,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.65625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": -0.010000000000000009,
+      "change_from_raw": 0.5499999999999999,
+      "change_from_raw_ci95": [
+        0.472,
+        0.626
+      ],
+      "file_bits": 596271840,
+      "key": "scale_full_0.1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.8104624715693708,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.7421875,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.03487490523123582,
+      "change_from_raw": 0.5663381349507203,
+      "change_from_raw_ci95": [
+        0.5367702805155421,
+        0.5951478392721758
+      ],
+      "file_bits": 597298024,
+      "key": "scale_full_0.3_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.77,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.7421875,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": 0.05600000000000005,
+      "change_from_raw": 0.616,
+      "change_from_raw_ci95": [
+        0.544,
+        0.6859999999999999
+      ],
+      "file_bits": 597298024,
+      "key": "scale_full_0.3_b16",
+      "rank": 16,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.24791508718726307,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.5390625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": -0.5276724791508719,
+      "change_from_raw": 0.003790750568612583,
+      "change_from_raw_ci95": [
+        -0.000758150113722517,
+        0.008339651250947688
+      ],
+      "file_bits": 597419472,
+      "key": "scale_full_1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.2441243366186505,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.16,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.5390625,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "change_from_base": -0.5539999999999999,
+      "change_from_raw": 0.006000000000000005,
+      "change_from_raw_ci95": [
+        0.0,
+        0.014000000000000002
+      ],
+      "file_bits": 597419472,
+      "key": "scale_full_1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.154,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.8294162244124337,
+      "base_accuracy": 0.775587566338135,
+      "bits": 1,
+      "calibration_accuracy": 0.84375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.05382865807429871,
+      "change_from_raw": 0.5974222896133434,
+      "change_from_raw_ci95": [
+        0.5686125852918877,
+        0.624715693707354
+      ],
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "rank": 1,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.776,
+      "base_accuracy": 0.714,
+      "bits": 1,
+      "calibration_accuracy": 0.84375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.062000000000000055,
+      "change_from_raw": 0.628,
+      "change_from_raw_ci95": [
+        0.5539999999999999,
+        0.7
+      ],
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "rank": 1,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.8119787717968158,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.8203125,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.0363912054586808,
+      "change_from_raw": 0.5799848369977255,
+      "change_from_raw_ci95": [
+        0.5504169825625473,
+        0.6080363912054587
+      ],
+      "file_bits": 38071896,
+      "key": "binary_norm_head_b16",
+      "rank": 1,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.752,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.8203125,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.038000000000000034,
+      "change_from_raw": 0.604,
+      "change_from_raw_ci95": [
+        0.534,
+        0.6739999999999999
+      ],
+      "file_bits": 38071896,
+      "key": "binary_norm_head_b16",
+      "rank": 1,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7892342683851402,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.59375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.013646702047005244,
+      "change_from_raw": 0.55724033358605,
+      "change_from_raw_ci95": [
+        0.5284306292645944,
+        0.5860500379075056
+      ],
+      "file_bits": 37855464,
+      "key": "scale_head_0.01_b16",
+      "rank": 1,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.722,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.59375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.008000000000000007,
+      "change_from_raw": 0.574,
+      "change_from_raw_ci95": [
+        0.502,
+        0.6419999999999999
+      ],
+      "file_bits": 37855464,
+      "key": "scale_head_0.01_b16",
+      "rank": 1,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7952994692949203,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.59375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.019711902956785377,
+      "change_from_raw": 0.5633055344958301,
+      "change_from_raw_ci95": [
+        0.5344958301743745,
+        0.5905989385898408
+      ],
+      "file_bits": 38407152,
+      "key": "scale_head_0.03_b16",
+      "rank": 1,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.72,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.59375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.006000000000000005,
+      "change_from_raw": 0.572,
+      "change_from_raw_ci95": [
+        0.5,
+        0.6419999999999999
+      ],
+      "file_bits": 38407152,
+      "key": "scale_head_0.03_b16",
+      "rank": 1,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.800606520090978,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.59375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.02501895375284302,
+      "change_from_raw": 0.5686125852918877,
+      "change_from_raw_ci95": [
+        0.5398028809704322,
+        0.5966641394996209
+      ],
+      "file_bits": 38438744,
+      "key": "scale_head_0.1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.732,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.59375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.018000000000000016,
+      "change_from_raw": 0.584,
+      "change_from_raw_ci95": [
+        0.51,
+        0.654
+      ],
+      "file_bits": 38438744,
+      "key": "scale_head_0.1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.824109173616376,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.84375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.04852160727824106,
+      "change_from_raw": 0.5921152388172858,
+      "change_from_raw_ci95": [
+        0.5633055344958302,
+        0.620166793025019
+      ],
+      "file_bits": 38222864,
+      "key": "scale_head_0.3_b16",
+      "rank": 1,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.77,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.84375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.05600000000000005,
+      "change_from_raw": 0.622,
+      "change_from_raw_ci95": [
+        0.55,
+        0.6920000000000001
+      ],
+      "file_bits": 38222864,
+      "key": "scale_head_0.3_b16",
+      "rank": 1,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.37604245640636846,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.4375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": -0.3995451099317665,
+      "change_from_raw": 0.14404852160727824,
+      "change_from_raw_ci95": [
+        0.11599696739954511,
+        0.17134192570128887
+      ],
+      "file_bits": 38032416,
+      "key": "scale_head_1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.302,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.4375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": -0.412,
+      "change_from_raw": 0.154,
+      "change_from_raw_ci95": [
+        0.084,
+        0.22404999999999933
+      ],
+      "file_bits": 38032416,
+      "key": "scale_head_1_b16",
+      "rank": 1,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.775587566338135,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.71875,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.0,
+      "change_from_raw": 0.5435936315390447,
+      "change_from_raw_ci95": [
+        0.5140257771038665,
+        0.5724033358605004
+      ],
+      "file_bits": 597347160,
+      "key": "binary_norm_full_b16",
+      "rank": 16,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.69,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.71875,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": -0.02400000000000002,
+      "change_from_raw": 0.5419999999999999,
+      "change_from_raw_ci95": [
+        0.472,
+        0.612
+      ],
+      "file_bits": 597347160,
+      "key": "binary_norm_full_b16",
+      "rank": 16,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7884761182714177,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.625,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.012888551933282755,
+      "change_from_raw": 0.5564821834723275,
+      "change_from_raw_ci95": [
+        0.5276724791508719,
+        0.5845526914329034
+      ],
+      "file_bits": 572052832,
+      "key": "scale_full_0.01_b16",
+      "rank": 16,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.712,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.625,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": -0.0020000000000000018,
+      "change_from_raw": 0.564,
+      "change_from_raw_ci95": [
+        0.48999999999999994,
+        0.6359999999999999
+      ],
+      "file_bits": 572052832,
+      "key": "scale_full_0.01_b16",
+      "rank": 16,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.7915087187263078,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.5859375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.01592115238817282,
+      "change_from_raw": 0.5595147839272175,
+      "change_from_raw_ci95": [
+        0.530705079605762,
+        0.5883244882486732
+      ],
+      "file_bits": 589964872,
+      "key": "scale_full_0.03_b16",
+      "rank": 16,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.738,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.5859375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.02400000000000002,
+      "change_from_raw": 0.59,
+      "change_from_raw_ci95": [
+        0.518,
+        0.6559999999999999
+      ],
+      "file_bits": 589964872,
+      "key": "scale_full_0.03_b16",
+      "rank": 16,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.819560272934041,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.6171875,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.04397270659590602,
+      "change_from_raw": 0.5875663381349507,
+      "change_from_raw_ci95": [
+        0.5594958301743745,
+        0.6148786959818041
+      ],
+      "file_bits": 596256560,
+      "key": "scale_full_0.1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.734,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.6171875,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.020000000000000018,
+      "change_from_raw": 0.586,
+      "change_from_raw_ci95": [
+        0.512,
+        0.6579999999999999
+      ],
+      "file_bits": 596256560,
+      "key": "scale_full_0.1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.8165276724791509,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.734375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.04094010614101595,
+      "change_from_raw": 0.5845337376800607,
+      "change_from_raw_ci95": [
+        0.555724033358605,
+        0.6118271417740713
+      ],
+      "file_bits": 597289056,
+      "key": "scale_full_0.3_b16",
+      "rank": 16,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.76,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.734375,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": 0.04600000000000004,
+      "change_from_raw": 0.612,
+      "change_from_raw_ci95": [
+        0.542,
+        0.6780000000000002
+      ],
+      "file_bits": 597289056,
+      "key": "scale_full_0.3_b16",
+      "rank": 16,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    },
+    {
+      "accuracy": 0.22820318423047764,
+      "base_accuracy": 0.775587566338135,
+      "bits": 16,
+      "calibration_accuracy": 0.546875,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": -0.5473843821076574,
+      "change_from_raw": -0.003790750568612583,
+      "change_from_raw_ci95": [
+        -0.009097801364670205,
+        0.001516300227445034
+      ],
+      "file_bits": 597420640,
+      "key": "scale_full_1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.23199393479909022,
+      "split": "gsm8k"
+    },
+    {
+      "accuracy": 0.144,
+      "base_accuracy": 0.714,
+      "bits": 16,
+      "calibration_accuracy": 0.546875,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "change_from_base": -0.57,
+      "change_from_raw": -0.0040000000000000036,
+      "change_from_raw_ci95": [
+        -0.01,
+        0.0
+      ],
+      "file_bits": 597420640,
+      "key": "scale_full_1_b16",
+      "rank": 16,
+      "reference_accuracy": 0.148,
+      "split": "symbolic"
+    }
+  ],
+  "claim_boundary": "Measured files in this codec grid; selection on calibration only. A missing or unreachable cell is not a scientific pass.",
+  "comparisons": [],
+  "field": [],
+  "missing": [],
+  "rows": [
+    {
+      "accuracy": 0.8332069749810462,
+      "base_accuracy": 0.775587566338135,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.05761940864291126,
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "paired_change_ci95": [
+        0.03639120545868082,
+        0.07884761182714177
+      ],
+      "reference_accuracy": 0.2350265352539803,
+      "retention": 0.5,
+      "split": "gsm8k",
+      "status": "selected",
+      "test_threshold_met": false,
+      "threshold": 0.51953125
+    },
+    {
+      "accuracy": 0.772,
+      "base_accuracy": 0.714,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.05800000000000005,
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "paired_change_ci95": [
+        0.014000000000000005,
+        0.10204999999999928
+      ],
+      "reference_accuracy": 0.158,
+      "retention": 0.5,
+      "split": "symbolic",
+      "status": "selected",
+      "test_threshold_met": false,
+      "threshold": 0.51953125
+    },
+    {
+      "accuracy": 0.8332069749810462,
+      "base_accuracy": 0.775587566338135,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.05761940864291126,
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "paired_change_ci95": [
+        0.03639120545868082,
+        0.07884761182714177
+      ],
+      "reference_accuracy": 0.2350265352539803,
+      "retention": 0.75,
+      "split": "gsm8k",
+      "status": "selected",
+      "test_threshold_met": false,
+      "threshold": 0.607421875
+    },
+    {
+      "accuracy": 0.772,
+      "base_accuracy": 0.714,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.05800000000000005,
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "paired_change_ci95": [
+        0.014000000000000005,
+        0.10204999999999928
+      ],
+      "reference_accuracy": 0.158,
+      "retention": 0.75,
+      "split": "symbolic",
+      "status": "selected",
+      "test_threshold_met": false,
+      "threshold": 0.607421875
+    },
+    {
+      "accuracy": 0.8332069749810462,
+      "base_accuracy": 0.775587566338135,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.05761940864291126,
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "paired_change_ci95": [
+        0.03639120545868082,
+        0.07884761182714177
+      ],
+      "reference_accuracy": 0.2350265352539803,
+      "retention": 0.9,
+      "split": "gsm8k",
+      "status": "selected",
+      "test_threshold_met": false,
+      "threshold": 0.66015625
+    },
+    {
+      "accuracy": 0.772,
+      "base_accuracy": 0.714,
+      "cell": "qwen25_7b_base/permuted/seed11/existing",
+      "change_from_base": 0.05800000000000005,
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": 3224576,
+      "key": "r1_b1",
+      "paired_change_ci95": [
+        0.014000000000000005,
+        0.10204999999999928
+      ],
+      "reference_accuracy": 0.158,
+      "retention": 0.9,
+      "split": "symbolic",
+      "status": "selected",
+      "test_threshold_met": false,
+      "threshold": 0.66015625
+    },
+    {
+      "base_accuracy": 0.775587566338135,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.2441243366186505,
+      "retention": 0.5,
+      "split": "gsm8k",
+      "status": "reference_too_small",
+      "threshold": 0.53515625
+    },
+    {
+      "base_accuracy": 0.714,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.154,
+      "retention": 0.5,
+      "split": "symbolic",
+      "status": "reference_too_small",
+      "threshold": 0.53515625
+    },
+    {
+      "base_accuracy": 0.775587566338135,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.2441243366186505,
+      "retention": 0.75,
+      "split": "gsm8k",
+      "status": "reference_too_small",
+      "threshold": 0.537109375
+    },
+    {
+      "base_accuracy": 0.714,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.154,
+      "retention": 0.75,
+      "split": "symbolic",
+      "status": "reference_too_small",
+      "threshold": 0.537109375
+    },
+    {
+      "base_accuracy": 0.775587566338135,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.2441243366186505,
+      "retention": 0.9,
+      "split": "gsm8k",
+      "status": "reference_too_small",
+      "threshold": 0.53828125
+    },
+    {
+      "base_accuracy": 0.714,
+      "cell": "qwen25_7b_base/permuted/seed22/existing",
+      "checkpoint": "final",
+      "direction": "acquisition",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.154,
+      "retention": 0.9,
+      "split": "symbolic",
+      "status": "reference_too_small",
+      "threshold": 0.53828125
+    },
+    {
+      "base_accuracy": 0.775587566338135,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "checkpoint": "final",
+      "direction": "damage",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.23199393479909022,
+      "retention": 0.5,
+      "split": "gsm8k",
+      "status": "reference_too_small",
+      "threshold": 0.55859375
+    },
+    {
+      "base_accuracy": 0.714,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "checkpoint": "final",
+      "direction": "damage",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.148,
+      "retention": 0.5,
+      "split": "symbolic",
+      "status": "reference_too_small",
+      "threshold": 0.55859375
+    },
+    {
+      "base_accuracy": 0.775587566338135,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "checkpoint": "final",
+      "direction": "damage",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.23199393479909022,
+      "retention": 0.75,
+      "split": "gsm8k",
+      "status": "reference_too_small",
+      "threshold": 0.552734375
+    },
+    {
+      "base_accuracy": 0.714,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "checkpoint": "final",
+      "direction": "damage",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.148,
+      "retention": 0.75,
+      "split": "symbolic",
+      "status": "reference_too_small",
+      "threshold": 0.552734375
+    },
+    {
+      "base_accuracy": 0.775587566338135,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "checkpoint": "final",
+      "direction": "damage",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.23199393479909022,
+      "retention": 0.9,
+      "split": "gsm8k",
+      "status": "reference_too_small",
+      "threshold": 0.54921875
+    },
+    {
+      "base_accuracy": 0.714,
+      "cell": "qwen25_7b_base/permuted/seed33/existing",
+      "checkpoint": "final",
+      "direction": "damage",
+      "file_bits": null,
+      "key": null,
+      "reference_accuracy": 0.148,
+      "retention": 0.9,
+      "split": "symbolic",
+      "status": "reference_too_small",
+      "threshold": 0.54921875
+    }
+  ],
+  "status": "complete"
+}

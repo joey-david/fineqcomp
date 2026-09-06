@@ -1,0 +1,277 @@
+{
+  "field": {
+    "job_id": "1780015",
+    "phase": "field",
+    "cells": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "dependencies": [
+      "1779914"
+    ],
+    "submitted_at": 1788611754.5877724,
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqtraj-field",
+      "--time=03:00:00",
+      "--export=ALL,MODE=field",
+      "--kill-on-invalid-dep=yes",
+      "--array=0,1,2,3,4,5,6,7,8%2",
+      "--dependency=afterok:1779914",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ]
+  },
+  "existing-pilot": {
+    "job_id": "1780016",
+    "phase": "evaluate",
+    "cells": [
+      0,
+      5,
+      21,
+      26
+    ],
+    "dependencies": [
+      "1779914"
+    ],
+    "submitted_at": 1788611754.683119,
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqtraj-existing-pilot",
+      "--time=10:00:00",
+      "--export=ALL,MODE=evaluate",
+      "--kill-on-invalid-dep=yes",
+      "--array=0,5,21,26%2",
+      "--dependency=afterok:1779914",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ]
+  },
+  "train-pilot": {
+    "job_id": "1780017",
+    "phase": "train",
+    "cells": [
+      1,
+      6,
+      22,
+      27
+    ],
+    "dependencies": [
+      "1779914"
+    ],
+    "submitted_at": 1788611754.7403975,
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqtraj-train-pilot",
+      "--time=10:00:00",
+      "--export=ALL,MODE=train",
+      "--kill-on-invalid-dep=yes",
+      "--array=1,6,22,27%2",
+      "--dependency=afterok:1779914",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ]
+  },
+  "existing-replicate": {
+    "job_id": "1780018",
+    "phase": "evaluate",
+    "cells": [
+      7,
+      12,
+      14,
+      19,
+      28,
+      33,
+      35,
+      40
+    ],
+    "dependencies": [
+      "1780016"
+    ],
+    "submitted_at": 1788611754.7916117,
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqtraj-existing-replicate",
+      "--time=10:00:00",
+      "--export=ALL,MODE=evaluate",
+      "--kill-on-invalid-dep=yes",
+      "--array=7,12,14,19,28,33,35,40%2",
+      "--dependency=afterok:1780016",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ]
+  },
+  "train-replicate": {
+    "job_id": "1780019",
+    "phase": "train",
+    "cells": [
+      8,
+      13,
+      15,
+      20,
+      29,
+      34,
+      36,
+      41
+    ],
+    "dependencies": [
+      "1780017",
+      "1780016"
+    ],
+    "submitted_at": 1788611754.8599155,
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqtraj-train-replicate",
+      "--time=10:00:00",
+      "--export=ALL,MODE=train",
+      "--kill-on-invalid-dep=yes",
+      "--array=8,13,15,20,29,34,36,41%2",
+      "--dependency=afterok:1780017:1780016",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ]
+  },
+  "trajectory-eval": {
+    "job_id": "1780020",
+    "phase": "evaluate",
+    "cells": [
+      1,
+      6,
+      8,
+      13,
+      15,
+      20,
+      22,
+      27,
+      29,
+      34,
+      36,
+      41
+    ],
+    "dependencies": [
+      "1780019",
+      "1780017"
+    ],
+    "submitted_at": 1788611756.991991,
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqtraj-trajectory-eval",
+      "--time=10:00:00",
+      "--export=ALL,MODE=evaluate",
+      "--kill-on-invalid-dep=yes",
+      "--array=1,6,8,13,15,20,22,27,29,34,36,41%2",
+      "--dependency=afterok:1780019:1780017",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ]
+  },
+  "intervention-train": {
+    "job_id": "1780021",
+    "phase": "train",
+    "cells": [
+      2,
+      3,
+      4,
+      9,
+      10,
+      11,
+      16,
+      17,
+      18,
+      23,
+      24,
+      25,
+      30,
+      31,
+      32,
+      37,
+      38,
+      39
+    ],
+    "dependencies": [
+      "1780019"
+    ],
+    "submitted_at": 1788611757.078253,
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqtraj-intervention-train",
+      "--time=10:00:00",
+      "--export=ALL,MODE=train",
+      "--kill-on-invalid-dep=yes",
+      "--array=2,3,4,9,10,11,16,17,18,23,24,25,30,31,32,37,38,39%2",
+      "--dependency=afterok:1780019",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ]
+  },
+  "intervention-eval": {
+    "job_id": "1780022",
+    "phase": "evaluate",
+    "cells": [
+      2,
+      3,
+      4,
+      9,
+      10,
+      11,
+      16,
+      17,
+      18,
+      23,
+      24,
+      25,
+      30,
+      31,
+      32,
+      37,
+      38,
+      39
+    ],
+    "dependencies": [
+      "1780021",
+      "1780020"
+    ],
+    "submitted_at": 1788611757.1400144,
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqtraj-intervention-eval",
+      "--time=10:00:00",
+      "--export=ALL,MODE=evaluate",
+      "--kill-on-invalid-dep=yes",
+      "--array=2,3,4,9,10,11,16,17,18,23,24,25,30,31,32,37,38,39%2",
+      "--dependency=afterok:1780021:1780020",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ]
+  },
+  "report": {
+    "job_id": "1780023",
+    "phase": "report",
+    "cells": [],
+    "dependencies": [
+      "1780015",
+      "1780016",
+      "1780018",
+      "1780020",
+      "1780022"
+    ],
+    "submitted_at": 1788611757.2106545,
+    "command": [
+      "sbatch",
+      "--parsable",
+      "--job-name=fqtraj-report",
+      "--time=00:30:00",
+      "--export=ALL,MODE=report",
+      "--kill-on-invalid-dep=yes",
+      "--dependency=afterany:1780015:1780016:1780018:1780020:1780022",
+      "scripts/jean_zay_behavioral_trajectory.sbatch"
+    ]
+  }
+}
