@@ -1,0 +1,103 @@
+version: 1
+
+# Experiment 1 of the algorithm-selection study: does a fine-tune come out of
+# ambiguous training data implementing one whole program, and can one example
+# chosen from the base model's own prior switch which program that is?
+#
+# Freeze this file before opening any result. The stage order is the guard: the
+# diagnose stage writes a lock naming the dominant program, the target program,
+# and the single targeted example, and the training stage refuses to run
+# without it. Nothing in the selection rule can be re-chosen after a training
+# result exists.
+#
+# Pre-registered, in the order they can fail:
+#
+#   G1  Every arm reproduces the training region on held-out ambiguous inputs
+#       at 0.90 or better. Below that, a program read off the probes is not a
+#       program the arm learned, and the rest of the comparison is noise.
+#   G2  Adding 10, 100, 1,000 or 10,000 further ambiguous rows moves agreement
+#       with the dominant program by at most 0.10. This is the claim that more
+#       data inside the version space does not change the selected algorithm.
+#   G3  The targeted example raises agreement with the predicted program by at
+#       least 0.30 over the shared base arm, and that program becomes the one
+#       the arm agrees with most. This is the switch.
+#   G4  No control reproduces it: the targeted gain beats the best of the
+#       difficulty-, loss- and influence-matched controls and the random
+#       distinguishing example by at least 0.20. Without this clause the
+#       result is "one more example helps", which is not the claim.
+#   G5  G3 and G4 hold on a majority of seeds for at least one family and
+#       model.
+#
+# G1 failing everywhere means the task is unlearnable at this budget and the
+# study says nothing. G2 failing means the version space is not stable and the
+# framing is wrong. G3 passing with G4 failing is the interesting negative: the
+# switch would be an effect of adding any out-of-region example, not of
+# choosing it against the model's prior.
+
+# Model, adapter and training specs are read from a campaign file, so the
+# receiver definitions stay in one place. Every path there is on the Jean-Zay
+# shared store.
+models: [mistral_7b_base, qwen25_7b_base, llama31_8b_base]
+adapter: all_linear_r16
+families: [chain, middle, count, field]
+seeds: [11, 22, 33]
+
+# Shared across every arm: the ambiguous rows all four programs agree on.
+base_rows: 128
+# What the last four arms add on top, from the same ambiguous region.
+ambiguous_extra: [10, 100, 1000, 10000]
+# Held out from training, and the only place G1 is read.
+ambiguous_eval_rows: 256
+
+# Inputs where all four programs give four different answers, split three ways
+# and never reused: the diagnostic the targeting rule reads, the pool the
+# targeted example is drawn from, and the probe set every arm is scored on.
+diagnostic_rows: 512
+diagnostic_shots: 8
+targeted_candidates: 512
+probe_rows: 1024
+# The matched controls come from the same candidate pool as the targeted
+# example, so every single-example arm adds one example that contradicts the
+# dominant program. A control is the nearest `matched_window` candidates on one
+# nuisance axis -- how far outside the region, how surprising, how hard it
+# pulls -- and among those the one the base model is least committed to the
+# dominant program on. The diagnostic is then the only thing that separates the
+# targeted arm from its controls.
+matched_window: 32
+# How many candidates get a backward pass for the gradient-norm control. It is
+# the one axis that depends on the adapter, so it is measured per seed at
+# training time rather than in the lock.
+influence_candidates: 96
+
+# Every arm spends exactly this, whatever its row count. Epochs are derived per
+# arm and the cap in the training spec stops all of them at the same update, so
+# the 10,128-row arm buys more information and not more descent.
+optimizer_updates: 256
+
+scoring_batch_size: 16
+generation_batch_size: 32
+generation_max_new_tokens: 12
+
+gates:
+  training_region_accuracy: 0.90
+  ambiguous_stability: 0.10
+  targeted_switch_gain: 0.30
+  control_margin: 0.20
+
+training:
+  epochs: 1              # derived per arm from optimizer_updates
+  learning_rate: 0.0002
+  effective_batch_size: 16
+  micro_batch_size: 8
+  max_length: 512
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  max_grad_norm: 1.0
+  # Log the loss every 64 updates and never select on it. Best-state restore is
+  # a maximum over checkpoints, and the arms differ in epoch count by
+  # construction, so selecting would hand the many-epoch arms a better
+  # checkpoint along the very axis under test.
+  eval_every_updates: 64
+  restore_best: false
