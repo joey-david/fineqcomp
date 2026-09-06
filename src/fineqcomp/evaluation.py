@@ -170,6 +170,66 @@ def evaluate_multiple_choice(
     )
 
 
+@torch.no_grad()
+def completion_nll(
+    model: torch.nn.Module,
+    tokenizer: Any,
+    examples: list[Example],
+    model_spec: ModelSpec,
+    max_length: int,
+    batch_size: int,
+) -> list[dict[str, float]]:
+    """Negative log-likelihood of each example's response, one row per example.
+
+    `causal_nll` returns the pooled mean, which cannot say which of several
+    candidate continuations a model prefers for one prompt. This keeps the rows
+    apart, so a posterior over candidate answers can be read off directly.
+    """
+    from torch.utils.data import DataLoader
+
+    from fineqcomp.modeling import CausalExampleDataset, causal_collate
+
+    dataset = CausalExampleDataset(
+        tokenizer, examples, model_spec, max_length
+    )
+    if len(dataset) != len(examples):
+        raise ValueError("tokenization dropped a row, so the scores would misalign")
+    loader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        collate_fn=lambda rows: causal_collate(rows, tokenizer.pad_token_id),
+    )
+    device = model_device(model)
+    model.eval()
+    rows: list[dict[str, float]] = []
+    for batch in loader:
+        batch = {key: value.to(device) for key, value in batch.items()}
+        with inference_autocast(model, device):
+            logits = model(
+                input_ids=batch["input_ids"], attention_mask=batch["attention_mask"]
+            ).logits
+        targets = batch["labels"][:, 1:]
+        losses = torch.nn.functional.cross_entropy(
+            logits[:, :-1].float().transpose(1, 2),
+            targets,
+            ignore_index=-100,
+            reduction="none",
+        )
+        scored = (targets != -100)
+        totals = (losses * scored).sum(dim=1)
+        counts = scored.sum(dim=1)
+        for total, count in zip(totals.tolist(), counts.tolist(), strict=True):
+            rows.append(
+                {
+                    "sum_nll": float(total),
+                    "tokens": int(count),
+                    "mean_nll": float(total) / max(int(count), 1),
+                }
+            )
+    return rows
+
+
 def _normalize_number(text: str) -> str | None:
     matches = re.findall(r"[-+]?\d[\d,]*(?:\.\d+)?", text)
     if not matches:
