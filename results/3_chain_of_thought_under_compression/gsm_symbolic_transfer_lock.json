@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "locked_at": "2026-09-02T14:13:44+02:00",
+  "status": "prospective_outputs_unopened",
+  "question": "Does the causal benefit of matching a reasoning trace to its problem survive new numeric instances of the same held-out problem templates?",
+  "prior_result": {
+    "lock": "conditional_trace_rate_lock.json",
+    "lock_sha256": "4cc2d7757ce3251726f3c487f14b3260ce50ce900dfb714f81b5f00997ad3821",
+    "raw_aligned_minus_permuted_gsm8k": 0.5537022997220116,
+    "ci95": [0.5275040013478225, 0.5945581669615028],
+    "positive_model_seed_pairs": 9,
+    "model_seed_pairs": 9
+  },
+  "dataset": {
+    "name": "Apple GSM-Symbolic main",
+    "official_repository": "https://github.com/apple/ml-gsm-symbolic",
+    "commit": "b6a1625025fc857300203bac9f617e5d8ec99f65",
+    "path": "generated_data/GSM_symbolic.jsonl",
+    "sha256": "945055837b232bd9b56827b1e3a5aa019075f29e8ba4669d9a9df8b4439a291f",
+    "rows": 5000,
+    "templates": 100,
+    "instances_per_template": 50,
+    "gsm8k_reference_sha256": "4227874b73a7778b12cfe0e7acef574e372950625191bfe4da89f14860829327"
+  },
+  "grid": {
+    "adapter_runs": "All 18 aligned and permuted raw-adapter run IDs in conditional_trace_rate_lock.json",
+    "base_controls": [
+      "mistral_7b_base",
+      "qwen25_7b_base",
+      "llama31_8b_base"
+    ],
+    "shards_per_cell": 2,
+    "task_file": "prepared/gsm-symbolic-transfer-tasks.txt",
+    "task_file_sha256": "a02cbe9778c696ee38648c3af8b76589bcd216e57e8e4d3e969141cc01ac4544",
+    "jobs": 42,
+    "decoding": "greedy, at most 512 new tokens",
+    "adapter_point": "raw only"
+  },
+  "primary_estimand": {
+    "name": "numeric_instance_transfer_gap",
+    "definition": "GSM-Symbolic exact-answer accuracy of aligned minus permuted adapters, paired by model, training seed, template, and instance.",
+    "analysis_unit": "GSM-Symbolic template; the nine model-seed pairs are a fixed panel.",
+    "interval": "10,000-draw cluster bootstrap over the 100 templates, seed 9022026; average all 50 instances within each sampled template and then the nine fixed model-seed gaps.",
+    "reported_with_primary": "Absolute aligned and permuted accuracy overall and for every model-seed pair."
+  },
+  "gate": {
+    "tests": [
+      "The fixed-panel template-bootstrap interval for the mean gap has lower endpoint above zero.",
+      "The mean gap is positive for each of the three base models.",
+      "At least seven of nine model-seed gaps are positive."
+    ],
+    "decision": {
+      "all_pass": "Evidence that matched traces transfer across numeric instances for this fixed three-model panel.",
+      "interval_only": "Template-level transfer with model or seed heterogeneity; no cross-model claim.",
+      "interval_fails": "No evidence that the matched-trace benefit transfers to numeric instances."
+    }
+  },
+  "secondary": [
+    "For each arm, absolute change from its already-completed GSM8K score; never use this post-treatment quantity to filter the primary rows.",
+    "Gap by the source GSM8K solution's non-empty pre-answer line count, fixed in the staged data before generation.",
+    "Gap by the source GSM8K count of annotated <<...>> calculations; zero means missing annotations, not zero reasoning.",
+    "Accuracy spread across the 50 released instance indices.",
+    "A separate hierarchical model-seed-template bootstrap reported only as a sensitivity check because there are three model families."
+  ],
+  "claim_boundary": {
+    "in_scope": "Problem-matched trace supervision changes reasoning behavior that generalizes across new numeric instances of 100 held-out GSM8K templates.",
+    "out_of_scope": "Generalization to new problem structures, faithful verbal reasoning, a universal result for SFT, or any adapter-compression claim."
+  },
+  "preflight": {
+    "report": "prepared/gsm-symbolic-transfer-preflight.json",
+    "passed": true,
+    "unit_tests": "tests/test_gsm_symbolic_transfer.py",
+    "independent_review": "Claude Opus 5: GO; keep the primary unconditional, report absolute arm accuracies, and limit the claim to numeric instantiation."
+  }
+}

@@ -1,0 +1,7082 @@
+[
+  {
+    "example_id": "middle-5ec282741b2c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "52"
+  },
+  {
+    "example_id": "middle-ab4f22b308fd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "57"
+  },
+  {
+    "example_id": "middle-7abb6749d902",
+    "matches": [
+      "index_1"
+    ],
+    "response": "38"
+  },
+  {
+    "example_id": "middle-a77bc6fffb77",
+    "matches": [
+      "middle"
+    ],
+    "response": "58"
+  },
+  {
+    "example_id": "middle-aab1026118db",
+    "matches": [
+      "index_1"
+    ],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-f12e3610269a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "36"
+  },
+  {
+    "example_id": "middle-8379d0b9c9b8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-42c856b19da3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "37"
+  },
+  {
+    "example_id": "middle-2b3d15962204",
+    "matches": [
+      "middle"
+    ],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-16d4e31de1ce",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-1a068b0798a6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-fcbee6394c15",
+    "matches": [
+      "index_1"
+    ],
+    "response": "15"
+  },
+  {
+    "example_id": "middle-290c4b017911",
+    "matches": [
+      "index_1"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-80075abb76d3",
+    "matches": [],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-069926121c6d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "36"
+  },
+  {
+    "example_id": "middle-eac7ea8fde77",
+    "matches": [
+      "index_1"
+    ],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-17723f8e6252",
+    "matches": [
+      "middle"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-26f30c042151",
+    "matches": [
+      "index_1"
+    ],
+    "response": "44"
+  },
+  {
+    "example_id": "middle-e5beffd34b22",
+    "matches": [
+      "index_1"
+    ],
+    "response": "15"
+  },
+  {
+    "example_id": "middle-b4ae30a816d7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "16"
+  },
+  {
+    "example_id": "middle-902425766331",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-2fdd6001335d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-3c01615989ae",
+    "matches": [
+      "index_1"
+    ],
+    "response": "9"
+  },
+  {
+    "example_id": "middle-a9be7801ca5c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "47"
+  },
+  {
+    "example_id": "middle-b3019bbd8bd1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-283d462c88bb",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-9b3c54de55cc",
+    "matches": [
+      "index_1"
+    ],
+    "response": "82"
+  },
+  {
+    "example_id": "middle-381486dc5d7c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "32"
+  },
+  {
+    "example_id": "middle-60f213fe1c96",
+    "matches": [
+      "index_1"
+    ],
+    "response": "3"
+  },
+  {
+    "example_id": "middle-e501f5419c42",
+    "matches": [
+      "index_1"
+    ],
+    "response": "38"
+  },
+  {
+    "example_id": "middle-6ad4a6a18226",
+    "matches": [
+      "index_1"
+    ],
+    "response": "9"
+  },
+  {
+    "example_id": "middle-8d0e0443c3f3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "80"
+  },
+  {
+    "example_id": "middle-f30f39b99579",
+    "matches": [
+      "second_smallest"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-019f312a4822",
+    "matches": [],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-7b4a316c0d0a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-49b05088af09",
+    "matches": [
+      "index_1"
+    ],
+    "response": "92"
+  },
+  {
+    "example_id": "middle-781611bfb78a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-06b1bcc5316f",
+    "matches": [],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-983c25ac0999",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-22c5e819b68a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-8bab16b509e4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "16"
+  },
+  {
+    "example_id": "middle-f4c4b8065b27",
+    "matches": [
+      "index_1"
+    ],
+    "response": "36"
+  },
+  {
+    "example_id": "middle-8e4ffc352889",
+    "matches": [
+      "index_1"
+    ],
+    "response": "67"
+  },
+  {
+    "example_id": "middle-61e436cd1591",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-b92d81bd7d8b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "38"
+  },
+  {
+    "example_id": "middle-aa45eb19a855",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-7794ae26e7bc",
+    "matches": [
+      "index_1"
+    ],
+    "response": "10"
+  },
+  {
+    "example_id": "middle-0da59305a4b4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-d0d5e7467772",
+    "matches": [
+      "index_1"
+    ],
+    "response": "4"
+  },
+  {
+    "example_id": "middle-1b9f00114151",
+    "matches": [
+      "index_1"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-ffcda3f5ab36",
+    "matches": [
+      "median"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-7f5015ff2856",
+    "matches": [
+      "index_1"
+    ],
+    "response": "7"
+  },
+  {
+    "example_id": "middle-f4ca60a4fae8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-4d088a18dccd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "44"
+  },
+  {
+    "example_id": "middle-4c3a8385d379",
+    "matches": [
+      "index_1"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-81a6faa5bb00",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-87a29a3a9c79",
+    "matches": [
+      "index_1"
+    ],
+    "response": "67"
+  },
+  {
+    "example_id": "middle-e7f2be122244",
+    "matches": [
+      "index_1"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-5848d772c904",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-d7689ec4f4f1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-6e2f3d632662",
+    "matches": [
+      "index_1"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-66724070332a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-2b8cdb96533f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-5569fb4abcb4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-8f34c3355c52",
+    "matches": [
+      "median"
+    ],
+    "response": "41"
+  },
+  {
+    "example_id": "middle-35617143a647",
+    "matches": [],
+    "response": "40"
+  },
+  {
+    "example_id": "middle-5a970a9c3199",
+    "matches": [
+      "index_1"
+    ],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-c57dcbc6af89",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-134211d21ea3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "84"
+  },
+  {
+    "example_id": "middle-c6c43ac40ccc",
+    "matches": [
+      "index_1"
+    ],
+    "response": "52"
+  },
+  {
+    "example_id": "middle-f0bc5e24da38",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-6dfa045967d5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-dd4eedd4a451",
+    "matches": [
+      "index_1"
+    ],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-02bb4186c43b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "53"
+  },
+  {
+    "example_id": "middle-84f95b0d536f",
+    "matches": [],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-b989adecdad4",
+    "matches": [],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-316df775a360",
+    "matches": [
+      "index_1"
+    ],
+    "response": "78"
+  },
+  {
+    "example_id": "middle-8e29d555486a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "75"
+  },
+  {
+    "example_id": "middle-b8bcd6fce0e1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-c9f797f6ea1d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-5e9f49d95c72",
+    "matches": [],
+    "response": "17"
+  },
+  {
+    "example_id": "middle-d3db58dec3d9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "14"
+  },
+  {
+    "example_id": "middle-cedfad14b8ac",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-8148ba5c357e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "67"
+  },
+  {
+    "example_id": "middle-4b17f7cb4457",
+    "matches": [
+      "middle"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-a298d9813d55",
+    "matches": [
+      "index_1"
+    ],
+    "response": "30"
+  },
+  {
+    "example_id": "middle-51956692705a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "48"
+  },
+  {
+    "example_id": "middle-22df0c9aedf8",
+    "matches": [
+      "middle"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-922dfbe22496",
+    "matches": [
+      "index_1"
+    ],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-d220cc86ee62",
+    "matches": [],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-0767dcff8228",
+    "matches": [
+      "second_smallest"
+    ],
+    "response": "44"
+  },
+  {
+    "example_id": "middle-f440b8182473",
+    "matches": [
+      "index_1"
+    ],
+    "response": "5"
+  },
+  {
+    "example_id": "middle-f6a5443c3938",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-1f7a10315411",
+    "matches": [
+      "index_1"
+    ],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-aa022b2c58a3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "71"
+  },
+  {
+    "example_id": "middle-c07fdae2d502",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-01dcaa12ac55",
+    "matches": [
+      "index_1"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-b9f6b9ff3d2b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-ede030821deb",
+    "matches": [
+      "index_1"
+    ],
+    "response": "54"
+  },
+  {
+    "example_id": "middle-0f7dab93b022",
+    "matches": [
+      "index_1"
+    ],
+    "response": "80"
+  },
+  {
+    "example_id": "middle-a66c33b97ab4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "84"
+  },
+  {
+    "example_id": "middle-c56763641258",
+    "matches": [
+      "index_1"
+    ],
+    "response": "71"
+  },
+  {
+    "example_id": "middle-19b8ae64096a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "68"
+  },
+  {
+    "example_id": "middle-7aa66449b352",
+    "matches": [
+      "index_1"
+    ],
+    "response": "82"
+  },
+  {
+    "example_id": "middle-b6674febc74d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "48"
+  },
+  {
+    "example_id": "middle-0d75ff30a164",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-f14eff1d9f82",
+    "matches": [
+      "index_1"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-48b2231cbf96",
+    "matches": [
+      "index_1"
+    ],
+    "response": "51"
+  },
+  {
+    "example_id": "middle-558d1392fb02",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-91390a03bb4b",
+    "matches": [],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-2f27f3d8c856",
+    "matches": [
+      "index_1"
+    ],
+    "response": "13"
+  },
+  {
+    "example_id": "middle-d3b3cdb44715",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-4ad5cee108d6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "82"
+  },
+  {
+    "example_id": "middle-3fc9a44ea650",
+    "matches": [
+      "index_1"
+    ],
+    "response": "14"
+  },
+  {
+    "example_id": "middle-f2f162d3eea2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-59aada91b631",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-97cc0b4e18d2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "44"
+  },
+  {
+    "example_id": "middle-5bbb64a9253b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-d514ba1ff434",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-3a11e3b7595c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-7b13142bd923",
+    "matches": [
+      "index_1"
+    ],
+    "response": "77"
+  },
+  {
+    "example_id": "middle-a6e0da1a5f72",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-09856be08b8a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "67"
+  },
+  {
+    "example_id": "middle-61902148e136",
+    "matches": [
+      "index_1"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-8f87a47f2a50",
+    "matches": [
+      "index_1"
+    ],
+    "response": "29"
+  },
+  {
+    "example_id": "middle-5f87372e711f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "13"
+  },
+  {
+    "example_id": "middle-bc39e844af53",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-c26f0f4d24ef",
+    "matches": [
+      "index_1"
+    ],
+    "response": "37"
+  },
+  {
+    "example_id": "middle-36cc4735443c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "31"
+  },
+  {
+    "example_id": "middle-6eda0363e6c2",
+    "matches": [],
+    "response": "18"
+  },
+  {
+    "example_id": "middle-b2592b4a6ce7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "72"
+  },
+  {
+    "example_id": "middle-80c3d735a2e5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-488a5039cebd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-1019ed0f2f08",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-7ba94a61c42f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "17"
+  },
+  {
+    "example_id": "middle-afc0911100c7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-0e11a8e268d6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-ec3804a5c5a4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "43"
+  },
+  {
+    "example_id": "middle-92bd8a67e77e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "82"
+  },
+  {
+    "example_id": "middle-1c4ad93fdd7a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-6712366ea6c1",
+    "matches": [],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-3a8e88e2cb46",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-ff5ea3798a57",
+    "matches": [
+      "index_1"
+    ],
+    "response": "31"
+  },
+  {
+    "example_id": "middle-328b8c5568ee",
+    "matches": [
+      "index_1"
+    ],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-4a8e3e671167",
+    "matches": [
+      "index_1"
+    ],
+    "response": "68"
+  },
+  {
+    "example_id": "middle-a2e324bdddf8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "39"
+  },
+  {
+    "example_id": "middle-e57e915a2150",
+    "matches": [
+      "index_1"
+    ],
+    "response": "52"
+  },
+  {
+    "example_id": "middle-1091b0d07238",
+    "matches": [
+      "median"
+    ],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-d476abd33819",
+    "matches": [
+      "index_1"
+    ],
+    "response": "22"
+  },
+  {
+    "example_id": "middle-7fcf644220b9",
+    "matches": [
+      "middle"
+    ],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-782614e18010",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-fb7cc3a9662c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "9"
+  },
+  {
+    "example_id": "middle-8eaebf508d56",
+    "matches": [
+      "index_1"
+    ],
+    "response": "78"
+  },
+  {
+    "example_id": "middle-e3de9eb6bd66",
+    "matches": [
+      "index_1"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-3b802a60d5ac",
+    "matches": [
+      "index_1"
+    ],
+    "response": "57"
+  },
+  {
+    "example_id": "middle-637e529f60c2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-891e43910869",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-ac0580945372",
+    "matches": [
+      "middle"
+    ],
+    "response": "14"
+  },
+  {
+    "example_id": "middle-9242c14df697",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-d9d8bca27b5b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "23"
+  },
+  {
+    "example_id": "middle-8f7a55ead192",
+    "matches": [
+      "index_1"
+    ],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-c873e127c3d2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-9a2ca171b810",
+    "matches": [
+      "middle"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-8f33ca128aa0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-4a2373a006f9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "36"
+  },
+  {
+    "example_id": "middle-badd70f944ea",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-241d2a912fa6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-e617e8336617",
+    "matches": [
+      "index_1"
+    ],
+    "response": "6"
+  },
+  {
+    "example_id": "middle-4d928ed09bfa",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-6f6d3d72e590",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-c7906d6ac41d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-27da02018aed",
+    "matches": [
+      "index_1"
+    ],
+    "response": "15"
+  },
+  {
+    "example_id": "middle-731e799b076b",
+    "matches": [
+      "middle"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-eee0b8f7d384",
+    "matches": [
+      "index_1"
+    ],
+    "response": "92"
+  },
+  {
+    "example_id": "middle-059655a8a9d7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-a21971f4f3a2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-731a09f81f70",
+    "matches": [
+      "index_1"
+    ],
+    "response": "17"
+  },
+  {
+    "example_id": "middle-ad611556fc72",
+    "matches": [],
+    "response": "39"
+  },
+  {
+    "example_id": "middle-844856321eab",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-489fce0d48e2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "54"
+  },
+  {
+    "example_id": "middle-6c1312c9157f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "10"
+  },
+  {
+    "example_id": "middle-767683824444",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-e60bdb24de53",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-c9bdd16beb1d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-ab0fa6a13709",
+    "matches": [
+      "index_1"
+    ],
+    "response": "56"
+  },
+  {
+    "example_id": "middle-1eca24da3611",
+    "matches": [
+      "index_1"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-6f3b8a7dcc0a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "18"
+  },
+  {
+    "example_id": "middle-7de40b724f56",
+    "matches": [
+      "index_1"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-8d97384438e9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-d05c84895d9e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-6afdbff9adc2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "75"
+  },
+  {
+    "example_id": "middle-287d72c357a5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "72"
+  },
+  {
+    "example_id": "middle-8a3c8f03bc5c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-981e2802bb07",
+    "matches": [],
+    "response": "28"
+  },
+  {
+    "example_id": "middle-f12591bc3b40",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-5e4944a37cb6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "52"
+  },
+  {
+    "example_id": "middle-8afafc104184",
+    "matches": [
+      "index_1"
+    ],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-658192c7c510",
+    "matches": [
+      "index_1"
+    ],
+    "response": "68"
+  },
+  {
+    "example_id": "middle-5ac190e0e408",
+    "matches": [
+      "index_1"
+    ],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-a82ec340d7b4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-035be578b673",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-2e874a947a9e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-e4d0ec61710f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "10"
+  },
+  {
+    "example_id": "middle-24df358f8177",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-d5750950a796",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-a496b59ed4f1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "84"
+  },
+  {
+    "example_id": "middle-1ea64a1e4e44",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-88e006b0b7d9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-94de064ac4cc",
+    "matches": [
+      "median"
+    ],
+    "response": "34"
+  },
+  {
+    "example_id": "middle-38ab2c167475",
+    "matches": [
+      "index_1"
+    ],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-b4c175ae7e7e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-930b6abcd862",
+    "matches": [
+      "index_1"
+    ],
+    "response": "43"
+  },
+  {
+    "example_id": "middle-2c112a052d6c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "52"
+  },
+  {
+    "example_id": "middle-28268d8ba77d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-ae0d77661eed",
+    "matches": [
+      "index_1"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-1be498f04464",
+    "matches": [
+      "index_1"
+    ],
+    "response": "67"
+  },
+  {
+    "example_id": "middle-1d4aae7ef292",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-09cef39974be",
+    "matches": [
+      "index_1"
+    ],
+    "response": "18"
+  },
+  {
+    "example_id": "middle-3732f330861a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-8c89029782f5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-34e9bb78d1f5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-ebbd45bab439",
+    "matches": [
+      "index_1"
+    ],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-450682af82e2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "82"
+  },
+  {
+    "example_id": "middle-f909e7747046",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-87201bfc4f23",
+    "matches": [
+      "index_1"
+    ],
+    "response": "75"
+  },
+  {
+    "example_id": "middle-96699802ddcd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "6"
+  },
+  {
+    "example_id": "middle-1eaea9539c1b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "40"
+  },
+  {
+    "example_id": "middle-3e712f4a9ac8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "37"
+  },
+  {
+    "example_id": "middle-42baf029ef83",
+    "matches": [
+      "index_1"
+    ],
+    "response": "48"
+  },
+  {
+    "example_id": "middle-acd6e7841409",
+    "matches": [
+      "index_1"
+    ],
+    "response": "37"
+  },
+  {
+    "example_id": "middle-98afada8fd1f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-93546fb5fb72",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-2cba08987148",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-f7980fdbf114",
+    "matches": [
+      "index_1"
+    ],
+    "response": "72"
+  },
+  {
+    "example_id": "middle-f94fa9a50cfd",
+    "matches": [],
+    "response": "54"
+  },
+  {
+    "example_id": "middle-dc3cf01ae414",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-02bc059a3f43",
+    "matches": [
+      "index_1"
+    ],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-dd7ffb398445",
+    "matches": [
+      "index_1"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-53532cc4297b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-efcf44782fd9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-8d25fab31da8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-afe54fb0ba6f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-66ff928c6be9",
+    "matches": [
+      "middle"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-bd1d90056ee8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-ae196efb447a",
+    "matches": [],
+    "response": "54"
+  },
+  {
+    "example_id": "middle-c451645ad19e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "71"
+  },
+  {
+    "example_id": "middle-5b1f6dda253a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-4147fc2d6b33",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-dc58f6622d36",
+    "matches": [
+      "index_1"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-9b084ab17310",
+    "matches": [
+      "index_1"
+    ],
+    "response": "11"
+  },
+  {
+    "example_id": "middle-0d06ea16e0e3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-e9db23ab0820",
+    "matches": [],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-32a27d9592bd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-faee8d3c8dde",
+    "matches": [
+      "index_1"
+    ],
+    "response": "52"
+  },
+  {
+    "example_id": "middle-747df196f11c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-826719433eca",
+    "matches": [
+      "index_1"
+    ],
+    "response": "10"
+  },
+  {
+    "example_id": "middle-088a576dfef0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-f439a32c3d80",
+    "matches": [
+      "index_1"
+    ],
+    "response": "67"
+  },
+  {
+    "example_id": "middle-44b43ccdd3ab",
+    "matches": [
+      "index_1"
+    ],
+    "response": "41"
+  },
+  {
+    "example_id": "middle-fce2fd9c8611",
+    "matches": [
+      "middle"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-446b3130ff95",
+    "matches": [
+      "index_1"
+    ],
+    "response": "80"
+  },
+  {
+    "example_id": "middle-e76c17630ab0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-d47ec652460e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-dac51d379c8e",
+    "matches": [],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-288f059b4549",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-95f5ea806f57",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-b656cd0f6ede",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-e8ee25c94e70",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-81740d09ad39",
+    "matches": [
+      "index_1"
+    ],
+    "response": "58"
+  },
+  {
+    "example_id": "middle-eb58d1ec4773",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-a80ab0e2fc6c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "75"
+  },
+  {
+    "example_id": "middle-af5cc1e5c56b",
+    "matches": [
+      "middle"
+    ],
+    "response": "54"
+  },
+  {
+    "example_id": "middle-a81eec8a32d2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-1d336888b1da",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-1e7e1d7c6352",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-290e3ec31b2a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-65044f7c0585",
+    "matches": [
+      "index_1"
+    ],
+    "response": "36"
+  },
+  {
+    "example_id": "middle-c7fdbb45ce76",
+    "matches": [
+      "index_1"
+    ],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-d827bc181d91",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-d002729ec99d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "34"
+  },
+  {
+    "example_id": "middle-fcaadf81f0cf",
+    "matches": [
+      "index_1"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-0c0e4f99dda9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-fddd577c7e4f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "34"
+  },
+  {
+    "example_id": "middle-eb85ef2d02f8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "82"
+  },
+  {
+    "example_id": "middle-8552ed21bab0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "58"
+  },
+  {
+    "example_id": "middle-707a00676306",
+    "matches": [
+      "index_1"
+    ],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-0df8d48df901",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-a70c9188ab84",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-67bf6852ea4a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-45a67385df94",
+    "matches": [
+      "index_1"
+    ],
+    "response": "36"
+  },
+  {
+    "example_id": "middle-7934842313ff",
+    "matches": [
+      "index_1"
+    ],
+    "response": "39"
+  },
+  {
+    "example_id": "middle-c2667fa07733",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-6fb74bf58ecf",
+    "matches": [
+      "index_1"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-aa42fe60e22c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "67"
+  },
+  {
+    "example_id": "middle-6fc7445dcfc0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-f04547090cbc",
+    "matches": [
+      "index_1"
+    ],
+    "response": "44"
+  },
+  {
+    "example_id": "middle-05e9742fa148",
+    "matches": [
+      "index_1"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-141f6775576e",
+    "matches": [],
+    "response": "35"
+  },
+  {
+    "example_id": "middle-2a5cd473ea51",
+    "matches": [
+      "index_1"
+    ],
+    "response": "7"
+  },
+  {
+    "example_id": "middle-8311057db010",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-52b54da95e00",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-bf3936a68f70",
+    "matches": [
+      "index_1"
+    ],
+    "response": "6"
+  },
+  {
+    "example_id": "middle-a8edd0d570f7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "75"
+  },
+  {
+    "example_id": "middle-64e54034b8fb",
+    "matches": [
+      "index_1"
+    ],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-e0c742f6acde",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-86e6e8dfa4a8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-320efde56e12",
+    "matches": [
+      "index_1"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-34af424fda2c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-f2724037d6b9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-c244cdb5c3fc",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-d1d5e04f5153",
+    "matches": [
+      "index_1"
+    ],
+    "response": "5"
+  },
+  {
+    "example_id": "middle-afb0cea53c08",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-5c5c806bbedd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "67"
+  },
+  {
+    "example_id": "middle-9eba90cb3038",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-6308748fd18c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "58"
+  },
+  {
+    "example_id": "middle-8449ea764dee",
+    "matches": [
+      "index_1"
+    ],
+    "response": "33"
+  },
+  {
+    "example_id": "middle-1be11f22e035",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-9e96176d7a74",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-0b5df87ae83f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-e76cce3cd8dc",
+    "matches": [
+      "index_1"
+    ],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-3e1b71dd6d82",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-3e26e644dee6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-88e97eaccef2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "44"
+  },
+  {
+    "example_id": "middle-c74f404a3d8e",
+    "matches": [
+      "median"
+    ],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-e32a042df355",
+    "matches": [
+      "index_1"
+    ],
+    "response": "22"
+  },
+  {
+    "example_id": "middle-1511b17834d5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "20"
+  },
+  {
+    "example_id": "middle-a2343ce99c0e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-b449b9093261",
+    "matches": [],
+    "response": "30"
+  },
+  {
+    "example_id": "middle-b2af2204f9a3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "34"
+  },
+  {
+    "example_id": "middle-84edd33d0319",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-371ff76ec9ed",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-24cf4f574e42",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-30614c5e094d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-2215fafd40ed",
+    "matches": [
+      "index_1"
+    ],
+    "response": "23"
+  },
+  {
+    "example_id": "middle-e1499b0a4d84",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-e12b8ac19a6b",
+    "matches": [
+      "second_smallest"
+    ],
+    "response": "22"
+  },
+  {
+    "example_id": "middle-ef5c1785a449",
+    "matches": [
+      "index_1"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-f58cb639cde3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "68"
+  },
+  {
+    "example_id": "middle-ede0e2f4711c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "82"
+  },
+  {
+    "example_id": "middle-8648497030ae",
+    "matches": [
+      "index_1"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-29a2d98f8221",
+    "matches": [
+      "index_1"
+    ],
+    "response": "28"
+  },
+  {
+    "example_id": "middle-00f0051903d7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "78"
+  },
+  {
+    "example_id": "middle-3d247bf66065",
+    "matches": [
+      "second_smallest"
+    ],
+    "response": "37"
+  },
+  {
+    "example_id": "middle-988a02a34e83",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-87e8f21304a2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-2159e8ac72c0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-000d34e3416b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-c4d0a7aa3a5d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-68c784654cc9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-f2183822b7b9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-33296282a126",
+    "matches": [],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-fc1b76396fca",
+    "matches": [
+      "index_1"
+    ],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-93577271de3e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-d187c747cf83",
+    "matches": [
+      "index_1"
+    ],
+    "response": "16"
+  },
+  {
+    "example_id": "middle-9c1a7b0ef2d6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-f5cc556d7dc7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-f9c6a36f596b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-27c2008c2f0e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "58"
+  },
+  {
+    "example_id": "middle-6c1a69fe49a2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-446b399b9e28",
+    "matches": [
+      "index_1"
+    ],
+    "response": "33"
+  },
+  {
+    "example_id": "middle-48b9175d40e9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-9986b0e66a25",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-61b7bf48fa3e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-90ce984ee6a1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "92"
+  },
+  {
+    "example_id": "middle-e3f9e1074d24",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-dbffbf654222",
+    "matches": [
+      "index_1"
+    ],
+    "response": "92"
+  },
+  {
+    "example_id": "middle-0a826b8f435b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "68"
+  },
+  {
+    "example_id": "middle-b965ecce619a",
+    "matches": [
+      "middle"
+    ],
+    "response": "32"
+  },
+  {
+    "example_id": "middle-70cfb914ae25",
+    "matches": [
+      "index_1"
+    ],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-d5eb65468b7c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "43"
+  },
+  {
+    "example_id": "middle-4e546fecd02a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "44"
+  },
+  {
+    "example_id": "middle-83e9338f2792",
+    "matches": [
+      "middle"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-dad5cd975e60",
+    "matches": [
+      "middle"
+    ],
+    "response": "48"
+  },
+  {
+    "example_id": "middle-82fc4a0e8dc3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "34"
+  },
+  {
+    "example_id": "middle-b13fc1fcb53e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-cbfe6d7c54d1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-8013490a507b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "7"
+  },
+  {
+    "example_id": "middle-bfe6e48a412c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-1c34aa81d81c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "14"
+  },
+  {
+    "example_id": "middle-f02f95e513e6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "2"
+  },
+  {
+    "example_id": "middle-60a7ec535436",
+    "matches": [
+      "index_1"
+    ],
+    "response": "43"
+  },
+  {
+    "example_id": "middle-7e0c2c0664da",
+    "matches": [
+      "index_1"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-0142b358917a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "18"
+  },
+  {
+    "example_id": "middle-9c1ebd419b2f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-605a473ec5d6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "38"
+  },
+  {
+    "example_id": "middle-7a2f79afcd93",
+    "matches": [
+      "index_1"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-826b4cf2acc6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "57"
+  },
+  {
+    "example_id": "middle-f4d335079bfe",
+    "matches": [],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-815fc28b6f46",
+    "matches": [
+      "index_1"
+    ],
+    "response": "7"
+  },
+  {
+    "example_id": "middle-38756789dd2a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "68"
+  },
+  {
+    "example_id": "middle-a106a568e9a2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-cf27b3d08787",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-f74dfc80efc3",
+    "matches": [],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-361a724be78b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "36"
+  },
+  {
+    "example_id": "middle-7e99f40b341b",
+    "matches": [],
+    "response": "54"
+  },
+  {
+    "example_id": "middle-097fd77d4c56",
+    "matches": [
+      "index_1"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-7112fe035f0b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "21"
+  },
+  {
+    "example_id": "middle-cd7269b2939b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-b2d9319341f9",
+    "matches": [
+      "median"
+    ],
+    "response": "47"
+  },
+  {
+    "example_id": "middle-47f7c80831fd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "31"
+  },
+  {
+    "example_id": "middle-d65a93c496af",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-dfc739535a9d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-70aa7c4fd0d3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "80"
+  },
+  {
+    "example_id": "middle-73cd0db62e8d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-54122175ae3a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "35"
+  },
+  {
+    "example_id": "middle-6b2e071e6ab0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "71"
+  },
+  {
+    "example_id": "middle-8687a5a5909a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-9a0b2e062749",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-ff74fae0fd08",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-14482ed38a81",
+    "matches": [
+      "index_1"
+    ],
+    "response": "4"
+  },
+  {
+    "example_id": "middle-cd5dcdee2935",
+    "matches": [
+      "index_1"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-b5d833f90f5d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "30"
+  },
+  {
+    "example_id": "middle-55441d9eba07",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-ebada82ca6e0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-efc0af359983",
+    "matches": [
+      "index_1"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-57cbbe137550",
+    "matches": [
+      "index_1"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-75daea4931e7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "57"
+  },
+  {
+    "example_id": "middle-a4b99c7be036",
+    "matches": [
+      "index_1"
+    ],
+    "response": "77"
+  },
+  {
+    "example_id": "middle-bc3ffd965bc6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-036dfaa25575",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-eeb0f1c19633",
+    "matches": [
+      "index_1"
+    ],
+    "response": "78"
+  },
+  {
+    "example_id": "middle-a552ff91b45c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-1895a6358dc8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "40"
+  },
+  {
+    "example_id": "middle-96c4a8ba4b12",
+    "matches": [
+      "index_1"
+    ],
+    "response": "67"
+  },
+  {
+    "example_id": "middle-2dc0060f99e8",
+    "matches": [],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-33ebb1f06cc2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "6"
+  },
+  {
+    "example_id": "middle-a6df4b040f11",
+    "matches": [
+      "index_1"
+    ],
+    "response": "40"
+  },
+  {
+    "example_id": "middle-aaf2aa42c6e8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "19"
+  },
+  {
+    "example_id": "middle-06ecc10ab68f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "32"
+  },
+  {
+    "example_id": "middle-88b6697be8f2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "84"
+  },
+  {
+    "example_id": "middle-02336a678e6d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-a21968c9ee28",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-65ce9fbd3a81",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-93788ada03f9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-e6d3360c2342",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-d650d2af7d88",
+    "matches": [
+      "index_1"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-bc4d8ddcc5aa",
+    "matches": [
+      "index_1"
+    ],
+    "response": "51"
+  },
+  {
+    "example_id": "middle-88cff9207c19",
+    "matches": [
+      "index_1"
+    ],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-083e85f3f76f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-029329657ad1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-40baf75504ab",
+    "matches": [
+      "index_1"
+    ],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-b65a3ec1a73f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "84"
+  },
+  {
+    "example_id": "middle-5ea92ebd0f1e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "23"
+  },
+  {
+    "example_id": "middle-5fd2e56d15c0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-e074804af296",
+    "matches": [
+      "index_1"
+    ],
+    "response": "57"
+  },
+  {
+    "example_id": "middle-6864cee41331",
+    "matches": [
+      "index_1"
+    ],
+    "response": "75"
+  },
+  {
+    "example_id": "middle-00f792c0f357",
+    "matches": [
+      "index_1"
+    ],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-5594d5f7def8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-d5660abbead8",
+    "matches": [
+      "middle"
+    ],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-067fe092e5ac",
+    "matches": [
+      "index_1"
+    ],
+    "response": "68"
+  },
+  {
+    "example_id": "middle-2606970ed69b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "30"
+  },
+  {
+    "example_id": "middle-0d523fc0c140",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-57e088a3cd45",
+    "matches": [
+      "index_1"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-eba5c079d507",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-55c5b2bb2bd1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-321aed0810f3",
+    "matches": [
+      "median"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-d55f5631a43c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "53"
+  },
+  {
+    "example_id": "middle-725bcbd34355",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-4ca7b8258b6c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-07b735313869",
+    "matches": [
+      "index_1"
+    ],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-5311e94284de",
+    "matches": [
+      "index_1"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-95879e189403",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-a4931e83d574",
+    "matches": [
+      "index_1"
+    ],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-79c46d5842f3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-06fc3e071fde",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-c88d90792c92",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-06ed952bf1d6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-8a8e88b68f77",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-e57146f850e8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "31"
+  },
+  {
+    "example_id": "middle-0e3285bee6e0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-4e672c886985",
+    "matches": [
+      "index_1"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-72100e0d5e21",
+    "matches": [
+      "index_1"
+    ],
+    "response": "12"
+  },
+  {
+    "example_id": "middle-98e0584eedd0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "77"
+  },
+  {
+    "example_id": "middle-d641e07cfe69",
+    "matches": [
+      "index_1"
+    ],
+    "response": "9"
+  },
+  {
+    "example_id": "middle-4d7de2e95201",
+    "matches": [
+      "index_1"
+    ],
+    "response": "21"
+  },
+  {
+    "example_id": "middle-1972ba006c56",
+    "matches": [
+      "index_1"
+    ],
+    "response": "37"
+  },
+  {
+    "example_id": "middle-ac024c61055f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "12"
+  },
+  {
+    "example_id": "middle-e03f1d2ad535",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-c12c75df461a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "56"
+  },
+  {
+    "example_id": "middle-467c3e95f74d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-be7fd9e82692",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-fc1e7459946b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-feddec6f7388",
+    "matches": [
+      "index_1"
+    ],
+    "response": "22"
+  },
+  {
+    "example_id": "middle-55a54526a214",
+    "matches": [
+      "index_1"
+    ],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-f9acfe65ac93",
+    "matches": [],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-66cf38829ec1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-4738f7c81e7c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-c581be34b6e4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "54"
+  },
+  {
+    "example_id": "middle-ac645812c36a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "71"
+  },
+  {
+    "example_id": "middle-2f413f5e9ea3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "53"
+  },
+  {
+    "example_id": "middle-707135a6e965",
+    "matches": [
+      "index_1"
+    ],
+    "response": "32"
+  },
+  {
+    "example_id": "middle-f21f35c741c2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-45c1189d433c",
+    "matches": [],
+    "response": "52"
+  },
+  {
+    "example_id": "middle-589a7ecbf127",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-d3868e74ef77",
+    "matches": [
+      "index_1"
+    ],
+    "response": "17"
+  },
+  {
+    "example_id": "middle-ee80a698d7a6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "72"
+  },
+  {
+    "example_id": "middle-ba5819de3269",
+    "matches": [
+      "index_1"
+    ],
+    "response": "5"
+  },
+  {
+    "example_id": "middle-6e1d4c9559be",
+    "matches": [
+      "index_1"
+    ],
+    "response": "26"
+  },
+  {
+    "example_id": "middle-964e79dccdda",
+    "matches": [
+      "index_1"
+    ],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-d4961a25e27b",
+    "matches": [
+      "median"
+    ],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-dc60135e2702",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-00929d6addcf",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-da2b1effb25c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "39"
+  },
+  {
+    "example_id": "middle-2c90c9a1227f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-3cf00893b686",
+    "matches": [
+      "index_1"
+    ],
+    "response": "21"
+  },
+  {
+    "example_id": "middle-cffaae99ea64",
+    "matches": [
+      "index_1"
+    ],
+    "response": "22"
+  },
+  {
+    "example_id": "middle-669e2b297e01",
+    "matches": [
+      "index_1"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-b25f14a12215",
+    "matches": [
+      "index_1"
+    ],
+    "response": "33"
+  },
+  {
+    "example_id": "middle-0fc2b342699b",
+    "matches": [
+      "second_smallest"
+    ],
+    "response": "19"
+  },
+  {
+    "example_id": "middle-61b21c25b747",
+    "matches": [
+      "index_1"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-a394a0ab4dd4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-e7c419a78c25",
+    "matches": [
+      "index_1"
+    ],
+    "response": "33"
+  },
+  {
+    "example_id": "middle-8942989f5c79",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-e1ce7831b6b2",
+    "matches": [],
+    "response": "19"
+  },
+  {
+    "example_id": "middle-caa6c31f6cb3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-e31bd1c53ca9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "54"
+  },
+  {
+    "example_id": "middle-97d73521e55d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-a6ed0f2bdf19",
+    "matches": [
+      "index_1"
+    ],
+    "response": "7"
+  },
+  {
+    "example_id": "middle-a09ff25fc428",
+    "matches": [
+      "index_1"
+    ],
+    "response": "35"
+  },
+  {
+    "example_id": "middle-e56d084013b3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "68"
+  },
+  {
+    "example_id": "middle-310ba8db5d20",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-617c38cee51c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-ed5f51ba95a9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "37"
+  },
+  {
+    "example_id": "middle-ce3322378c38",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-8fed10494dc5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-4a5fced9ae1c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "21"
+  },
+  {
+    "example_id": "middle-692d8d866512",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-4b8d5017041d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "68"
+  },
+  {
+    "example_id": "middle-9a124c4222ca",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-1cd7b770c928",
+    "matches": [
+      "median"
+    ],
+    "response": "23"
+  },
+  {
+    "example_id": "middle-121823e1c592",
+    "matches": [
+      "index_1"
+    ],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-897a6ee05e33",
+    "matches": [
+      "index_1"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-24e9609b78d2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-dcc47933c49f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-914f62e90b2d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "92"
+  },
+  {
+    "example_id": "middle-d84ecf51f6b9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "9"
+  },
+  {
+    "example_id": "middle-8807c98ded87",
+    "matches": [
+      "index_1"
+    ],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-09106b11b235",
+    "matches": [
+      "index_1"
+    ],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-7cbf3259e619",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-0493d69145bd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-b6a75464da81",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-3d3fbd88851d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "52"
+  },
+  {
+    "example_id": "middle-07ea5979caee",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-1c45e454d69c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-b54b2ecc4df5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-61c63d146fe3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "3"
+  },
+  {
+    "example_id": "middle-19f48d332665",
+    "matches": [
+      "index_1"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-f4196840ab62",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-b88388c6ca3a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "51"
+  },
+  {
+    "example_id": "middle-f977fbec9792",
+    "matches": [
+      "index_1"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-8d974b39b601",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-4e84b9ac750f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-fe65433eb08d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-c5b9807f80de",
+    "matches": [],
+    "response": "35"
+  },
+  {
+    "example_id": "middle-83fb7014e94a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-6968928ec81a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-05a4aa03c939",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-7daf193000b8",
+    "matches": [
+      "second_smallest"
+    ],
+    "response": "14"
+  },
+  {
+    "example_id": "middle-abe279e988a9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "17"
+  },
+  {
+    "example_id": "middle-3fd8aa6b02cd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "13"
+  },
+  {
+    "example_id": "middle-aaad0d68a855",
+    "matches": [
+      "index_1"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-766b8f555daf",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-3ca43c0f402c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "37"
+  },
+  {
+    "example_id": "middle-29fa4d6d0436",
+    "matches": [
+      "index_1"
+    ],
+    "response": "71"
+  },
+  {
+    "example_id": "middle-ec54729b740d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-b621f9c5c996",
+    "matches": [],
+    "response": "47"
+  },
+  {
+    "example_id": "middle-c5d72dbd9ab8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-2fd49838f714",
+    "matches": [
+      "index_1"
+    ],
+    "response": "14"
+  },
+  {
+    "example_id": "middle-542cfadc3dbd",
+    "matches": [
+      "middle"
+    ],
+    "response": "26"
+  },
+  {
+    "example_id": "middle-453d8e84d5d6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-01e189545a18",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-e005b83820dd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-3c850801b9b9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "26"
+  },
+  {
+    "example_id": "middle-678b9356a2cd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "32"
+  },
+  {
+    "example_id": "middle-16c0cfaaf7b1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-d333e66c2bd0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "67"
+  },
+  {
+    "example_id": "middle-768ee27c4490",
+    "matches": [
+      "index_1"
+    ],
+    "response": "19"
+  },
+  {
+    "example_id": "middle-4d91cdb47ad7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "71"
+  },
+  {
+    "example_id": "middle-d8eb3ee7f385",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-d04c24dc1c90",
+    "matches": [
+      "index_1"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-61f386e1ebe0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "34"
+  },
+  {
+    "example_id": "middle-15bb3ad0ac00",
+    "matches": [
+      "index_1"
+    ],
+    "response": "51"
+  },
+  {
+    "example_id": "middle-81fd3d847050",
+    "matches": [
+      "index_1"
+    ],
+    "response": "5"
+  },
+  {
+    "example_id": "middle-a8b2bdf532f1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-08f596734338",
+    "matches": [
+      "second_smallest"
+    ],
+    "response": "28"
+  },
+  {
+    "example_id": "middle-2c2ca08ba951",
+    "matches": [
+      "index_1"
+    ],
+    "response": "7"
+  },
+  {
+    "example_id": "middle-024886e57f6f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "82"
+  },
+  {
+    "example_id": "middle-8b38ad90d9ff",
+    "matches": [
+      "index_1"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-f6890ae9ec37",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-8f389633b3a5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-cef521897777",
+    "matches": [
+      "index_1"
+    ],
+    "response": "82"
+  },
+  {
+    "example_id": "middle-2dec520f2bde",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-9ca81ea77d69",
+    "matches": [
+      "index_1"
+    ],
+    "response": "77"
+  },
+  {
+    "example_id": "middle-d07f16284b33",
+    "matches": [
+      "index_1"
+    ],
+    "response": "47"
+  },
+  {
+    "example_id": "middle-261108727a7e",
+    "matches": [],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-2be9ecacf313",
+    "matches": [
+      "index_1"
+    ],
+    "response": "13"
+  },
+  {
+    "example_id": "middle-9619c340eeb7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "77"
+  },
+  {
+    "example_id": "middle-e0e8b0a6eb03",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-01c19e155133",
+    "matches": [
+      "index_1"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-26791b8c4fc3",
+    "matches": [
+      "median"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-5df1a8326590",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-833012b8e699",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-48ff9c87b46e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "49"
+  },
+  {
+    "example_id": "middle-2dd1520eb587",
+    "matches": [
+      "index_1"
+    ],
+    "response": "18"
+  },
+  {
+    "example_id": "middle-29538ab49529",
+    "matches": [
+      "index_1"
+    ],
+    "response": "37"
+  },
+  {
+    "example_id": "middle-429aa9012121",
+    "matches": [
+      "index_1"
+    ],
+    "response": "3"
+  },
+  {
+    "example_id": "middle-08b764d14de5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "19"
+  },
+  {
+    "example_id": "middle-5ee912809b41",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-b559b4fc07f9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-f4cdc07773c7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "54"
+  },
+  {
+    "example_id": "middle-766a78290c45",
+    "matches": [
+      "index_1"
+    ],
+    "response": "40"
+  },
+  {
+    "example_id": "middle-d5ec3a987b5d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-135f4bdf011a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-c0f83d2df8a9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "37"
+  },
+  {
+    "example_id": "middle-f160bd0a654c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "58"
+  },
+  {
+    "example_id": "middle-17b05862fc56",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-9ce8d29a4212",
+    "matches": [
+      "median"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-5a329c830e9c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-14b1bfc92546",
+    "matches": [
+      "index_1"
+    ],
+    "response": "80"
+  },
+  {
+    "example_id": "middle-c001fc1ffcbb",
+    "matches": [
+      "index_1"
+    ],
+    "response": "35"
+  },
+  {
+    "example_id": "middle-c02ac86f8741",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-794b513c672d",
+    "matches": [
+      "second_smallest"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-39ac17060f05",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-754816ce1661",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-6d738b510308",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-2c0eb4f04515",
+    "matches": [
+      "index_1"
+    ],
+    "response": "9"
+  },
+  {
+    "example_id": "middle-6461acfc09a9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-54e76a026b00",
+    "matches": [
+      "index_1"
+    ],
+    "response": "11"
+  },
+  {
+    "example_id": "middle-ef6b3e6b4861",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-4dbce54ba909",
+    "matches": [
+      "index_1"
+    ],
+    "response": "16"
+  },
+  {
+    "example_id": "middle-93f992fd8325",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-bb86c7239df7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "80"
+  },
+  {
+    "example_id": "middle-e4e354848fda",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-2b179f61051f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-7dd8902456b3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "44"
+  },
+  {
+    "example_id": "middle-8e269a786cfa",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-0ab8781090b0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-b1d3a39cae90",
+    "matches": [
+      "index_1"
+    ],
+    "response": "5"
+  },
+  {
+    "example_id": "middle-1836f6a2d2f6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-aababc8038e8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "5"
+  },
+  {
+    "example_id": "middle-7b6420b8ac28",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-7e028104c4d8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-20a5621fc96b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-f714b2037f08",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-32250540f5a4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "19"
+  },
+  {
+    "example_id": "middle-35ee6e3b824f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-6725f3be43c1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-ac96f47b6f1e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-7f9ae66f1ce6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-b038705010e1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "17"
+  },
+  {
+    "example_id": "middle-a6993f553f98",
+    "matches": [
+      "index_1"
+    ],
+    "response": "19"
+  },
+  {
+    "example_id": "middle-36f236bc232a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "29"
+  },
+  {
+    "example_id": "middle-b1ebe7d09c8a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "36"
+  },
+  {
+    "example_id": "middle-b58e8c651720",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-76a417131bb1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-85c3365a3ed6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-443782d25d17",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-e3d94f793b39",
+    "matches": [
+      "index_1"
+    ],
+    "response": "51"
+  },
+  {
+    "example_id": "middle-5042aee90671",
+    "matches": [
+      "middle"
+    ],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-c974e1f5bb1c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-00b3583edf52",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-4acfd56a7bb7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-c8819d5f399b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "92"
+  },
+  {
+    "example_id": "middle-e634fe4dfbd9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-fb6c948ce548",
+    "matches": [
+      "index_1"
+    ],
+    "response": "75"
+  },
+  {
+    "example_id": "middle-cb1dbd9dc070",
+    "matches": [
+      "index_1"
+    ],
+    "response": "56"
+  },
+  {
+    "example_id": "middle-8f959221c074",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-6db5274fe2de",
+    "matches": [
+      "index_1"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-f5e7487cc292",
+    "matches": [
+      "index_1"
+    ],
+    "response": "31"
+  },
+  {
+    "example_id": "middle-4ef728770244",
+    "matches": [],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-cabb573dc218",
+    "matches": [
+      "index_1"
+    ],
+    "response": "22"
+  },
+  {
+    "example_id": "middle-22f745a4d16f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-c5058f305687",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-21e0ce1717d7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-040655911a87",
+    "matches": [
+      "index_1"
+    ],
+    "response": "56"
+  },
+  {
+    "example_id": "middle-267d81a59d93",
+    "matches": [
+      "index_1"
+    ],
+    "response": "13"
+  },
+  {
+    "example_id": "middle-52224fd6cdf2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "72"
+  },
+  {
+    "example_id": "middle-fc6d2960dcb3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "18"
+  },
+  {
+    "example_id": "middle-5c7c638d0892",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-cccacc5521bd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-80e7f1467d8c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-d117ddca28d9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "38"
+  },
+  {
+    "example_id": "middle-8d0223148743",
+    "matches": [
+      "index_1"
+    ],
+    "response": "78"
+  },
+  {
+    "example_id": "middle-e269b20c3ecd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "29"
+  },
+  {
+    "example_id": "middle-86e3841554df",
+    "matches": [
+      "index_1"
+    ],
+    "response": "35"
+  },
+  {
+    "example_id": "middle-84fbb6d41ce2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-d500f0b8d888",
+    "matches": [
+      "index_1"
+    ],
+    "response": "50"
+  },
+  {
+    "example_id": "middle-9dde94c6007b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "36"
+  },
+  {
+    "example_id": "middle-39fe461a0f80",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-cadcc285d056",
+    "matches": [
+      "index_1"
+    ],
+    "response": "5"
+  },
+  {
+    "example_id": "middle-64dbef81625d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "3"
+  },
+  {
+    "example_id": "middle-0de999386099",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-aeb02d89209d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-eac642e4463b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "75"
+  },
+  {
+    "example_id": "middle-b8eb30a90971",
+    "matches": [
+      "index_1"
+    ],
+    "response": "57"
+  },
+  {
+    "example_id": "middle-5ccbc6481a5d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-c2ac5545d364",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-58bdecfc6a8b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-43ef77761906",
+    "matches": [
+      "middle"
+    ],
+    "response": "34"
+  },
+  {
+    "example_id": "middle-22f3d76fe53b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-3e11e7efd70b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "40"
+  },
+  {
+    "example_id": "middle-6c144ea943bd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "84"
+  },
+  {
+    "example_id": "middle-112085cf63ed",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-06d52542d784",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-5def965f7847",
+    "matches": [
+      "index_1"
+    ],
+    "response": "29"
+  },
+  {
+    "example_id": "middle-f9debf50c300",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-9f3858dd6597",
+    "matches": [
+      "index_1"
+    ],
+    "response": "20"
+  },
+  {
+    "example_id": "middle-318863519481",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-429c6cd5b8b6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "84"
+  },
+  {
+    "example_id": "middle-c03b9ff82bcf",
+    "matches": [
+      "index_1"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-b7f7d697936b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "71"
+  },
+  {
+    "example_id": "middle-84b4edfb7fc0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "33"
+  },
+  {
+    "example_id": "middle-b59b36a9ae45",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-d5115d9cbd6e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "22"
+  },
+  {
+    "example_id": "middle-22e66c02f886",
+    "matches": [
+      "index_1"
+    ],
+    "response": "37"
+  },
+  {
+    "example_id": "middle-333d7ee4887e",
+    "matches": [
+      "middle"
+    ],
+    "response": "53"
+  },
+  {
+    "example_id": "middle-b438d8d69782",
+    "matches": [
+      "index_1"
+    ],
+    "response": "33"
+  },
+  {
+    "example_id": "middle-1c3cb332a76c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "4"
+  },
+  {
+    "example_id": "middle-fac1aacab1d1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-100b2e642153",
+    "matches": [
+      "index_1"
+    ],
+    "response": "26"
+  },
+  {
+    "example_id": "middle-717b8b856282",
+    "matches": [
+      "index_1"
+    ],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-2a4e579d9032",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-d5279d586bf1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-a5ce166d670f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "57"
+  },
+  {
+    "example_id": "middle-2e153ee276c6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-3d610fa5141f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-fec24c011017",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-050354fc24a5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-fa119e93eff6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "31"
+  },
+  {
+    "example_id": "middle-e713802da0f1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-818471e2bebf",
+    "matches": [
+      "second_smallest"
+    ],
+    "response": "12"
+  },
+  {
+    "example_id": "middle-1475a0a2862c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-658ba118b0a2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-bd900b8cae83",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-8771939d53e7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-f3b7f761f375",
+    "matches": [
+      "index_1"
+    ],
+    "response": "21"
+  },
+  {
+    "example_id": "middle-0f3a270a6867",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-57750b668bce",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-0f00cf8df6cc",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-a7d0db7f3984",
+    "matches": [
+      "index_1"
+    ],
+    "response": "10"
+  },
+  {
+    "example_id": "middle-6a2c04716c1f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-11860708eee1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-640e4ed87ef0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-6eb57d1a35c8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "72"
+  },
+  {
+    "example_id": "middle-c07ea66e3c86",
+    "matches": [
+      "index_1"
+    ],
+    "response": "13"
+  },
+  {
+    "example_id": "middle-bf912623cdf2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-62c1804322aa",
+    "matches": [
+      "index_1"
+    ],
+    "response": "93"
+  },
+  {
+    "example_id": "middle-44ffa0d9797b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "67"
+  },
+  {
+    "example_id": "middle-519f2852d7b3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-bbe16155e794",
+    "matches": [
+      "index_1"
+    ],
+    "response": "42"
+  },
+  {
+    "example_id": "middle-c13223e4ed27",
+    "matches": [
+      "index_1"
+    ],
+    "response": "15"
+  },
+  {
+    "example_id": "middle-d71af67e6c28",
+    "matches": [
+      "index_1"
+    ],
+    "response": "80"
+  },
+  {
+    "example_id": "middle-06d944471a47",
+    "matches": [
+      "index_1"
+    ],
+    "response": "80"
+  },
+  {
+    "example_id": "middle-563e245634d3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-4366e0099254",
+    "matches": [
+      "index_1"
+    ],
+    "response": "6"
+  },
+  {
+    "example_id": "middle-d2f89976b978",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-3ed0965ef905",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-c2de20d9a4d0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "11"
+  },
+  {
+    "example_id": "middle-887ec21e32bc",
+    "matches": [
+      "index_1"
+    ],
+    "response": "56"
+  },
+  {
+    "example_id": "middle-36cb55bc7d4f",
+    "matches": [
+      "second_smallest"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-ca47a02e3e0c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-c4762d3ab0f5",
+    "matches": [
+      "middle"
+    ],
+    "response": "56"
+  },
+  {
+    "example_id": "middle-6c3dc69e6990",
+    "matches": [
+      "index_1"
+    ],
+    "response": "48"
+  },
+  {
+    "example_id": "middle-78499965e0c5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-8a40fe0f383b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-db4d8f6f3531",
+    "matches": [
+      "index_1"
+    ],
+    "response": "22"
+  },
+  {
+    "example_id": "middle-0a8f2bf65c83",
+    "matches": [
+      "index_1"
+    ],
+    "response": "17"
+  },
+  {
+    "example_id": "middle-c2dfd4c5cdab",
+    "matches": [
+      "index_1"
+    ],
+    "response": "56"
+  },
+  {
+    "example_id": "middle-89f2fdaea020",
+    "matches": [],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-e652cc69e00e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "4"
+  },
+  {
+    "example_id": "middle-c6bbf165f997",
+    "matches": [
+      "index_1"
+    ],
+    "response": "15"
+  },
+  {
+    "example_id": "middle-a13ae0f2a407",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-2d755b496116",
+    "matches": [
+      "middle"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-3b097f3bc4d4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-e847e063feca",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-465d5dfb735f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "71"
+  },
+  {
+    "example_id": "middle-2ebc04c7a870",
+    "matches": [
+      "index_1"
+    ],
+    "response": "28"
+  },
+  {
+    "example_id": "middle-b128a64ff680",
+    "matches": [
+      "index_1"
+    ],
+    "response": "32"
+  },
+  {
+    "example_id": "middle-3faf74746918",
+    "matches": [
+      "index_1"
+    ],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-4693f155ae71",
+    "matches": [
+      "index_1"
+    ],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-beed1b0e721f",
+    "matches": [
+      "middle"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-cbf236405fcf",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-eb2917223044",
+    "matches": [],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-6e0d9fd45a81",
+    "matches": [
+      "index_1"
+    ],
+    "response": "36"
+  },
+  {
+    "example_id": "middle-cd68a987fc24",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-e3dea38e2032",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-e6a252d40419",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-35c415508354",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-13961f0310cf",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-bfb1bce3d6d4",
+    "matches": [],
+    "response": "23"
+  },
+  {
+    "example_id": "middle-866d4b0c89c6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-75eb5082bfcc",
+    "matches": [
+      "median"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-21b513416eed",
+    "matches": [
+      "index_1"
+    ],
+    "response": "20"
+  },
+  {
+    "example_id": "middle-aeb020ab9cc3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-4cd560438b1a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "22"
+  },
+  {
+    "example_id": "middle-69e6026f0d56",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-9e287c89d513",
+    "matches": [
+      "index_1"
+    ],
+    "response": "57"
+  },
+  {
+    "example_id": "middle-4d26e8c477fe",
+    "matches": [
+      "index_1"
+    ],
+    "response": "35"
+  },
+  {
+    "example_id": "middle-c44191470843",
+    "matches": [
+      "index_1"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-28b8a77987f8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "32"
+  },
+  {
+    "example_id": "middle-4352791cd10c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-6ccb34215a4f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-631f6e7a89a4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-7861b57b3fa4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-d1b0f0d988b7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "19"
+  },
+  {
+    "example_id": "middle-f0e267159f5e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "29"
+  },
+  {
+    "example_id": "middle-dc6b2d65a4c6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "15"
+  },
+  {
+    "example_id": "middle-82a80b28808f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "40"
+  },
+  {
+    "example_id": "middle-ca7d9a16bfc1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-5b0a13d650d0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-dd5fad514432",
+    "matches": [
+      "index_1"
+    ],
+    "response": "8"
+  },
+  {
+    "example_id": "middle-5a991c7e0136",
+    "matches": [
+      "index_1"
+    ],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-f229744346eb",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-af0f0103340e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "14"
+  },
+  {
+    "example_id": "middle-8a5f75b810b8",
+    "matches": [
+      "index_1"
+    ],
+    "response": "71"
+  },
+  {
+    "example_id": "middle-5a29efe49353",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-d1f09bbca419",
+    "matches": [
+      "index_1"
+    ],
+    "response": "2"
+  },
+  {
+    "example_id": "middle-70d47933bbac",
+    "matches": [
+      "index_1"
+    ],
+    "response": "30"
+  },
+  {
+    "example_id": "middle-bdd21fcabdf3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "78"
+  },
+  {
+    "example_id": "middle-5c984df3c142",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-66c661f47629",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-2cf95d4bce48",
+    "matches": [
+      "index_1"
+    ],
+    "response": "18"
+  },
+  {
+    "example_id": "middle-04eab230882c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "51"
+  },
+  {
+    "example_id": "middle-de7c9922ecbb",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-f9827a5156de",
+    "matches": [
+      "index_1"
+    ],
+    "response": "72"
+  },
+  {
+    "example_id": "middle-cbf57b3b40eb",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-2cfcf041a226",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-f8a4fedfbbed",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-8b4967f2a951",
+    "matches": [
+      "index_1"
+    ],
+    "response": "13"
+  },
+  {
+    "example_id": "middle-6304c15419b8",
+    "matches": [
+      "median"
+    ],
+    "response": "51"
+  },
+  {
+    "example_id": "middle-57a89e693465",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-ac081cd182e1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "4"
+  },
+  {
+    "example_id": "middle-beab1d36a0d5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "12"
+  },
+  {
+    "example_id": "middle-f8cd7c207b07",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-889d6777ba76",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-0ffeb46d88a5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-0a5da0a97870",
+    "matches": [
+      "index_1"
+    ],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-b1dba10caa56",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-8ce364eccb06",
+    "matches": [
+      "index_1"
+    ],
+    "response": "68"
+  },
+  {
+    "example_id": "middle-7863fd2520fb",
+    "matches": [
+      "index_1"
+    ],
+    "response": "39"
+  },
+  {
+    "example_id": "middle-4d291026fc49",
+    "matches": [
+      "index_1"
+    ],
+    "response": "68"
+  },
+  {
+    "example_id": "middle-cdad336c8d5c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "32"
+  },
+  {
+    "example_id": "middle-69d4f1dd54bd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-58bb658f8a05",
+    "matches": [
+      "index_1"
+    ],
+    "response": "47"
+  },
+  {
+    "example_id": "middle-527a83bbac73",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-77bc6780ed15",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-fd918167e79f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-52e1a4681ca4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-13c127d582c2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "54"
+  },
+  {
+    "example_id": "middle-5088f19f9cb9",
+    "matches": [],
+    "response": "53"
+  },
+  {
+    "example_id": "middle-6fc67e316e61",
+    "matches": [
+      "index_1"
+    ],
+    "response": "26"
+  },
+  {
+    "example_id": "middle-ba708594181f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-3d1de4e20082",
+    "matches": [
+      "index_1"
+    ],
+    "response": "7"
+  },
+  {
+    "example_id": "middle-3d3b8a541c5b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "97"
+  },
+  {
+    "example_id": "middle-04e10f512c00",
+    "matches": [
+      "index_1"
+    ],
+    "response": "52"
+  },
+  {
+    "example_id": "middle-09028ed00fab",
+    "matches": [
+      "index_1"
+    ],
+    "response": "72"
+  },
+  {
+    "example_id": "middle-59cb54e64996",
+    "matches": [
+      "index_1"
+    ],
+    "response": "38"
+  },
+  {
+    "example_id": "middle-3688e2c3af5b",
+    "matches": [],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-cc8ef10857a5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "75"
+  },
+  {
+    "example_id": "middle-d9e006a0ed35",
+    "matches": [
+      "index_1"
+    ],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-7b14da429ec5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-ed67e10d0105",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-5a9c795cfb54",
+    "matches": [
+      "index_1"
+    ],
+    "response": "6"
+  },
+  {
+    "example_id": "middle-49e23922013a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "75"
+  },
+  {
+    "example_id": "middle-dd7d886f626a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-6d2a3f2e3fae",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-cdfb90740f9d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-f2d91526d7fc",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-c24e6b88f0b6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "20"
+  },
+  {
+    "example_id": "middle-8ba1abd76156",
+    "matches": [
+      "index_1"
+    ],
+    "response": "20"
+  },
+  {
+    "example_id": "middle-9e35f929be25",
+    "matches": [
+      "index_1"
+    ],
+    "response": "51"
+  },
+  {
+    "example_id": "middle-8817e4c7a1f5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "3"
+  },
+  {
+    "example_id": "middle-5613f91b1b72",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-2c9b651afca0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "52"
+  },
+  {
+    "example_id": "middle-160032403acf",
+    "matches": [
+      "index_1"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-a31cc8f38c66",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-e973f134a7d7",
+    "matches": [],
+    "response": "27"
+  },
+  {
+    "example_id": "middle-2e228e7b879d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "46"
+  },
+  {
+    "example_id": "middle-d1a84f98fab6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-0afbe67c0cb0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "48"
+  },
+  {
+    "example_id": "middle-06f4ee0a0dda",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-7ac39c305f7a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "29"
+  },
+  {
+    "example_id": "middle-5058ee3851d1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-7d3ebbabb1ee",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-1feccd0ccd13",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-64bd996915cb",
+    "matches": [
+      "index_1"
+    ],
+    "response": "15"
+  },
+  {
+    "example_id": "middle-7bfeffb2b0d4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "10"
+  },
+  {
+    "example_id": "middle-8f85c705b5a4",
+    "matches": [
+      "index_1"
+    ],
+    "response": "60"
+  },
+  {
+    "example_id": "middle-4e0f0074cddb",
+    "matches": [
+      "index_1"
+    ],
+    "response": "80"
+  },
+  {
+    "example_id": "middle-ab83312faf63",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-efbbebc4d414",
+    "matches": [
+      "index_1"
+    ],
+    "response": "28"
+  },
+  {
+    "example_id": "middle-c2a5fb7b61ce",
+    "matches": [
+      "index_1"
+    ],
+    "response": "72"
+  },
+  {
+    "example_id": "middle-430f2a221e17",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-dbbc2c077f39",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-3f6b5a661087",
+    "matches": [
+      "index_1"
+    ],
+    "response": "33"
+  },
+  {
+    "example_id": "middle-9bead48bc8f9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "99"
+  },
+  {
+    "example_id": "middle-a52f6c276ab7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "26"
+  },
+  {
+    "example_id": "middle-801744be8f58",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-f14e03318267",
+    "matches": [
+      "index_1"
+    ],
+    "response": "56"
+  },
+  {
+    "example_id": "middle-d51f3ca34350",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-1ae36cc764ea",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-7faf4ea7a79f",
+    "matches": [
+      "median"
+    ],
+    "response": "31"
+  },
+  {
+    "example_id": "middle-34d8fc4802d6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "65"
+  },
+  {
+    "example_id": "middle-3ac5a09ff732",
+    "matches": [],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-aa354cc252a5",
+    "matches": [],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-ddc16c16d278",
+    "matches": [
+      "index_1"
+    ],
+    "response": "41"
+  },
+  {
+    "example_id": "middle-01c1b9129274",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-2ccb931338c0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-ad556f721591",
+    "matches": [
+      "index_1"
+    ],
+    "response": "56"
+  },
+  {
+    "example_id": "middle-6aaf81c90468",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-9580de3f39e2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "92"
+  },
+  {
+    "example_id": "middle-a2c0a3ecae2f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "55"
+  },
+  {
+    "example_id": "middle-4cf6f6bc3986",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-7c4b769cd7f3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "18"
+  },
+  {
+    "example_id": "middle-df605b84551e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-6053ad5dec4e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "78"
+  },
+  {
+    "example_id": "middle-c5b139fc8f69",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-81478fbbd18e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-ccb00f2ae7cb",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-45c3cc1ce773",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-4ee85fe4ee9f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "57"
+  },
+  {
+    "example_id": "middle-160e672f56a0",
+    "matches": [
+      "index_1"
+    ],
+    "response": "24"
+  },
+  {
+    "example_id": "middle-354887bf7509",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-e59e870cdd7e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-97c71e738318",
+    "matches": [
+      "index_1"
+    ],
+    "response": "17"
+  },
+  {
+    "example_id": "middle-a8825ef41120",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-4b9c7ef7737a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "84"
+  },
+  {
+    "example_id": "middle-692613e0b373",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-e721269bf241",
+    "matches": [
+      "index_1"
+    ],
+    "response": "72"
+  },
+  {
+    "example_id": "middle-68bb7528a8af",
+    "matches": [
+      "index_1"
+    ],
+    "response": "38"
+  },
+  {
+    "example_id": "middle-45b00e11a765",
+    "matches": [
+      "index_1"
+    ],
+    "response": "22"
+  },
+  {
+    "example_id": "middle-8d319905e99f",
+    "matches": [],
+    "response": "26"
+  },
+  {
+    "example_id": "middle-fd68d631cd8b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-27dd37b55c17",
+    "matches": [
+      "index_1"
+    ],
+    "response": "10"
+  },
+  {
+    "example_id": "middle-25981ab59cbc",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-71c2dfee6795",
+    "matches": [
+      "index_1"
+    ],
+    "response": "11"
+  },
+  {
+    "example_id": "middle-e5197f30d5e5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-46028541c52e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-1b618699a4ee",
+    "matches": [
+      "index_1"
+    ],
+    "response": "76"
+  },
+  {
+    "example_id": "middle-ef5962d3718e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "40"
+  },
+  {
+    "example_id": "middle-12dc14aaa3d5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-419d33a5e511",
+    "matches": [
+      "index_1"
+    ],
+    "response": "98"
+  },
+  {
+    "example_id": "middle-ef6b732e7e9c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-70ac065d0253",
+    "matches": [
+      "index_1"
+    ],
+    "response": "63"
+  },
+  {
+    "example_id": "middle-d6ac4587135d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-dfb0d5bbaa10",
+    "matches": [
+      "index_1"
+    ],
+    "response": "61"
+  },
+  {
+    "example_id": "middle-4f42b8c61452",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-214c4f4e378c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "73"
+  },
+  {
+    "example_id": "middle-2ba2af35357b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-0ffb4fa95366",
+    "matches": [
+      "index_1"
+    ],
+    "response": "43"
+  },
+  {
+    "example_id": "middle-7948b39a1745",
+    "matches": [
+      "index_1"
+    ],
+    "response": "23"
+  },
+  {
+    "example_id": "middle-024719030d02",
+    "matches": [
+      "index_1"
+    ],
+    "response": "91"
+  },
+  {
+    "example_id": "middle-02c27f5bf5b6",
+    "matches": [
+      "index_1"
+    ],
+    "response": "92"
+  },
+  {
+    "example_id": "middle-035c0e87ad29",
+    "matches": [
+      "index_1"
+    ],
+    "response": "30"
+  },
+  {
+    "example_id": "middle-9008d7fd0c13",
+    "matches": [
+      "index_1"
+    ],
+    "response": "95"
+  },
+  {
+    "example_id": "middle-5e35b1f9b344",
+    "matches": [
+      "index_1"
+    ],
+    "response": "96"
+  },
+  {
+    "example_id": "middle-90cbacd8be98",
+    "matches": [
+      "index_1"
+    ],
+    "response": "6"
+  },
+  {
+    "example_id": "middle-7a3cac800701",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-1305adec7f87",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-2b8a13619938",
+    "matches": [
+      "index_1"
+    ],
+    "response": "44"
+  },
+  {
+    "example_id": "middle-e7fbda40d4eb",
+    "matches": [
+      "second_smallest"
+    ],
+    "response": "5"
+  },
+  {
+    "example_id": "middle-268975881b66",
+    "matches": [
+      "index_1"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-21f7036855d7",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  },
+  {
+    "example_id": "middle-cc3a133baa7a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "80"
+  },
+  {
+    "example_id": "middle-fc1a28d3759d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "57"
+  },
+  {
+    "example_id": "middle-17a7c250d72b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "66"
+  },
+  {
+    "example_id": "middle-afa98e5fd6ad",
+    "matches": [
+      "index_1"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-271de17e0047",
+    "matches": [
+      "index_1"
+    ],
+    "response": "94"
+  },
+  {
+    "example_id": "middle-710a2790b67e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-587c81687e0f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "14"
+  },
+  {
+    "example_id": "middle-f0d03eaa3ae1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "16"
+  },
+  {
+    "example_id": "middle-b11fb85a5545",
+    "matches": [
+      "index_1"
+    ],
+    "response": "54"
+  },
+  {
+    "example_id": "middle-7e481e8cb769",
+    "matches": [],
+    "response": "31"
+  },
+  {
+    "example_id": "middle-a430f6093f65",
+    "matches": [
+      "index_1"
+    ],
+    "response": "82"
+  },
+  {
+    "example_id": "middle-209cf80b76a3",
+    "matches": [
+      "index_1"
+    ],
+    "response": "77"
+  },
+  {
+    "example_id": "middle-5ea155aca77c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "39"
+  },
+  {
+    "example_id": "middle-6d6c81024c5b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "7"
+  },
+  {
+    "example_id": "middle-8c4ba6ac2980",
+    "matches": [
+      "index_1"
+    ],
+    "response": "16"
+  },
+  {
+    "example_id": "middle-95e166e9ca4d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "92"
+  },
+  {
+    "example_id": "middle-e7dd8b6c52c9",
+    "matches": [
+      "index_1"
+    ],
+    "response": "85"
+  },
+  {
+    "example_id": "middle-de8c3b8f0c40",
+    "matches": [
+      "index_1"
+    ],
+    "response": "86"
+  },
+  {
+    "example_id": "middle-acf402d52b28",
+    "matches": [
+      "index_1"
+    ],
+    "response": "43"
+  },
+  {
+    "example_id": "middle-326c510d051e",
+    "matches": [
+      "middle"
+    ],
+    "response": "25"
+  },
+  {
+    "example_id": "middle-a6c34c39624a",
+    "matches": [
+      "index_1"
+    ],
+    "response": "47"
+  },
+  {
+    "example_id": "middle-56b504965d2d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "23"
+  },
+  {
+    "example_id": "middle-de993705d4b5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "88"
+  },
+  {
+    "example_id": "middle-dd64f0c2d61b",
+    "matches": [
+      "index_1"
+    ],
+    "response": "79"
+  },
+  {
+    "example_id": "middle-4bdb99722498",
+    "matches": [
+      "index_1"
+    ],
+    "response": "92"
+  },
+  {
+    "example_id": "middle-9c1437a74d85",
+    "matches": [
+      "median"
+    ],
+    "response": "43"
+  },
+  {
+    "example_id": "middle-ec51e1d148a1",
+    "matches": [
+      "index_1"
+    ],
+    "response": "69"
+  },
+  {
+    "example_id": "middle-65a9529d7352",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-64fdf727e97c",
+    "matches": [
+      "index_1"
+    ],
+    "response": "17"
+  },
+  {
+    "example_id": "middle-59f7d7d7cd41",
+    "matches": [
+      "index_1"
+    ],
+    "response": "70"
+  },
+  {
+    "example_id": "middle-e3b57476abfe",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-d75c17e71d45",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-7275f9e40000",
+    "matches": [
+      "median"
+    ],
+    "response": "36"
+  },
+  {
+    "example_id": "middle-6e532a5091bd",
+    "matches": [],
+    "response": "45"
+  },
+  {
+    "example_id": "middle-598b69c7b971",
+    "matches": [
+      "index_1"
+    ],
+    "response": "72"
+  },
+  {
+    "example_id": "middle-3be7e80cf0c5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "87"
+  },
+  {
+    "example_id": "middle-214bc53a8f63",
+    "matches": [
+      "index_1"
+    ],
+    "response": "34"
+  },
+  {
+    "example_id": "middle-9851d02e4f06",
+    "matches": [
+      "index_1"
+    ],
+    "response": "29"
+  },
+  {
+    "example_id": "middle-e255ab610189",
+    "matches": [
+      "index_1"
+    ],
+    "response": "74"
+  },
+  {
+    "example_id": "middle-ae8a5e85ebcd",
+    "matches": [
+      "index_1"
+    ],
+    "response": "83"
+  },
+  {
+    "example_id": "middle-a68d26c19c8e",
+    "matches": [],
+    "response": "28"
+  },
+  {
+    "example_id": "middle-8c18be4f3cd2",
+    "matches": [
+      "index_1"
+    ],
+    "response": "39"
+  },
+  {
+    "example_id": "middle-1bbed342aa64",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-d4898e9382b5",
+    "matches": [
+      "index_1"
+    ],
+    "response": "26"
+  },
+  {
+    "example_id": "middle-971235cf7102",
+    "matches": [
+      "index_1"
+    ],
+    "response": "41"
+  },
+  {
+    "example_id": "middle-d5728fccc795",
+    "matches": [
+      "index_1"
+    ],
+    "response": "64"
+  },
+  {
+    "example_id": "middle-434752322a4e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "62"
+  },
+  {
+    "example_id": "middle-ab4c69529b9c",
+    "matches": [],
+    "response": "29"
+  },
+  {
+    "example_id": "middle-2996ee6f5787",
+    "matches": [
+      "index_1"
+    ],
+    "response": "56"
+  },
+  {
+    "example_id": "middle-ed5c0bfdae9d",
+    "matches": [
+      "index_1"
+    ],
+    "response": "38"
+  },
+  {
+    "example_id": "middle-8edfa397cdc6",
+    "matches": [
+      "middle"
+    ],
+    "response": "77"
+  },
+  {
+    "example_id": "middle-0b7c22e3e972",
+    "matches": [
+      "index_1"
+    ],
+    "response": "15"
+  },
+  {
+    "example_id": "middle-f432beabc14f",
+    "matches": [
+      "index_1"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-ba74bf82c420",
+    "matches": [
+      "index_1"
+    ],
+    "response": "2"
+  },
+  {
+    "example_id": "middle-a46e1db8b8ca",
+    "matches": [
+      "index_1"
+    ],
+    "response": "59"
+  },
+  {
+    "example_id": "middle-7a286efd3958",
+    "matches": [
+      "index_1"
+    ],
+    "response": "28"
+  },
+  {
+    "example_id": "middle-5de7c1d3f126",
+    "matches": [
+      "index_1"
+    ],
+    "response": "81"
+  },
+  {
+    "example_id": "middle-0149221c9ddc",
+    "matches": [
+      "index_1"
+    ],
+    "response": "89"
+  },
+  {
+    "example_id": "middle-c63bf452a434",
+    "matches": [
+      "index_1"
+    ],
+    "response": "80"
+  },
+  {
+    "example_id": "middle-c1ad3e95419e",
+    "matches": [
+      "index_1"
+    ],
+    "response": "18"
+  },
+  {
+    "example_id": "middle-2be9243c6419",
+    "matches": [
+      "index_1"
+    ],
+    "response": "90"
+  }
+]

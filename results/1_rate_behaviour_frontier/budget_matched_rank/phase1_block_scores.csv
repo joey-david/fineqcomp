@@ -1,0 +1,5 @@
+model_key,dataset_key,seeds,mean_retained_gain_points,wins
+mistral_7b_base,kind_code,3,30.64117804412057,True
+mistral_7b_base,panel_math,3,24.003000612432043,True
+qwen25_7b_base,kind_code,3,46.21301781892688,True
+qwen25_7b_base,panel_math,3,20.27101497485057,True

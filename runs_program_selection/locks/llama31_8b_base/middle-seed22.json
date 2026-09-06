@@ -1,0 +1,8474 @@
+{
+  "base_argmax_share": {
+    "index_1": 0.119140625,
+    "median": 0.328125,
+    "middle": 0.291015625,
+    "second_smallest": 0.26171875
+  },
+  "base_mass": {
+    "index_1": 0.19703715898140217,
+    "median": 0.2779742829516181,
+    "middle": 0.2664076643413864,
+    "second_smallest": 0.2585808943185839
+  },
+  "candidate_table": [
+    {
+      "difficulty": 2,
+      "example_id": "middle-00bcc127f91a",
+      "input": {
+        "items": [
+          20,
+          89,
+          61,
+          98,
+          72,
+          75,
+          57
+        ]
+      },
+      "mass_on_dominant": 0.18924547731876373,
+      "mean_nll": 1.8289388020833333
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-06f49395cc6d",
+      "input": {
+        "items": [
+          36,
+          8,
+          79,
+          72,
+          83,
+          11,
+          48
+        ]
+      },
+      "mass_on_dominant": 0.45190486311912537,
+      "mean_nll": 1.76232115427653
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-3dff2f6ddb62",
+      "input": {
+        "items": [
+          73,
+          81,
+          5,
+          96,
+          41
+        ]
+      },
+      "mass_on_dominant": 0.15796513855457306,
+      "mean_nll": 1.8292843500773113
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ed9ab521aac3",
+      "input": {
+        "items": [
+          47,
+          67,
+          85,
+          42,
+          77,
+          49,
+          65
+        ]
+      },
+      "mass_on_dominant": 0.216415673494339,
+      "mean_nll": 1.6364558537801106
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-24b233489eec",
+      "input": {
+        "items": [
+          49,
+          8,
+          24,
+          19,
+          15,
+          56,
+          95
+        ]
+      },
+      "mass_on_dominant": 0.47235482931137085,
+      "mean_nll": 1.9844651222229004
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-cfef60b2af9d",
+      "input": {
+        "items": [
+          17,
+          37,
+          39,
+          69,
+          19,
+          8,
+          15
+        ]
+      },
+      "mass_on_dominant": 0.2265520989894867,
+      "mean_nll": 1.9003397623697917
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-8952bb72e773",
+      "input": {
+        "items": [
+          22,
+          88,
+          13,
+          96,
+          68,
+          84,
+          80
+        ]
+      },
+      "mass_on_dominant": 0.33416038751602173,
+      "mean_nll": 1.6654070218404133
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-b213d355a841",
+      "input": {
+        "items": [
+          4,
+          91,
+          19,
+          98,
+          24,
+          36,
+          13
+        ]
+      },
+      "mass_on_dominant": 0.249342143535614,
+      "mean_nll": 1.7516579627990723
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-5d82daf06b23",
+      "input": {
+        "items": [
+          50,
+          72,
+          4,
+          1,
+          33,
+          8,
+          78
+        ]
+      },
+      "mass_on_dominant": 0.30800119042396545,
+      "mean_nll": 2.082340717315674
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-81441a13d529",
+      "input": {
+        "items": [
+          14,
+          35,
+          3,
+          58,
+          54,
+          72,
+          70
+        ]
+      },
+      "mass_on_dominant": 0.12507383525371552,
+      "mean_nll": 1.6746718088785808
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f6352e7eb471",
+      "input": {
+        "items": [
+          29,
+          2,
+          92,
+          35,
+          65,
+          38,
+          55
+        ]
+      },
+      "mass_on_dominant": 0.4401639699935913,
+      "mean_nll": 1.8325265248616536
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-05db2099d0ba",
+      "input": {
+        "items": [
+          61,
+          82,
+          83,
+          69,
+          23
+        ]
+      },
+      "mass_on_dominant": 0.3837416172027588,
+      "mean_nll": 2.0482810338338218
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-fa6ae1b2d8ce",
+      "input": {
+        "items": [
+          34,
+          56,
+          55,
+          50,
+          22,
+          84,
+          82
+        ]
+      },
+      "mass_on_dominant": 0.1181328147649765,
+      "mean_nll": 1.8507874806722004
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-93e0156adee5",
+      "input": {
+        "items": [
+          20,
+          5,
+          17,
+          27,
+          91,
+          22,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.1858523041009903,
+      "mean_nll": 1.6838324864705403
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-c8a5af5ef8d7",
+      "input": {
+        "items": [
+          52,
+          88,
+          86,
+          81,
+          22
+        ]
+      },
+      "mass_on_dominant": 0.5678630471229553,
+      "mean_nll": 1.9913242657979329
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0f118c78de15",
+      "input": {
+        "items": [
+          97,
+          76,
+          43,
+          93,
+          13,
+          36,
+          38
+        ]
+      },
+      "mass_on_dominant": 0.3366911709308624,
+      "mean_nll": 2.115060011545817
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-9cf7c78e3daf",
+      "input": {
+        "items": [
+          12,
+          87,
+          18,
+          97,
+          22,
+          20,
+          38
+        ]
+      },
+      "mass_on_dominant": 0.17964226007461548,
+      "mean_nll": 1.8353673617045085
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-11d8bf0a348f",
+      "input": {
+        "items": [
+          90,
+          8,
+          95,
+          13,
+          58
+        ]
+      },
+      "mass_on_dominant": 0.253143310546875,
+      "mean_nll": 1.6930802663167317
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-31e7320b2f13",
+      "input": {
+        "items": [
+          80,
+          52,
+          10,
+          44,
+          42
+        ]
+      },
+      "mass_on_dominant": 0.12049127370119095,
+      "mean_nll": 1.8815522193908691
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-660786c636a0",
+      "input": {
+        "items": [
+          78,
+          23,
+          33,
+          46,
+          64,
+          97,
+          82
+        ]
+      },
+      "mass_on_dominant": 0.11580472439527512,
+      "mean_nll": 1.8105457623799641
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-eb505742f0af",
+      "input": {
+        "items": [
+          55,
+          74,
+          27,
+          60,
+          40,
+          61,
+          15
+        ]
+      },
+      "mass_on_dominant": 0.15717628598213196,
+      "mean_nll": 1.994427998860677
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-b5dc147098d2",
+      "input": {
+        "items": [
+          29,
+          15,
+          58,
+          90,
+          88,
+          79,
+          45
+        ]
+      },
+      "mass_on_dominant": 0.4038516581058502,
+      "mean_nll": 1.9920260111490886
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-814dd927a211",
+      "input": {
+        "items": [
+          54,
+          11,
+          43,
+          33,
+          31
+        ]
+      },
+      "mass_on_dominant": 0.16922828555107117,
+      "mean_nll": 1.6678930918375652
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-63b08573f562",
+      "input": {
+        "items": [
+          37,
+          80,
+          24,
+          75,
+          63,
+          2,
+          49
+        ]
+      },
+      "mass_on_dominant": 0.3118814527988434,
+      "mean_nll": 2.0283851623535156
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a928b20fa8c1",
+      "input": {
+        "items": [
+          46,
+          40,
+          25,
+          94,
+          50,
+          3,
+          74
+        ]
+      },
+      "mass_on_dominant": 0.24118921160697937,
+      "mean_nll": 1.7526041666666667
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-fae71a6d157d",
+      "input": {
+        "items": [
+          77,
+          33,
+          88,
+          73,
+          68
+        ]
+      },
+      "mass_on_dominant": 0.27602583169937134,
+      "mean_nll": 1.828335126241048
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-961296ca6146",
+      "input": {
+        "items": [
+          2,
+          69,
+          93,
+          60,
+          55
+        ]
+      },
+      "mass_on_dominant": 0.2845463454723358,
+      "mean_nll": 1.689522425333659
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-9bbe1388db99",
+      "input": {
+        "items": [
+          54,
+          18,
+          57,
+          49,
+          25,
+          53,
+          69
+        ]
+      },
+      "mass_on_dominant": 0.32268792390823364,
+      "mean_nll": 2.0207006136576333
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-f34cfcbe12bb",
+      "input": {
+        "items": [
+          94,
+          20,
+          87,
+          71,
+          27
+        ]
+      },
+      "mass_on_dominant": 0.2616940438747406,
+      "mean_nll": 1.689918041229248
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-1f31839c7173",
+      "input": {
+        "items": [
+          18,
+          5,
+          50,
+          98,
+          46
+        ]
+      },
+      "mass_on_dominant": 0.23505409061908722,
+      "mean_nll": 1.7348623275756836
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-d3884346e1dc",
+      "input": {
+        "items": [
+          16,
+          23,
+          53,
+          14,
+          48,
+          34,
+          77
+        ]
+      },
+      "mass_on_dominant": 0.3799595236778259,
+      "mean_nll": 1.9214970270792644
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-935b809fd8f0",
+      "input": {
+        "items": [
+          78,
+          10,
+          93,
+          90,
+          56,
+          48,
+          95
+        ]
+      },
+      "mass_on_dominant": 0.13482961058616638,
+      "mean_nll": 1.8962527910868328
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-7bab8425b919",
+      "input": {
+        "items": [
+          18,
+          30,
+          68,
+          90,
+          79,
+          67,
+          3
+        ]
+      },
+      "mass_on_dominant": 0.2578851580619812,
+      "mean_nll": 2.030306816101074
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-fede68d9cc01",
+      "input": {
+        "items": [
+          86,
+          93,
+          74,
+          25,
+          70,
+          9,
+          1
+        ]
+      },
+      "mass_on_dominant": 0.27795925736427307,
+      "mean_nll": 1.944153626759847
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-760bb4afba14",
+      "input": {
+        "items": [
+          24,
+          35,
+          4,
+          70,
+          5
+        ]
+      },
+      "mass_on_dominant": 0.33267590403556824,
+      "mean_nll": 1.751456578572591
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-d721cc6b6513",
+      "input": {
+        "items": [
+          23,
+          75,
+          47,
+          17,
+          35
+        ]
+      },
+      "mass_on_dominant": 0.34664395451545715,
+      "mean_nll": 1.6674110094706218
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-8176aa1e186b",
+      "input": {
+        "items": [
+          3,
+          70,
+          6,
+          91,
+          32,
+          69,
+          11
+        ]
+      },
+      "mass_on_dominant": 0.26494938135147095,
+      "mean_nll": 1.7496137619018555
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-86629a35d384",
+      "input": {
+        "items": [
+          69,
+          72,
+          7,
+          98,
+          59
+        ]
+      },
+      "mass_on_dominant": 0.09561368823051453,
+      "mean_nll": 1.7101341883341472
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-b0c1fe169198",
+      "input": {
+        "items": [
+          36,
+          23,
+          26,
+          50,
+          99,
+          42,
+          35
+        ]
+      },
+      "mass_on_dominant": 0.16120301187038422,
+      "mean_nll": 1.9184692700703938
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-7f8d2e508d49",
+      "input": {
+        "items": [
+          18,
+          3,
+          94,
+          68,
+          82,
+          11,
+          53
+        ]
+      },
+      "mass_on_dominant": 0.5681852102279663,
+      "mean_nll": 1.9242188135782878
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-7ebe8e2be569",
+      "input": {
+        "items": [
+          60,
+          83,
+          38,
+          53,
+          92
+        ]
+      },
+      "mass_on_dominant": 0.17717067897319794,
+      "mean_nll": 1.6789655685424805
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-b19b9e49da80",
+      "input": {
+        "items": [
+          41,
+          46,
+          10,
+          13,
+          94
+        ]
+      },
+      "mass_on_dominant": 0.23168914020061493,
+      "mean_nll": 1.7130476633707683
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-632a51264d92",
+      "input": {
+        "items": [
+          43,
+          72,
+          46,
+          22,
+          34,
+          78,
+          57
+        ]
+      },
+      "mass_on_dominant": 0.2534085810184479,
+      "mean_nll": 2.007282257080078
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-5935108546ba",
+      "input": {
+        "items": [
+          98,
+          97,
+          23,
+          7,
+          28,
+          99,
+          57
+        ]
+      },
+      "mass_on_dominant": 0.5171066522598267,
+      "mean_nll": 1.9593785603841145
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-fa8d0d1cc508",
+      "input": {
+        "items": [
+          32,
+          35,
+          21,
+          29,
+          28,
+          54,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.11246101558208466,
+      "mean_nll": 1.732343355814616
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-0385ecf5e9a0",
+      "input": {
+        "items": [
+          64,
+          58,
+          15,
+          44,
+          35
+        ]
+      },
+      "mass_on_dominant": 0.16856761276721954,
+      "mean_nll": 1.8340024948120117
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-168d2645e9d8",
+      "input": {
+        "items": [
+          15,
+          5,
+          33,
+          70,
+          39,
+          63,
+          13
+        ]
+      },
+      "mass_on_dominant": 0.3673020303249359,
+      "mean_nll": 1.7926398913065593
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a4b40fe176fd",
+      "input": {
+        "items": [
+          39,
+          77,
+          33,
+          28,
+          14,
+          56,
+          9
+        ]
+      },
+      "mass_on_dominant": 0.2597010135650635,
+      "mean_nll": 1.8345004717508953
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-11b01cb5b830",
+      "input": {
+        "items": [
+          15,
+          79,
+          11,
+          65,
+          76
+        ]
+      },
+      "mass_on_dominant": 0.22713643312454224,
+      "mean_nll": 1.5936179161071777
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-0902d820ed72",
+      "input": {
+        "items": [
+          21,
+          84,
+          15,
+          58,
+          28
+        ]
+      },
+      "mass_on_dominant": 0.22487032413482666,
+      "mean_nll": 1.7309989929199219
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-972c25453830",
+      "input": {
+        "items": [
+          55,
+          44,
+          77,
+          7,
+          47,
+          81,
+          43
+        ]
+      },
+      "mass_on_dominant": 0.20956583321094513,
+      "mean_nll": 1.8489901224772136
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-21ffa05b71de",
+      "input": {
+        "items": [
+          7,
+          66,
+          68,
+          81,
+          17,
+          32,
+          14
+        ]
+      },
+      "mass_on_dominant": 0.20663140714168549,
+      "mean_nll": 1.7790565490722656
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-d0365bdb2326",
+      "input": {
+        "items": [
+          34,
+          61,
+          2,
+          77,
+          45
+        ]
+      },
+      "mass_on_dominant": 0.2605520188808441,
+      "mean_nll": 1.7300073305765789
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-5883d87fc3b9",
+      "input": {
+        "items": [
+          45,
+          13,
+          46,
+          61,
+          89,
+          43,
+          28
+        ]
+      },
+      "mass_on_dominant": 0.22310923039913177,
+      "mean_nll": 1.764120101928711
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2327819bf628",
+      "input": {
+        "items": [
+          18,
+          65,
+          43,
+          70,
+          94,
+          13,
+          54
+        ]
+      },
+      "mass_on_dominant": 0.3314962685108185,
+      "mean_nll": 1.9479935963948567
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-6816b0a67902",
+      "input": {
+        "items": [
+          11,
+          82,
+          37,
+          90,
+          15,
+          76,
+          86
+        ]
+      },
+      "mass_on_dominant": 0.2421477884054184,
+      "mean_nll": 1.8890949885050456
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-3c8d0240de25",
+      "input": {
+        "items": [
+          67,
+          11,
+          13,
+          18,
+          94,
+          91,
+          69
+        ]
+      },
+      "mass_on_dominant": 0.0707663968205452,
+      "mean_nll": 1.7715444564819336
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c5f029780beb",
+      "input": {
+        "items": [
+          98,
+          54,
+          83,
+          18,
+          23,
+          48,
+          40
+        ]
+      },
+      "mass_on_dominant": 0.27162933349609375,
+      "mean_nll": 1.9972343444824219
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-deff81c71e07",
+      "input": {
+        "items": [
+          8,
+          69,
+          10,
+          91,
+          45,
+          80,
+          31
+        ]
+      },
+      "mass_on_dominant": 0.23029057681560516,
+      "mean_nll": 1.8046719233194988
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-955f9716cdc7",
+      "input": {
+        "items": [
+          90,
+          54,
+          98,
+          84,
+          99
+        ]
+      },
+      "mass_on_dominant": 0.1917116940021515,
+      "mean_nll": 1.7015248934427898
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-17976e5107b2",
+      "input": {
+        "items": [
+          24,
+          75,
+          14,
+          57,
+          31,
+          12,
+          85
+        ]
+      },
+      "mass_on_dominant": 0.293684720993042,
+      "mean_nll": 1.8015468915303547
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-a64cf48da7df",
+      "input": {
+        "items": [
+          20,
+          85,
+          39,
+          30,
+          36
+        ]
+      },
+      "mass_on_dominant": 0.2002677470445633,
+      "mean_nll": 1.8673855463663738
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-71fa04f65af9",
+      "input": {
+        "items": [
+          39,
+          49,
+          3,
+          6,
+          73
+        ]
+      },
+      "mass_on_dominant": 0.17321716248989105,
+      "mean_nll": 1.6078174908955891
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-af7b158b038d",
+      "input": {
+        "items": [
+          42,
+          89,
+          25,
+          40,
+          76,
+          79,
+          34
+        ]
+      },
+      "mass_on_dominant": 0.3258507549762726,
+      "mean_nll": 2.1492656071980796
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a15f54c1ba06",
+      "input": {
+        "items": [
+          87,
+          29,
+          30,
+          36,
+          20,
+          14,
+          42
+        ]
+      },
+      "mass_on_dominant": 0.2904287874698639,
+      "mean_nll": 1.974352518717448
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-3ea59fb5af2b",
+      "input": {
+        "items": [
+          84,
+          96,
+          63,
+          35,
+          20,
+          53,
+          27
+        ]
+      },
+      "mass_on_dominant": 0.3102227449417114,
+      "mean_nll": 1.9550422032674153
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e66be0b3c695",
+      "input": {
+        "items": [
+          30,
+          61,
+          11,
+          72,
+          32,
+          14,
+          56
+        ]
+      },
+      "mass_on_dominant": 0.28970375657081604,
+      "mean_nll": 2.0110816955566406
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-7d7cf7af889a",
+      "input": {
+        "items": [
+          11,
+          56,
+          84,
+          50,
+          34
+        ]
+      },
+      "mass_on_dominant": 0.40212973952293396,
+      "mean_nll": 1.7814747492472331
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-472f99af5099",
+      "input": {
+        "items": [
+          42,
+          86,
+          66,
+          75,
+          45,
+          38,
+          1
+        ]
+      },
+      "mass_on_dominant": 0.3191077709197998,
+      "mean_nll": 2.1518122355143228
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-5b3d6579d71d",
+      "input": {
+        "items": [
+          93,
+          94,
+          21,
+          31,
+          68
+        ]
+      },
+      "mass_on_dominant": 0.2421315610408783,
+      "mean_nll": 1.7245699564615886
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-2b50724b5b66",
+      "input": {
+        "items": [
+          11,
+          8,
+          96,
+          89,
+          31
+        ]
+      },
+      "mass_on_dominant": 0.24974828958511353,
+      "mean_nll": 1.769915262858073
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-72a3e9ef4a98",
+      "input": {
+        "items": [
+          65,
+          70,
+          83,
+          11,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.13202634453773499,
+      "mean_nll": 1.7982292175292969
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-7f68f47a79de",
+      "input": {
+        "items": [
+          27,
+          85,
+          14,
+          6,
+          17,
+          89,
+          68
+        ]
+      },
+      "mass_on_dominant": 0.3344099223613739,
+      "mean_nll": 2.0237515767415366
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-8555c68177f7",
+      "input": {
+        "items": [
+          31,
+          18,
+          69,
+          97,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.26466065645217896,
+      "mean_nll": 1.715229829152425
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0716ada54aca",
+      "input": {
+        "items": [
+          12,
+          81,
+          53,
+          92,
+          33,
+          68,
+          35
+        ]
+      },
+      "mass_on_dominant": 0.23217430710792542,
+      "mean_nll": 1.748669942220052
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e4cc20b8b70f",
+      "input": {
+        "items": [
+          77,
+          94,
+          22,
+          70,
+          99,
+          87,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.12498102337121964,
+      "mean_nll": 1.9661941528320312
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-930e5e3038b8",
+      "input": {
+        "items": [
+          70,
+          69,
+          43,
+          6,
+          82,
+          7,
+          37
+        ]
+      },
+      "mass_on_dominant": 0.2523535490036011,
+      "mean_nll": 1.9407318433125813
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-db3201510360",
+      "input": {
+        "items": [
+          67,
+          25,
+          87,
+          95,
+          55
+        ]
+      },
+      "mass_on_dominant": 0.05054087936878204,
+      "mean_nll": 1.7306194305419922
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a3a32e291d36",
+      "input": {
+        "items": [
+          11,
+          82,
+          42,
+          63,
+          44,
+          37,
+          17
+        ]
+      },
+      "mass_on_dominant": 0.18015941977500916,
+      "mean_nll": 1.691256046295166
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-23f5efa245dd",
+      "input": {
+        "items": [
+          80,
+          81,
+          71,
+          95,
+          78,
+          24,
+          85
+        ]
+      },
+      "mass_on_dominant": 0.21257919073104858,
+      "mean_nll": 1.8812073071797688
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-7b7a8296df64",
+      "input": {
+        "items": [
+          66,
+          96,
+          52,
+          67,
+          3,
+          78,
+          27
+        ]
+      },
+      "mass_on_dominant": 0.1001671627163887,
+      "mean_nll": 1.977163314819336
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c88cfc227d1f",
+      "input": {
+        "items": [
+          42,
+          2,
+          21,
+          59,
+          79,
+          27,
+          80
+        ]
+      },
+      "mass_on_dominant": 0.5437124967575073,
+      "mean_nll": 1.9947160085042317
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-71da69529077",
+      "input": {
+        "items": [
+          35,
+          25,
+          72,
+          39,
+          65
+        ]
+      },
+      "mass_on_dominant": 0.37121307849884033,
+      "mean_nll": 1.7255136171976726
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-7a0d943b22ce",
+      "input": {
+        "items": [
+          37,
+          34,
+          53,
+          88,
+          57,
+          67,
+          40
+        ]
+      },
+      "mass_on_dominant": 0.31326037645339966,
+      "mean_nll": 1.824471155802409
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-25553523ff1d",
+      "input": {
+        "items": [
+          44,
+          39,
+          68,
+          90,
+          51
+        ]
+      },
+      "mass_on_dominant": 0.37732258439064026,
+      "mean_nll": 1.5838158925374348
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-8c06ecac3df0",
+      "input": {
+        "items": [
+          53,
+          40,
+          1,
+          20,
+          14
+        ]
+      },
+      "mass_on_dominant": 0.41443297266960144,
+      "mean_nll": 1.8607667287190754
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-9c968e434a5e",
+      "input": {
+        "items": [
+          16,
+          2,
+          62,
+          67,
+          70,
+          33,
+          53
+        ]
+      },
+      "mass_on_dominant": 0.4293286204338074,
+      "mean_nll": 1.778986930847168
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c26018a3767e",
+      "input": {
+        "items": [
+          6,
+          10,
+          29,
+          84,
+          70,
+          44,
+          4
+        ]
+      },
+      "mass_on_dominant": 0.3950425982475281,
+      "mean_nll": 1.8676438331604004
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-8937895e63aa",
+      "input": {
+        "items": [
+          24,
+          77,
+          95,
+          60,
+          32,
+          39,
+          46
+        ]
+      },
+      "mass_on_dominant": 0.5520910024642944,
+      "mean_nll": 1.9773556391398113
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f1efe85ea5bf",
+      "input": {
+        "items": [
+          9,
+          92,
+          3,
+          78,
+          4,
+          28,
+          80
+        ]
+      },
+      "mass_on_dominant": 0.24505746364593506,
+      "mean_nll": 1.9247541427612305
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f6c0800b66f9",
+      "input": {
+        "items": [
+          30,
+          1,
+          68,
+          23,
+          6,
+          37,
+          70
+        ]
+      },
+      "mass_on_dominant": 0.2133452147245407,
+      "mean_nll": 1.7691879272460938
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-8d8f9a425656",
+      "input": {
+        "items": [
+          16,
+          80,
+          8,
+          53,
+          56,
+          24,
+          51
+        ]
+      },
+      "mass_on_dominant": 0.26789844036102295,
+      "mean_nll": 1.824190616607666
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-20a2f6ed0d53",
+      "input": {
+        "items": [
+          74,
+          41,
+          45,
+          89,
+          78,
+          86,
+          49
+        ]
+      },
+      "mass_on_dominant": 0.30143648386001587,
+      "mean_nll": 2.0175913174947104
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-c5bcc43c751c",
+      "input": {
+        "items": [
+          81,
+          95,
+          37,
+          49,
+          52
+        ]
+      },
+      "mass_on_dominant": 0.29228588938713074,
+      "mean_nll": 1.6695111592610676
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-10ba2d69e27f",
+      "input": {
+        "items": [
+          85,
+          81,
+          15,
+          39,
+          67,
+          25,
+          93
+        ]
+      },
+      "mass_on_dominant": 0.2495611160993576,
+      "mean_nll": 1.8384698232014973
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f573e06728cb",
+      "input": {
+        "items": [
+          10,
+          90,
+          26,
+          9,
+          44,
+          11,
+          21
+        ]
+      },
+      "mass_on_dominant": 0.5153886079788208,
+      "mean_nll": 1.996045748392741
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0024c8f95b9b",
+      "input": {
+        "items": [
+          97,
+          33,
+          77,
+          4,
+          46,
+          56,
+          14
+        ]
+      },
+      "mass_on_dominant": 0.4383041262626648,
+      "mean_nll": 1.9032419522603352
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-682210a04ecb",
+      "input": {
+        "items": [
+          24,
+          98,
+          40,
+          2,
+          18,
+          16,
+          12
+        ]
+      },
+      "mass_on_dominant": 0.14975669980049133,
+      "mean_nll": 1.9413735071818035
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-1fcbf6e39d6d",
+      "input": {
+        "items": [
+          19,
+          3,
+          70,
+          63,
+          4,
+          64,
+          33
+        ]
+      },
+      "mass_on_dominant": 0.5605601072311401,
+      "mean_nll": 1.878077507019043
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-67b01624f897",
+      "input": {
+        "items": [
+          74,
+          27,
+          48,
+          59,
+          50,
+          44,
+          85
+        ]
+      },
+      "mass_on_dominant": 0.3029060959815979,
+      "mean_nll": 1.8893216451009114
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-bb6646513b76",
+      "input": {
+        "items": [
+          16,
+          54,
+          3,
+          92,
+          18,
+          62,
+          15
+        ]
+      },
+      "mass_on_dominant": 0.17787092924118042,
+      "mean_nll": 1.7827049891153972
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-702e094e26c4",
+      "input": {
+        "items": [
+          86,
+          4,
+          64,
+          99,
+          62,
+          73,
+          38
+        ]
+      },
+      "mass_on_dominant": 0.14809578657150269,
+      "mean_nll": 1.7527189254760742
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-296ca63f3b84",
+      "input": {
+        "items": [
+          43,
+          87,
+          90,
+          39,
+          75,
+          57,
+          68
+        ]
+      },
+      "mass_on_dominant": 0.19689549505710602,
+      "mean_nll": 1.9201165835062664
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-12b6e6843ab8",
+      "input": {
+        "items": [
+          41,
+          15,
+          29,
+          85,
+          46,
+          39,
+          65
+        ]
+      },
+      "mass_on_dominant": 0.22853787243366241,
+      "mean_nll": 1.696761926015218
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-3d3fc2f1914d",
+      "input": {
+        "items": [
+          16,
+          82,
+          85,
+          53,
+          10
+        ]
+      },
+      "mass_on_dominant": 0.324585884809494,
+      "mean_nll": 1.744429111480713
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-10b0789c6dce",
+      "input": {
+        "items": [
+          21,
+          62,
+          46,
+          30,
+          23
+        ]
+      },
+      "mass_on_dominant": 0.20854337513446808,
+      "mean_nll": 1.7985925674438477
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-b7221974c3bf",
+      "input": {
+        "items": [
+          52,
+          57,
+          13,
+          72,
+          47
+        ]
+      },
+      "mass_on_dominant": 0.14995941519737244,
+      "mean_nll": 1.631269137064616
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a04aa6408dbe",
+      "input": {
+        "items": [
+          37,
+          82,
+          72,
+          68,
+          35,
+          51,
+          14
+        ]
+      },
+      "mass_on_dominant": 0.36398839950561523,
+      "mean_nll": 1.7810335159301758
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-429f0a5ef661",
+      "input": {
+        "items": [
+          27,
+          56,
+          54,
+          47,
+          99,
+          52,
+          40
+        ]
+      },
+      "mass_on_dominant": 0.1844736784696579,
+      "mean_nll": 1.779497464497884
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-cade3afab837",
+      "input": {
+        "items": [
+          45,
+          12,
+          23,
+          82,
+          38,
+          71,
+          29
+        ]
+      },
+      "mass_on_dominant": 0.24566715955734253,
+      "mean_nll": 1.760751724243164
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-b2137ea5630c",
+      "input": {
+        "items": [
+          33,
+          97,
+          72,
+          80,
+          57,
+          2,
+          39
+        ]
+      },
+      "mass_on_dominant": 0.2147350013256073,
+      "mean_nll": 1.8572061856587727
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-c36f0faa5c60",
+      "input": {
+        "items": [
+          10,
+          82,
+          5,
+          25,
+          73
+        ]
+      },
+      "mass_on_dominant": 0.418844074010849,
+      "mean_nll": 1.7648264567057292
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2137850e67cb",
+      "input": {
+        "items": [
+          32,
+          65,
+          71,
+          8,
+          72,
+          59,
+          13
+        ]
+      },
+      "mass_on_dominant": 0.18806752562522888,
+      "mean_nll": 1.8360277811686199
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-68af6246c4c9",
+      "input": {
+        "items": [
+          40,
+          90,
+          65,
+          59,
+          47
+        ]
+      },
+      "mass_on_dominant": 0.2121017873287201,
+      "mean_nll": 1.8447640736897786
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-99ed46bb8610",
+      "input": {
+        "items": [
+          22,
+          90,
+          81,
+          1,
+          27
+        ]
+      },
+      "mass_on_dominant": 0.36883142590522766,
+      "mean_nll": 1.5411159197489421
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-59a4602d7dc5",
+      "input": {
+        "items": [
+          17,
+          88,
+          57,
+          92,
+          59,
+          1,
+          29
+        ]
+      },
+      "mass_on_dominant": 0.27865326404571533,
+      "mean_nll": 1.892817497253418
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-8bdb2d23934b",
+      "input": {
+        "items": [
+          37,
+          10,
+          62,
+          47,
+          20
+        ]
+      },
+      "mass_on_dominant": 0.10642293840646744,
+      "mean_nll": 1.5973339080810547
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2fc059e77f3e",
+      "input": {
+        "items": [
+          21,
+          67,
+          39,
+          97,
+          95,
+          12,
+          62
+        ]
+      },
+      "mass_on_dominant": 0.38657528162002563,
+      "mean_nll": 1.87566343943278
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-3b6dde1a4f4f",
+      "input": {
+        "items": [
+          23,
+          67,
+          81,
+          28,
+          42
+        ]
+      },
+      "mass_on_dominant": 0.3457621932029724,
+      "mean_nll": 1.6411622365315754
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-08f32459145e",
+      "input": {
+        "items": [
+          13,
+          9,
+          92,
+          19,
+          45
+        ]
+      },
+      "mass_on_dominant": 0.19171713292598724,
+      "mean_nll": 1.6390865643819172
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-085777ce52de",
+      "input": {
+        "items": [
+          8,
+          83,
+          44,
+          13,
+          17
+        ]
+      },
+      "mass_on_dominant": 0.45146632194519043,
+      "mean_nll": 1.665925661722819
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-04280cf265e1",
+      "input": {
+        "items": [
+          43,
+          5,
+          79,
+          37,
+          62
+        ]
+      },
+      "mass_on_dominant": 0.1768493503332138,
+      "mean_nll": 1.492174784342448
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-8135faa8d795",
+      "input": {
+        "items": [
+          88,
+          92,
+          45,
+          19,
+          5,
+          79,
+          8
+        ]
+      },
+      "mass_on_dominant": 0.3662804067134857,
+      "mean_nll": 2.077362537384033
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-9ff49bbc4678",
+      "input": {
+        "items": [
+          34,
+          32,
+          33,
+          38,
+          9,
+          68,
+          3
+        ]
+      },
+      "mass_on_dominant": 0.20287449657917023,
+      "mean_nll": 2.03820006052653
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-b9223aa0c34a",
+      "input": {
+        "items": [
+          79,
+          81,
+          1,
+          64,
+          16,
+          26,
+          3
+        ]
+      },
+      "mass_on_dominant": 0.36798107624053955,
+      "mean_nll": 1.879323164621989
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-4a6b2a7376fd",
+      "input": {
+        "items": [
+          34,
+          68,
+          19,
+          35,
+          84
+        ]
+      },
+      "mass_on_dominant": 0.3276151418685913,
+      "mean_nll": 1.7504154841105144
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ef368bd63791",
+      "input": {
+        "items": [
+          81,
+          18,
+          64,
+          70,
+          21,
+          38,
+          44
+        ]
+      },
+      "mass_on_dominant": 0.46780911087989807,
+      "mean_nll": 1.9660364786783855
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-88570f6b4c95",
+      "input": {
+        "items": [
+          92,
+          19,
+          96,
+          37,
+          59
+        ]
+      },
+      "mass_on_dominant": 0.27023330330848694,
+      "mean_nll": 1.6916205088297527
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-aa2c5b7db034",
+      "input": {
+        "items": [
+          44,
+          68,
+          2,
+          15,
+          18,
+          1,
+          46
+        ]
+      },
+      "mass_on_dominant": 0.27210935950279236,
+      "mean_nll": 1.7619813283284504
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-cdc6b22c16ec",
+      "input": {
+        "items": [
+          75,
+          27,
+          52,
+          92,
+          97,
+          68,
+          51
+        ]
+      },
+      "mass_on_dominant": 0.19403885304927826,
+      "mean_nll": 1.835069179534912
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-46907289009f",
+      "input": {
+        "items": [
+          36,
+          40,
+          3,
+          53,
+          39,
+          34,
+          63
+        ]
+      },
+      "mass_on_dominant": 0.3786689043045044,
+      "mean_nll": 1.8080275853474934
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-f17d9377e403",
+      "input": {
+        "items": [
+          32,
+          83,
+          94,
+          50,
+          35
+        ]
+      },
+      "mass_on_dominant": 0.2974904179573059,
+      "mean_nll": 1.7623055775960286
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-32f7e6ebf2c7",
+      "input": {
+        "items": [
+          60,
+          66,
+          32,
+          78,
+          11,
+          86,
+          46
+        ]
+      },
+      "mass_on_dominant": 0.2453756034374237,
+      "mean_nll": 1.9340672492980957
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ac3ba3981bfe",
+      "input": {
+        "items": [
+          55,
+          66,
+          5,
+          17,
+          74,
+          12,
+          99
+        ]
+      },
+      "mass_on_dominant": 0.22855474054813385,
+      "mean_nll": 1.8401875495910645
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-f2d686900355",
+      "input": {
+        "items": [
+          40,
+          70,
+          23,
+          79,
+          31
+        ]
+      },
+      "mass_on_dominant": 0.20966483652591705,
+      "mean_nll": 1.8190968831380208
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-55208869f590",
+      "input": {
+        "items": [
+          44,
+          3,
+          81,
+          30,
+          14
+        ]
+      },
+      "mass_on_dominant": 0.2801206111907959,
+      "mean_nll": 1.5449406305948894
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-bea3578f550e",
+      "input": {
+        "items": [
+          31,
+          45,
+          41,
+          30,
+          35
+        ]
+      },
+      "mass_on_dominant": 0.30564752221107483,
+      "mean_nll": 1.829006830851237
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f230c877969c",
+      "input": {
+        "items": [
+          28,
+          77,
+          83,
+          16,
+          14,
+          35,
+          1
+        ]
+      },
+      "mass_on_dominant": 0.36694663763046265,
+      "mean_nll": 1.7756048838297527
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-014b82bda5fd",
+      "input": {
+        "items": [
+          4,
+          1,
+          74,
+          52,
+          61,
+          46,
+          42
+        ]
+      },
+      "mass_on_dominant": 0.1904129683971405,
+      "mean_nll": 1.9637231826782227
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-585a29195eb5",
+      "input": {
+        "items": [
+          52,
+          67,
+          60,
+          5,
+          26,
+          41,
+          6
+        ]
+      },
+      "mass_on_dominant": 0.38307732343673706,
+      "mean_nll": 1.8321096102396648
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-489944e4bc54",
+      "input": {
+        "items": [
+          57,
+          63,
+          94,
+          31,
+          95,
+          7,
+          21
+        ]
+      },
+      "mass_on_dominant": 0.24689547717571259,
+      "mean_nll": 1.777711550394694
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-dd8d2280a34a",
+      "input": {
+        "items": [
+          34,
+          20,
+          38,
+          36,
+          79
+        ]
+      },
+      "mass_on_dominant": 0.28235796093940735,
+      "mean_nll": 1.7077477773030598
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-d19e1b83c3e0",
+      "input": {
+        "items": [
+          50,
+          54,
+          34,
+          9,
+          98,
+          33,
+          48
+        ]
+      },
+      "mass_on_dominant": 0.3736642897129059,
+      "mean_nll": 2.024045467376709
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2e2e57505f1c",
+      "input": {
+        "items": [
+          58,
+          93,
+          96,
+          12,
+          68,
+          40,
+          44
+        ]
+      },
+      "mass_on_dominant": 0.1791907101869583,
+      "mean_nll": 1.8818378448486328
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-fe9c28c1525e",
+      "input": {
+        "items": [
+          38,
+          1,
+          31,
+          21,
+          23
+        ]
+      },
+      "mass_on_dominant": 0.3920678198337555,
+      "mean_nll": 1.745822270711263
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-782aa567b096",
+      "input": {
+        "items": [
+          62,
+          66,
+          16,
+          94,
+          56
+        ]
+      },
+      "mass_on_dominant": 0.1202942356467247,
+      "mean_nll": 1.6787246068318684
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e7df8cb343b5",
+      "input": {
+        "items": [
+          23,
+          82,
+          83,
+          58,
+          10,
+          9,
+          30
+        ]
+      },
+      "mass_on_dominant": 0.3799479007720947,
+      "mean_nll": 1.660914421081543
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a95d1998c632",
+      "input": {
+        "items": [
+          49,
+          25,
+          83,
+          82,
+          31,
+          77,
+          38
+        ]
+      },
+      "mass_on_dominant": 0.3154294788837433,
+      "mean_nll": 1.9205423990885417
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-965f1cf19acf",
+      "input": {
+        "items": [
+          21,
+          20,
+          4,
+          70,
+          78,
+          66,
+          18
+        ]
+      },
+      "mass_on_dominant": 0.26713380217552185,
+      "mean_nll": 1.8985045750935872
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-57f8cd84e1a8",
+      "input": {
+        "items": [
+          32,
+          71,
+          66,
+          70,
+          60,
+          16,
+          99
+        ]
+      },
+      "mass_on_dominant": 0.13262879848480225,
+      "mean_nll": 1.8161805470784504
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-11a3b40793a6",
+      "input": {
+        "items": [
+          35,
+          30,
+          20,
+          96,
+          22,
+          89,
+          73
+        ]
+      },
+      "mass_on_dominant": 0.23897968232631683,
+      "mean_nll": 1.9322255452473958
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-33298ced7b51",
+      "input": {
+        "items": [
+          8,
+          29,
+          79,
+          21,
+          10
+        ]
+      },
+      "mass_on_dominant": 0.4103139340877533,
+      "mean_nll": 1.8761234283447266
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-dd05cbed89cb",
+      "input": {
+        "items": [
+          7,
+          96,
+          1,
+          8,
+          26,
+          12,
+          97
+        ]
+      },
+      "mass_on_dominant": 0.31762802600860596,
+      "mean_nll": 1.7937191327412922
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-3df2853082f4",
+      "input": {
+        "items": [
+          49,
+          90,
+          23,
+          61,
+          94
+        ]
+      },
+      "mass_on_dominant": 0.38725847005844116,
+      "mean_nll": 1.6853429476420085
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-eda78226db38",
+      "input": {
+        "items": [
+          43,
+          58,
+          2,
+          71,
+          31
+        ]
+      },
+      "mass_on_dominant": 0.24103038012981415,
+      "mean_nll": 1.7932119369506836
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-69bc5b714e29",
+      "input": {
+        "items": [
+          44,
+          83,
+          58,
+          50,
+          21,
+          17,
+          10
+        ]
+      },
+      "mass_on_dominant": 0.19123268127441406,
+      "mean_nll": 1.9431999524434407
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-fcdcc0ed0f49",
+      "input": {
+        "items": [
+          23,
+          97,
+          96,
+          43,
+          86
+        ]
+      },
+      "mass_on_dominant": 0.24464838206768036,
+      "mean_nll": 1.9147768020629883
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e3ff7f4b8bd2",
+      "input": {
+        "items": [
+          33,
+          66,
+          22,
+          20,
+          85,
+          97,
+          31
+        ]
+      },
+      "mass_on_dominant": 0.14150160551071167,
+      "mean_nll": 2.0272534688313804
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-c50f71dca220",
+      "input": {
+        "items": [
+          50,
+          83,
+          10,
+          12,
+          82
+        ]
+      },
+      "mass_on_dominant": 0.2355055809020996,
+      "mean_nll": 1.6469478607177734
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-8e8fcbc12d95",
+      "input": {
+        "items": [
+          54,
+          59,
+          40,
+          43,
+          83
+        ]
+      },
+      "mass_on_dominant": 0.14467735588550568,
+      "mean_nll": 1.6711870829264324
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-9d940f1ca45d",
+      "input": {
+        "items": [
+          87,
+          63,
+          32,
+          74,
+          42,
+          67,
+          81
+        ]
+      },
+      "mass_on_dominant": 0.12211213260889053,
+      "mean_nll": 1.8024648030598958
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-851d78b35bb6",
+      "input": {
+        "items": [
+          55,
+          36,
+          72,
+          68,
+          63
+        ]
+      },
+      "mass_on_dominant": 0.30725809931755066,
+      "mean_nll": 1.7498517036437988
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e28ef8b03a66",
+      "input": {
+        "items": [
+          77,
+          75,
+          88,
+          37,
+          13,
+          61,
+          31
+        ]
+      },
+      "mass_on_dominant": 0.35450926423072815,
+      "mean_nll": 1.8798975944519043
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-4678b862df01",
+      "input": {
+        "items": [
+          41,
+          83,
+          13,
+          91,
+          73,
+          70,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.24749067425727844,
+      "mean_nll": 1.94892152150472
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2f99f68b2d46",
+      "input": {
+        "items": [
+          23,
+          2,
+          32,
+          80,
+          61,
+          96,
+          22
+        ]
+      },
+      "mass_on_dominant": 0.26947319507598877,
+      "mean_nll": 2.0511536598205566
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-1bf9e658f803",
+      "input": {
+        "items": [
+          70,
+          82,
+          7,
+          80,
+          5,
+          92,
+          19
+        ]
+      },
+      "mass_on_dominant": 0.2070719450712204,
+      "mean_nll": 2.029809315999349
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-eddca814d136",
+      "input": {
+        "items": [
+          52,
+          22,
+          58,
+          24,
+          93
+        ]
+      },
+      "mass_on_dominant": 0.11479562520980835,
+      "mean_nll": 1.5494534174601238
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-aacd5c0da304",
+      "input": {
+        "items": [
+          74,
+          64,
+          6,
+          51,
+          3,
+          28,
+          18
+        ]
+      },
+      "mass_on_dominant": 0.39758777618408203,
+      "mean_nll": 2.001688003540039
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ff896acef23a",
+      "input": {
+        "items": [
+          90,
+          3,
+          17,
+          86,
+          62,
+          32,
+          9
+        ]
+      },
+      "mass_on_dominant": 0.2654632031917572,
+      "mean_nll": 1.9294974009195964
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-780f980c87ad",
+      "input": {
+        "items": [
+          21,
+          11,
+          43,
+          59,
+          83,
+          79,
+          50
+        ]
+      },
+      "mass_on_dominant": 0.38727304339408875,
+      "mean_nll": 1.8686052958170574
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-b1e178f49866",
+      "input": {
+        "items": [
+          60,
+          87,
+          96,
+          99,
+          37,
+          17,
+          72
+        ]
+      },
+      "mass_on_dominant": 0.4387644827365875,
+      "mean_nll": 1.9364430109659831
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-4c6f5ee5ce09",
+      "input": {
+        "items": [
+          79,
+          15,
+          88,
+          72,
+          19
+        ]
+      },
+      "mass_on_dominant": 0.28197240829467773,
+      "mean_nll": 1.6441233952840169
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c11cb42d3690",
+      "input": {
+        "items": [
+          15,
+          10,
+          69,
+          94,
+          53,
+          36,
+          63
+        ]
+      },
+      "mass_on_dominant": 0.38678860664367676,
+      "mean_nll": 2.079014460245768
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-fa67c27c5a73",
+      "input": {
+        "items": [
+          27,
+          81,
+          56,
+          64,
+          76,
+          34,
+          22
+        ]
+      },
+      "mass_on_dominant": 0.1721450537443161,
+      "mean_nll": 1.8789599736531575
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-502c59921aad",
+      "input": {
+        "items": [
+          87,
+          93,
+          88,
+          57,
+          27
+        ]
+      },
+      "mass_on_dominant": 0.1759120225906372,
+      "mean_nll": 1.739842414855957
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-10844094564e",
+      "input": {
+        "items": [
+          82,
+          95,
+          10,
+          36,
+          39
+        ]
+      },
+      "mass_on_dominant": 0.3207009434700012,
+      "mean_nll": 1.784000555674235
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-b0ddc266b434",
+      "input": {
+        "items": [
+          33,
+          12,
+          38,
+          76,
+          35,
+          65,
+          90
+        ]
+      },
+      "mass_on_dominant": 0.49039721488952637,
+      "mean_nll": 1.9182840983072917
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e9b05567b293",
+      "input": {
+        "items": [
+          37,
+          78,
+          10,
+          53,
+          4,
+          59,
+          36
+        ]
+      },
+      "mass_on_dominant": 0.10076992958784103,
+      "mean_nll": 1.8636182149251301
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-854f11e172dd",
+      "input": {
+        "items": [
+          28,
+          87,
+          38,
+          86,
+          37,
+          51,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.414916068315506,
+      "mean_nll": 2.0325342814127603
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-b92f25dc5e4c",
+      "input": {
+        "items": [
+          37,
+          15,
+          66,
+          93,
+          25
+        ]
+      },
+      "mass_on_dominant": 0.19096234440803528,
+      "mean_nll": 1.6900043487548828
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-21cde735fe30",
+      "input": {
+        "items": [
+          15,
+          97,
+          63,
+          24,
+          99,
+          54,
+          10
+        ]
+      },
+      "mass_on_dominant": 0.35993948578834534,
+      "mean_nll": 1.8902328809102376
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-65850b337255",
+      "input": {
+        "items": [
+          17,
+          15,
+          40,
+          73,
+          93,
+          56,
+          49
+        ]
+      },
+      "mass_on_dominant": 0.41355568170547485,
+      "mean_nll": 1.9142208099365234
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-66e981354bc8",
+      "input": {
+        "items": [
+          52,
+          22,
+          85,
+          67,
+          91
+        ]
+      },
+      "mass_on_dominant": 0.1559208482503891,
+      "mean_nll": 1.6395808855692546
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2a1c860734d5",
+      "input": {
+        "items": [
+          57,
+          60,
+          9,
+          36,
+          97,
+          15,
+          80
+        ]
+      },
+      "mass_on_dominant": 0.09353231638669968,
+      "mean_nll": 1.8162778218587239
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-59d337229f5f",
+      "input": {
+        "items": [
+          44,
+          15,
+          58,
+          48,
+          40
+        ]
+      },
+      "mass_on_dominant": 0.17520835995674133,
+      "mean_nll": 1.5414986610412598
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-5833abba37bb",
+      "input": {
+        "items": [
+          3,
+          72,
+          42,
+          88,
+          95,
+          66,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.1583295315504074,
+      "mean_nll": 1.9409572283426921
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f59b0bdf03bd",
+      "input": {
+        "items": [
+          53,
+          63,
+          8,
+          24,
+          89,
+          48,
+          1
+        ]
+      },
+      "mass_on_dominant": 0.25622910261154175,
+      "mean_nll": 1.9098006884257
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-5d97a5766e5d",
+      "input": {
+        "items": [
+          39,
+          20,
+          74,
+          10,
+          88,
+          12,
+          38
+        ]
+      },
+      "mass_on_dominant": 0.29823431372642517,
+      "mean_nll": 1.9381014506022136
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-359d8ef779a4",
+      "input": {
+        "items": [
+          21,
+          99,
+          82,
+          80,
+          3,
+          48,
+          75
+        ]
+      },
+      "mass_on_dominant": 0.3786998987197876,
+      "mean_nll": 2.0570691426595054
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c1a446347c34",
+      "input": {
+        "items": [
+          80,
+          7,
+          47,
+          71,
+          44,
+          43,
+          85
+        ]
+      },
+      "mass_on_dominant": 0.22958847880363464,
+      "mean_nll": 1.830342451731364
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-827d971c415f",
+      "input": {
+        "items": [
+          48,
+          18,
+          31,
+          63,
+          79,
+          54,
+          21
+        ]
+      },
+      "mass_on_dominant": 0.21356303989887238,
+      "mean_nll": 1.6608384450276692
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e0c7a6fc54c4",
+      "input": {
+        "items": [
+          11,
+          1,
+          61,
+          36,
+          48,
+          23,
+          34
+        ]
+      },
+      "mass_on_dominant": 0.4939884841442108,
+      "mean_nll": 1.8606208165486653
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-4cff0ad5c0b0",
+      "input": {
+        "items": [
+          7,
+          35,
+          71,
+          85,
+          14,
+          89,
+          76
+        ]
+      },
+      "mass_on_dominant": 0.33372005820274353,
+      "mean_nll": 1.9738624890645344
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0e3f588aa1b4",
+      "input": {
+        "items": [
+          17,
+          94,
+          38,
+          22,
+          16,
+          31,
+          62
+        ]
+      },
+      "mass_on_dominant": 0.3077710270881653,
+      "mean_nll": 1.7480837504069011
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-93eb7a48ec45",
+      "input": {
+        "items": [
+          72,
+          66,
+          2,
+          85,
+          89,
+          61,
+          69
+        ]
+      },
+      "mass_on_dominant": 0.15227742493152618,
+      "mean_nll": 1.564451535542806
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-5b30d6023114",
+      "input": {
+        "items": [
+          82,
+          6,
+          69,
+          99,
+          43,
+          94,
+          59
+        ]
+      },
+      "mass_on_dominant": 0.2335614413022995,
+      "mean_nll": 2.1161576906840005
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-45a48c659f7e",
+      "input": {
+        "items": [
+          9,
+          42,
+          74,
+          18,
+          38,
+          80,
+          3
+        ]
+      },
+      "mass_on_dominant": 0.22520782053470612,
+      "mean_nll": 1.9951105117797852
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-b653e57c2a90",
+      "input": {
+        "items": [
+          3,
+          68,
+          36,
+          45,
+          35,
+          14,
+          66
+        ]
+      },
+      "mass_on_dominant": 0.2518956959247589,
+      "mean_nll": 1.780469258626302
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-1f78dbf02d5b",
+      "input": {
+        "items": [
+          81,
+          86,
+          4,
+          22,
+          65,
+          18,
+          87
+        ]
+      },
+      "mass_on_dominant": 0.34523338079452515,
+      "mean_nll": 1.6728064219156902
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e234046c4c3b",
+      "input": {
+        "items": [
+          46,
+          86,
+          48,
+          99,
+          66,
+          2,
+          23
+        ]
+      },
+      "mass_on_dominant": 0.22148063778877258,
+      "mean_nll": 1.938056468963623
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-8351b0e87eae",
+      "input": {
+        "items": [
+          66,
+          50,
+          5,
+          65,
+          59,
+          23,
+          89
+        ]
+      },
+      "mass_on_dominant": 0.25347480177879333,
+      "mean_nll": 1.9217015902201335
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-3de546cd4aac",
+      "input": {
+        "items": [
+          79,
+          62,
+          86,
+          72,
+          58,
+          16,
+          69
+        ]
+      },
+      "mass_on_dominant": 0.18305692076683044,
+      "mean_nll": 1.857715129852295
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-83aee2ce489e",
+      "input": {
+        "items": [
+          11,
+          15,
+          21,
+          10,
+          1
+        ]
+      },
+      "mass_on_dominant": 0.09493440389633179,
+      "mean_nll": 1.9414604504903157
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-b71e48ec2682",
+      "input": {
+        "items": [
+          51,
+          82,
+          96,
+          49,
+          55,
+          72,
+          63
+        ]
+      },
+      "mass_on_dominant": 0.32596999406814575,
+      "mean_nll": 1.8692255020141602
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-7a8b8ed3ed14",
+      "input": {
+        "items": [
+          77,
+          3,
+          47,
+          29,
+          40
+        ]
+      },
+      "mass_on_dominant": 0.339558869600296,
+      "mean_nll": 1.571318785349528
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0db34486ae1d",
+      "input": {
+        "items": [
+          85,
+          67,
+          39,
+          4,
+          9,
+          54,
+          42
+        ]
+      },
+      "mass_on_dominant": 0.5884752869606018,
+      "mean_nll": 1.9303460121154785
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c1e7299efb4e",
+      "input": {
+        "items": [
+          92,
+          69,
+          2,
+          73,
+          3,
+          53,
+          11
+        ]
+      },
+      "mass_on_dominant": 0.4001823961734772,
+      "mean_nll": 2.066062609354655
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-70fe98ad50e4",
+      "input": {
+        "items": [
+          31,
+          16,
+          61,
+          77,
+          27
+        ]
+      },
+      "mass_on_dominant": 0.09759486466646194,
+      "mean_nll": 1.7073682149251301
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f16e8ed6e92b",
+      "input": {
+        "items": [
+          29,
+          4,
+          63,
+          78,
+          95,
+          5,
+          56
+        ]
+      },
+      "mass_on_dominant": 0.350768119096756,
+      "mean_nll": 1.9756040573120117
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-a4194ed7e898",
+      "input": {
+        "items": [
+          56,
+          21,
+          58,
+          66,
+          24
+        ]
+      },
+      "mass_on_dominant": 0.11513422429561615,
+      "mean_nll": 1.6107886632283528
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f5479f5eb7f4",
+      "input": {
+        "items": [
+          14,
+          60,
+          32,
+          1,
+          53,
+          41,
+          13
+        ]
+      },
+      "mass_on_dominant": 0.4728004038333893,
+      "mean_nll": 2.047231992085775
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-43caf44725cb",
+      "input": {
+        "items": [
+          34,
+          30,
+          63,
+          53,
+          79
+        ]
+      },
+      "mass_on_dominant": 0.25567540526390076,
+      "mean_nll": 1.6091521581013997
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-97c502da52de",
+      "input": {
+        "items": [
+          23,
+          1,
+          57,
+          86,
+          8,
+          45,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.3467106223106384,
+      "mean_nll": 2.0253499348958335
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ba864359fbb6",
+      "input": {
+        "items": [
+          24,
+          1,
+          78,
+          81,
+          65,
+          19,
+          15
+        ]
+      },
+      "mass_on_dominant": 0.3628550171852112,
+      "mean_nll": 1.8706944783528645
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-38270d75881d",
+      "input": {
+        "items": [
+          19,
+          88,
+          28,
+          50,
+          57,
+          37,
+          7
+        ]
+      },
+      "mass_on_dominant": 0.3203534781932831,
+      "mean_nll": 1.8836135864257812
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-3e3c54f3df82",
+      "input": {
+        "items": [
+          62,
+          10,
+          35,
+          68,
+          92,
+          22,
+          18
+        ]
+      },
+      "mass_on_dominant": 0.5048199892044067,
+      "mean_nll": 1.7549347877502441
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-f59eaeadf34c",
+      "input": {
+        "items": [
+          64,
+          71,
+          78,
+          8,
+          42
+        ]
+      },
+      "mass_on_dominant": 0.1056409403681755,
+      "mean_nll": 1.5810480117797852
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-cf91b802e770",
+      "input": {
+        "items": [
+          45,
+          88,
+          28,
+          64,
+          99
+        ]
+      },
+      "mass_on_dominant": 0.2364351600408554,
+      "mean_nll": 1.7481085459391277
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-cdb422b2f201",
+      "input": {
+        "items": [
+          12,
+          86,
+          67,
+          29,
+          13
+        ]
+      },
+      "mass_on_dominant": 0.24573978781700134,
+      "mean_nll": 1.749428431193034
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c46db6871f39",
+      "input": {
+        "items": [
+          69,
+          74,
+          72,
+          64,
+          53,
+          3,
+          88
+        ]
+      },
+      "mass_on_dominant": 0.24404175579547882,
+      "mean_nll": 2.1940695444742837
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-199ef6a05589",
+      "input": {
+        "items": [
+          43,
+          50,
+          48,
+          40,
+          10
+        ]
+      },
+      "mass_on_dominant": 0.14547817409038544,
+      "mean_nll": 1.8070732752482097
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-00e1e68e32f8",
+      "input": {
+        "items": [
+          39,
+          64,
+          58,
+          8,
+          31
+        ]
+      },
+      "mass_on_dominant": 0.2276385873556137,
+      "mean_nll": 1.5696531931559246
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-d1a1a99b90b2",
+      "input": {
+        "items": [
+          60,
+          63,
+          67,
+          14,
+          84,
+          95,
+          73
+        ]
+      },
+      "mass_on_dominant": 0.34388649463653564,
+      "mean_nll": 2.106438636779785
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-1cf88fbb4ac8",
+      "input": {
+        "items": [
+          93,
+          62,
+          58,
+          56,
+          95,
+          33,
+          26
+        ]
+      },
+      "mass_on_dominant": 0.2928811311721802,
+      "mean_nll": 1.8817558288574219
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-bac2e09f2902",
+      "input": {
+        "items": [
+          3,
+          49,
+          45,
+          39,
+          27,
+          48,
+          88
+        ]
+      },
+      "mass_on_dominant": 0.28266239166259766,
+      "mean_nll": 1.8630250295003254
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-22043c06f9d0",
+      "input": {
+        "items": [
+          22,
+          20,
+          60,
+          84,
+          29
+        ]
+      },
+      "mass_on_dominant": 0.27045905590057373,
+      "mean_nll": 1.7768956820170085
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2dde4d58e929",
+      "input": {
+        "items": [
+          5,
+          92,
+          22,
+          89,
+          8,
+          82,
+          4
+        ]
+      },
+      "mass_on_dominant": 0.31424716114997864,
+      "mean_nll": 1.8877617518107097
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-486bc92e4930",
+      "input": {
+        "items": [
+          56,
+          12,
+          15,
+          93,
+          48,
+          57,
+          25
+        ]
+      },
+      "mass_on_dominant": 0.1854262351989746,
+      "mean_nll": 1.643433411916097
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-cee5cc33d58c",
+      "input": {
+        "items": [
+          4,
+          20,
+          72,
+          62,
+          61,
+          17,
+          56
+        ]
+      },
+      "mass_on_dominant": 0.26419883966445923,
+      "mean_nll": 1.8730384508768718
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-85ee4b7e7d2c",
+      "input": {
+        "items": [
+          52,
+          74,
+          77,
+          37,
+          72
+        ]
+      },
+      "mass_on_dominant": 0.28873535990715027,
+      "mean_nll": 1.9150883356730144
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-60a0858dc772",
+      "input": {
+        "items": [
+          53,
+          1,
+          87,
+          65,
+          20,
+          80,
+          12
+        ]
+      },
+      "mass_on_dominant": 0.2604111433029175,
+      "mean_nll": 1.885855992635091
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-1009ffa30de6",
+      "input": {
+        "items": [
+          26,
+          72,
+          7,
+          59,
+          19
+        ]
+      },
+      "mass_on_dominant": 0.2573716938495636,
+      "mean_nll": 1.7001511255900066
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-1c7d47d17274",
+      "input": {
+        "items": [
+          74,
+          85,
+          6,
+          78,
+          62
+        ]
+      },
+      "mass_on_dominant": 0.2287825345993042,
+      "mean_nll": 1.8512277603149414
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-91bb1cf9a3ff",
+      "input": {
+        "items": [
+          63,
+          77,
+          98,
+          40,
+          62
+        ]
+      },
+      "mass_on_dominant": 0.1443558633327484,
+      "mean_nll": 1.6013630231221516
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-7d65e22a036a",
+      "input": {
+        "items": [
+          42,
+          51,
+          36,
+          11,
+          13,
+          21,
+          92
+        ]
+      },
+      "mass_on_dominant": 0.241114541888237,
+      "mean_nll": 1.8550537427266438
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e7c54ceacc67",
+      "input": {
+        "items": [
+          31,
+          99,
+          32,
+          1,
+          21,
+          76,
+          29
+        ]
+      },
+      "mass_on_dominant": 0.2710275948047638,
+      "mean_nll": 2.0341011683146157
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-6906af07a76a",
+      "input": {
+        "items": [
+          22,
+          18,
+          83,
+          95,
+          23
+        ]
+      },
+      "mass_on_dominant": 0.3118666410446167,
+      "mean_nll": 1.8651340802510579
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-b597f6342e80",
+      "input": {
+        "items": [
+          61,
+          96,
+          85,
+          94,
+          56,
+          26,
+          74
+        ]
+      },
+      "mass_on_dominant": 0.48937541246414185,
+      "mean_nll": 2.095704714457194
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-6a8859a224a3",
+      "input": {
+        "items": [
+          64,
+          72,
+          32,
+          75,
+          46
+        ]
+      },
+      "mass_on_dominant": 0.11015064269304276,
+      "mean_nll": 1.7388148307800293
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-db4e5d3b2903",
+      "input": {
+        "items": [
+          95,
+          8,
+          49,
+          97,
+          12,
+          79,
+          24
+        ]
+      },
+      "mass_on_dominant": 0.1787758767604828,
+      "mean_nll": 1.7806847890218098
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-329d829ac3ca",
+      "input": {
+        "items": [
+          34,
+          2,
+          75,
+          49,
+          46
+        ]
+      },
+      "mass_on_dominant": 0.2401484251022339,
+      "mean_nll": 1.6956880887349446
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-a268182ff435",
+      "input": {
+        "items": [
+          26,
+          24,
+          32,
+          30,
+          40
+        ]
+      },
+      "mass_on_dominant": 0.34076035022735596,
+      "mean_nll": 1.8015936215718586
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0ebf6275e062",
+      "input": {
+        "items": [
+          11,
+          14,
+          89,
+          51,
+          1,
+          82,
+          40
+        ]
+      },
+      "mass_on_dominant": 0.2836277186870575,
+      "mean_nll": 2.4962623914082847
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e6056aeef9e0",
+      "input": {
+        "items": [
+          83,
+          20,
+          26,
+          11,
+          13,
+          92,
+          29
+        ]
+      },
+      "mass_on_dominant": 0.28337815403938293,
+      "mean_nll": 1.7579647699991863
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e316306355cc",
+      "input": {
+        "items": [
+          80,
+          84,
+          35,
+          23,
+          75,
+          93,
+          67
+        ]
+      },
+      "mass_on_dominant": 0.1958635449409485,
+      "mean_nll": 1.9794386227925618
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-efa0b9c81dbc",
+      "input": {
+        "items": [
+          4,
+          60,
+          3,
+          64,
+          43
+        ]
+      },
+      "mass_on_dominant": 0.43746981024742126,
+      "mean_nll": 1.8745088577270508
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-652afd7c57fe",
+      "input": {
+        "items": [
+          64,
+          18,
+          3,
+          2,
+          57,
+          60,
+          47
+        ]
+      },
+      "mass_on_dominant": 0.4640967547893524,
+      "mean_nll": 1.8722209930419922
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c59056c11262",
+      "input": {
+        "items": [
+          49,
+          55,
+          6,
+          42,
+          5,
+          94,
+          45
+        ]
+      },
+      "mass_on_dominant": 0.28608840703964233,
+      "mean_nll": 1.8437169392903645
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ebb7d852f3b6",
+      "input": {
+        "items": [
+          76,
+          64,
+          29,
+          86,
+          11,
+          1,
+          9
+        ]
+      },
+      "mass_on_dominant": 0.18547551333904266,
+      "mean_nll": 2.1043782234191895
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-30ba62064ffb",
+      "input": {
+        "items": [
+          65,
+          16,
+          66,
+          37,
+          35,
+          10,
+          13
+        ]
+      },
+      "mass_on_dominant": 0.29288405179977417,
+      "mean_nll": 1.9230906168619792
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-3b0ba1acd74a",
+      "input": {
+        "items": [
+          14,
+          1,
+          43,
+          75,
+          16
+        ]
+      },
+      "mass_on_dominant": 0.23284108936786652,
+      "mean_nll": 1.6787091890970867
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-5943c5a46f70",
+      "input": {
+        "items": [
+          76,
+          89,
+          1,
+          73,
+          21,
+          19,
+          44
+        ]
+      },
+      "mass_on_dominant": 0.25781044363975525,
+      "mean_nll": 1.7160186767578125
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-44dcf160f20a",
+      "input": {
+        "items": [
+          7,
+          2,
+          39,
+          33,
+          6,
+          8,
+          17
+        ]
+      },
+      "mass_on_dominant": 0.32484200596809387,
+      "mean_nll": 1.913614273071289
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-1b23b2409b13",
+      "input": {
+        "items": [
+          52,
+          91,
+          79,
+          28,
+          71
+        ]
+      },
+      "mass_on_dominant": 0.13491766154766083,
+      "mean_nll": 1.7281513214111328
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c48c8b08ff88",
+      "input": {
+        "items": [
+          71,
+          6,
+          10,
+          17,
+          31,
+          79,
+          49
+        ]
+      },
+      "mass_on_dominant": 0.1879793107509613,
+      "mean_nll": 1.6783332824707031
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-73a37443419a",
+      "input": {
+        "items": [
+          27,
+          97,
+          20,
+          28,
+          53,
+          59,
+          66
+        ]
+      },
+      "mass_on_dominant": 0.23808737099170685,
+      "mean_nll": 1.701064109802246
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0f1e701c44c7",
+      "input": {
+        "items": [
+          87,
+          18,
+          97,
+          70,
+          60,
+          44,
+          48
+        ]
+      },
+      "mass_on_dominant": 0.2590639591217041,
+      "mean_nll": 2.057772954305013
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-04510520216e",
+      "input": {
+        "items": [
+          25,
+          28,
+          2,
+          33,
+          20,
+          93,
+          6
+        ]
+      },
+      "mass_on_dominant": 0.23442396521568298,
+      "mean_nll": 1.888058344523112
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-5260a92ead8a",
+      "input": {
+        "items": [
+          16,
+          36,
+          77,
+          97,
+          92,
+          6,
+          87
+        ]
+      },
+      "mass_on_dominant": 0.18743638694286346,
+      "mean_nll": 1.929428259531657
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-fcb972a8105a",
+      "input": {
+        "items": [
+          28,
+          78,
+          95,
+          53,
+          14,
+          73,
+          62
+        ]
+      },
+      "mass_on_dominant": 0.4424045979976654,
+      "mean_nll": 2.0629425048828125
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ef542acdffb0",
+      "input": {
+        "items": [
+          68,
+          32,
+          27,
+          72,
+          36,
+          9,
+          56
+        ]
+      },
+      "mass_on_dominant": 0.4386461675167084,
+      "mean_nll": 2.014611085255941
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-8cfd9704bb0f",
+      "input": {
+        "items": [
+          18,
+          86,
+          62,
+          17,
+          12
+        ]
+      },
+      "mass_on_dominant": 0.08541712164878845,
+      "mean_nll": 1.6768455505371094
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-235fb2874ab8",
+      "input": {
+        "items": [
+          43,
+          36,
+          75,
+          12,
+          27,
+          97,
+          68
+        ]
+      },
+      "mass_on_dominant": 0.16252507269382477,
+      "mean_nll": 2.0008190472920737
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a216be7d358d",
+      "input": {
+        "items": [
+          48,
+          8,
+          21,
+          68,
+          84,
+          57,
+          69
+        ]
+      },
+      "mass_on_dominant": 0.4398488998413086,
+      "mean_nll": 1.8661149342854817
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-f2a0cde8e1e9",
+      "input": {
+        "items": [
+          69,
+          33,
+          93,
+          47,
+          91
+        ]
+      },
+      "mass_on_dominant": 0.26739323139190674,
+      "mean_nll": 1.918523947397868
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-182cd74b7f51",
+      "input": {
+        "items": [
+          3,
+          57,
+          37,
+          58,
+          17,
+          8,
+          41
+        ]
+      },
+      "mass_on_dominant": 0.25143441557884216,
+      "mean_nll": 1.7090589205423992
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-d93ecf1216b2",
+      "input": {
+        "items": [
+          22,
+          19,
+          86,
+          54,
+          75
+        ]
+      },
+      "mass_on_dominant": 0.18754099309444427,
+      "mean_nll": 1.899267355600993
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-87d6a27399e5",
+      "input": {
+        "items": [
+          1,
+          82,
+          26,
+          52,
+          94,
+          57,
+          62
+        ]
+      },
+      "mass_on_dominant": 0.5779432654380798,
+      "mean_nll": 1.9206811587015789
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-984715e79c4e",
+      "input": {
+        "items": [
+          74,
+          46,
+          99,
+          69,
+          57
+        ]
+      },
+      "mass_on_dominant": 0.1387336701154709,
+      "mean_nll": 1.872088114420573
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-13903feac5fe",
+      "input": {
+        "items": [
+          12,
+          80,
+          22,
+          6,
+          17,
+          66,
+          8
+        ]
+      },
+      "mass_on_dominant": 0.27850666642189026,
+      "mean_nll": 1.9939854939778645
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-cc8fdf0250b5",
+      "input": {
+        "items": [
+          36,
+          2,
+          57,
+          45,
+          28,
+          17,
+          91
+        ]
+      },
+      "mass_on_dominant": 0.22110100090503693,
+      "mean_nll": 1.859029769897461
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2742473bc893",
+      "input": {
+        "items": [
+          97,
+          9,
+          41,
+          67,
+          36,
+          99,
+          51
+        ]
+      },
+      "mass_on_dominant": 0.3748492896556854,
+      "mean_nll": 1.8824710845947266
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-fd1e089c9196",
+      "input": {
+        "items": [
+          51,
+          25,
+          98,
+          8,
+          9,
+          6,
+          4
+        ]
+      },
+      "mass_on_dominant": 0.305034339427948,
+      "mean_nll": 2.0504156748453775
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-593fa5b857ad",
+      "input": {
+        "items": [
+          20,
+          84,
+          65,
+          92,
+          2,
+          57,
+          58
+        ]
+      },
+      "mass_on_dominant": 0.26561102271080017,
+      "mean_nll": 1.748140017191569
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-758bb2ed4cb9",
+      "input": {
+        "items": [
+          62,
+          93,
+          95,
+          16,
+          40,
+          50,
+          37
+        ]
+      },
+      "mass_on_dominant": 0.2620171308517456,
+      "mean_nll": 1.8519217173258464
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-cc7cd99e5176",
+      "input": {
+        "items": [
+          37,
+          66,
+          45,
+          49,
+          86,
+          12,
+          20
+        ]
+      },
+      "mass_on_dominant": 0.3701540529727936,
+      "mean_nll": 1.9011281331380208
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-abcd233fb180",
+      "input": {
+        "items": [
+          15,
+          67,
+          26,
+          22,
+          97,
+          45,
+          13
+        ]
+      },
+      "mass_on_dominant": 0.4299527108669281,
+      "mean_nll": 1.6757462819417317
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e85a70ef5004",
+      "input": {
+        "items": [
+          30,
+          77,
+          5,
+          46,
+          50,
+          37,
+          23
+        ]
+      },
+      "mass_on_dominant": 0.17308993637561798,
+      "mean_nll": 1.7606767018636067
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-c0ecc67f738b",
+      "input": {
+        "items": [
+          38,
+          73,
+          3,
+          29,
+          80
+        ]
+      },
+      "mass_on_dominant": 0.2267218381166458,
+      "mean_nll": 1.73025910059611
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-6fd0f3eacaaa",
+      "input": {
+        "items": [
+          79,
+          3,
+          82,
+          68,
+          75,
+          30,
+          92
+        ]
+      },
+      "mass_on_dominant": 0.29068487882614136,
+      "mean_nll": 1.6432612737019856
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-33edaf2236a1",
+      "input": {
+        "items": [
+          39,
+          11,
+          92,
+          86,
+          30
+        ]
+      },
+      "mass_on_dominant": 0.1945333033800125,
+      "mean_nll": 1.5442657470703125
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-dd2e43e58f6d",
+      "input": {
+        "items": [
+          16,
+          93,
+          80,
+          73,
+          50,
+          24,
+          7
+        ]
+      },
+      "mass_on_dominant": 0.38259831070899963,
+      "mean_nll": 2.0628393491109214
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-7c28b644503b",
+      "input": {
+        "items": [
+          4,
+          84,
+          54,
+          42,
+          43
+        ]
+      },
+      "mass_on_dominant": 0.2155524641275406,
+      "mean_nll": 1.8586842219034831
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-4442ba4591a4",
+      "input": {
+        "items": [
+          61,
+          14,
+          64,
+          35,
+          29
+        ]
+      },
+      "mass_on_dominant": 0.31343311071395874,
+      "mean_nll": 1.8003447850545247
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-0cd28934d000",
+      "input": {
+        "items": [
+          54,
+          99,
+          76,
+          13,
+          16
+        ]
+      },
+      "mass_on_dominant": 0.1792076975107193,
+      "mean_nll": 1.7963768641153972
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-75cd9e050102",
+      "input": {
+        "items": [
+          79,
+          83,
+          40,
+          69,
+          93,
+          91,
+          22
+        ]
+      },
+      "mass_on_dominant": 0.22199738025665283,
+      "mean_nll": 1.8185253143310547
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-949d83615d97",
+      "input": {
+        "items": [
+          29,
+          83,
+          59,
+          10,
+          47
+        ]
+      },
+      "mass_on_dominant": 0.5106136798858643,
+      "mean_nll": 1.839460055033366
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-4ab3d773b58c",
+      "input": {
+        "items": [
+          19,
+          50,
+          67,
+          11,
+          52,
+          38,
+          47
+        ]
+      },
+      "mass_on_dominant": 0.3592623472213745,
+      "mean_nll": 1.902600924173991
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-c78daebf3079",
+      "input": {
+        "items": [
+          7,
+          96,
+          46,
+          20,
+          34
+        ]
+      },
+      "mass_on_dominant": 0.4238995611667633,
+      "mean_nll": 1.7987689971923828
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-48101751466f",
+      "input": {
+        "items": [
+          52,
+          59,
+          23,
+          95,
+          87,
+          93,
+          89
+        ]
+      },
+      "mass_on_dominant": 0.35101237893104553,
+      "mean_nll": 1.696717898050944
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-c179ee3761b4",
+      "input": {
+        "items": [
+          57,
+          37,
+          94,
+          45,
+          46
+        ]
+      },
+      "mass_on_dominant": 0.1646270602941513,
+      "mean_nll": 1.6826467514038086
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-930f110d3fd0",
+      "input": {
+        "items": [
+          62,
+          3,
+          64,
+          19,
+          51
+        ]
+      },
+      "mass_on_dominant": 0.37455469369888306,
+      "mean_nll": 1.7647881507873535
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-487bd1902bbb",
+      "input": {
+        "items": [
+          41,
+          93,
+          5,
+          81,
+          6,
+          24,
+          18
+        ]
+      },
+      "mass_on_dominant": 0.37558555603027344,
+      "mean_nll": 1.80583651860555
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0b826ec78c97",
+      "input": {
+        "items": [
+          11,
+          86,
+          58,
+          62,
+          22,
+          18,
+          50
+        ]
+      },
+      "mass_on_dominant": 0.2840844690799713,
+      "mean_nll": 1.8389488855997722
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2e91c356cca7",
+      "input": {
+        "items": [
+          27,
+          98,
+          17,
+          91,
+          23,
+          40,
+          59
+        ]
+      },
+      "mass_on_dominant": 0.32735341787338257,
+      "mean_nll": 1.991294542948405
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-5727ff4e736d",
+      "input": {
+        "items": [
+          60,
+          83,
+          24,
+          97,
+          42,
+          31,
+          23
+        ]
+      },
+      "mass_on_dominant": 0.48625749349594116,
+      "mean_nll": 1.865096092224121
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0945c45b1f6f",
+      "input": {
+        "items": [
+          43,
+          4,
+          68,
+          58,
+          56,
+          30,
+          88
+        ]
+      },
+      "mass_on_dominant": 0.26844286918640137,
+      "mean_nll": 1.7866835594177246
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-80b8c37cc8b0",
+      "input": {
+        "items": [
+          65,
+          24,
+          89,
+          45,
+          29,
+          68,
+          76
+        ]
+      },
+      "mass_on_dominant": 0.14042827486991882,
+      "mean_nll": 1.8185370763142903
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f07566719d46",
+      "input": {
+        "items": [
+          7,
+          66,
+          85,
+          42,
+          49,
+          76,
+          9
+        ]
+      },
+      "mass_on_dominant": 0.20954212546348572,
+      "mean_nll": 1.6532001495361328
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-19a265cad6f0",
+      "input": {
+        "items": [
+          34,
+          87,
+          68,
+          19,
+          39,
+          83,
+          93
+        ]
+      },
+      "mass_on_dominant": 0.1677205115556717,
+      "mean_nll": 1.9227403004964192
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-048fe1faaea6",
+      "input": {
+        "items": [
+          32,
+          79,
+          21,
+          51,
+          53,
+          76,
+          75
+        ]
+      },
+      "mass_on_dominant": 0.35417890548706055,
+      "mean_nll": 1.9422111511230469
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0414303f11f3",
+      "input": {
+        "items": [
+          10,
+          98,
+          64,
+          57,
+          47,
+          77,
+          82
+        ]
+      },
+      "mass_on_dominant": 0.21010012924671173,
+      "mean_nll": 2.0128328005472818
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-6f4f31a8d75e",
+      "input": {
+        "items": [
+          15,
+          70,
+          93,
+          35,
+          9
+        ]
+      },
+      "mass_on_dominant": 0.28432032465934753,
+      "mean_nll": 1.9808890024820964
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-356978eaa703",
+      "input": {
+        "items": [
+          18,
+          75,
+          72,
+          7,
+          57,
+          42,
+          93
+        ]
+      },
+      "mass_on_dominant": 0.3792988359928131,
+      "mean_nll": 1.9604800542195637
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-93a2d2f17646",
+      "input": {
+        "items": [
+          10,
+          50,
+          75,
+          85,
+          82,
+          53,
+          19
+        ]
+      },
+      "mass_on_dominant": 0.325686514377594,
+      "mean_nll": 2.0045224825541177
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-6ce6d1bc1d2f",
+      "input": {
+        "items": [
+          30,
+          7,
+          93,
+          38,
+          64,
+          67,
+          90
+        ]
+      },
+      "mass_on_dominant": 0.1971997618675232,
+      "mean_nll": 1.8453391393025715
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-d3a69a036fdd",
+      "input": {
+        "items": [
+          14,
+          58,
+          93,
+          41,
+          13
+        ]
+      },
+      "mass_on_dominant": 0.4653632938861847,
+      "mean_nll": 1.7861982981363933
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-3123c3a5fa50",
+      "input": {
+        "items": [
+          66,
+          69,
+          96,
+          30,
+          57
+        ]
+      },
+      "mass_on_dominant": 0.08843550831079483,
+      "mean_nll": 1.518202304840088
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-76256668ab16",
+      "input": {
+        "items": [
+          42,
+          53,
+          98,
+          5,
+          43,
+          31,
+          67
+        ]
+      },
+      "mass_on_dominant": 0.17292651534080505,
+      "mean_nll": 1.9501202901204426
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-67bbbc67734f",
+      "input": {
+        "items": [
+          55,
+          89,
+          25,
+          8,
+          17,
+          86,
+          73
+        ]
+      },
+      "mass_on_dominant": 0.2871135473251343,
+      "mean_nll": 1.9309999148050945
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ce9f61d25029",
+      "input": {
+        "items": [
+          67,
+          90,
+          10,
+          61,
+          20,
+          70,
+          62
+        ]
+      },
+      "mass_on_dominant": 0.3118228316307068,
+      "mean_nll": 1.841176191965739
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-6a46423ef714",
+      "input": {
+        "items": [
+          50,
+          16,
+          85,
+          61,
+          37,
+          22,
+          17
+        ]
+      },
+      "mass_on_dominant": 0.38469231128692627,
+      "mean_nll": 1.8380750020345051
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-25a9aef2e379",
+      "input": {
+        "items": [
+          29,
+          3,
+          86,
+          68,
+          39
+        ]
+      },
+      "mass_on_dominant": 0.4102737605571747,
+      "mean_nll": 1.687014897664388
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-7af3f16771ea",
+      "input": {
+        "items": [
+          56,
+          72,
+          57,
+          52,
+          75,
+          25,
+          33
+        ]
+      },
+      "mass_on_dominant": 0.21592669188976288,
+      "mean_nll": 2.0102513631184897
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-bf39b52b4654",
+      "input": {
+        "items": [
+          47,
+          45,
+          55,
+          95,
+          83,
+          56,
+          93
+        ]
+      },
+      "mass_on_dominant": 0.37989863753318787,
+      "mean_nll": 1.9165541330973308
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-66c26559d8df",
+      "input": {
+        "items": [
+          18,
+          69,
+          41,
+          82,
+          43,
+          27,
+          63
+        ]
+      },
+      "mass_on_dominant": 0.07949984073638916,
+      "mean_nll": 1.6902875900268555
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f219031ce641",
+      "input": {
+        "items": [
+          24,
+          65,
+          6,
+          76,
+          23,
+          41,
+          52
+        ]
+      },
+      "mass_on_dominant": 0.4253190755844116,
+      "mean_nll": 2.0094401041666665
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-143b9857165b",
+      "input": {
+        "items": [
+          24,
+          96,
+          18,
+          76,
+          44,
+          89,
+          47
+        ]
+      },
+      "mass_on_dominant": 0.37038105726242065,
+      "mean_nll": 2.0060640970865884
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-234c33de67b4",
+      "input": {
+        "items": [
+          60,
+          37,
+          6,
+          98,
+          85,
+          10,
+          51
+        ]
+      },
+      "mass_on_dominant": 0.41745108366012573,
+      "mean_nll": 1.6883446375528972
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f21dfb3eb51e",
+      "input": {
+        "items": [
+          33,
+          95,
+          52,
+          21,
+          73,
+          88,
+          28
+        ]
+      },
+      "mass_on_dominant": 0.24573656916618347,
+      "mean_nll": 1.929092248280843
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-524b300e7dc6",
+      "input": {
+        "items": [
+          49,
+          9,
+          46,
+          78,
+          25,
+          47,
+          38
+        ]
+      },
+      "mass_on_dominant": 0.15445882081985474,
+      "mean_nll": 2.0234580039978027
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-69be44e3bd31",
+      "input": {
+        "items": [
+          29,
+          79,
+          66,
+          11,
+          49,
+          38,
+          39
+        ]
+      },
+      "mass_on_dominant": 0.20317691564559937,
+      "mean_nll": 1.7512569427490234
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-4451cfffb06f",
+      "input": {
+        "items": [
+          40,
+          44,
+          13,
+          92,
+          7,
+          52,
+          33
+        ]
+      },
+      "mass_on_dominant": 0.194895938038826,
+      "mean_nll": 1.8399895032246907
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-f7f4e5864881",
+      "input": {
+        "items": [
+          45,
+          59,
+          12,
+          57,
+          49
+        ]
+      },
+      "mass_on_dominant": 0.19021986424922943,
+      "mean_nll": 1.8169430096944172
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c8665cf508b5",
+      "input": {
+        "items": [
+          44,
+          57,
+          61,
+          11,
+          60,
+          95,
+          97
+        ]
+      },
+      "mass_on_dominant": 0.42268791794776917,
+      "mean_nll": 1.78727388381958
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-614c01a80439",
+      "input": {
+        "items": [
+          63,
+          80,
+          34,
+          61,
+          90
+        ]
+      },
+      "mass_on_dominant": 0.051319804042577744,
+      "mean_nll": 1.583891232808431
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-dab31a1605d5",
+      "input": {
+        "items": [
+          69,
+          2,
+          91,
+          63,
+          34
+        ]
+      },
+      "mass_on_dominant": 0.15885446965694427,
+      "mean_nll": 1.6964867909749348
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-6c7bdb9219be",
+      "input": {
+        "items": [
+          1,
+          53,
+          17,
+          81,
+          15,
+          64,
+          22
+        ]
+      },
+      "mass_on_dominant": 0.23885561525821686,
+      "mean_nll": 1.7919915517171223
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-3d5f841d9dd3",
+      "input": {
+        "items": [
+          18,
+          32,
+          60,
+          97,
+          8,
+          94,
+          66
+        ]
+      },
+      "mass_on_dominant": 0.30366164445877075,
+      "mean_nll": 1.9614551862080891
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-abf573087970",
+      "input": {
+        "items": [
+          6,
+          49,
+          98,
+          61,
+          43,
+          22,
+          44
+        ]
+      },
+      "mass_on_dominant": 0.2667393684387207,
+      "mean_nll": 1.9419994354248047
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ef627285a804",
+      "input": {
+        "items": [
+          16,
+          13,
+          10,
+          1,
+          84,
+          61,
+          57
+        ]
+      },
+      "mass_on_dominant": 0.1400633603334427,
+      "mean_nll": 2.050619125366211
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-19c1f3dfaa7e",
+      "input": {
+        "items": [
+          23,
+          74,
+          76,
+          8,
+          45
+        ]
+      },
+      "mass_on_dominant": 0.43918663263320923,
+      "mean_nll": 1.883448600769043
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-436d4968298f",
+      "input": {
+        "items": [
+          63,
+          60,
+          47,
+          55,
+          54
+        ]
+      },
+      "mass_on_dominant": 0.3961297571659088,
+      "mean_nll": 1.6482011477152507
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-9e60443f9ba1",
+      "input": {
+        "items": [
+          6,
+          55,
+          96,
+          36,
+          24
+        ]
+      },
+      "mass_on_dominant": 0.22966057062149048,
+      "mean_nll": 1.7056263287862141
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e7c1caae0646",
+      "input": {
+        "items": [
+          77,
+          81,
+          80,
+          36,
+          18,
+          17,
+          43
+        ]
+      },
+      "mass_on_dominant": 0.2944047451019287,
+      "mean_nll": 1.9540576934814453
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-01314257dc2e",
+      "input": {
+        "items": [
+          51,
+          18,
+          85,
+          20,
+          81
+        ]
+      },
+      "mass_on_dominant": 0.1310197412967682,
+      "mean_nll": 1.4816306432088215
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-398b67054c55",
+      "input": {
+        "items": [
+          35,
+          98,
+          92,
+          28,
+          70
+        ]
+      },
+      "mass_on_dominant": 0.21843388676643372,
+      "mean_nll": 1.6660504341125488
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-4ff38e33c930",
+      "input": {
+        "items": [
+          87,
+          8,
+          52,
+          49,
+          42,
+          78,
+          65
+        ]
+      },
+      "mass_on_dominant": 0.11841835826635361,
+      "mean_nll": 2.0081872940063477
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-96f80563b5d1",
+      "input": {
+        "items": [
+          61,
+          94,
+          91,
+          80,
+          75,
+          32,
+          2
+        ]
+      },
+      "mass_on_dominant": 0.22460320591926575,
+      "mean_nll": 1.9752214749654133
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-825ced2fc38c",
+      "input": {
+        "items": [
+          53,
+          91,
+          41,
+          13,
+          44,
+          46,
+          63
+        ]
+      },
+      "mass_on_dominant": 0.42580446600914,
+      "mean_nll": 1.9020487467447917
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-e9ce2874c7c2",
+      "input": {
+        "items": [
+          85,
+          99,
+          97,
+          31,
+          65
+        ]
+      },
+      "mass_on_dominant": 0.2879384160041809,
+      "mean_nll": 1.6632167498270671
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-116ec1c36c24",
+      "input": {
+        "items": [
+          36,
+          5,
+          86,
+          95,
+          98,
+          39,
+          16
+        ]
+      },
+      "mass_on_dominant": 0.2555314302444458,
+      "mean_nll": 1.7970301310221355
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a497433c252b",
+      "input": {
+        "items": [
+          29,
+          17,
+          68,
+          59,
+          45,
+          55,
+          84
+        ]
+      },
+      "mass_on_dominant": 0.39664947986602783,
+      "mean_nll": 1.7996629079182942
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-084ac8a91d12",
+      "input": {
+        "items": [
+          90,
+          40,
+          28,
+          43,
+          11,
+          42,
+          84
+        ]
+      },
+      "mass_on_dominant": 0.6020824909210205,
+      "mean_nll": 1.9698330561319988
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-bc63deaa80d4",
+      "input": {
+        "items": [
+          7,
+          64,
+          76,
+          77,
+          28,
+          16,
+          13
+        ]
+      },
+      "mass_on_dominant": 0.23739999532699585,
+      "mean_nll": 1.9837077458699544
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-9900c816af52",
+      "input": {
+        "items": [
+          64,
+          79,
+          7,
+          25,
+          49
+        ]
+      },
+      "mass_on_dominant": 0.14559617638587952,
+      "mean_nll": 1.646917184193929
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0cec25919099",
+      "input": {
+        "items": [
+          84,
+          49,
+          8,
+          98,
+          21,
+          76,
+          74
+        ]
+      },
+      "mass_on_dominant": 0.16318506002426147,
+      "mean_nll": 1.5957587560017903
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-d7042809ba05",
+      "input": {
+        "items": [
+          81,
+          44,
+          37,
+          47,
+          26,
+          25,
+          2
+        ]
+      },
+      "mass_on_dominant": 0.29900670051574707,
+      "mean_nll": 2.0228164990743003
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-7cafcfd8b1a7",
+      "input": {
+        "items": [
+          24,
+          33,
+          95,
+          59,
+          49,
+          21,
+          51
+        ]
+      },
+      "mass_on_dominant": 0.17970366775989532,
+      "mean_nll": 2.173753261566162
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2580c5bacc11",
+      "input": {
+        "items": [
+          57,
+          60,
+          46,
+          11,
+          15,
+          76,
+          64
+        ]
+      },
+      "mass_on_dominant": 0.4754756689071655,
+      "mean_nll": 1.832731564839681
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-7dd8beb18942",
+      "input": {
+        "items": [
+          46,
+          77,
+          27,
+          65,
+          96
+        ]
+      },
+      "mass_on_dominant": 0.21897251904010773,
+      "mean_nll": 1.6281954447428386
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-dfc3a99d2d3a",
+      "input": {
+        "items": [
+          16,
+          71,
+          32,
+          33,
+          66,
+          91,
+          54
+        ]
+      },
+      "mass_on_dominant": 0.25095924735069275,
+      "mean_nll": 2.0687740643819175
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-39761d496a1b",
+      "input": {
+        "items": [
+          8,
+          20,
+          41,
+          84,
+          26,
+          14,
+          53
+        ]
+      },
+      "mass_on_dominant": 0.28972142934799194,
+      "mean_nll": 1.7261247634887695
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-1444ca1f23ff",
+      "input": {
+        "items": [
+          60,
+          21,
+          72,
+          23,
+          67
+        ]
+      },
+      "mass_on_dominant": 0.22718475759029388,
+      "mean_nll": 1.8840939203898113
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-02230aaa6dfa",
+      "input": {
+        "items": [
+          8,
+          28,
+          84,
+          73,
+          5,
+          98,
+          45
+        ]
+      },
+      "mass_on_dominant": 0.3204302489757538,
+      "mean_nll": 1.8292511304219563
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0976bd111afe",
+      "input": {
+        "items": [
+          80,
+          44,
+          61,
+          71,
+          69,
+          11,
+          14
+        ]
+      },
+      "mass_on_dominant": 0.17056439816951752,
+      "mean_nll": 2.0938135782877603
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-825e17ad2c90",
+      "input": {
+        "items": [
+          30,
+          95,
+          25,
+          27,
+          58
+        ]
+      },
+      "mass_on_dominant": 0.10251978039741516,
+      "mean_nll": 1.8354355494181316
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-fe67bec6aaf9",
+      "input": {
+        "items": [
+          92,
+          70,
+          66,
+          69,
+          57,
+          47,
+          5
+        ]
+      },
+      "mass_on_dominant": 0.15695922076702118,
+      "mean_nll": 1.964907964070638
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-c6befe8975d8",
+      "input": {
+        "items": [
+          18,
+          3,
+          65,
+          14,
+          19
+        ]
+      },
+      "mass_on_dominant": 0.15617777407169342,
+      "mean_nll": 1.5856936772664387
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-2fb13dbcb4b9",
+      "input": {
+        "items": [
+          85,
+          26,
+          80,
+          56,
+          35
+        ]
+      },
+      "mass_on_dominant": 0.28794533014297485,
+      "mean_nll": 1.8653186162312825
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-93c8af34c143",
+      "input": {
+        "items": [
+          74,
+          25,
+          96,
+          85,
+          4,
+          24,
+          88
+        ]
+      },
+      "mass_on_dominant": 0.18284977972507477,
+      "mean_nll": 1.855136235555013
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-7afd2f2c8f3d",
+      "input": {
+        "items": [
+          79,
+          89,
+          41,
+          47,
+          48
+        ]
+      },
+      "mass_on_dominant": 0.36780887842178345,
+      "mean_nll": 1.7649660110473633
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2951b2841e3b",
+      "input": {
+        "items": [
+          9,
+          95,
+          89,
+          83,
+          4,
+          55,
+          13
+        ]
+      },
+      "mass_on_dominant": 0.3789540231227875,
+      "mean_nll": 1.8434894879659016
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-85686f3e5538",
+      "input": {
+        "items": [
+          74,
+          26,
+          90,
+          62,
+          92
+        ]
+      },
+      "mass_on_dominant": 0.2800154685974121,
+      "mean_nll": 1.8623019854227703
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-496080139ab1",
+      "input": {
+        "items": [
+          56,
+          5,
+          77,
+          91,
+          51
+        ]
+      },
+      "mass_on_dominant": 0.13565871119499207,
+      "mean_nll": 1.660403569539388
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-e4afd890510b",
+      "input": {
+        "items": [
+          51,
+          73,
+          9,
+          24,
+          88
+        ]
+      },
+      "mass_on_dominant": 0.15072891116142273,
+      "mean_nll": 1.6652309099833171
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-17b05f2675e0",
+      "input": {
+        "items": [
+          20,
+          78,
+          8,
+          62,
+          99
+        ]
+      },
+      "mass_on_dominant": 0.3828885853290558,
+      "mean_nll": 1.8697512944539387
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-a1282cfe8f12",
+      "input": {
+        "items": [
+          22,
+          60,
+          65,
+          51,
+          23
+        ]
+      },
+      "mass_on_dominant": 0.3181571960449219,
+      "mean_nll": 1.872961203257243
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-9c8a6c9c610d",
+      "input": {
+        "items": [
+          22,
+          35,
+          1,
+          67,
+          80,
+          42,
+          65
+        ]
+      },
+      "mass_on_dominant": 0.5099635720252991,
+      "mean_nll": 1.8090845743815105
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-79bd28b1151e",
+      "input": {
+        "items": [
+          78,
+          81,
+          29,
+          80,
+          34,
+          58,
+          21
+        ]
+      },
+      "mass_on_dominant": 0.17898644506931305,
+      "mean_nll": 2.0507682164510093
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-fac6b0354e1d",
+      "input": {
+        "items": [
+          3,
+          2,
+          39,
+          93,
+          19
+        ]
+      },
+      "mass_on_dominant": 0.17229773104190826,
+      "mean_nll": 1.6138617197672527
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-22b7c89bfe5c",
+      "input": {
+        "items": [
+          38,
+          52,
+          11,
+          12,
+          70
+        ]
+      },
+      "mass_on_dominant": 0.2566782832145691,
+      "mean_nll": 1.706036885579427
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-bafd5a866633",
+      "input": {
+        "items": [
+          14,
+          77,
+          51,
+          36,
+          55,
+          90,
+          11
+        ]
+      },
+      "mass_on_dominant": 0.31039726734161377,
+      "mean_nll": 1.8755935033162434
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-fe2437f81490",
+      "input": {
+        "items": [
+          41,
+          86,
+          68,
+          5,
+          18,
+          75,
+          97
+        ]
+      },
+      "mass_on_dominant": 0.21171797811985016,
+      "mean_nll": 1.947339693705241
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-62eb6d09c33e",
+      "input": {
+        "items": [
+          13,
+          2,
+          43,
+          98,
+          6
+        ]
+      },
+      "mass_on_dominant": 0.1841931790113449,
+      "mean_nll": 1.7211686770121257
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ab9d00667c1b",
+      "input": {
+        "items": [
+          4,
+          90,
+          77,
+          40,
+          20,
+          64,
+          43
+        ]
+      },
+      "mass_on_dominant": 0.3617750406265259,
+      "mean_nll": 2.137192408243815
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-61901411ea51",
+      "input": {
+        "items": [
+          8,
+          78,
+          16,
+          7,
+          56,
+          71,
+          92
+        ]
+      },
+      "mass_on_dominant": 0.3643815219402313,
+      "mean_nll": 1.758003870646159
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a89ba3516f64",
+      "input": {
+        "items": [
+          9,
+          59,
+          60,
+          51,
+          38,
+          36,
+          22
+        ]
+      },
+      "mass_on_dominant": 0.19514647126197815,
+      "mean_nll": 1.8035917282104492
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-b0591caf91e0",
+      "input": {
+        "items": [
+          66,
+          32,
+          93,
+          70,
+          83,
+          3,
+          30
+        ]
+      },
+      "mass_on_dominant": 0.10982873290777206,
+      "mean_nll": 2.001026153564453
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-6a94ea54cd74",
+      "input": {
+        "items": [
+          73,
+          25,
+          18,
+          49,
+          33,
+          23,
+          77
+        ]
+      },
+      "mass_on_dominant": 0.15298214554786682,
+      "mean_nll": 1.7683324813842773
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-3779d3d0ff64",
+      "input": {
+        "items": [
+          33,
+          12,
+          70,
+          77,
+          30,
+          35,
+          67
+        ]
+      },
+      "mass_on_dominant": 0.43836167454719543,
+      "mean_nll": 1.9156734148661296
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-aa9ce0ea7fc1",
+      "input": {
+        "items": [
+          64,
+          78,
+          94,
+          24,
+          50,
+          83,
+          40
+        ]
+      },
+      "mass_on_dominant": 0.16296537220478058,
+      "mean_nll": 2.0317697525024414
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-8eaa95f6b201",
+      "input": {
+        "items": [
+          7,
+          32,
+          23,
+          76,
+          64,
+          74,
+          66
+        ]
+      },
+      "mass_on_dominant": 0.09913817048072815,
+      "mean_nll": 1.9711036682128906
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e41f8f622229",
+      "input": {
+        "items": [
+          20,
+          43,
+          38,
+          7,
+          51,
+          91,
+          15
+        ]
+      },
+      "mass_on_dominant": 0.4023788273334503,
+      "mean_nll": 1.8907073338826497
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-2516d4695f12",
+      "input": {
+        "items": [
+          9,
+          76,
+          64,
+          45,
+          4
+        ]
+      },
+      "mass_on_dominant": 0.26221272349357605,
+      "mean_nll": 1.9459082285563152
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c0a210f9da37",
+      "input": {
+        "items": [
+          22,
+          84,
+          36,
+          58,
+          31,
+          61,
+          48
+        ]
+      },
+      "mass_on_dominant": 0.3771950900554657,
+      "mean_nll": 1.8104233741760254
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-0171e36f8b40",
+      "input": {
+        "items": [
+          27,
+          50,
+          55,
+          31,
+          43
+        ]
+      },
+      "mass_on_dominant": 0.29128605127334595,
+      "mean_nll": 1.673753261566162
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-33ac14d6f123",
+      "input": {
+        "items": [
+          75,
+          3,
+          85,
+          9,
+          29
+        ]
+      },
+      "mass_on_dominant": 0.2707451581954956,
+      "mean_nll": 1.5209875106811523
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-d13bcc3ff7f6",
+      "input": {
+        "items": [
+          23,
+          72,
+          50,
+          57,
+          69,
+          38,
+          1
+        ]
+      },
+      "mass_on_dominant": 0.3390185534954071,
+      "mean_nll": 1.7421607971191406
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-b231dbeeadc8",
+      "input": {
+        "items": [
+          79,
+          89,
+          8,
+          35,
+          28
+        ]
+      },
+      "mass_on_dominant": 0.2718713581562042,
+      "mean_nll": 1.8200585047403972
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-0714cb980d97",
+      "input": {
+        "items": [
+          45,
+          76,
+          57,
+          22,
+          40
+        ]
+      },
+      "mass_on_dominant": 0.20932604372501373,
+      "mean_nll": 1.7719189325968425
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-8dbb747805cc",
+      "input": {
+        "items": [
+          36,
+          99,
+          86,
+          80,
+          45
+        ]
+      },
+      "mass_on_dominant": 0.35241106152534485,
+      "mean_nll": 1.873395284016927
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-7d277a42c12f",
+      "input": {
+        "items": [
+          36,
+          38,
+          81,
+          60,
+          6,
+          39,
+          58
+        ]
+      },
+      "mass_on_dominant": 0.37796616554260254,
+      "mean_nll": 1.84850279490153
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-9508dc851453",
+      "input": {
+        "items": [
+          90,
+          77,
+          35,
+          37,
+          66,
+          96,
+          14
+        ]
+      },
+      "mass_on_dominant": 0.32788121700286865,
+      "mean_nll": 2.0732297897338867
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-d8dd31c3048c",
+      "input": {
+        "items": [
+          34,
+          89,
+          47,
+          27,
+          90,
+          83,
+          43
+        ]
+      },
+      "mass_on_dominant": 0.14032845199108124,
+      "mean_nll": 1.8376216888427734
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-05d6a3403ec1",
+      "input": {
+        "items": [
+          41,
+          35,
+          74,
+          83,
+          82,
+          8,
+          10
+        ]
+      },
+      "mass_on_dominant": 0.29823705554008484,
+      "mean_nll": 2.040518601735433
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f2549e3d78d4",
+      "input": {
+        "items": [
+          67,
+          79,
+          86,
+          2,
+          69,
+          59,
+          15
+        ]
+      },
+      "mass_on_dominant": 0.12539026141166687,
+      "mean_nll": 1.8708972930908203
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f603d6a57019",
+      "input": {
+        "items": [
+          21,
+          79,
+          33,
+          58,
+          20,
+          60,
+          38
+        ]
+      },
+      "mass_on_dominant": 0.3725722134113312,
+      "mean_nll": 1.739963213602702
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-219bec989105",
+      "input": {
+        "items": [
+          27,
+          73,
+          70,
+          17,
+          55
+        ]
+      },
+      "mass_on_dominant": 0.3756515085697174,
+      "mean_nll": 1.8369051615397136
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-4bfc8ce4570b",
+      "input": {
+        "items": [
+          43,
+          90,
+          65,
+          63,
+          42
+        ]
+      },
+      "mass_on_dominant": 0.2546420693397522,
+      "mean_nll": 1.7281087239583333
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-aa4c422dc220",
+      "input": {
+        "items": [
+          61,
+          54,
+          83,
+          62,
+          42,
+          55,
+          32
+        ]
+      },
+      "mass_on_dominant": 0.33161604404449463,
+      "mean_nll": 1.8502556482950847
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-8d5b481fb334",
+      "input": {
+        "items": [
+          13,
+          80,
+          12,
+          93,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.3401399552822113,
+      "mean_nll": 1.7064069112141926
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ecbc30bb34cd",
+      "input": {
+        "items": [
+          54,
+          88,
+          71,
+          68,
+          6,
+          33,
+          50
+        ]
+      },
+      "mass_on_dominant": 0.2490491420030594,
+      "mean_nll": 1.9104220072428386
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-d03b25f25082",
+      "input": {
+        "items": [
+          36,
+          8,
+          66,
+          17,
+          55
+        ]
+      },
+      "mass_on_dominant": 0.14575761556625366,
+      "mean_nll": 1.6865243911743164
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-69c2b108ae4e",
+      "input": {
+        "items": [
+          73,
+          75,
+          90,
+          56,
+          64
+        ]
+      },
+      "mass_on_dominant": 0.2710573673248291,
+      "mean_nll": 1.878026008605957
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-af2222dd5bd7",
+      "input": {
+        "items": [
+          25,
+          98,
+          47,
+          66,
+          28,
+          96,
+          19
+        ]
+      },
+      "mass_on_dominant": 0.35834404826164246,
+      "mean_nll": 1.9637463887532551
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-ec63a65187a9",
+      "input": {
+        "items": [
+          38,
+          50,
+          5,
+          23,
+          61
+        ]
+      },
+      "mass_on_dominant": 0.1671774983406067,
+      "mean_nll": 1.8001991907755535
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-beaf2cba40a2",
+      "input": {
+        "items": [
+          57,
+          5,
+          47,
+          76,
+          56,
+          94,
+          74
+        ]
+      },
+      "mass_on_dominant": 0.26112401485443115,
+      "mean_nll": 1.922541618347168
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-00bfb526bf4c",
+      "input": {
+        "items": [
+          55,
+          17,
+          71,
+          85,
+          62,
+          95,
+          29
+        ]
+      },
+      "mass_on_dominant": 0.2829226851463318,
+      "mean_nll": 1.7965981165568035
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-996efdde6724",
+      "input": {
+        "items": [
+          57,
+          42,
+          14,
+          3,
+          61,
+          70,
+          54
+        ]
+      },
+      "mass_on_dominant": 0.2802918553352356,
+      "mean_nll": 2.0740391413370767
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c07ee575c6c4",
+      "input": {
+        "items": [
+          91,
+          19,
+          63,
+          35,
+          20,
+          95,
+          81
+        ]
+      },
+      "mass_on_dominant": 0.39794954657554626,
+      "mean_nll": 1.8510173161824544
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-61f001d2722a",
+      "input": {
+        "items": [
+          47,
+          68,
+          91,
+          31,
+          34,
+          72,
+          44
+        ]
+      },
+      "mass_on_dominant": 0.12570428848266602,
+      "mean_nll": 1.8760701815287273
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e6d4fedb2b39",
+      "input": {
+        "items": [
+          27,
+          29,
+          10,
+          43,
+          13,
+          17,
+          5
+        ]
+      },
+      "mass_on_dominant": 0.441604882478714,
+      "mean_nll": 1.974467118581136
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-b4886613221e",
+      "input": {
+        "items": [
+          91,
+          97,
+          1,
+          30,
+          42
+        ]
+      },
+      "mass_on_dominant": 0.5122308135032654,
+      "mean_nll": 1.9041919708251953
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0e387041bcdb",
+      "input": {
+        "items": [
+          4,
+          70,
+          2,
+          17,
+          73,
+          44,
+          92
+        ]
+      },
+      "mass_on_dominant": 0.3439704179763794,
+      "mean_nll": 1.8358351389567058
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-dcbf6afc6e81",
+      "input": {
+        "items": [
+          52,
+          2,
+          93,
+          92,
+          33
+        ]
+      },
+      "mass_on_dominant": 0.22880136966705322,
+      "mean_nll": 1.748085657755534
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-1401f975494a",
+      "input": {
+        "items": [
+          34,
+          3,
+          24,
+          72,
+          98,
+          93,
+          35
+        ]
+      },
+      "mass_on_dominant": 0.3157825171947479,
+      "mean_nll": 1.8114147186279297
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a3d1ca3228c9",
+      "input": {
+        "items": [
+          48,
+          71,
+          70,
+          3,
+          35,
+          86,
+          15
+        ]
+      },
+      "mass_on_dominant": 0.43287068605422974,
+      "mean_nll": 1.9837929407755535
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-d63f33bbc1d2",
+      "input": {
+        "items": [
+          61,
+          79,
+          63,
+          2,
+          34,
+          10,
+          23
+        ]
+      },
+      "mass_on_dominant": 0.5573314428329468,
+      "mean_nll": 1.9087375005086262
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-e79b8601a76d",
+      "input": {
+        "items": [
+          58,
+          86,
+          63,
+          59,
+          15
+        ]
+      },
+      "mass_on_dominant": 0.2285534292459488,
+      "mean_nll": 1.6766610145568848
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-3984e6fc90c4",
+      "input": {
+        "items": [
+          11,
+          7,
+          16,
+          46,
+          21,
+          79,
+          43
+        ]
+      },
+      "mass_on_dominant": 0.32836806774139404,
+      "mean_nll": 1.818155288696289
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-88866360ab69",
+      "input": {
+        "items": [
+          62,
+          96,
+          89,
+          6,
+          9,
+          50,
+          49
+        ]
+      },
+      "mass_on_dominant": 0.3288731276988983,
+      "mean_nll": 1.901048978169759
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-6c575b1d5966",
+      "input": {
+        "items": [
+          94,
+          64,
+          95,
+          41,
+          77,
+          96,
+          61
+        ]
+      },
+      "mass_on_dominant": 0.2893826365470886,
+      "mean_nll": 1.9404102961222331
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a2e51737b316",
+      "input": {
+        "items": [
+          13,
+          79,
+          71,
+          30,
+          36,
+          49,
+          12
+        ]
+      },
+      "mass_on_dominant": 0.3742752969264984,
+      "mean_nll": 1.8359314600626628
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-664b58262cf8",
+      "input": {
+        "items": [
+          99,
+          94,
+          19,
+          82,
+          87
+        ]
+      },
+      "mass_on_dominant": 0.3216399848461151,
+      "mean_nll": 1.7715071042378743
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-0b0c4b38e782",
+      "input": {
+        "items": [
+          21,
+          7,
+          51,
+          88,
+          43,
+          55,
+          38
+        ]
+      },
+      "mass_on_dominant": 0.31012651324272156,
+      "mean_nll": 1.9672644933064778
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-3fa8a073d098",
+      "input": {
+        "items": [
+          64,
+          33,
+          90,
+          74,
+          92,
+          73,
+          39
+        ]
+      },
+      "mass_on_dominant": 0.2611944377422333,
+      "mean_nll": 1.755408763885498
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-05db1b9671f3",
+      "input": {
+        "items": [
+          13,
+          44,
+          17,
+          92,
+          37,
+          4,
+          49
+        ]
+      },
+      "mass_on_dominant": 0.3185819089412689,
+      "mean_nll": 1.7083144187927246
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-393c2c9cc748",
+      "input": {
+        "items": [
+          27,
+          68,
+          43,
+          17,
+          37
+        ]
+      },
+      "mass_on_dominant": 0.4079740345478058,
+      "mean_nll": 1.659472147623698
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a1c222b62c45",
+      "input": {
+        "items": [
+          42,
+          45,
+          14,
+          96,
+          16,
+          22,
+          83
+        ]
+      },
+      "mass_on_dominant": 0.3892326354980469,
+      "mean_nll": 1.8950262069702148
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-3f5b00f20a2c",
+      "input": {
+        "items": [
+          46,
+          64,
+          21,
+          15,
+          74,
+          28,
+          37
+        ]
+      },
+      "mass_on_dominant": 0.4903883635997772,
+      "mean_nll": 1.9412787755330403
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2ec4e40ee9f7",
+      "input": {
+        "items": [
+          88,
+          13,
+          49,
+          25,
+          19,
+          42,
+          95
+        ]
+      },
+      "mass_on_dominant": 0.41194137930870056,
+      "mean_nll": 1.92041810353597
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-86aa2b99105f",
+      "input": {
+        "items": [
+          88,
+          80,
+          23,
+          24,
+          7,
+          78,
+          56
+        ]
+      },
+      "mass_on_dominant": 0.2642921805381775,
+      "mean_nll": 1.9584614435831706
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e7c9c9a495a4",
+      "input": {
+        "items": [
+          86,
+          55,
+          49,
+          66,
+          16,
+          79,
+          58
+        ]
+      },
+      "mass_on_dominant": 0.5236223340034485,
+      "mean_nll": 1.7944644292195637
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-583d173aef01",
+      "input": {
+        "items": [
+          47,
+          51,
+          61,
+          36,
+          64,
+          18,
+          32
+        ]
+      },
+      "mass_on_dominant": 0.16029676795005798,
+      "mean_nll": 1.8366546630859375
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-563b374bb5c1",
+      "input": {
+        "items": [
+          83,
+          94,
+          76,
+          71,
+          63,
+          16,
+          81
+        ]
+      },
+      "mass_on_dominant": 0.1612074375152588,
+      "mean_nll": 1.8851003646850586
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-6a12cb01675d",
+      "input": {
+        "items": [
+          14,
+          29,
+          1,
+          78,
+          40,
+          36,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.327799916267395,
+      "mean_nll": 1.7841335932413738
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-553c3deb5237",
+      "input": {
+        "items": [
+          53,
+          16,
+          17,
+          94,
+          37,
+          26,
+          55
+        ]
+      },
+      "mass_on_dominant": 0.2968185544013977,
+      "mean_nll": 1.808690071105957
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-f1c247e86da5",
+      "input": {
+        "items": [
+          55,
+          21,
+          59,
+          38,
+          67
+        ]
+      },
+      "mass_on_dominant": 0.2664664387702942,
+      "mean_nll": 1.8006054560343425
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ac98208dec81",
+      "input": {
+        "items": [
+          46,
+          65,
+          75,
+          48,
+          39,
+          97,
+          64
+        ]
+      },
+      "mass_on_dominant": 0.18335901200771332,
+      "mean_nll": 2.1187127431233725
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-2fbbc2a42468",
+      "input": {
+        "items": [
+          21,
+          68,
+          41,
+          40,
+          15
+        ]
+      },
+      "mass_on_dominant": 0.2132435142993927,
+      "mean_nll": 1.7695153554280598
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-78c61e55e5d3",
+      "input": {
+        "items": [
+          69,
+          83,
+          23,
+          97,
+          38,
+          72,
+          7
+        ]
+      },
+      "mass_on_dominant": 0.1930587887763977,
+      "mean_nll": 1.7503455479939778
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-5f4ebb5d60ac",
+      "input": {
+        "items": [
+          28,
+          72,
+          21,
+          37,
+          47,
+          68,
+          75
+        ]
+      },
+      "mass_on_dominant": 0.27333584427833557,
+      "mean_nll": 1.7783792813618977
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-7b1ad2ec4379",
+      "input": {
+        "items": [
+          8,
+          79,
+          91,
+          51,
+          30
+        ]
+      },
+      "mass_on_dominant": 0.218404620885849,
+      "mean_nll": 1.8557605743408203
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ed0bdf2b2319",
+      "input": {
+        "items": [
+          13,
+          9,
+          64,
+          14,
+          77,
+          97,
+          90
+        ]
+      },
+      "mass_on_dominant": 0.4026086926460266,
+      "mean_nll": 2.0466591517130532
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-86682e489795",
+      "input": {
+        "items": [
+          93,
+          80,
+          5,
+          29,
+          75
+        ]
+      },
+      "mass_on_dominant": 0.33562400937080383,
+      "mean_nll": 1.7383527755737305
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f58803a8132c",
+      "input": {
+        "items": [
+          29,
+          61,
+          86,
+          8,
+          32,
+          10,
+          52
+        ]
+      },
+      "mass_on_dominant": 0.26440227031707764,
+      "mean_nll": 1.7715832392374675
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e4cc0e30ef66",
+      "input": {
+        "items": [
+          70,
+          75,
+          50,
+          56,
+          5,
+          23,
+          41
+        ]
+      },
+      "mass_on_dominant": 0.17740166187286377,
+      "mean_nll": 1.864662488301595
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-62f3e35b0ed5",
+      "input": {
+        "items": [
+          1,
+          69,
+          81,
+          15,
+          34
+        ]
+      },
+      "mass_on_dominant": 0.38387712836265564,
+      "mean_nll": 1.5941696166992188
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-4f93e5c78b95",
+      "input": {
+        "items": [
+          45,
+          20,
+          95,
+          28,
+          79
+        ]
+      },
+      "mass_on_dominant": 0.11719667166471481,
+      "mean_nll": 1.7428542772928874
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-423307445fbb",
+      "input": {
+        "items": [
+          8,
+          59,
+          75,
+          79,
+          4,
+          9,
+          26
+        ]
+      },
+      "mass_on_dominant": 0.4749114513397217,
+      "mean_nll": 1.8932288487752278
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-0b07dbc2487d",
+      "input": {
+        "items": [
+          43,
+          69,
+          17,
+          47,
+          25
+        ]
+      },
+      "mass_on_dominant": 0.13619700074195862,
+      "mean_nll": 1.6512314478556316
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-331d8c3c6ac0",
+      "input": {
+        "items": [
+          84,
+          23,
+          69,
+          28,
+          45
+        ]
+      },
+      "mass_on_dominant": 0.25226908922195435,
+      "mean_nll": 1.6254550615946453
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-dafbfcdfcf72",
+      "input": {
+        "items": [
+          68,
+          85,
+          82,
+          86,
+          72,
+          8,
+          75
+        ]
+      },
+      "mass_on_dominant": 0.3631819188594818,
+      "mean_nll": 1.9711543718973796
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2bc3990aea98",
+      "input": {
+        "items": [
+          8,
+          99,
+          18,
+          89,
+          43,
+          38,
+          72
+        ]
+      },
+      "mass_on_dominant": 0.26986274123191833,
+      "mean_nll": 1.764886697133382
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-4577c54d49fc",
+      "input": {
+        "items": [
+          24,
+          86,
+          91,
+          11,
+          68,
+          47,
+          90
+        ]
+      },
+      "mass_on_dominant": 0.3663857877254486,
+      "mean_nll": 1.830331802368164
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-77a7ab901099",
+      "input": {
+        "items": [
+          28,
+          8,
+          34,
+          31,
+          71,
+          62,
+          92
+        ]
+      },
+      "mass_on_dominant": 0.5362851619720459,
+      "mean_nll": 1.816843032836914
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-83673d99a051",
+      "input": {
+        "items": [
+          14,
+          36,
+          7,
+          80,
+          3,
+          34,
+          53
+        ]
+      },
+      "mass_on_dominant": 0.2296815663576126,
+      "mean_nll": 1.8130431175231934
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-93343bc7c874",
+      "input": {
+        "items": [
+          41,
+          60,
+          28,
+          82,
+          32,
+          18,
+          94
+        ]
+      },
+      "mass_on_dominant": 0.42195403575897217,
+      "mean_nll": 1.6765801111857097
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-a2a17fcdca2c",
+      "input": {
+        "items": [
+          56,
+          75,
+          2,
+          40,
+          59
+        ]
+      },
+      "mass_on_dominant": 0.12836958467960358,
+      "mean_nll": 1.7588876088460286
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-06b0be54bf10",
+      "input": {
+        "items": [
+          95,
+          97,
+          94,
+          99,
+          46,
+          39,
+          76
+        ]
+      },
+      "mass_on_dominant": 0.28139254450798035,
+      "mean_nll": 2.156914710998535
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c1ce0ad7c84a",
+      "input": {
+        "items": [
+          93,
+          30,
+          81,
+          53,
+          15,
+          21,
+          34
+        ]
+      },
+      "mass_on_dominant": 0.5534388422966003,
+      "mean_nll": 2.2019317944844565
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-1e1c23806606",
+      "input": {
+        "items": [
+          94,
+          42,
+          61,
+          82,
+          85,
+          36,
+          35
+        ]
+      },
+      "mass_on_dominant": 0.2425614595413208,
+      "mean_nll": 1.854794184366862
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-e80edba06329",
+      "input": {
+        "items": [
+          39,
+          47,
+          19,
+          59,
+          25,
+          8,
+          79
+        ]
+      },
+      "mass_on_dominant": 0.21208399534225464,
+      "mean_nll": 1.917880376180013
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-27eb38d0e737",
+      "input": {
+        "items": [
+          54,
+          33,
+          81,
+          56,
+          13,
+          47,
+          22
+        ]
+      },
+      "mass_on_dominant": 0.3382141888141632,
+      "mean_nll": 1.8761234283447266
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-5ff3b1f98c06",
+      "input": {
+        "items": [
+          44,
+          46,
+          7,
+          99,
+          34
+        ]
+      },
+      "mass_on_dominant": 0.08274555951356888,
+      "mean_nll": 1.76195494333903
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-6b012166afe8",
+      "input": {
+        "items": [
+          7,
+          41,
+          79,
+          8,
+          25
+        ]
+      },
+      "mass_on_dominant": 0.24405616521835327,
+      "mean_nll": 1.661808967590332
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-a72c7c05f852",
+      "input": {
+        "items": [
+          40,
+          82,
+          90,
+          4,
+          14
+        ]
+      },
+      "mass_on_dominant": 0.13375337421894073,
+      "mean_nll": 1.682109038035075
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-d680a2825f19",
+      "input": {
+        "items": [
+          49,
+          65,
+          98,
+          54,
+          48
+        ]
+      },
+      "mass_on_dominant": 0.26297900080680847,
+      "mean_nll": 1.7758703231811523
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-9c82185bc0c3",
+      "input": {
+        "items": [
+          48,
+          6,
+          7,
+          89,
+          52,
+          18,
+          24
+        ]
+      },
+      "mass_on_dominant": 0.3350808918476105,
+      "mean_nll": 1.8125699361165364
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-47bc5b0c001c",
+      "input": {
+        "items": [
+          42,
+          10,
+          82,
+          44,
+          98
+        ]
+      },
+      "mass_on_dominant": 0.22877709567546844,
+      "mean_nll": 1.6382897694905598
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-7be9f8ccede5",
+      "input": {
+        "items": [
+          53,
+          93,
+          38,
+          74,
+          86
+        ]
+      },
+      "mass_on_dominant": 0.507073163986206,
+      "mean_nll": 1.7042075792948406
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ef2c6dcf0482",
+      "input": {
+        "items": [
+          28,
+          77,
+          59,
+          66,
+          15,
+          48,
+          3
+        ]
+      },
+      "mass_on_dominant": 0.5092178583145142,
+      "mean_nll": 1.9609870910644531
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-1dac7e59b9b0",
+      "input": {
+        "items": [
+          20,
+          85,
+          93,
+          67,
+          42
+        ]
+      },
+      "mass_on_dominant": 0.1743437796831131,
+      "mean_nll": 1.886550744374593
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-d5b9f9a4037d",
+      "input": {
+        "items": [
+          63,
+          89,
+          52,
+          35,
+          72,
+          6,
+          14
+        ]
+      },
+      "mass_on_dominant": 0.13985782861709595,
+      "mean_nll": 1.776370684305827
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-292298f47ad6",
+      "input": {
+        "items": [
+          53,
+          51,
+          94,
+          83,
+          61
+        ]
+      },
+      "mass_on_dominant": 0.35314062237739563,
+      "mean_nll": 1.8390739758809407
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-74e3e90f9b83",
+      "input": {
+        "items": [
+          46,
+          52,
+          74,
+          83,
+          82,
+          31,
+          66
+        ]
+      },
+      "mass_on_dominant": 0.3645681142807007,
+      "mean_nll": 1.877656618754069
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-af711929f6bd",
+      "input": {
+        "items": [
+          52,
+          94,
+          69,
+          25,
+          56
+        ]
+      },
+      "mass_on_dominant": 0.29458415508270264,
+      "mean_nll": 1.7219548225402832
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-c64f9c0ab52f",
+      "input": {
+        "items": [
+          24,
+          70,
+          31,
+          46,
+          97,
+          77,
+          57
+        ]
+      },
+      "mass_on_dominant": 0.2269696742296219,
+      "mean_nll": 1.696912129720052
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-fdbf5c0915ee",
+      "input": {
+        "items": [
+          75,
+          55,
+          50,
+          94,
+          68,
+          21,
+          82
+        ]
+      },
+      "mass_on_dominant": 0.16048258543014526,
+      "mean_nll": 1.7982746760050456
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-eeb2d3922399",
+      "input": {
+        "items": [
+          6,
+          83,
+          5,
+          12,
+          16
+        ]
+      },
+      "mass_on_dominant": 0.2862294614315033,
+      "mean_nll": 1.7424534161885579
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-2fe4e233d03a",
+      "input": {
+        "items": [
+          29,
+          62,
+          26,
+          83,
+          48,
+          80,
+          23
+        ]
+      },
+      "mass_on_dominant": 0.3553257882595062,
+      "mean_nll": 1.799164613087972
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-71431be4ef78",
+      "input": {
+        "items": [
+          17,
+          95,
+          7,
+          70,
+          84
+        ]
+      },
+      "mass_on_dominant": 0.20449160039424896,
+      "mean_nll": 1.731603781382243
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ae25420c6274",
+      "input": {
+        "items": [
+          95,
+          10,
+          50,
+          25,
+          28,
+          58,
+          21
+        ]
+      },
+      "mass_on_dominant": 0.18609987199306488,
+      "mean_nll": 1.9473400115966797
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-0f960c432bfb",
+      "input": {
+        "items": [
+          11,
+          4,
+          68,
+          24,
+          72
+        ]
+      },
+      "mass_on_dominant": 0.49352654814720154,
+      "mean_nll": 1.631536324818929
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-041c6f764c77",
+      "input": {
+        "items": [
+          96,
+          81,
+          70,
+          5,
+          18,
+          13,
+          34
+        ]
+      },
+      "mass_on_dominant": 0.4256916344165802,
+      "mean_nll": 1.9340686798095703
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-3dfb5205b00c",
+      "input": {
+        "items": [
+          13,
+          5,
+          91,
+          88,
+          83
+        ]
+      },
+      "mass_on_dominant": 0.1737121045589447,
+      "mean_nll": 1.5971110661824544
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ea7efa59c2ff",
+      "input": {
+        "items": [
+          99,
+          76,
+          84,
+          4,
+          23,
+          29,
+          14
+        ]
+      },
+      "mass_on_dominant": 0.3418574035167694,
+      "mean_nll": 1.982431411743164
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-9acf0d6bbc82",
+      "input": {
+        "items": [
+          31,
+          70,
+          83,
+          27,
+          81,
+          56,
+          38
+        ]
+      },
+      "mass_on_dominant": 0.3173249065876007,
+      "mean_nll": 1.6747913360595703
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-1ed7fcae3cfe",
+      "input": {
+        "items": [
+          69,
+          3,
+          72,
+          99,
+          53,
+          59,
+          75
+        ]
+      },
+      "mass_on_dominant": 0.20367151498794556,
+      "mean_nll": 1.840793291727702
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-ce854182c40a",
+      "input": {
+        "items": [
+          10,
+          69,
+          88,
+          22,
+          99,
+          62,
+          16
+        ]
+      },
+      "mass_on_dominant": 0.22461923956871033,
+      "mean_nll": 1.8702459335327148
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-7062ec82f9cd",
+      "input": {
+        "items": [
+          27,
+          80,
+          7,
+          93,
+          42
+        ]
+      },
+      "mass_on_dominant": 0.5391063690185547,
+      "mean_nll": 1.727648099263509
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-862097ecdd81",
+      "input": {
+        "items": [
+          55,
+          6,
+          75,
+          35,
+          13,
+          38,
+          84
+        ]
+      },
+      "mass_on_dominant": 0.28613972663879395,
+      "mean_nll": 1.8384235699971516
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-70e857594c1a",
+      "input": {
+        "items": [
+          30,
+          76,
+          69,
+          31,
+          13,
+          27,
+          29
+        ]
+      },
+      "mass_on_dominant": 0.15803438425064087,
+      "mean_nll": 1.9548880259195964
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-1017fc3d01c7",
+      "input": {
+        "items": [
+          16,
+          1,
+          40,
+          25,
+          34,
+          10,
+          24
+        ]
+      },
+      "mass_on_dominant": 0.35722270607948303,
+      "mean_nll": 1.7547257741292317
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-91fbf40f371d",
+      "input": {
+        "items": [
+          6,
+          64,
+          87,
+          11,
+          94,
+          1,
+          59
+        ]
+      },
+      "mass_on_dominant": 0.2986176609992981,
+      "mean_nll": 1.8183221817016602
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-dfaee14157d8",
+      "input": {
+        "items": [
+          49,
+          27,
+          74,
+          16,
+          8,
+          25,
+          6
+        ]
+      },
+      "mass_on_dominant": 0.39339175820350647,
+      "mean_nll": 1.9166045188903809
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-246b810c57eb",
+      "input": {
+        "items": [
+          2,
+          74,
+          25,
+          94,
+          44,
+          39,
+          22
+        ]
+      },
+      "mass_on_dominant": 0.1596440225839615,
+      "mean_nll": 1.7904154459635417
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-da087d96aa26",
+      "input": {
+        "items": [
+          64,
+          72,
+          35,
+          99,
+          63
+        ]
+      },
+      "mass_on_dominant": 0.04819680377840996,
+      "mean_nll": 1.7305412292480469
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-1173c75db9a8",
+      "input": {
+        "items": [
+          44,
+          89,
+          19,
+          42,
+          52
+        ]
+      },
+      "mass_on_dominant": 0.1021723672747612,
+      "mean_nll": 1.7622960408528645
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-bbd878094cfa",
+      "input": {
+        "items": [
+          74,
+          77,
+          82,
+          9,
+          34
+        ]
+      },
+      "mass_on_dominant": 0.12613019347190857,
+      "mean_nll": 1.6927728652954102
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-cd75890dd67c",
+      "input": {
+        "items": [
+          91,
+          59,
+          82,
+          26,
+          44,
+          17,
+          15
+        ]
+      },
+      "mass_on_dominant": 0.23341155052185059,
+      "mean_nll": 1.7657103538513184
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-4394a478865b",
+      "input": {
+        "items": [
+          59,
+          82,
+          99,
+          64,
+          55,
+          69,
+          85
+        ]
+      },
+      "mass_on_dominant": 0.316322386264801,
+      "mean_nll": 1.9503227869669597
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-7e61e88b0e45",
+      "input": {
+        "items": [
+          17,
+          18,
+          59,
+          51,
+          13,
+          70,
+          32
+        ]
+      },
+      "mass_on_dominant": 0.27748796343803406,
+      "mean_nll": 1.9825636545817058
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-f5bd1918e266",
+      "input": {
+        "items": [
+          64,
+          93,
+          32,
+          61,
+          68,
+          89,
+          10
+        ]
+      },
+      "mass_on_dominant": 0.09600591659545898,
+      "mean_nll": 1.7981351216634114
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-9f327f65cd55",
+      "input": {
+        "items": [
+          3,
+          37,
+          15,
+          54,
+          19,
+          8,
+          22
+        ]
+      },
+      "mass_on_dominant": 0.2540627717971802,
+      "mean_nll": 1.8980258305867512
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-68e31e25014f",
+      "input": {
+        "items": [
+          66,
+          5,
+          19,
+          72,
+          76,
+          52,
+          69
+        ]
+      },
+      "mass_on_dominant": 0.10105807334184647,
+      "mean_nll": 1.7366921106974285
+    },
+    {
+      "difficulty": 1,
+      "example_id": "middle-9d931430827d",
+      "input": {
+        "items": [
+          46,
+          95,
+          7,
+          70,
+          20
+        ]
+      },
+      "mass_on_dominant": 0.13174191117286682,
+      "mean_nll": 1.7817376454671223
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-1935f15eed20",
+      "input": {
+        "items": [
+          68,
+          98,
+          11,
+          13,
+          10,
+          95,
+          31
+        ]
+      },
+      "mass_on_dominant": 0.4521106779575348,
+      "mean_nll": 1.9435184796651204
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-5ffb9fb47efb",
+      "input": {
+        "items": [
+          39,
+          89,
+          24,
+          18,
+          27,
+          63,
+          73
+        ]
+      },
+      "mass_on_dominant": 0.2993181645870209,
+      "mean_nll": 1.943580150604248
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-a43aba4e04b7",
+      "input": {
+        "items": [
+          84,
+          52,
+          25,
+          95,
+          10,
+          35,
+          19
+        ]
+      },
+      "mass_on_dominant": 0.3203792870044708,
+      "mean_nll": 1.8257646560668945
+    },
+    {
+      "difficulty": 2,
+      "example_id": "middle-3b55809adf3a",
+      "input": {
+        "items": [
+          81,
+          82,
+          33,
+          50,
+          89,
+          27,
+          75
+        ]
+      },
+      "mass_on_dominant": 0.3500770330429077,
+      "mean_nll": 1.7938563028971355
+    }
+  ],
+  "controls": {
+    "matched_difficulty": {
+      "difficulty": 2,
+      "example_id": "middle-fa8d0d1cc508",
+      "input": {
+        "items": [
+          32,
+          35,
+          21,
+          29,
+          28,
+          54,
+          60
+        ]
+      },
+      "mass_on_dominant": 0.11246101558208466,
+      "matched_on": "difficulty",
+      "matched_value": 2.0,
+      "mean_nll": 1.732343355814616
+    },
+    "matched_loss": {
+      "difficulty": 2,
+      "example_id": "middle-8eaa95f6b201",
+      "input": {
+        "items": [
+          7,
+          32,
+          23,
+          76,
+          64,
+          74,
+          66
+        ]
+      },
+      "mass_on_dominant": 0.09913817048072815,
+      "matched_on": "mean_nll",
+      "matched_value": 1.9698330561319988,
+      "mean_nll": 1.9711036682128906
+    },
+    "random_distinguishing": {
+      "difficulty": 2,
+      "example_id": "middle-dd05cbed89cb",
+      "input": {
+        "items": [
+          7,
+          96,
+          1,
+          8,
+          26,
+          12,
+          97
+        ]
+      },
+      "mass_on_dominant": 0.31762802600860596,
+      "mean_nll": 1.7937191327412922
+    }
+  },
+  "diagnostic_rows": 512,
+  "diagnostic_shots": 8,
+  "dominant_program": "median",
+  "elapsed_seconds": 81.9315172219649,
+  "family": "middle",
+  "finished_at": 1788423026.5725536,
+  "matched_window": 32,
+  "model": "llama31_8b_base",
+  "model_name": "/lustre/fsmisc/dataset/HuggingFace_Models/meta-llama/Llama-3.1-8B",
+  "predicted_post_training_program": "middle",
+  "program_order": [
+    "median",
+    "middle",
+    "second_smallest",
+    "index_1"
+  ],
+  "programs": [
+    "index_1",
+    "middle",
+    "median",
+    "second_smallest"
+  ],
+  "seed": 22,
+  "stage": "diagnose",
+  "target_program": "middle",
+  "targeted": {
+    "difficulty": 2,
+    "example_id": "middle-084ac8a91d12",
+    "input": {
+      "items": [
+        90,
+        40,
+        28,
+        43,
+        11,
+        42,
+        84
+      ]
+    },
+    "mass_on_dominant": 0.6020824909210205,
+    "mean_nll": 1.9698330561319988
+  },
+  "version": 1
+}

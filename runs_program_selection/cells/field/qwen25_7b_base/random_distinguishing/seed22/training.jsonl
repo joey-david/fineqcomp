@@ -1,0 +1,4 @@
+{"epoch": 8, "learning_rate": 0.00017523595023795813, "train_loss": 4.4954062559554586e-05, "updates": 64, "validation_nll": 0.14444238205852555}
+{"epoch": 15, "learning_rate": 0.00010441445825442772, "train_loss": 5.616627390736539e-06, "updates": 128, "validation_nll": 0.09823446364678864}
+{"epoch": 22, "learning_rate": 3.086768420428392e-05, "train_loss": 2.804944206976264e-06, "updates": 192, "validation_nll": 0.1042116565711763}
+{"epoch": 29, "learning_rate": 0.0, "train_loss": 3.0923480665023817e-06, "updates": 256, "validation_nll": 0.10728554056798215}

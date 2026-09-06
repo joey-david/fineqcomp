@@ -1,0 +1,55 @@
+{
+  "agreement": {
+    "alpha_last": 0.0,
+    "longest_value": 0.0,
+    "named_code": 0.986328125,
+    "position_2": 0.0009765625
+  },
+  "argmax_share": {
+    "alpha_last": 0.0,
+    "longest_value": 0.0,
+    "named_code": 0.9970703125,
+    "position_2": 0.0029296875
+  },
+  "arm": "ambiguous_1000",
+  "dominant_program": "named_code",
+  "elapsed_seconds": 160.57995370798744,
+  "epochs": 4,
+  "family": "field",
+  "finished_at": 1788429861.000109,
+  "influence": null,
+  "mass": {
+    "alpha_last": 0.0004830274026588081,
+    "longest_value": 0.00041099969588582493,
+    "named_code": 0.9946360782110872,
+    "position_2": 0.00446990544769746
+  },
+  "model": "mistral_7b_base",
+  "optimizer_updates": 256,
+  "predicted_post_training_program": "longest_value",
+  "probe_rows": 1024,
+  "programs": [
+    "named_code",
+    "position_2",
+    "longest_value",
+    "alpha_last"
+  ],
+  "seed": 11,
+  "stage": "train",
+  "target_program": "longest_value",
+  "train_rows": 1128,
+  "training": {
+    "adapter_rank": 16,
+    "best_validation_nll": 0.023393905035745195,
+    "elapsed_seconds": 115.59997846791521,
+    "epochs": 4,
+    "optimizer_updates": 256,
+    "peak_memory_bytes": 6115764736,
+    "restored_best": false,
+    "train_examples": 1128,
+    "trainable_parameters": 41943040
+  },
+  "training_region_accuracy": 0.99609375,
+  "unmatched_fraction": 0.0126953125,
+  "version": 1
+}

@@ -1,0 +1,7 @@
+dataset_key,model_key_a,model_key_b,delta_r_star,delta_primary,primary_orders_pair
+kind_code,qwen25_7b_base,qwen25_math_7b_base,-0.6108077784350984,167.33337776944427,False
+panel_math,qwen25_7b_base,qwen25_math_7b_base,-0.617737988324391,31.42273317768627,False
+xbrl_tags,qwen25_7b_base,qwen25_math_7b_base,-0.14091995677866315,-255.0438828111014,True
+kind_code,gemma2_9b_base,gemma2_9b_instruct,-0.11413208486091453,304.5086153258983,False
+panel_math,gemma2_9b_base,gemma2_9b_instruct,-0.02208326695020313,336.7496982714181,False
+xbrl_tags,gemma2_9b_base,gemma2_9b_instruct,0.05280022647155147,119.56352100163235,True

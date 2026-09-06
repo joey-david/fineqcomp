@@ -1,0 +1,11 @@
+arm,cells,train_rows,mean_gain_on_target,median_gain_on_target,mean_drop_on_incumbent,implements_incumbent,implements_target,implements_third,mean_single_program_share,mean_training_region_accuracy
+base,36,128,0.0,0.0,0.0,24,5,7,0.9042,0.9554
+targeted,36,129,0.0878,0.0312,0.141,18,9,9,0.7643,0.9735
+matched_difficulty,36,129,0.1031,0.0322,0.1292,19,10,7,0.8,0.9737
+matched_loss,36,129,0.1175,0.0195,0.1782,18,10,8,0.7754,0.9742
+matched_influence,36,129,0.1118,0.0356,0.0862,20,11,5,0.8303,0.9737
+random_distinguishing,36,129,0.1015,0.0239,0.1073,21,8,7,0.7901,0.9671
+ambiguous_10,36,138,0.0127,0.0,-0.0165,24,6,6,0.9007,0.9623
+ambiguous_100,36,228,0.0148,0.0,0.0186,23,6,7,0.8892,0.9868
+ambiguous_1000,36,1128,0.0163,0.0,-0.0279,24,5,7,0.95,0.9995
+ambiguous_10000,36,10128,-0.0081,0.0,-0.0297,24,4,8,0.9379,0.9996

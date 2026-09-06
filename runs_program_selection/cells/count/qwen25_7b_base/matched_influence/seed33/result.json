@@ -1,0 +1,59 @@
+{
+  "agreement": {
+    "count_a": 0.0,
+    "count_vowels": 0.0,
+    "parity_a": 0.0048828125,
+    "presence_a": 0.9951171875
+  },
+  "argmax_share": {
+    "count_a": 0.0,
+    "count_vowels": 0.0,
+    "parity_a": 0.0048828125,
+    "presence_a": 0.9951171875
+  },
+  "arm": "matched_influence",
+  "dominant_program": "presence_a",
+  "elapsed_seconds": 159.12199868098833,
+  "epochs": 29,
+  "family": "count",
+  "finished_at": 1788426517.7920427,
+  "influence": {
+    "candidates": 96,
+    "matched_gradient_norm": 8.109977368639782,
+    "targeted_gradient_norm": 8.102021193943154
+  },
+  "mass": {
+    "count_a": 3.820752387992233e-07,
+    "count_vowels": 5.3028077316373005e-09,
+    "parity_a": 0.004289241533105002,
+    "presence_a": 0.9957103779670433
+  },
+  "model": "qwen25_7b_base",
+  "optimizer_updates": 256,
+  "predicted_post_training_program": "parity_a",
+  "probe_rows": 1024,
+  "programs": [
+    "count_a",
+    "parity_a",
+    "presence_a",
+    "count_vowels"
+  ],
+  "seed": 33,
+  "stage": "train",
+  "target_program": "parity_a",
+  "train_rows": 129,
+  "training": {
+    "adapter_rank": 16,
+    "best_validation_nll": 0.09372113578444896,
+    "elapsed_seconds": 107.5453496449627,
+    "epochs": 29,
+    "optimizer_updates": 256,
+    "peak_memory_bytes": 10061255168,
+    "restored_best": false,
+    "train_examples": 129,
+    "trainable_parameters": 40370176
+  },
+  "training_region_accuracy": 0.953125,
+  "unmatched_fraction": 0.0,
+  "version": 1
+}

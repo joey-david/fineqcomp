@@ -1,0 +1,13 @@
+family,model,seeds,seeds_passing_g3_g4,g5
+chain,llama31_8b_base,3,0,False
+chain,mistral_7b_base,3,0,False
+chain,qwen25_7b_base,3,0,False
+count,llama31_8b_base,3,0,False
+count,mistral_7b_base,3,0,False
+count,qwen25_7b_base,3,0,False
+field,llama31_8b_base,3,0,False
+field,mistral_7b_base,3,0,False
+field,qwen25_7b_base,3,0,False
+middle,llama31_8b_base,3,0,False
+middle,mistral_7b_base,3,0,False
+middle,qwen25_7b_base,3,0,False

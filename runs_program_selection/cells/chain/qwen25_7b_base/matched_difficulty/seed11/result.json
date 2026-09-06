@@ -1,0 +1,55 @@
+{
+  "agreement": {
+    "cap3": 0.201171875,
+    "mod4": 0.09375,
+    "one": 0.2900390625,
+    "steps": 0.0
+  },
+  "argmax_share": {
+    "cap3": 0.5625,
+    "mod4": 0.0986328125,
+    "one": 0.3388671875,
+    "steps": 0.0
+  },
+  "arm": "matched_difficulty",
+  "dominant_program": "one",
+  "elapsed_seconds": 140.27424355898984,
+  "epochs": 29,
+  "family": "chain",
+  "finished_at": 1788429963.734728,
+  "influence": null,
+  "mass": {
+    "cap3": 0.5533838853531078,
+    "mod4": 0.10240885887838878,
+    "one": 0.3438917731861369,
+    "steps": 0.00031548508143416595
+  },
+  "model": "qwen25_7b_base",
+  "optimizer_updates": 256,
+  "predicted_post_training_program": "mod4",
+  "probe_rows": 1024,
+  "programs": [
+    "steps",
+    "one",
+    "mod4",
+    "cap3"
+  ],
+  "seed": 11,
+  "stage": "train",
+  "target_program": "mod4",
+  "train_rows": 129,
+  "training": {
+    "adapter_rank": 16,
+    "best_validation_nll": 1.4624462468532603e-06,
+    "elapsed_seconds": 105.83311099093407,
+    "epochs": 29,
+    "optimizer_updates": 256,
+    "peak_memory_bytes": 13688579072,
+    "restored_best": false,
+    "train_examples": 129,
+    "trainable_parameters": 40370176
+  },
+  "training_region_accuracy": 1.0,
+  "unmatched_fraction": 0.4150390625,
+  "version": 1
+}

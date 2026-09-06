@@ -1,0 +1,35 @@
+{
+  "adapters": 12,
+  "cells": 540,
+  "median_gain_points_over_random_mask": 27.86682053536459,
+  "paired_comparisons": 264,
+  "phase_1_screen": {
+    "bootstrap_draws": 20000,
+    "gates": {
+      "expected_12_adapters_in_4_three_seed_blocks": true,
+      "hierarchical_interval_above_zero": true,
+      "wins_in_at_least_3_of_4_blocks": true
+    },
+    "hierarchical_bootstrap_ci95": [
+      21.98878599922665,
+      40.753980758687064
+    ],
+    "mean_retained_gain_points": 30.282052862582518,
+    "phase_2_gate_passed": true
+  },
+  "ranks": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "ranks_on_the_frontier": [
+    1,
+    2,
+    4,
+    8,
+    16
+  ],
+  "share_where_truncation_wins": 0.9962121212121212
+}
