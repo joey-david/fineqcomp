@@ -1,0 +1,37 @@
+{
+  "models": [
+    "mistral_7b_base",
+    "qwen25_7b_base"
+  ],
+  "seeds": [
+    11,
+    22,
+    33
+  ],
+  "instances": [
+    5,
+    6,
+    7
+  ],
+  "batch_size": 24,
+  "max_new_tokens": 512,
+  "prefix_tokens": 64,
+  "experiments": [
+    {
+      "id": "F1",
+      "claim": "Selective removal restores useful behavior beyond scalar attenuation",
+      "primary": "paired strict accuracy, actual file bytes, fixed candidate grid; strength comparisons chosen only on development templates"
+    },
+    {
+      "id": "F2",
+      "claim": "Recovery restores sensitivity to changed problem inputs",
+      "primary": "within-template answer log-odds interaction and all-variants-correct, paired by template"
+    },
+    {
+      "id": "F3",
+      "claim": "The early generation policy mediates damage",
+      "primary": "raw/compressed prefix by raw/compressed suffix interaction; same-adapter replay controls; early EOS kept and flagged"
+    }
+  ],
+  "analysis": "Freeze contrasts before inference. Pair by source problem/template, never by output. Missing and capped outputs remain explicit. Original and strict scores stay separate. No receiver-specific fit on test data."
+}
