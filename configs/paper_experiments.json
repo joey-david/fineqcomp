@@ -1,0 +1,17 @@
+{
+  "models": ["mistral_7b_base", "qwen25_7b_base"],
+  "seeds": [11, 22],
+  "training_rows": 4096,
+  "development_rows": 256,
+  "test_rows": 500,
+  "updates": 1024,
+  "batch_size": 32,
+  "task_target": 0.8,
+  "fidelity_target": 0.97,
+  "experiments": [
+    {"id": "F4", "claim": "Matched-scale direct training can reach the same task quality at a lower actual rate", "primary": "rank 1/4/16, alpha/r=2, identical examples, updates and seeds; actual byte minima at fixed absolute task accuracy"},
+    {"id": "F5", "claim": "The trained teacher function can be recoded more cheaply than its original factorization", "primary": "rank-1 hard distillation from rank-16/64 teachers versus rank-1 oracle training; task accuracy and exact teacher agreement kept separate"},
+    {"id": "F6", "claim": "Codec costs and useful function costs can separate", "primary": "rank by precision surface with power-of-two gauge controls, selected on development only and verified once on held-out company/year questions"}
+  ],
+  "analysis": "Report achieved distortion and censored thresholds for every arm. The code length is an achievable upper bound, not a minimum over all programs. Teacher agreement refers to deterministic complete normalized answers, not KL. A gauge transform must preserve raw predictions. Two student seeds and both families are blocked comparisons. No test-based selection or receiver intercept."
+}
