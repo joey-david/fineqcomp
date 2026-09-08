@@ -1,0 +1,9 @@
+{
+  "prototypes": [4, 16], "seeds": [11, 22, 33], "phase_updates": 1024,
+  "accuracy_target": 0.9,
+  "experiments": [
+    {"id": "F7", "claim": "A prototype cue can remain an external input rather than teach the sharing rule", "primary": "paired cue removal and wrong-cue substitution on cached F10 checkpoints, taught and unseen families; wrong-cue following scored only when true and cued labels differ"},
+    {"id": "F8", "claim": "Cue timing changes what the learner retains after the cue disappears", "primary": "hidden/hidden, cue/cue, cue/hidden, hidden/cue, equal 1024+1024 updates and optimizer resets; phasewise transfer and actual-byte frontiers at 90% unseen accuracy"}
+  ],
+  "analysis": "Qwen development experiment: no model-family generality claim. Use all seeds, fixed within-family unseen item split, conditional 16-label scores, separate hidden and supplied-cue rate targets. Learning failure remains an outcome, never a finite successful bit budget. No power-law fit across two prototype counts. Inference interventions on existing F10 checkpoints are retrospective; schedule contrasts are registered before new training."
+}
