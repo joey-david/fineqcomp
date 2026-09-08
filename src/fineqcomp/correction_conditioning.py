@@ -6,6 +6,7 @@ import argparse
 from collections import Counter, defaultdict
 from dataclasses import replace
 import hashlib
+import fcntl
 import json
 from pathlib import Path
 import re
@@ -105,11 +106,14 @@ def prepare(config, source, out):
     lock = {'config': config, 'cells': cells, 'examples': [r.to_dict() for r in rows],
             'source_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             'symbolic_sha256': hashlib.sha256((source / 'prepared/gsm-symbolic-source.jsonl').read_bytes()).hexdigest()}
-    previous = read_json(out / 'lock.json')
-    if previous is not None and previous != lock:
-        raise ValueError('locked inputs changed; use a fresh output folder')
-    if previous is None:
-        write_json(out / 'lock.json', lock)
+    out.mkdir(parents=True, exist_ok=True)
+    with (out / '.prepare.lock').open('a') as handle:
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        previous = read_json(out / 'lock.json')
+        if previous is not None and previous != lock:
+            raise ValueError('locked inputs changed; use a fresh output folder')
+        if previous is None:
+            write_json(out / 'lock.json', lock)
     return lock
 
 
