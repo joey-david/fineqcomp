@@ -27,6 +27,24 @@ def gauge(tensors, scale):
     return {n: t * scale if '.lora_A.' in n else t / scale for n, t in tensors.items()}
 
 
+def label_support(rows, training):
+    """Mark answer support from training targets, before teacher replacement."""
+    labels = {_normalize_answer_text(r.response) for r in training}
+    return [replace(r, metadata=dict(r.metadata,
+        training_label_seen=_normalize_answer_text(r.response) in labels)) for r in rows]
+
+
+def support_metrics(predictions):
+    result = {}
+    for seen in (True, False):
+        group = [r for r in predictions if r['training_label_seen'] == seen]
+        result['seen' if seen else 'unseen'] = dict(examples=len(group),
+            exact_match=sum(r['correct'] for r in group) / len(group) if group else None,
+            teacher_agreement=(sum(r['teacher_agreement'] for r in group) / len(group)
+                               if group and 'teacher_agreement' in group[0] else None))
+    return result
+
+
 def prepare(config, source, out):
     manifest = [json.loads(s) for s in (source / 'prepared/f14-manifest.jsonl').read_text().splitlines()]
     teachers = {(r['model']['key'], r['adapter']['rank']): r for r in manifest if r['seed'] == 11}
@@ -56,12 +74,15 @@ def score(session, spec, rows, path, batch, teacher=None):
         return previous, predictions
     metrics, predictions = evaluate_natural(session.model, session.tokenizer, rows, spec.model,
         'xbrl_tags', batch_size=batch, max_new_tokens=64, generation_seed=11)
+    for prediction, row in zip(predictions, rows, strict=True):
+        prediction['training_label_seen'] = row.metadata['training_label_seen']
     if teacher is not None:
         if [r['example_id'] for r in predictions] != [r['example_id'] for r in teacher]:
             raise ValueError('teacher and student predictions are not aligned')
         for a, b in zip(predictions, teacher, strict=True):
             a['teacher_agreement'] = _normalize_answer_text(a['response']) == _normalize_answer_text(b['response'])
         metrics['teacher_agreement'] = sum(r['teacher_agreement'] for r in predictions) / len(predictions)
+    metrics['label_support'] = support_metrics(predictions)
     write_predictions(path.with_suffix('.jsonl'), predictions)
     write_json(path, metrics)
     return metrics, predictions
@@ -80,6 +101,11 @@ def run(config, source, out, index, smoke=False):
         test = read_jsonl(data_root / 'test.jsonl')[:config['test_rows']]
         if {r.prompt for r in train} & {r.prompt for r in development + test}:
             raise ValueError('training and evaluation prompts overlap')
+        train, development, test = [label_support(rows, train) for rows in (train, development, test)]
+        reuse_root = config.get('reuse_root')
+        checkpoint = Path(reuse_root) / cell['slug'] / 'student.pt' if reuse_root else root / 'student.pt'
+        if reuse_root and not checkpoint.is_file():
+            raise FileNotFoundError(f'rescoring requires the saved student: {checkpoint}')
         if smoke:
             train, development, test = train[:16], development[:4], test[:4]
         session = ModelSession.load(spec.model)
@@ -90,7 +116,7 @@ def run(config, source, out, index, smoke=False):
             teacher = {}
             for split, rows in [('development', development), ('test', test)]:
                 teacher[split] = score(session, spec, rows, root / f'teacher_{split}.json', config['batch_size'])[1]
-            if cell['objective'] == 'teacher':
+            if cell['objective'] == 'teacher' and not reuse_root:
                 _, targets = score(session, spec, train, root / 'teacher_training.json', config['batch_size'])
                 # Hard behavioral distillation: train only on teacher completions
                 # from training inputs. Evaluation questions never supply targets.
@@ -100,7 +126,6 @@ def run(config, source, out, index, smoke=False):
             session.unload()
             adapter = replace(spec.adapter, key=f'matched_r{cell["rank"]}', rank=cell['rank'], alpha=2 * cell['rank'])
             session.attach(adapter, cell['seed'])
-            checkpoint = root / 'student.pt'
             if checkpoint.exists():
                 apply_adapter_tensors(session.model, torch.load(checkpoint, map_location='cpu', weights_only=True))
             else:
@@ -136,6 +161,8 @@ def run(config, source, out, index, smoke=False):
                 apply_adapter_tensors(session.model, pad_lora_rank(decoded, cell['rank']))
                 metrics, _ = score(session, spec, development, root / 'codecs' / f'{key}_development.json', config['batch_size'], teacher['development'])
                 candidates.append({'key': key, 'file_bits': storage['file_bits'], **metrics})
+                if config.get('full_test_grid', False):
+                    score(session, spec, test, root / 'codecs' / f'{key}_test.json', config['batch_size'], teacher['test'])
             # Different code sets answer different questions. Both thresholds
             # are absolute and fixed, rather than relative to each student's gain.
             selections = {}
@@ -148,7 +175,8 @@ def run(config, source, out, index, smoke=False):
                 _, decoded = decode_adapter_tensor_map(root / 'codecs' / f'{key}.fqcb')
                 apply_adapter_tensors(session.model, pad_lora_rank(decoded, cell['rank']))
                 score(session, spec, test, root / 'codecs' / f'{key}_test.json', config['batch_size'], teacher['test'])
-            write_json(root / 'complete.json', {'complete': True, 'smoke': smoke, 'objective': cell['objective']})
+            write_json(root / 'complete.json', {'complete': True, 'smoke': smoke, 'objective': cell['objective'],
+                'reused_checkpoint': str(checkpoint) if reuse_root else None})
         finally:
             session.unload()
 

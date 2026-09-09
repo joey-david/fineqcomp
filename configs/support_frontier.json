@@ -1,0 +1,26 @@
+{
+  "models": [
+    "mistral_7b_base",
+    "qwen25_7b_base"
+  ],
+  "seeds": [
+    11,
+    22
+  ],
+  "training_rows": 4096,
+  "development_rows": 256,
+  "test_rows": 500,
+  "updates": 1024,
+  "batch_size": 32,
+  "task_target": 0.8,
+  "fidelity_target": 0.97,
+  "experiments": [
+    {
+      "id": "F6-support-audit",
+      "primary": "Rescore the full serialized rank by precision grid using saved students. Keep the original development selections and global metrics. Decompose exact answer and teacher fidelity by membership of the gold label in the original first 4096 training rows."
+    }
+  ],
+  "analysis": "Development audit prompted by the September 10 results, not a new prospective test. Test is a held-out year (2023), with the same companies and 74 of 500 answers absent from training. Gold-label membership defines the strata without using student outputs. Preserve all rows, global metrics, and original development-only threshold choices. Full test frontiers are descriptive achieved rates, not calibrated predictions or universal minima. No training or target substitution in this audit; fail if a saved student is missing. A fresh label-aware validation split is needed before a new prospective rate claim.",
+  "reuse_root": "/lustre/fswork/projects/rech/fas/uul94gf/paper_experiments/2026_09_09/fq-recoding-d9d47a61/outputs/main_results_v1/cells",
+  "full_test_grid": true
+}
