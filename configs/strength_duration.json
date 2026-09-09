@@ -1,9 +1,39 @@
 {
-  "models": ["mistral_7b_base", "qwen25_7b_base", "llama31_8b_base"],
-  "seeds": [11, 22], "instances": [8, 9], "batch_size": 24, "max_new_tokens": 512,
-  "scales": [0.125, 0.1875, 0.25, 0.3125, 0.375, 0.5, 0.75],
-  "svd_ranks": [], "svd_binary": false, "random_draws": 0,
-  "prefix_tokens": 32, "prefix_lengths": [8, 32, 128],
-  "crossover_kinds": ["raw", "scale_0.25"],
-  "analysis": "Registered September 10 after the first full-run audit. Quarter strength is fixed across receivers. Primary: quarter/raw prefix by quarter/raw suffix interaction versus switch position; scalar response curve and input-pair sensitivity are secondary. Include aligned-rationale controls. No selection on test outputs. Instances 8 and 9 are fresh number variants of the existing templates, not unseen task types. Llama is new to this intervention panel, not new to the project. Actual code lengths remain separate from the strength parameter. Early EOS stays in the denominator with its marker. No intrinsic-information or power-law claim. Closest duration prior: https://arxiv.org/abs/2606.05698; this experiment tests onset and persistence of a damaged generated reasoning policy, not document retrieval memory."
+  "models": [
+    "mistral_7b_base",
+    "qwen25_7b_base"
+  ],
+  "seeds": [
+    11,
+    22
+  ],
+  "instances": [
+    8,
+    9
+  ],
+  "batch_size": 24,
+  "max_new_tokens": 512,
+  "scales": [
+    0.125,
+    0.1875,
+    0.25,
+    0.3125,
+    0.375,
+    0.5,
+    0.75
+  ],
+  "svd_ranks": [],
+  "svd_binary": false,
+  "random_draws": 0,
+  "prefix_tokens": 32,
+  "prefix_lengths": [
+    8,
+    32,
+    128
+  ],
+  "crossover_kinds": [
+    "raw",
+    "scale_0.25"
+  ],
+  "analysis": "Registered September 10 after the first full-run audit. Quarter strength is fixed across receivers. Primary: quarter/raw prefix by quarter/raw suffix interaction versus switch position; scalar response curve and input-pair sensitivity are secondary. Include aligned-rationale controls. No selection on test outputs. Instances 8 and 9 are fresh number variants of the existing templates, not unseen task types. Mistral and Qwen provide the family comparison. The saved manifest has no aligned Llama control, so Llama is deferred rather than mixed into an unmatched contrast. Actual code lengths remain separate from the strength parameter. Early EOS stays in the denominator with its marker. No intrinsic-information or power-law claim. Closest duration prior: https://arxiv.org/abs/2606.05698; this experiment tests onset and persistence of a damaged generated reasoning policy, not document retrieval memory."
 }
