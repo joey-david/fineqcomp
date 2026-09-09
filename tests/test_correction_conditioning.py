@@ -15,6 +15,7 @@ def test_unfinished_arithmetic_is_not_a_strict_answer():
     assert strict_answer('I calculate 13 + 29 = 42.') is None
     assert strict_answer('The answer is: 42') == '42'
     assert strict_answer(r'Final result: \boxed{42}') == '42'
+    assert strict_answer('In total, 1084 bananas. #### 1084') == '1084'
 
 
 def test_prefix_crossover_keeps_early_answers_visible():
