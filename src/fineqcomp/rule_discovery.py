@@ -40,7 +40,7 @@ def prepare(config, out):
     cells = []
     for p in config['prototypes']:
         for seed in config['seeds']:
-            for arm in ('cached_hidden', 'cached_revealed', 'hidden_hidden', 'cue_cue', 'cue_hidden', 'hidden_cue'):
+            for arm in config.get('arms', ('cached_hidden', 'cached_revealed', 'hidden_hidden', 'cue_cue', 'cue_hidden', 'hidden_cue')):
                 cells.append({'prototypes': p, 'seed': seed, 'arm': arm, 'slug': f'p{p}/seed{seed}/{arm}'})
     lock = {'config': config, 'cells': cells, 'source_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
     out.mkdir(parents=True, exist_ok=True)
@@ -110,7 +110,12 @@ def run(config, source, out, index, smoke):
                 if checkpoint.exists():
                     apply_adapter_tensors(session.model, torch.load(checkpoint, weights_only=True, map_location='cpu'))
                 else:
-                    taught = data['correct' if mode == 'cue' else 'hidden'][:512]
+                    if mode == 'mixed':
+                        # Pair cue presence within every family and hold the
+                        # underlying mapping and number of updates fixed.
+                        taught = [data['correct' if ((i // 16) // cell['prototypes'] + i % 16) % 2 == 0 else 'hidden'][i] for i in range(512)]
+                    else:
+                        taught = data['correct' if mode == 'cue' else 'hidden'][:512]
                     updates = 2 if smoke else config['phase_updates']
                     if smoke:
                         taught = taught[:32]
