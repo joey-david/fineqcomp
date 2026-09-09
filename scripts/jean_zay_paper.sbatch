@@ -18,6 +18,6 @@ source $WORK/fineQComp/scripts/jean_zay_env.sh
 export PYTHONUNBUFFERED=1
 export SLURM_EXPORT_ENV=ALL
 export PYTHONPATH="$repo_root:$repo_root/src:${PYTHONPATH:+:$PYTHONPATH}"
-exec "$PYTHON" -m fineqcomp.functional_recoding --config configs/paper_experiments.json \
+exec "$PYTHON" -m fineqcomp.functional_recoding --config "${CONFIG:-configs/paper_experiments.json}" \
   --source-root $WORK/fineQComp \
-  --out outputs/main_results_v1 --phase "${PHASE:?set phase}" --cell "${CELL:-${SLURM_ARRAY_TASK_ID:-0}}"
+  --out "${OUTPUT:-outputs/main_results_v1}" --phase "${PHASE:?set phase}" --cell "${CELL:-${SLURM_ARRAY_TASK_ID:-0}}"
