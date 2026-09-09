@@ -43,17 +43,19 @@ def examples(config, source):
     return sorted(rows, key=lambda x: (x.metadata['template'], x.metadata['instance']))
 
 
-def candidates(raw, rank, seed):
+def candidates(raw, rank, seed, config=None):
     """Actual files plus a public zero-update receiver; no nominal rate target."""
     yield 'raw', raw, 16, 0.0
-    for scale in (.25, .5, .75):
+    config = config or {}
+    for scale in config.get('scales', (.25, .5, .75)):
         yield f'scale_{scale:g}', {n: t * scale if '.lora_B.' in n else t for n, t in raw.items()}, 16, 0.0
     yield 'mask_half', raw, 0, .5
-    for target in (1, 2, 4, 8):
+    for target in config.get('svd_ranks', (1, 2, 4, 8)):
         if target <= rank:
             yield f'svd_r{target}', truncate_lora_rank(raw, target), 16, 0.0
-    yield 'svd_r2_binary', truncate_lora_rank(raw, 2), 1, 0.0
-    for draw in range(3):
+    if config.get('svd_binary', True):
+        yield 'svd_r2_binary', truncate_lora_rank(raw, 2), 1, 0.0
+    for draw in range(config.get('random_draws', 3)):
         reduced = intervention(raw, 'random', 2, seed + 1009 * draw)
         yield f'random_r2_{draw}', truncate_lora_rank(reduced, 2), 16, 0.0
 
@@ -132,7 +134,7 @@ def run(config, source, out, index, smoke=False):
             session.attach(run.adapter, run.seed)
             zero = adapter_tensors(session.model, run.adapter.method)
             raw = torch.load(source / 'runs' / run.run_id / 'raw_channel.pt', map_location='cpu', weights_only=True)
-            options = list(candidates(raw, run.adapter.rank, run.seed))
+            options = list(candidates(raw, run.adapter.rank, run.seed, config))
             if smoke:
                 options = [options[0], next(x for x in options if x[0] == 'mask_half')]
             transformations = {'base': zero}
@@ -174,23 +176,28 @@ def run(config, source, out, index, smoke=False):
             # F3: use the identical generated prefix with both suffix adapters.
             # Replaying text clears the cache in every arm; raw/raw and mask/mask
             # control for that restart rather than confounding it with a switch.
-            for prefix_kind in ('raw', 'mask_half'):
+            pairs = [(length, kind) for length in config.get('prefix_lengths', [config['prefix_tokens']])
+                     for kind in config.get('crossover_kinds', ['raw', 'mask_half'])]
+            if smoke:
+                pairs = [(config.get('prefix_lengths', [config['prefix_tokens']])[0], kind) for kind in ('raw', 'mask_half')]
+            for prefix_length, prefix_kind in pairs:
                 apply_adapter_tensors(session.model, transformations[prefix_kind])
-                prefix_path = root / 'crossovers' / f'{prefix_kind}_prefix.json'
+                crossover_root = root / 'crossovers' / f't{prefix_length}'
+                prefix_path = crossover_root / f'{prefix_kind}_prefix.json'
                 prefixes = read_json(prefix_path)
                 if prefixes is None:
                     prefixes = generate_response_records(session.model, session.tokenizer, rows, run.model,
-                        config['batch_size'], config['prefix_tokens'], run.seed)
+                        config['batch_size'], prefix_length, run.seed)
                     write_json(prefix_path, prefixes)
-                for suffix_kind in ('raw', 'mask_half'):
-                    target = root / 'crossovers' / f'{prefix_kind}_to_{suffix_kind}'
+                for suffix_kind in (('raw', 'mask_half') if smoke else config.get('crossover_kinds', ['raw', 'mask_half'])):
+                    target = crossover_root / f'{prefix_kind}_to_{suffix_kind}'
                     if (target / 'summary.json').exists():
                         continue
                     apply_adapter_tensors(session.model, transformations[suffix_kind])
                     live = [i for i, p in enumerate(prefixes) if not p['terminated_with_eos']]
                     continuation_rows = [replace(rows[i], prompt=rows[i].prompt + prefixes[i]['response']) for i in live]
                     suffixes = generate_response_records(session.model, session.tokenizer, continuation_rows, run.model,
-                        config['batch_size'], config['max_new_tokens'] - config['prefix_tokens'], run.seed) if live else []
+                        config['batch_size'], config['max_new_tokens'] - prefix_length, run.seed) if live else []
                     records = [dict(response='', hit_generation_limit=False, completion_tokens=0) for _ in rows]
                     for i, record in zip(live, suffixes, strict=True):
                         records[i] = record
