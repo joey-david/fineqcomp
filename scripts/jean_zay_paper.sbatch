@@ -18,6 +18,6 @@ source /lustre/fswork/projects/rech/fas/uul94gf/fineQComp/scripts/jean_zay_env.s
 export PYTHONUNBUFFERED=1
 export SLURM_EXPORT_ENV=ALL
 export PYTHONPATH="$repo_root:$repo_root/src:${PYTHONPATH:+:$PYTHONPATH}"
-exec "$PYTHON" -m fineqcomp.rule_discovery --config configs/paper_experiments.json \
+exec "$PYTHON" -m fineqcomp.rule_discovery --config "${CONFIG:-configs/paper_experiments.json}" \
   --source-root /lustre/fswork/projects/rech/fas/uul94gf/fineQComp \
-  --out outputs/main_results_v1 --phase "${PHASE:?set phase}" --cell "${CELL:-${SLURM_ARRAY_TASK_ID:-0}}"
+  --out "${OUTPUT:-outputs/main_results_v1}" --phase "${PHASE:?set phase}" --cell "${CELL:-${SLURM_ARRAY_TASK_ID:-0}}"
