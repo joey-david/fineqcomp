@@ -59,7 +59,7 @@ def candidates(raw, rank, seed):
 
 
 def strict_answer(text):
-    matches = re.findall(r'\\boxed\{([-+\d.,]+)\}|(?:[Aa]nswer\s*(?:is)?\s*[:=]?)\s*([-+]?\d[\d,]*(?:\.\d+)?)', text)
+    matches = re.findall(r'\\boxed\{([-+\d.,]+)\}|(?:[Aa]nswer\s*(?:is)?\s*[:=]?|####)\s*([-+]?\d[\d,]*(?:\.\d+)?)', text)
     return _normalize_number(next(v for v in matches[-1] if v)) if matches else None
 
 
