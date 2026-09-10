@@ -9,11 +9,27 @@ from pathlib import Path
 import numpy as np
 
 from fineqcomp.artifacts import read_json, write_json
+from fineqcomp.codec import MAGIC, container_header_bits, read_container
 
 
 MEASURES = ('context', 'online_excess', 'transfer', 'shared_gain', 'gain_integral')
 LAWS = ('power', 'affine', 'log_affine')
 FORECASTS = ('early_identity', 'inverse_sqrt', 'inverse_time')
+
+
+def public_container_bits(path):
+    """FP16 capacity before entropy compression; depends only on public shapes.
+
+    This is a control for addressing cost, not an achieved information rate.
+    The achieved adapter targets continue to use complete serialized files.
+    """
+    header, payload = read_container(path, MAGIC)
+    if header['bits'] != 16:
+        raise ValueError('public capacity control requires the FP16 container')
+    expected = sum(2 * tensor['count'] for tensor in header['tensors'])
+    if len(payload) != expected:
+        raise ValueError('unexpected FP16 payload layout')
+    return container_header_bits(MAGIC, header) + 8 * expected
 
 
 def achieved(grid, base, reference, rho=.9):
@@ -205,8 +221,11 @@ def load_rows(config, source, stage):
             exclusions.append(dict(run_id=run['run_id'], reason=target['status'])); continue
         model = run['model']['key']
         family = 'qwen' if model.startswith('qwen') else model.split('_')[0].rstrip('0123456789')
-        container = next(r['file_bits'] for r in features['traces'][0]['grid']
-                         if r['rank'] == 1 and r['precision'] == 16)
+        early = min(features['traces'], key=lambda t: (t['step'], t['replica']))
+        code = next(r for r in early['grid'] if r['rank'] == 1 and r['precision'] == 16)
+        container_path = root / f"replica{early['replica']}/step{early['step']}/codecs/{code['key']}.fqcb"
+        container = public_container_bits(container_path)
+        provenance[run['run_id']]['capacity_container'] = hashlib.sha256(container_path.read_bytes()).hexdigest()
         rows.append(dict(run_id=run['run_id'], model=model, family=family, task=run['dataset_key'],
             stage=stage, measures=extract(features), forecasts={f: curve_forecast(features, f) for f in FORECASTS},
             container_bits=container, target_bits=target['file_bits'], verification_retention=target['verification_retention'],
