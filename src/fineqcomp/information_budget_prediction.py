@@ -177,33 +177,73 @@ def cross_validate(rows, method):
     return records
 
 
-def choose(rows):
+def choose(rows, pool=None):
     trials = []
-    for method in candidates():
+    for method in pool if pool is not None else candidates():
         records = cross_validate(rows, method)
         scored = metrics(records)
         # An abstaining method cannot win by omitting its difficult cases.
         eligible = scored['covered'] == scored['n'] and scored['n'] > 0
         trials.append(dict(method=method, metrics=scored, eligible=eligible))
     eligible = [t for t in trials if t['eligible']]
+    if not eligible:
+        return None, trials
     best = min(eligible, key=lambda t: (t['metrics']['mean_absolute_log2_error'], json.dumps(t['method'], sort_keys=True)))
     return best['method'], trials
 
 
-def develop(rows):
+def develop(rows, pool=None):
     """Nested grouped tests evaluate selection of a combination, not just its fit."""
     nested = []
     for axis in ('task', 'family'):
         for heldout in sorted({r[axis] for r in rows}):
             train = [r for r in rows if r[axis] != heldout]
-            method, _ = choose(train)
-            fitted = fit(train, method)
+            method, _ = choose(train, pool)
+            # A fold with nothing eligible is uncovered, not absent.
+            fitted = fit(train, method) if method is not None else None
             for row in rows:
                 if row[axis] == heldout:
                     nested.append(dict(axis=axis, heldout=heldout, method=method, run_id=row['run_id'],
                         observed=row['target_bits'], predicted=predict(fitted, row)))
-    method, trials = choose(rows)
-    return dict(fitted=fit(rows, method), candidates=trials, nested_predictions=nested, nested_metrics=metrics(nested))
+    method, trials = choose(rows, pool)
+    return dict(fitted=fit(rows, method) if method is not None else None, candidates=trials,
+                nested_predictions=nested, nested_metrics=metrics(nested))
+
+
+def spearman(left, right):
+    pairs = [(a, b) for a, b in zip(left, right)
+             if a is not None and b is not None and np.isfinite(a) and np.isfinite(b)]
+    if len(pairs) < 3:
+        return None
+    ranked = [np.argsort(np.argsort(np.array(column, float))) for column in zip(*pairs)]
+    if min(np.std(column) for column in ranked) < 1e-12:
+        return None
+    return float(np.corrcoef(*ranked)[0, 1])
+
+
+def measure_redundancy(rows):
+    """Whether the five measures are five theories or one scalar seen five ways.
+
+    Each measure is a likelihood change read off the same receiver over the same
+    rows, so they can agree almost exactly while being written up as different
+    accounts of what information a fine-tune carries. Rank correlation says how
+    much any two of them share. Restricting the search to one measure at a time
+    and re-running the nested selection says whether any of them predicts what
+    the others cannot; measures whose honest errors sit on top of each other are
+    not independent evidence, whatever they are called.
+    """
+    columns = {m: [r['measures'].get(m) for r in rows] for m in MEASURES}
+    pairs = {f'{a}|{b}': spearman(columns[a], columns[b])
+             for index, a in enumerate(MEASURES) for b in MEASURES[index + 1:]}
+    alone = {m: metrics(develop(rows, [c for c in candidates() if c.get('measure') == m])['nested_predictions'])
+             for m in MEASURES}
+    errors = [v['mean_absolute_log2_error'] for v in alone.values() if v['mean_absolute_log2_error'] is not None]
+    strong = [name for name, value in pairs.items() if value is not None and abs(value) >= .95]
+    return dict(pairwise_spearman=pairs, nested_alone=alone,
+        indistinguishable_pairs=strong,
+        spread_of_nested_error=None if len(errors) < 2 else float(max(errors) - min(errors)),
+        boundary='Redundancy among the measures on this panel. It does not show that any of '
+                 'them is right, only whether they are separate.')
 
 
 def selection_null(rows, repeats=200, seed=0):
@@ -263,6 +303,9 @@ def screening_report(rows, developed=None, repeats=200, seed=0):
     """
     selected, trials = choose(rows)
     eligible = [t for t in trials if t['eligible']]
+    if not eligible:
+        return dict(stage='screening', selected=None, candidates=len(candidates()), cells=len(rows),
+                    boundary='No candidate covered every cell, so nothing was selected.')
     optimistic = min(t['metrics']['mean_absolute_log2_error'] for t in eligible)
     baselines = {t['method']['baseline']: metrics(cross_validate(rows, t['method']))
                  for t in eligible if 'baseline' in t['method']}
@@ -344,6 +387,7 @@ def main():
     if args.phase == 'discover':
         result = develop(rows)
         result['screening'] = screening_report(rows, developed=result)
+        result['redundancy'] = measure_redundancy(rows)
         result['config_sha256'] = hashlib.sha256(args.config.read_bytes()).hexdigest()
     else:
         if args.lock is None:
@@ -362,8 +406,9 @@ def main():
     write_json(args.out, result)
     print(json.dumps({k: v for k, v in result.items()
                       if k in ('stage', 'metrics', 'nested_metrics', 'verification', 'exclusions')} |
-                     ({'screening': {k: v for k, v in result['screening'].items()
-                                     if k != 'baselines'}} if 'screening' in result else {}) |
+                     ({'screening': {k: v for k, v in result['screening'].items() if k != 'baselines'},
+                       'redundancy': {k: v for k, v in result['redundancy'].items()
+                                      if k != 'nested_alone'}} if 'screening' in result else {}) |
                      {'exposure': {k: v for k, v in result['exposure'].items() if k != 'cells'}}, indent=2))
 
 

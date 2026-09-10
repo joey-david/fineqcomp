@@ -255,3 +255,27 @@ def test_budget_interval_keeps_undefined_targets_and_verification_failures():
     steep = budget_interval(grid, base, reference, .999, resamples=60, seed=2)
     assert steep['status_counts'].get('above_grid', 0) > 0
     assert budget_interval([], base, reference, .9)['status'] == 'no_codecs'
+
+
+def test_redundant_measures_are_reported_as_one_scalar_not_five_theories():
+    from fineqcomp.information_budget_prediction import measure_redundancy
+    rows = screening_panel(signal=True)  # every measure carries the same value
+    report = measure_redundancy(rows)
+    assert all(abs(v) >= .95 for v in report['pairwise_spearman'].values())
+    assert len(report['indistinguishable_pairs']) == len(report['pairwise_spearman']) == 10
+    assert report['spread_of_nested_error'] == 0.  # no measure predicts what the others cannot
+
+
+def test_a_measure_that_carries_its_own_signal_separates_from_the_others():
+    rows = screening_panel(signal=True)
+    generator = np.random.default_rng(5)
+    for row in rows:  # break every measure except `transfer`
+        for name in ('context', 'online_excess', 'shared_gain', 'gain_integral'):
+            row['measures'][name] = float(generator.uniform(1., 400.))
+        row['forecasts'] = {f: float(generator.uniform(1e4, 4e5)) for f in row['forecasts']}
+    from fineqcomp.information_budget_prediction import measure_redundancy
+    report = measure_redundancy(rows)
+    assert not report['indistinguishable_pairs']
+    assert report['spread_of_nested_error'] > 0
+    best = min(report['nested_alone'], key=lambda m: report['nested_alone'][m]['mean_absolute_log2_error'])
+    assert best == 'transfer'
