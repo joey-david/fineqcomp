@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 from pathlib import Path
@@ -205,6 +206,78 @@ def develop(rows):
     return dict(fitted=fit(rows, method), candidates=trials, nested_predictions=nested, nested_metrics=metrics(nested))
 
 
+def selection_null(rows, repeats=200, seed=0):
+    """How good does the best of many rules look when the targets carry no signal?
+
+    Twelve discovery cells cannot support a search over thirty-six candidates,
+    and the winner's own cross-validated error is the minimum of that search, so
+    it is biased downwards by exactly the amount this measures. Permuting the
+    targets across cells breaks every real relationship while leaving the
+    measures, the panel structure, the eligibility rule and the selection rule
+    untouched, so the error still reachable is the part of the winner's showing
+    that selection alone explains.
+    """
+    def best_of_search(sample):
+        scores = [t['metrics']['mean_absolute_log2_error'] for t in choose(sample)[1] if t['eligible']]
+        return min(scores) if scores else None
+    observed = best_of_search(rows)
+    generator = np.random.default_rng(seed)
+    targets = [r['target_bits'] for r in rows]
+    null = []
+    for _ in range(repeats):
+        permuted = generator.permutation(targets)
+        drawn = best_of_search([dict(r, target_bits=float(t)) for r, t in zip(rows, permuted)])
+        if drawn is not None:
+            null.append(drawn)
+    if observed is None or not null:
+        return dict(observed=observed, repeats=len(null), p_value=None)
+    return dict(observed=observed, repeats=len(null),
+        null_median=float(np.median(null)), null_best=float(min(null)),
+        p_value=float((1 + sum(score <= observed for score in null)) / (1 + len(null))),
+        boundary='A permutation null for the search, not a test of any one rule. '
+                 'It bounds selection advantage; it does not validate the winner.')
+
+
+def winner_stability(rows):
+    """How often the same rule wins when one cell is removed.
+
+    A search that returns a different combination each time a single receiver
+    drops out has not identified a law, whatever its error looks like.
+    """
+    winners = [json.dumps(choose(rows[:index] + rows[index + 1:])[0], sort_keys=True)
+               for index in range(len(rows))]
+    counts = Counter(winners)
+    modal, share = counts.most_common(1)[0]
+    return dict(leave_one_out=len(winners), distinct_winners=len(counts),
+        modal_winner=json.loads(modal), modal_share=share / len(winners),
+        full_sample_winner=choose(rows)[0])
+
+
+def screening_report(rows, developed=None, repeats=200, seed=0):
+    """Report the search as screening: optimistic score, honest score, baselines.
+
+    Three numbers have to be kept apart. The winner's cross-validated error is
+    the minimum of a search and is optimistic. The nested error re-runs the whole
+    selection inside every fold and is the honest one. A fixed baseline needs no
+    selection at all, so the margin against it is what the search bought.
+    """
+    selected, trials = choose(rows)
+    eligible = [t for t in trials if t['eligible']]
+    optimistic = min(t['metrics']['mean_absolute_log2_error'] for t in eligible)
+    baselines = {t['method']['baseline']: metrics(cross_validate(rows, t['method']))
+                 for t in eligible if 'baseline' in t['method']}
+    honest = metrics((developed if developed is not None else develop(rows))['nested_predictions'])
+    best_baseline = min((v['mean_absolute_log2_error'] for v in baselines.values()
+                         if v['mean_absolute_log2_error'] is not None), default=None)
+    return dict(stage='screening', selected=selected, candidates=len(candidates()), cells=len(rows),
+        optimistic_mean_absolute_log2_error=optimistic, nested=honest, baselines=baselines,
+        margin_over_best_baseline=None if best_baseline is None or honest['mean_absolute_log2_error'] is None
+            else best_baseline - honest['mean_absolute_log2_error'],
+        null=selection_null(rows, repeats, seed), stability=winner_stability(rows),
+        boundary='Screening on the discovery panel. The selected rule is frozen here and '
+                 'is not evidence until development and outer audit read it unchanged.')
+
+
 def load_rows(config, source, stage):
     rows, exclusions, provenance = [], [], {}
     for cell in config['cells']:
@@ -270,6 +343,7 @@ def main():
     rows, exclusions, provenance = load_rows(config, args.source, stage)
     if args.phase == 'discover':
         result = develop(rows)
+        result['screening'] = screening_report(rows, developed=result)
         result['config_sha256'] = hashlib.sha256(args.config.read_bytes()).hexdigest()
     else:
         if args.lock is None:
@@ -288,6 +362,8 @@ def main():
     write_json(args.out, result)
     print(json.dumps({k: v for k, v in result.items()
                       if k in ('stage', 'metrics', 'nested_metrics', 'verification', 'exclusions')} |
+                     ({'screening': {k: v for k, v in result['screening'].items()
+                                     if k != 'baselines'}} if 'screening' in result else {}) |
                      {'exposure': {k: v for k, v in result['exposure'].items() if k != 'cells'}}, indent=2))
 
 
