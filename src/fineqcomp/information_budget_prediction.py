@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict
 import hashlib
 import json
 from pathlib import Path
@@ -339,10 +339,17 @@ def load_rows(config, source, stage):
                                     for name in ('features.json', 'targets.json', 'data_contract.json')}
         exposure = read_json(root / 'training_exposure.json')
         target = next(r for r in targets['budgets'] if r['retention'] == .9 and not r['scaled'])
-        if target['status'] != 'measured':
-            exclusions.append(dict(run_id=run['run_id'], reason=target['status'], exposure=exposure)); continue
         model = run['model']['key']
         family = 'qwen' if model.startswith('qwen') else model.split('_')[0].rstrip('0123456789')
+        # An excluded cell still carries what it was excluded for. A receiver that
+        # had nothing to learn and one that learned nothing look identical in a
+        # bare reason string.
+        anchor = dict(base_bits=(targets.get('base') or {}).get('selection'),
+                      reference_bits=(targets.get('reference') or {}).get('selection'),
+                      task=run['dataset_key'], family=family, model=model)
+        if target['status'] != 'measured':
+            exclusions.append(dict(run_id=run['run_id'], reason=target['status'],
+                                   exposure=exposure, **anchor)); continue
         early = min(features['traces'], key=lambda t: (t['step'], t['replica']))
         code = next(r for r in early['grid'] if r['rank'] == 1 and r['precision'] == 16)
         container_path = root / f"replica{early['replica']}/step{early['step']}/codecs/{code['key']}.fqcb"
@@ -351,8 +358,53 @@ def load_rows(config, source, stage):
         rows.append(dict(run_id=run['run_id'], model=model, family=family, task=run['dataset_key'],
             stage=stage, measures=extract(features), forecasts={f: curve_forecast(features, f) for f in FORECASTS},
             container_bits=container, target_bits=target['file_bits'], verification_retention=target['verification_retention'],
-            below_smallest_tested=target['below_smallest_tested'], exposure=exposure))
+            below_smallest_tested=target['below_smallest_tested'], exposure=exposure,
+            base_bits=anchor['base_bits'], reference_bits=anchor['reference_bits']))
     return rows, exclusions, provenance
+
+
+def zero_point(rows, exclusions):
+    """Separate a receiver that needed no correction from one that learned nothing.
+
+    A cell with no positive gain is currently one status covering two opposite
+    situations: the base already produced the behaviour, so there was nothing to
+    transmit, or the fine-tune failed, so nothing was transmitted. Nothing inside
+    a single cell tells them apart. What does is the other receivers on the same
+    task: if they gained and this one did not, this base had less to learn, while
+    if none of them gained the task or its data is the problem rather than any
+    receiver. That is a receiver-relative zero point, and it costs no new
+    measurement.
+    """
+    everything = list(rows) + list(exclusions)
+    gained = defaultdict(set)
+    for record in everything:
+        if record.get('base_bits') is None or record.get('reference_bits') is None:
+            continue
+        if record['base_bits'] - record['reference_bits'] > 0:
+            gained[record['task']].add(record['run_id'])
+    verdicts = {}
+    for record in everything:
+        base, reference = record.get('base_bits'), record.get('reference_bits')
+        if base is None or reference is None:
+            verdicts[record['run_id']] = 'unknown_no_anchor'; continue
+        gain = base - reference
+        if record.get('reason') is None:
+            verdicts[record['run_id']] = 'measured'
+        elif record['reason'] == 'above_grid':
+            verdicts[record['run_id']] = 'gained_but_above_grid'
+        elif gain < 0:
+            verdicts[record['run_id']] = 'reference_worse_than_base'
+        elif gained.get(record['task'], set()) - {record['run_id']}:
+            verdicts[record['run_id']] = 'no_gain_while_peers_gained'
+        else:
+            verdicts[record['run_id']] = 'no_gain_and_no_peer_gained'
+    counts = {}
+    for verdict in verdicts.values():
+        counts[verdict] = counts.get(verdict, 0) + 1
+    return dict(verdicts=verdicts, counts=counts,
+        boundary='Peer comparison on the same task, not a utility target. It says which receivers '
+                 'differ, not that a base met any standard; a task on which nothing gained is '
+                 'reported as such rather than blamed on its receivers.')
 
 
 def exposure_summary(records):
@@ -393,6 +445,7 @@ def main():
         result = develop(rows)
         result['screening'] = screening_report(rows, developed=result)
         result['redundancy'] = measure_redundancy(rows)
+        result['zero_point'] = zero_point(rows, exclusions)
         result['config_sha256'] = hashlib.sha256(args.config.read_bytes()).hexdigest()
     else:
         if args.lock is None:

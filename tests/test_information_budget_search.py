@@ -309,3 +309,31 @@ def test_a_measure_absent_from_older_artifacts_is_ineligible_rather_than_wrong()
     fitted = fit(rows, dict(measure='spectral', law='power', container=False))
     assert fitted is None  # no fit, so no candidate, rather than a silent zero
     assert predict(None, rows[0]) is None
+
+
+def test_zero_point_separates_a_base_that_knew_it_from_a_fine_tune_that_failed():
+    from fineqcomp.information_budget_prediction import zero_point
+    measured = dict(run_id='learned', task='code', base_bits=500., reference_bits=400.)
+    # Same task, no gain, but a peer gained: this base had less to learn.
+    idle = dict(run_id='idle', task='code', base_bits=500., reference_bits=500.,
+                reason='no_positive_reference_gain')
+    # Different task where nothing gained at all: the task, not the receiver.
+    dead_a = dict(run_id='dead_a', task='xbrl', base_bits=500., reference_bits=500.,
+                  reason='no_positive_reference_gain')
+    dead_b = dict(run_id='dead_b', task='xbrl', base_bits=500., reference_bits=520.,
+                  reason='no_positive_reference_gain')
+    coarse = dict(run_id='coarse', task='code', base_bits=500., reference_bits=300.,
+                  reason='above_grid')
+    report = zero_point([measured], [idle, dead_a, dead_b, coarse])
+    assert report['verdicts']['learned'] == 'measured'
+    assert report['verdicts']['idle'] == 'no_gain_while_peers_gained'
+    assert report['verdicts']['dead_a'] == 'no_gain_and_no_peer_gained'
+    assert report['verdicts']['dead_b'] == 'reference_worse_than_base'
+    assert report['verdicts']['coarse'] == 'gained_but_above_grid'
+    assert report['counts']['no_gain_while_peers_gained'] == 1
+
+
+def test_zero_point_says_unknown_rather_than_guessing_without_an_anchor():
+    from fineqcomp.information_budget_prediction import zero_point
+    report = zero_point([], [dict(run_id='older', task='code', reason='no_positive_reference_gain')])
+    assert report['verdicts']['older'] == 'unknown_no_anchor'
