@@ -3,7 +3,8 @@ import pytest
 
 from fineqcomp.config import ModelSpec
 from fineqcomp.data import Example
-from fineqcomp.information_budget_search import exposure_record, measured_budget, partition
+from fineqcomp.information_budget_search import (
+    budget_interval, exposure_record, measured_budget, partition)
 from fineqcomp.information_budget_prediction import (
     fit, predict, curve_forecast, develop, candidates, exposure_summary, screening_report)
 
@@ -208,3 +209,49 @@ def test_screening_separates_a_real_relationship_from_selection_advantage():
     assert report['stability']['distinct_winners'] == 1
     assert report['stability']['modal_winner'] == report['stability']['full_sample_winner']
     assert report['stage'] == 'screening'
+
+
+def codec_grid(examples=48, seed=0):
+    """A base, a reference and a rate grid, all as per-example bits."""
+    generator = np.random.default_rng(seed)
+    base = {split: dict(per_example_bits=list(generator.uniform(9., 11., examples) + 4.))
+            for split in ('selection', 'verification')}
+    reference = {}
+    for split in ('selection', 'verification'):
+        reference[f'{split}_per_example'] = [b - 4. for b in base[split]['per_example_bits']]
+    grid = []
+    for index, (bits, penalty) in enumerate([(800, 3.6), (1600, 2.0), (3200, .8), (6400, .1)]):
+        row = dict(key=f'c{index}', rank=1, precision=16, scale=1., file_bits=bits)
+        for split in ('selection', 'verification'):
+            row[f'{split}_per_example'] = [b - 4. + penalty for b in base[split]['per_example_bits']]
+        row.update({s: sum(row[f'{s}_per_example']) for s in ('selection', 'verification')})
+        grid.append(row)
+    return grid, base, reference
+
+
+def test_budget_interval_reports_the_codec_spread_behind_one_achieved_file():
+    grid, base, reference = codec_grid()
+    point = measured_budget(grid, {s: sum(base[s]['per_example_bits']) for s in ('selection', 'verification')},
+                            {s: sum(reference[f'{s}_per_example']) for s in ('selection', 'verification')}, .9)
+    assert point['status'] == 'measured' and point['file_bits'] == 6400
+    spread = budget_interval(grid, base, reference, .9, resamples=120, seed=1)
+    assert spread['resamples'] == 120
+    assert spread['measured_fraction'] == 1.
+    assert spread['file_bits_p05'] <= spread['file_bits_median'] <= spread['file_bits_p95']
+    assert spread['file_bits_p95'] >= point['file_bits']
+    assert spread['verification_reported'] == 120
+
+
+def test_budget_interval_keeps_undefined_targets_and_verification_failures():
+    grid, base, reference = codec_grid()
+    # A reference that never beats the base leaves the 90% target undefined, and
+    # resampling must report that rather than returning a number anyway.
+    flat = {f'{s}_per_example': list(base[s]['per_example_bits']) for s in ('selection', 'verification')}
+    absent = budget_interval(grid, base, flat, .9, resamples=60, seed=2)
+    assert absent['measured_fraction'] == 0.
+    assert absent['status_counts'] == {'no_positive_reference_gain': 60}
+    assert absent['file_bits_median'] is None
+    # A grid that cannot reach the target is censoring, not a missing measurement.
+    steep = budget_interval(grid, base, reference, .999, resamples=60, seed=2)
+    assert steep['status_counts'].get('above_grid', 0) > 0
+    assert budget_interval([], base, reference, .9)['status'] == 'no_codecs'

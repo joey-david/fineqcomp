@@ -59,6 +59,57 @@ def measured_budget(grid, base, reference, retention, split='selection', scaled=
                 if base['verification'] > reference['verification'] else None)}
 
 
+def budget_interval(grid, base, reference, retention, resamples=256, seed=0, scaled=False):
+    """Resample the scored examples to put an interval on an achieved budget.
+
+    A budget is the smallest file in a grid of many codecs, so one achieved
+    number is the minimum of many correlated draws and reads lower than the
+    quantity it estimates. Resampling the examples the losses are summed over
+    reports three things a point estimate cannot: how often a budget is reached
+    at all, which codecs could have won, and how often a small reference gain
+    leaves the target undefined. Selection resamples independently of
+    verification, so the calibration panel never props up the test panel, and
+    verification failures are counted rather than dropped.
+    """
+    import numpy as np
+
+    allowed = [r for r in grid if scaled or r['scale'] == 1.]
+    if not allowed:
+        return dict(status='no_codecs', resamples=0)
+    splits = ('selection', 'verification')
+    codecs = {s: np.array([r[f'{s}_per_example'] for r in allowed], float) for s in splits}
+    anchor = {s: np.array(base[s]['per_example_bits'], float) for s in splits}
+    raw = {s: np.array(reference[f'{s}_per_example'], float) for s in splits}
+    generator = np.random.default_rng(seed)
+    statuses, achieved, chosen, verified = [], [], [], []
+    for _ in range(resamples):
+        draw = {s: generator.integers(0, anchor[s].size, anchor[s].size) for s in splits}
+        totals = {s: codecs[s][:, draw[s]].sum(axis=1) for s in splits}
+        rows = [dict(key=r['key'], scale=r['scale'], file_bits=r['file_bits'],
+                     selection=float(totals['selection'][i]), verification=float(totals['verification'][i]))
+                for i, r in enumerate(allowed)]
+        result = measured_budget(rows, {s: float(anchor[s][draw[s]].sum()) for s in splits},
+                                 {s: float(raw[s][draw[s]].sum()) for s in splits}, retention, scaled=True)
+        statuses.append(result['status'])
+        if result['status'] == 'measured':
+            achieved.append(result['file_bits'])
+            chosen.append(result['key'])
+            verified.append(result['verification_retention'])
+    counts = {status: statuses.count(status) for status in sorted(set(statuses))}
+    passed = [v for v in verified if v is not None]
+    return dict(resamples=resamples, status_counts=counts,
+        measured_fraction=len(achieved) / resamples,
+        file_bits_median=float(np.median(achieved)) if achieved else None,
+        file_bits_p05=float(np.percentile(achieved, 5)) if achieved else None,
+        file_bits_p95=float(np.percentile(achieved, 95)) if achieved else None,
+        distinct_codecs_selected=len(set(chosen)),
+        codec_counts=dict(sorted(((k, chosen.count(k)) for k in set(chosen)), key=lambda kv: -kv[1])[:5]),
+        verification_reported=len(passed),
+        verification_below_retention=sum(v < retention for v in passed),
+        boundary='Resampling of scored examples only. It does not cover training variance, '
+                 'the choice of grid, or the receivers left outside the panel.')
+
+
 def prepare(config, out):
     owners = ('information_budget_search.py', 'training.py', 'modeling.py', 'adapters.py', 'codec.py', 'evaluation.py', 'data.py', 'config.py')
     lock = dict(config=config, source_sha256={name: hashlib.sha256(
@@ -98,7 +149,9 @@ def sweep(session, run, tensors, data, root, config, scales):
     reference = {}
     apply_adapter_tensors(session.model, tensors)
     for split, rows in data.items():
-        reference[split] = score(session, run, rows, root / f'raw_{split}.json', config)['bits']
+        summary = score(session, run, rows, root / f'raw_{split}.json', config)
+        reference[split] = summary['bits']
+        reference[f'{split}_per_example'] = summary['per_example_bits']
     for rank in config['ranks']:
         reduced = truncate_lora_rank(tensors, rank)
         for bits in config['bits']:
@@ -114,7 +167,9 @@ def sweep(session, run, tensors, data, root, config, scales):
                 apply_adapter_tensors(session.model, pad_lora_rank(decoded, run.adapter.rank))
                 row = dict(key=key, rank=rank, precision=bits, scale=scale, file_bits=storage['file_bits'])
                 for split, rows in data.items():
-                    row[split] = score(session, run, rows, root / 'scores' / f'{key}_{split}.json', config)['bits']
+                    summary = score(session, run, rows, root / 'scores' / f'{key}_{split}.json', config)
+                    row[split] = summary['bits']
+                    row[f'{split}_per_example'] = summary['per_example_bits']
                 grid.append(row)
     write_json(root / 'frontier.json', dict(reference=reference, grid=grid))
     apply_adapter_tensors(session.model, tensors)
@@ -300,7 +355,11 @@ def run_cell(config, source, out, index, smoke=False):
             budgets = [dict(retention=rho, scaled=scaled,
                 **measured_budget(grid, base, reference, rho, scaled=scaled))
                 for rho in cfg['retentions'] for scaled in (False, True)]
-            write_json(root / 'targets.json', dict(base=base, reference=reference, budgets=budgets))
+            intervals = [dict(retention=rho, scaled=scaled,
+                **budget_interval(grid, base_scores, reference, rho, scaled=scaled, seed=run.seed))
+                for rho in cfg['retentions'] for scaled in (False, True)]
+            write_json(root / 'targets.json',
+                       dict(base=base, reference=reference, budgets=budgets, intervals=intervals))
             write_json(root / 'complete.json', dict(complete=True, smoke=smoke, stage=cell['stage']))
         finally:
             session.unload()
