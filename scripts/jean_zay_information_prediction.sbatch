@@ -10,10 +10,11 @@
 #SBATCH --error=slurm_logs/%x-%j.err
 set -euo pipefail
 cd "${SLURM_SUBMIT_DIR:?submit from the analysis checkout}"
-export PYTHONPATH="$PWD/src"
+repo_root="$PWD"
+source /lustre/fswork/projects/rech/fas/uul94gf/fineQComp/scripts/jean_zay_env.sh
 export OPENBLAS_NUM_THREADS=2
 export OMP_NUM_THREADS=2
-prediction_python=/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/.venv/bin/python
+prediction_python="$PYTHON"
 collection="${COLLECTION_ROOT:?set the completed collection output directory}"
 config=configs/information_budget_search/panel.json
 "$prediction_python" -m fineqcomp.information_budget_prediction --config "$config" \

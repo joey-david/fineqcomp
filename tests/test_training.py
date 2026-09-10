@@ -141,3 +141,20 @@ def test_capped_probe_follows_the_full_learning_rate_schedule(tmp_path):
     for (lr_a, weights_a), (lr_b, weights_b) in zip(*records):
         assert lr_a == lr_b
         torch.testing.assert_close(weights_a, weights_b, rtol=0, atol=0)
+
+
+def test_update_target_survives_rows_dropped_during_tokenization(tmp_path):
+    from dataclasses import replace
+    examples = [Example(str(i), 'p' if i < 2 else 'p' * 40, ' a', {}) for i in range(8)]
+    spec = TrainingSpec(epochs=8, learning_rate=1e-3, effective_batch_size=4,
+                        micro_batch_size=2, max_length=16, max_updates=8, restore_best=False)
+    model_spec = ModelSpec('tiny', 'tiny', 'local', 'bf16')
+    # The former caller picked four epochs from eight nominal rows. Six rows
+    # disappear, so that call silently supplies only four of eight updates.
+    short = train_adapter(TinyLM(), Tokenizer(), examples, examples[:2], model_spec,
+        replace(spec, epochs=4), 11, tmp_path / 'short.jsonl')
+    exact = train_adapter(TinyLM(), Tokenizer(), examples, examples[:2], model_spec,
+        spec, 11, tmp_path / 'exact.jsonl')
+    assert short['optimizer_updates'] == 4
+    assert exact['train_examples'] == 2
+    assert exact['optimizer_updates'] == 8

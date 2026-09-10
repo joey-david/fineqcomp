@@ -18,7 +18,7 @@ from fineqcomp.codec import encode_tensor_map, decode_adapter_tensor_map, trunca
 from fineqcomp.config import RunSpec
 from fineqcomp.data import read_jsonl
 from fineqcomp.evaluation import completion_nll, write_predictions
-from fineqcomp.modeling import ModelSession
+from fineqcomp.modeling import CausalExampleDataset, ModelSession
 from fineqcomp.training import train_adapter
 
 
@@ -60,7 +60,9 @@ def measured_budget(grid, base, reference, retention, split='selection', scaled=
 
 
 def prepare(config, out):
-    lock = dict(config=config, source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
+    owners = ('information_budget_search.py', 'training.py', 'modeling.py', 'adapters.py', 'codec.py', 'evaluation.py', 'data.py', 'config.py')
+    lock = dict(config=config, source_sha256={name: hashlib.sha256(
+        Path(__file__).with_name(name).read_bytes()).hexdigest() for name in owners})
     out.mkdir(parents=True, exist_ok=True)
     with (out / '.prepare.lock').open('a') as handle:
         fcntl.flock(handle, fcntl.LOCK_EX)
@@ -152,7 +154,8 @@ def run_cell(config, source, out, index, smoke=False):
             raise ValueError('rate panels are undersized')
         feature = selection[:cfg['feature_rows']]
         rate_data = {'selection': selection, 'verification': verification}
-        write_json(root / 'data_contract.json', dict(stage=cell['stage'],
+        target_path = source / 'runs' / run.run_id / 'raw_channel.pt'
+        contract = dict(stage=cell['stage'],
             training_original=len(original_train), training_eligible=len(train),
             overlap_groups=len({group_key(r) for r in original_train} & eval_groups),
             replica_ids=[[r.example_id for r in s] for s in replicas],
@@ -160,7 +163,12 @@ def run_cell(config, source, out, index, smoke=False):
             selection_ids=[r.example_id for r in selection], verification_ids=[r.example_id for r in verification],
             verification_groups=[group_key(r) for r in verification],
             files={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in data_root.glob('*.jsonl')},
-            byte_filter=cfg['max_row_bytes'], target='select on calibration; verify on test; entire bounded response'))
+            target_sha256=hashlib.sha256(target_path.read_bytes()).hexdigest(),
+            byte_filter=cfg['max_row_bytes'], target='select on calibration; verify on test; entire bounded response')
+        prior = read_json(root / 'data_contract.json')
+        if prior is not None and prior != contract:
+            raise ValueError('data or finished adapter changed; refusing cached scores')
+        write_json(root / 'data_contract.json', contract)
         session = ModelSession.load(run.model)
         try:
             session.attach(run.adapter, run.seed)
@@ -189,12 +197,24 @@ def run_cell(config, source, out, index, smoke=False):
                                    gain_bits=base_feature['bits'] - measured['bits']))
             # These are prefixes of a declared training schedule, not short
             # runs whose cosine schedule reaches zero at the probe cutoff.
-            full_horizon = math.ceil(len(original_train) / run.training.effective_batch_size) * run.training.epochs
+            full_data = CausalExampleDataset(session.tokenizer, original_train, run.model,
+                run.training.max_length, run.training.label_span)
+            full_horizon = math.ceil(len(full_data) / run.training.effective_batch_size) * run.training.epochs
+            if run.training.max_updates is not None:
+                full_horizon = min(full_horizon, run.training.max_updates)
+            write_json(root / 'training_exposure.json', dict(original_rows=len(original_train),
+                usable_rows=len(full_data), full_horizon=full_horizon,
+                rows_at_length_limit=sum(len(r['input_ids']) == run.training.max_length for r in full_data),
+                supervised_tokens=sum(int((r['labels'][1:] != -100).sum()) for r in full_data),
+                boundary='Rows at the length limit may be truncated; this count does not prove truncation.'))
+            del full_data
             traces = []
             for replica, taught in enumerate(replicas):
                 if replica:
                     session.unload(); session.attach(run.adapter, run.seed + replica)
-                training = replace(run.training, epochs=math.ceil(max(cfg['steps']) * 16 / len(taught)),
+                # One nonempty epoch always supplies at least one update.
+                # A large epoch ceiling plus an exact cap survives row drops.
+                training = replace(run.training, epochs=max(cfg['steps']),
                     effective_batch_size=16, micro_batch_size=4, max_updates=max(cfg['steps']),
                     eval_every_updates=None, restore_best=False)
                 def checkpoint(step, optimizer):
@@ -213,6 +233,9 @@ def run_cell(config, source, out, index, smoke=False):
                 measured = train_adapter(session.model, session.tokenizer, taught, selection, run.model,
                     training, run.seed + replica, root / f'replica{replica}/training.jsonl',
                     on_update=checkpoint, schedule_updates=max(full_horizon, max(cfg['steps'])))
+                if measured['optimizer_updates'] != max(cfg['steps']) or {
+                    t['step'] for t in traces if t['replica'] == replica} != set(cfg['steps']):
+                    raise ValueError('probe stopped before a requested checkpoint')
                 write_json(root / f'replica{replica}/training.json', measured)
             # A real block-prequential code: score each unseen block before
             # training on it. Optimizer resets are part of this public learner.
@@ -223,11 +246,13 @@ def run_cell(config, source, out, index, smoke=False):
             for end in cfg['block_ends']:
                 block = stream[previous:end]
                 before = score(session, run, block, root / f'online/block{end}_before.json', cfg)
-                training = replace(run.training, epochs=math.ceil(cfg['block_updates'] * 16 / len(block)),
+                training = replace(run.training, epochs=cfg['block_updates'],
                     effective_batch_size=16, micro_batch_size=4, max_updates=cfg['block_updates'],
                     restore_best=False, eval_every_updates=None, warmup_ratio=0.)
-                train_adapter(session.model, session.tokenizer, block, selection, run.model, training,
-                              run.seed, root / f'online/block{end}_training.jsonl')
+                trained = train_adapter(session.model, session.tokenizer, block, selection, run.model, training,
+                                        run.seed, root / f'online/block{end}_training.jsonl')
+                if trained['optimizer_updates'] != cfg['block_updates']:
+                    raise ValueError('online learner stopped before its requested update count')
                 after = score(session, run, feature, root / f'online/block{end}_heldout.json', cfg)
                 online.append(dict(start=previous, end=end, before=before, heldout=after))
                 previous = end
@@ -240,7 +265,9 @@ def run_cell(config, source, out, index, smoke=False):
             # Endpoint information is loaded only after all early features are
             # saved, and never enters their computation.
             session.unload(); session.attach(run.adapter, run.seed)
-            final = torch.load(source / 'runs' / run.run_id / 'raw_channel.pt', map_location='cpu', weights_only=True)
+            if hashlib.sha256(target_path.read_bytes()).hexdigest() != contract['target_sha256']:
+                raise ValueError('finished adapter changed during the probe')
+            final = torch.load(target_path, map_location='cpu', weights_only=True)
             reference, grid = sweep(session, run, final, rate_data, root / 'target', cfg, cfg['scales'])
             budgets = [dict(retention=rho, scaled=scaled,
                 **measured_budget(grid, base, reference, rho, scaled=scaled))
