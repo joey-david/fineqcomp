@@ -14,7 +14,8 @@ import torch
 
 from fineqcomp.adapters import adapter_tensors, apply_adapter_tensors
 from fineqcomp.artifacts import claim_run, read_json, write_json
-from fineqcomp.codec import encode_tensor_map, decode_adapter_tensor_map, truncate_lora_rank, pad_lora_rank
+from fineqcomp.codec import (encode_tensor_map, decode_adapter_tensor_map, pad_lora_rank,
+                            spectral_bits, truncate_lora_rank)
 from fineqcomp.config import RunSpec
 from fineqcomp.data import read_jsonl
 from fineqcomp.evaluation import completion_nll, write_predictions
@@ -311,7 +312,8 @@ def run_cell(config, source, out, index, smoke=False):
                     other = score(session, run, replicas[1-replica][:cfg['feature_rows']], path / 'other_half.json', cfg)
                     reference, grid = sweep(session, run, tensors, rate_data, path, cfg, [1.])
                     traces.append(dict(replica=replica, step=step, feature=measured, other_half=other,
-                                       reference=reference, grid=grid))
+                                       reference=reference, grid=grid,
+                                       spectral=spectral_bits(tensors)))
                     session.model.train()
                 measured = train_adapter(session.model, session.tokenizer, taught, selection, run.model,
                     training, run.seed + replica, root / f'replica{replica}/training.jsonl',
@@ -359,7 +361,8 @@ def run_cell(config, source, out, index, smoke=False):
                 **budget_interval(grid, base_scores, reference, rho, scaled=scaled, seed=run.seed))
                 for rho in cfg['retentions'] for scaled in (False, True)]
             write_json(root / 'targets.json',
-                       dict(base=base, reference=reference, budgets=budgets, intervals=intervals))
+                       dict(base=base, reference=reference, budgets=budgets, intervals=intervals,
+                            target_spectral=spectral_bits(final)))
             write_json(root / 'complete.json', dict(complete=True, smoke=smoke, stage=cell['stage']))
         finally:
             session.unload()
