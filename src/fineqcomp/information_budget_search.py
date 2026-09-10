@@ -121,6 +121,36 @@ def sweep(session, run, tensors, data, root, config, scales):
     return reference, grid
 
 
+def exposure_record(data, rows, train_limit, score_limit, byte_filter):
+    """What a receiver is actually taught, beside the span the scorer reads.
+
+    Training truncates prompt plus response at `train_limit` and keeps the head,
+    while `score` reads the whole response up to `score_limit`. A row that
+    survives tokenization can therefore be supervised on a prefix of a response
+    it is later scored on in full, and a row count cannot show that. Counting
+    the untruncated lengths separates three different losses: rows the prompt
+    alone removes, response tokens the training limit cuts, and rows long enough
+    for the scorer itself to cut.
+    """
+    supervised = sum(int((r['labels'][1:] != -100).sum()) for r in data)
+    taught = data.token_lengths  # untruncated lengths of the rows that survived
+    response_tokens = sum(r for _, r in taught)
+    scored_tokens = sum(min(p + r, score_limit) - min(p, score_limit) for p, r in taught)
+    return dict(original_rows=len(rows), usable_rows=len(data),
+        dropped_by_length=data.dropped_by_length, dropped_by_span=data.dropped_by_span,
+        dropped_without_marker=data.dropped_without_marker,
+        train_limit=train_limit, score_limit=score_limit,
+        rows_truncated=sum(p + r > train_limit for p, r in taught),
+        rows_at_length_limit=sum(len(r['input_ids']) == train_limit for r in data),
+        rows_over_score_limit=sum(p + r > score_limit for p, r in taught),
+        supervised_tokens=supervised, response_tokens=response_tokens,
+        scored_tokens=scored_tokens, unsupervised_response_tokens=response_tokens - supervised,
+        rows_over_byte_filter=sum(len((r.prompt + r.response).encode()) > byte_filter for r in rows),
+        byte_filter=byte_filter,
+        boundary='Training rows are not byte-filtered; the rate panels are. '
+                 'Counts are exact token lengths before truncation, not a proxy.')
+
+
 def run_cell(config, source, out, index, smoke=False):
     cell = prepare(config, out)[index]
     run = RunSpec.from_dict(cell['run'])
@@ -202,11 +232,9 @@ def run_cell(config, source, out, index, smoke=False):
             full_horizon = math.ceil(len(full_data) / run.training.effective_batch_size) * run.training.epochs
             if run.training.max_updates is not None:
                 full_horizon = min(full_horizon, run.training.max_updates)
-            write_json(root / 'training_exposure.json', dict(original_rows=len(original_train),
-                usable_rows=len(full_data), full_horizon=full_horizon,
-                rows_at_length_limit=sum(len(r['input_ids']) == run.training.max_length for r in full_data),
-                supervised_tokens=sum(int((r['labels'][1:] != -100).sum()) for r in full_data),
-                boundary='Rows at the length limit may be truncated; this count does not prove truncation.'))
+            write_json(root / 'training_exposure.json', dict(full_horizon=full_horizon,
+                **exposure_record(full_data, original_train, run.training.max_length,
+                                  cfg['max_length'], cfg['max_row_bytes'])))
             del full_data
             traces = []
             for replica, taught in enumerate(replicas):
