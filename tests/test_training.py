@@ -116,3 +116,28 @@ def test_checkpoint_count_does_not_depend_on_epoch_count():
         for epochs, rows in ((8, 80), (4, 160), (2, 320), (1, 640))
     }
     assert counts == {4}, f"arms get different candidate counts: {counts}"
+
+
+def test_capped_probe_follows_the_full_learning_rate_schedule(tmp_path):
+    """An early probe must not anneal to zero before the full learner does."""
+    from dataclasses import replace
+    examples = [Example(str(i), f'p{i}', ' a', {}) for i in range(8)]
+    spec = TrainingSpec(epochs=4, learning_rate=1e-3, effective_batch_size=4,
+                        micro_batch_size=2, max_length=16, warmup_ratio=.25, restore_best=False)
+    records = []
+    for cap in (3, 8):
+        torch.manual_seed(81)
+        model = TinyLM()
+        trace = []
+        def capture(step, optimizer):
+            if step <= 3:
+                trace.append((optimizer.param_groups[0]['lr'], model.head.weight.detach().clone()))
+        result = train_adapter(model, Tokenizer(), examples, examples[:2],
+            ModelSpec('tiny', 'tiny', 'local', 'bf16'), replace(spec, max_updates=cap),
+            11, tmp_path / f'{cap}.jsonl', on_update=capture, schedule_updates=8)
+        assert result['scheduler_updates'] == 8
+        assert result['optimizer_updates'] == cap
+        records.append(trace)
+    for (lr_a, weights_a), (lr_b, weights_b) in zip(*records):
+        assert lr_a == lr_b
+        torch.testing.assert_close(weights_a, weights_b, rtol=0, atol=0)
