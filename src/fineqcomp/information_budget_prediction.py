@@ -216,9 +216,10 @@ def load_rows(config, source, stage):
         features, targets = read_json(root / 'features.json'), read_json(root / 'targets.json')
         provenance[run['run_id']] = {name: hashlib.sha256((root / name).read_bytes()).hexdigest()
                                     for name in ('features.json', 'targets.json', 'data_contract.json')}
+        exposure = read_json(root / 'training_exposure.json')
         target = next(r for r in targets['budgets'] if r['retention'] == .9 and not r['scaled'])
         if target['status'] != 'measured':
-            exclusions.append(dict(run_id=run['run_id'], reason=target['status'])); continue
+            exclusions.append(dict(run_id=run['run_id'], reason=target['status'], exposure=exposure)); continue
         model = run['model']['key']
         family = 'qwen' if model.startswith('qwen') else model.split('_')[0].rstrip('0123456789')
         early = min(features['traces'], key=lambda t: (t['step'], t['replica']))
@@ -229,8 +230,32 @@ def load_rows(config, source, stage):
         rows.append(dict(run_id=run['run_id'], model=model, family=family, task=run['dataset_key'],
             stage=stage, measures=extract(features), forecasts={f: curve_forecast(features, f) for f in FORECASTS},
             container_bits=container, target_bits=target['file_bits'], verification_retention=target['verification_retention'],
-            below_smallest_tested=target['below_smallest_tested']))
+            below_smallest_tested=target['below_smallest_tested'], exposure=exposure))
     return rows, exclusions, provenance
+
+
+def exposure_summary(records):
+    """What each receiver was taught, beside the span its scores are read over.
+
+    A cell can miss its retention target because the receiver learned nothing,
+    or because the training limit cut the responses it is later scored on in
+    full. Those are different failures, so excluded cells keep their exposure
+    here rather than leaving the analysis with only the cells that succeeded.
+    """
+    cells = []
+    for record in records:
+        e = record.get('exposure')
+        if e is None:
+            continue
+        cells.append(dict(run_id=record['run_id'], train_limit=e['train_limit'], score_limit=e['score_limit'],
+            dropped_rows=e['original_rows'] - e['usable_rows'],
+            truncated_fraction=e['rows_truncated'] / max(e['usable_rows'], 1),
+            unsupervised_fraction=e['unsupervised_response_tokens'] / max(e['response_tokens'], 1)))
+    return dict(cells=cells, missing=sum(r.get('exposure') is None for r in records),
+        limits_matched=all(c['train_limit'] >= c['score_limit'] for c in cells) if cells else None,
+        worst_unsupervised_fraction=max((c['unsupervised_fraction'] for c in cells), default=None),
+        boundary='Exposure counts the training corpus. The rate panels are scored rows, '
+                 'so a matched limit is necessary for comparability, not sufficient.')
 
 
 def main():
@@ -255,12 +280,15 @@ def main():
         records = [dict(run_id=r['run_id'], observed=r['target_bits'], predicted=predict(lock['fitted'], r)) for r in rows]
         result = dict(locked_sha256=hashlib.sha256(args.lock.read_bytes()).hexdigest(), predictions=records, metrics=metrics(records))
     result.update(stage=stage, rows=rows, exclusions=exclusions, inputs=provenance,
+        exposure=exposure_summary(rows + exclusions),
         verification=dict(measured=len(rows), passed=sum(r['verification_retention'] is not None and r['verification_retention'] >= .9 for r in rows)),
         boundary='Selection-half achieved bytes, with separate verification. Old model panel; no prospective or universal scaling claim.')
     if args.out.exists():
         raise ValueError('refusing to replace a frozen analysis')
     write_json(args.out, result)
-    print(json.dumps({k: v for k, v in result.items() if k in ('stage', 'metrics', 'nested_metrics', 'verification', 'exclusions')}, indent=2))
+    print(json.dumps({k: v for k, v in result.items()
+                      if k in ('stage', 'metrics', 'nested_metrics', 'verification', 'exclusions')} |
+                     {'exposure': {k: v for k, v in result['exposure'].items() if k != 'cells'}}, indent=2))
 
 
 if __name__ == '__main__':

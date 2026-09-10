@@ -1,9 +1,11 @@
 import numpy as np
 import pytest
 
+from fineqcomp.config import ModelSpec
 from fineqcomp.data import Example
-from fineqcomp.information_budget_search import measured_budget, partition
-from fineqcomp.information_budget_prediction import fit, predict, curve_forecast, develop, candidates
+from fineqcomp.information_budget_search import exposure_record, measured_budget, partition
+from fineqcomp.information_budget_prediction import (
+    fit, predict, curve_forecast, develop, candidates, exposure_summary)
 
 
 def test_source_augmentations_never_cross_halves():
@@ -111,3 +113,60 @@ def test_public_capacity_is_independent_of_weight_entropy(tmp_path):
         capacities.append(public_container_bits(path))
     assert sizes[0] != sizes[1]
     assert capacities[0] == capacities[1]
+
+
+class CharTokenizer:
+    eos_token_id = 1
+    pad_token_id = 0
+
+    def encode(self, text, add_special_tokens=False):
+        return ([2] if add_special_tokens else []) + [10 + (ord(c) % 50) for c in text]
+
+
+def exposure_for(train_limit, score_limit, byte_filter=8):
+    from fineqcomp.modeling import CausalExampleDataset
+    model = ModelSpec('m', 'model', 'revision', 'bf16')
+    rows = [Example('short', 'abc', 'defg', {}),           # 4 prompt + 5 response tokens
+            Example('cut', 'abcdefgh', 'ij', {}),          # 9 prompt + 3 response tokens
+            Example('prompt_fills', 'abcdefghijkl', 'm', {})]  # 13 prompt + 2 response tokens
+    data = CausalExampleDataset(CharTokenizer(), rows, model, train_limit)
+    return exposure_record(data, rows, train_limit, score_limit, byte_filter)
+
+
+def test_exposure_separates_dropped_rows_from_a_cut_response():
+    record = exposure_for(10, 32)
+    assert record['original_rows'] == 3 and record['usable_rows'] == 2
+    assert record['dropped_by_length'] == 1  # the prompt alone reached the limit
+    assert record['dropped_by_span'] == 0 and record['dropped_without_marker'] == 0
+    assert record['rows_truncated'] == 1  # exact, not a row sitting at the limit
+    assert record['supervised_tokens'] == 6
+    assert record['response_tokens'] == 8
+    assert record['unsupervised_response_tokens'] == 2
+    assert record['rows_over_byte_filter'] == 2
+
+
+def test_scored_span_exceeds_the_supervised_span_at_a_longer_limit():
+    wide = exposure_for(10, 32)
+    assert wide['scored_tokens'] == wide['response_tokens']
+    assert wide['scored_tokens'] > wide['supervised_tokens']
+    assert wide['rows_over_score_limit'] == 0
+    narrow = exposure_for(10, 11)
+    assert narrow['scored_tokens'] == 7  # the scorer cuts what training already cut
+    assert narrow['rows_over_score_limit'] == 1
+    matched = exposure_for(32, 32)
+    assert matched['supervised_tokens'] == matched['scored_tokens']
+    assert matched['unsupervised_response_tokens'] == 0
+
+
+def test_exposure_summary_keeps_cells_that_never_reached_a_budget():
+    measured = dict(run_id='learned', exposure=exposure_for(10, 32))
+    failed = dict(run_id='no_budget', exposure=exposure_for(10, 11))
+    unknown = dict(run_id='older_artifact', exposure=None)
+    summary = exposure_summary([measured, failed, unknown])
+    assert [c['run_id'] for c in summary['cells']] == ['learned', 'no_budget']
+    assert summary['missing'] == 1
+    assert summary['limits_matched'] is False  # trained at 10, scored at 32
+    assert summary['worst_unsupervised_fraction'] == 0.25
+    assert summary['cells'][0]['dropped_rows'] == 1
+    assert summary['cells'][0]['truncated_fraction'] == 0.5
+    assert exposure_summary([])['limits_matched'] is None
