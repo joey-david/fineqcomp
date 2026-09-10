@@ -5,7 +5,7 @@ from fineqcomp.config import ModelSpec
 from fineqcomp.data import Example
 from fineqcomp.information_budget_search import exposure_record, measured_budget, partition
 from fineqcomp.information_budget_prediction import (
-    fit, predict, curve_forecast, develop, candidates, exposure_summary)
+    fit, predict, curve_forecast, develop, candidates, exposure_summary, screening_report)
 
 
 def test_source_augmentations_never_cross_halves():
@@ -170,3 +170,41 @@ def test_exposure_summary_keeps_cells_that_never_reached_a_budget():
     assert summary['cells'][0]['dropped_rows'] == 1
     assert summary['cells'][0]['truncated_fraction'] == 0.5
     assert exposure_summary([])['limits_matched'] is None
+
+
+def screening_panel(signal, seed=1):
+    """Two families by six tasks, the shape of the discovery panel."""
+    generator = np.random.default_rng(seed)
+    rows = []
+    for family in ('mistral', 'qwen'):
+        for task in ('code', 'dialogue', 'summary', 'math', 'sql', 'xbrl'):
+            x = float(generator.uniform(4, 400))
+            y = 7000 * x ** .5 if signal else float(generator.uniform(1e4, 4e5))
+            rows.append(dict(run_id=f'{family}_{task}', task=task, family=family,
+                measures={m: x for m in ('context', 'online_excess', 'transfer', 'shared_gain', 'gain_integral')},
+                container_bits=128000., target_bits=y,
+                forecasts={f: y if signal else float(generator.uniform(1e4, 4e5))
+                           for f in ('early_identity', 'inverse_sqrt', 'inverse_time')}))
+    return rows
+
+
+def test_screening_exposes_the_optimism_of_searching_many_rules_on_twelve_cells():
+    report = screening_report(screening_panel(signal=False), repeats=60, seed=3)
+    assert report['candidates'] == 36 and report['cells'] == 12
+    # The search minimum flatters itself; re-running selection inside every fold does not.
+    assert report['nested']['mean_absolute_log2_error'] > report['optimistic_mean_absolute_log2_error']
+    # Against no signal the winner does not beat predicting the mean, and the
+    # permutation null reaches the same error without any relationship to fit.
+    assert report['margin_over_best_baseline'] <= 0
+    assert report['null']['p_value'] > .05
+    assert report['stability']['distinct_winners'] > 1
+
+
+def test_screening_separates_a_real_relationship_from_selection_advantage():
+    report = screening_report(screening_panel(signal=True), repeats=60, seed=3)
+    assert report['null']['p_value'] < .05
+    assert report['null']['observed'] < report['null']['null_best']
+    assert report['margin_over_best_baseline'] > 0
+    assert report['stability']['distinct_winners'] == 1
+    assert report['stability']['modal_winner'] == report['stability']['full_sample_winner']
+    assert report['stage'] == 'screening'
