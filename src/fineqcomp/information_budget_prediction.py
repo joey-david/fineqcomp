@@ -13,7 +13,7 @@ from fineqcomp.artifacts import read_json, write_json
 from fineqcomp.codec import MAGIC, container_header_bits, read_container
 
 
-MEASURES = ('context', 'online_excess', 'transfer', 'shared_gain', 'gain_integral')
+MEASURES = ('context', 'online_excess', 'transfer', 'shared_gain', 'gain_integral', 'spectral')
 LAWS = ('power', 'affine', 'log_affine')
 FORECASTS = ('early_identity', 'inverse_sqrt', 'inverse_time')
 
@@ -88,9 +88,14 @@ def extract(features):
         times = np.array([0] + [t['step'] for t in trace], float)
         values = np.array([0.] + [(features['base']['bits'] - t['feature']['bits']) / len(base) for t in trace])
         areas.append(float(np.sum(np.diff(times) * (values[:-1] + values[1:]) / 2) / times[-1]))
+    # Spectral bits are already a size, so unlike the likelihood measures they
+    # are not scaled to the corpus. Artifacts written before this was recorded
+    # leave it absent, which makes its candidates ineligible rather than wrong.
+    spectral = [t.get('spectral') for t in endpoints]
     return dict(context=None if context['gain_bits'] is None else n * context['gain_bits'] / len(base),
         online_excess=features['online_excess_bits'], transfer=n * float(np.mean(transfer)),
-        shared_gain=n * float(np.minimum(*gains).mean()), gain_integral=n * float(np.mean(areas)))
+        shared_gain=n * float(np.minimum(*gains).mean()), gain_integral=n * float(np.mean(areas)),
+        spectral=None if any(v is None for v in spectral) else float(np.mean(spectral)))
 
 
 def candidates():
@@ -109,7 +114,7 @@ def fit(rows, method):
             ratio=float(np.mean(y / [r['container_bits'] for r in rows])),
             corpora={task: float(np.mean([r['target_bits'] for r in rows if r['task'] == task]))
                      for task in {r['task'] for r in rows}})
-    x = [r['measures'][method['measure']] for r in rows]
+    x = [r['measures'].get(method['measure']) for r in rows]
     if any(v is None or not np.isfinite(v) for v in x):
         return None
     x = np.array(x)
@@ -135,7 +140,7 @@ def predict(fitted, row):
         mode = method['baseline']
         return (fitted['ratio'] * row['container_bits'] if mode == 'container' else
                 fitted['corpora'].get(row['task'], fitted['mean']) if mode == 'corpus_mean' else fitted['mean'])
-    x = row['measures'][method['measure']]
+    x = row['measures'].get(method['measure'])
     if x is None or not np.isfinite(x) or (method['law'] != 'affine' and x <= 0):
         return None
     z = x if method['law'] == 'affine' else np.log(x)

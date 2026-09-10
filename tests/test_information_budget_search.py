@@ -6,7 +6,7 @@ from fineqcomp.data import Example
 from fineqcomp.information_budget_search import (
     budget_interval, exposure_record, measured_budget, partition)
 from fineqcomp.information_budget_prediction import (
-    fit, predict, curve_forecast, develop, candidates, exposure_summary, screening_report)
+    MEASURES, fit, predict, curve_forecast, develop, candidates, exposure_summary, screening_report)
 
 
 def test_source_augmentations_never_cross_halves():
@@ -33,7 +33,7 @@ def test_budget_uses_achieved_file_and_preserves_failed_verification():
 
 
 def row(x, y, task='a', family='m'):
-    return dict(run_id=f'{task}_{family}', measures={m: x for m in ('context','online_excess','transfer','shared_gain','gain_integral')},
+    return dict(run_id=f'{task}_{family}', measures={m: x for m in MEASURES},
         container_bits=128., target_bits=y, task=task, family=family,
         forecasts={f: y for f in ('early_identity','inverse_sqrt','inverse_time')})
 
@@ -65,7 +65,7 @@ def test_nested_selection_keeps_whole_tasks_and_families_out():
     result = develop(rows)
     assert len(result['nested_predictions']) == 16
     assert result['nested_metrics']['covered'] == 16
-    assert len(candidates()) == 36
+    assert len(candidates()) == 42
     for record in result['nested_predictions']:
         assert record['heldout'] in record['run_id']
 
@@ -182,7 +182,7 @@ def screening_panel(signal, seed=1):
             x = float(generator.uniform(4, 400))
             y = 7000 * x ** .5 if signal else float(generator.uniform(1e4, 4e5))
             rows.append(dict(run_id=f'{family}_{task}', task=task, family=family,
-                measures={m: x for m in ('context', 'online_excess', 'transfer', 'shared_gain', 'gain_integral')},
+                measures={m: x for m in MEASURES},
                 container_bits=128000., target_bits=y,
                 forecasts={f: y if signal else float(generator.uniform(1e4, 4e5))
                            for f in ('early_identity', 'inverse_sqrt', 'inverse_time')}))
@@ -191,7 +191,7 @@ def screening_panel(signal, seed=1):
 
 def test_screening_exposes_the_optimism_of_searching_many_rules_on_twelve_cells():
     report = screening_report(screening_panel(signal=False), repeats=60, seed=3)
-    assert report['candidates'] == 36 and report['cells'] == 12
+    assert report['candidates'] == 42 and report['cells'] == 12
     # The search minimum flatters itself; re-running selection inside every fold does not.
     assert report['nested']['mean_absolute_log2_error'] > report['optimistic_mean_absolute_log2_error']
     # Against no signal the winner does not beat predicting the mean, and the
@@ -262,7 +262,7 @@ def test_redundant_measures_are_reported_as_one_scalar_not_five_theories():
     rows = screening_panel(signal=True)  # every measure carries the same value
     report = measure_redundancy(rows)
     assert all(abs(v) >= .95 for v in report['pairwise_spearman'].values())
-    assert len(report['indistinguishable_pairs']) == len(report['pairwise_spearman']) == 10
+    assert len(report['indistinguishable_pairs']) == len(report['pairwise_spearman']) == 15
     assert report['spread_of_nested_error'] == 0.  # no measure predicts what the others cannot
 
 
@@ -270,7 +270,7 @@ def test_a_measure_that_carries_its_own_signal_separates_from_the_others():
     rows = screening_panel(signal=True)
     generator = np.random.default_rng(5)
     for row in rows:  # break every measure except `transfer`
-        for name in ('context', 'online_excess', 'shared_gain', 'gain_integral'):
+        for name in ('context', 'online_excess', 'shared_gain', 'gain_integral', 'spectral'):
             row['measures'][name] = float(generator.uniform(1., 400.))
         row['forecasts'] = {f: float(generator.uniform(1e4, 4e5)) for f in row['forecasts']}
     from fineqcomp.information_budget_prediction import measure_redundancy
@@ -279,3 +279,33 @@ def test_a_measure_that_carries_its_own_signal_separates_from_the_others():
     assert report['spread_of_nested_error'] > 0
     best = min(report['nested_alone'], key=lambda m: report['nested_alone'][m]['mean_absolute_log2_error'])
     assert best == 'transfer'
+
+
+def test_spectral_bits_measure_a_size_not_a_likelihood_change():
+    import torch
+    from fineqcomp.codec import pad_lora_rank, spectral_bits, truncate_lora_rank
+    torch.manual_seed(3)
+    width, height, rank = 64, 96, 16
+    def update(true_rank):
+        a, b = torch.zeros(rank, width), torch.zeros(height, rank)
+        a[:true_rank] = torch.randn(true_rank, width)
+        b[:, :true_rank] = torch.randn(height, true_rank)
+        return {'m.lora_A.default.weight': a, 'm.lora_B.default.weight': b}
+    sizes = [spectral_bits(update(r)) for r in (1, 2, 4, 8, 16)]
+    assert sizes == sorted(sizes)
+    assert sizes[0] == pytest.approx(16 * (width + height), rel=1e-6)  # one direction, rank one
+    # The container is not the code: padding a truncated update back to its
+    # trained width leaves the measure alone, which a file size would not.
+    narrow = truncate_lora_rank(update(16), 1)
+    assert spectral_bits(pad_lora_rank(narrow, rank)) == pytest.approx(spectral_bits(narrow))
+    assert spectral_bits({'m.lora_A.default.weight': torch.zeros(rank, width),
+                          'm.lora_B.default.weight': torch.zeros(height, rank)}) == 0.
+
+
+def test_a_measure_absent_from_older_artifacts_is_ineligible_rather_than_wrong():
+    rows = screening_panel(signal=True)
+    for row in rows:
+        row['measures']['spectral'] = None
+    fitted = fit(rows, dict(measure='spectral', law='power', container=False))
+    assert fitted is None  # no fit, so no candidate, rather than a silent zero
+    assert predict(None, rows[0]) is None
