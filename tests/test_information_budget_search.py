@@ -65,3 +65,29 @@ def test_nested_selection_keeps_whole_tasks_and_families_out():
     assert len(candidates()) == 36
     for record in result['nested_predictions']:
         assert record['heldout'] in record['run_id']
+
+
+def test_artifact_reader_keeps_verification_failures_and_never_opens_later_panels(tmp_path):
+    import json
+    from fineqcomp.information_budget_prediction import load_rows
+    cfg = {'cells': [dict(stage=stage, run=dict(run_id=stage, model={'key':'mistral_7b_base'}, dataset_key='code'))
+                     for stage in ('discovery','development','outer_audit')]}
+    root = tmp_path / 'cells/discovery'; root.mkdir(parents=True)
+    feature = dict(bits=270., examples=2, per_example_bits=[90.,180.])
+    grid = [dict(key='r1_b16_s1', rank=1, precision=16, scale=1., file_bits=1608, selection=460.)]
+    f = dict(base=dict(bits=300., per_example_bits=[100.,200.]), base_rate={'selection':500.},
+             base_halves=[dict(bits=500.),dict(bits=500.)], training_rows=1000, full_horizon=2000,
+             frozen_context=[dict(requested=4,gain_bits=10.)], online_excess_bits=-10.,
+             traces=[dict(replica=r,step=t,feature=feature,other_half=dict(bits=480.,examples=2),
+                          reference={'selection':450.},grid=grid) for r in (0,1) for t in (8,32,128)])
+    target = dict(retention=.9,scaled=False,status='measured',file_bits=3208,
+                  verification_retention=.75,below_smallest_tested=False)
+    for name, value in [('features.json',f),('targets.json',dict(budgets=[target])),
+                        ('data_contract.json',{}),('complete.json',{'complete':True})]:
+        (root / name).write_text(json.dumps(value))
+    rows, excluded, _ = load_rows(cfg, tmp_path, 'discovery')
+    assert len(rows) == 1 and not excluded  # later files intentionally do not exist
+    assert rows[0]['verification_retention'] == .75
+    assert rows[0]['measures']['online_excess'] == -10.
+    assert rows[0]['measures']['transfer'] == 10000.
+    assert rows[0]['measures']['shared_gain'] == 15000.
