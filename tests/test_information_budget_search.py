@@ -69,6 +69,8 @@ def test_nested_selection_keeps_whole_tasks_and_families_out():
 
 def test_artifact_reader_keeps_verification_failures_and_never_opens_later_panels(tmp_path):
     import json
+    import torch
+    from fineqcomp.codec import encode_tensor_map
     from fineqcomp.information_budget_prediction import load_rows
     cfg = {'cells': [dict(stage=stage, run=dict(run_id=stage, model={'key':'mistral_7b_base'}, dataset_key='code'))
                      for stage in ('discovery','development','outer_audit')]}
@@ -82,6 +84,9 @@ def test_artifact_reader_keeps_verification_failures_and_never_opens_later_panel
                           reference={'selection':450.},grid=grid) for r in (0,1) for t in (8,32,128)])
     target = dict(retention=.9,scaled=False,status='measured',file_bits=3208,
                   verification_retention=.75,below_smallest_tested=False)
+    storage = encode_tensor_map({'layer.lora_A.default.weight': torch.zeros(1, 32)},
+        root / 'replica0/step8/codecs/r1_b16_s1.fqcb', 16)
+    grid[0]['file_bits'] = storage['file_bits']
     for name, value in [('features.json',f),('targets.json',dict(budgets=[target])),
                         ('data_contract.json',{}),('complete.json',{'complete':True})]:
         (root / name).write_text(json.dumps(value))
@@ -91,3 +96,18 @@ def test_artifact_reader_keeps_verification_failures_and_never_opens_later_panel
     assert rows[0]['measures']['online_excess'] == -10.
     assert rows[0]['measures']['transfer'] == 10000.
     assert rows[0]['measures']['shared_gain'] == 15000.
+
+
+def test_public_capacity_is_independent_of_weight_entropy(tmp_path):
+    import torch
+    from fineqcomp.codec import encode_tensor_map
+    from fineqcomp.information_budget_prediction import public_container_bits
+    torch.manual_seed(7)
+    sizes, capacities = [], []
+    for name, tensor in [('zeros', torch.zeros(1, 512)), ('random', torch.randn(1, 512))]:
+        path = tmp_path / f'{name}.fqcb'
+        record = encode_tensor_map({'layer.lora_A.default.weight': tensor}, path, 16)
+        sizes.append(record['file_bits'])
+        capacities.append(public_container_bits(path))
+    assert sizes[0] != sizes[1]
+    assert capacities[0] == capacities[1]
