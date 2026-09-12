@@ -8,6 +8,7 @@ import csv
 import hashlib
 import json
 from pathlib import Path
+import re
 
 import numpy as np
 
@@ -31,6 +32,11 @@ def predictions(path, expected=None):
 
 def accuracy(rows):
     return sum(r['correct'] for r in rows) / len(rows)
+
+
+def answer_only(text):
+    """Check the requested direct format, apart from surrounding whitespace."""
+    return re.fullmatch(r'\s*####\s*[-+]?\d[\d,]*(?:\.\d+)?\s*', text) is not None
 
 
 def expected_states(config, rank):
@@ -137,6 +143,7 @@ def pilot(root):
                     cot_repeated_8gram_fraction=float(np.mean([r['repeated_8gram_fraction'] for r in left])),
                     direct_repeated_8gram_fraction=float(np.mean([r['repeated_8gram_fraction'] for r in right])),
                     direct_stop_rate=float(np.mean([r.get('stopped_by_string', False) for r in right])),
+                    direct_answer_only_rate=float(np.mean([answer_only(r['response']) for r in right])),
                     direct_multiline_rate=float(np.mean([
                         len([line for line in r['response'].splitlines() if line.strip()]) > 1
                         for r in right])))
