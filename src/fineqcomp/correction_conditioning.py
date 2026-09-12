@@ -47,6 +47,8 @@ def candidates(raw, rank, seed, config=None):
     """Actual files plus a public zero-update receiver; no nominal rate target."""
     yield 'raw', raw, 16, 0.0
     config = config or {}
+    for bits in config.get('uniform_bits', ()):
+        yield f'uniform_b{bits}', raw, bits, 0.0
     for scale in config.get('scales', (.25, .5, .75)):
         yield f'scale_{scale:g}', {n: t * scale if '.lora_B.' in n else t for n, t in raw.items()}, 16, 0.0
     yield 'mask_half', raw, 0, .5
@@ -63,6 +65,19 @@ def candidates(raw, rank, seed, config=None):
 def strict_answer(text):
     matches = re.findall(r'\\boxed\{([-+\d.,]+)\}|(?:[Aa]nswer\s*(?:is)?\s*[:=]?|####)\s*([-+]?\d[\d,]*(?:\.\d+)?)', text)
     return _normalize_number(next(v for v in matches[-1] if v)) if matches else None
+
+
+def generation_rows(rows, mode):
+    """Change the requested answer policy while keeping each problem fixed."""
+    if mode == 'cot':
+        return rows
+    if mode != 'direct':
+        raise ValueError(f'unknown generation mode: {mode}')
+    before = "Solve the problem. Show concise work and finish with "
+    after = "Solve the problem. Give only the final answer, starting with "
+    if any(not row.prompt.startswith(before) for row in rows):
+        raise ValueError('direct-answer control needs the standard GSM prompt')
+    return [replace(row, prompt=after + row.prompt[len(before):] + ' #### ') for row in rows]
 
 
 def score_rows(rows, records, prefix=None):
@@ -136,7 +151,8 @@ def run(config, source, out, index, smoke=False):
             raw = torch.load(source / 'runs' / run.run_id / 'raw_channel.pt', map_location='cpu', weights_only=True)
             options = list(candidates(raw, run.adapter.rank, run.seed, config))
             if smoke:
-                options = [options[0], next(x for x in options if x[0] == 'mask_half')]
+                smoke_keys = config.get('smoke_keys', ['raw', 'mask_half'])
+                options = [next(x for x in options if x[0] == key) for key in smoke_keys]
             transformations = {'base': zero}
             for key, tensors, bits, blend in options:
                 path = root / 'codecs' / f'{key}.fqcb'
@@ -149,13 +165,29 @@ def run(config, source, out, index, smoke=False):
                 write_json(path.with_suffix('.json'), storage)
             for key, tensors in transformations.items():
                 target = root / key
-                if (target / 'summary.json').exists():
+                modes = config.get('generation_modes', ['cot'])
+                targets = {mode: target if mode == 'cot' else target / mode for mode in modes}
+                if all((p / 'summary.json').exists() for p in targets.values()):
                     continue
                 apply_adapter_tensors(session.model, tensors)
-                records = generate_response_records(session.model, session.tokenizer, rows, run.model,
-                    config['batch_size'], config['max_new_tokens'], run.seed)
-                scored = score_rows(rows, records)
-                write_predictions(target / 'predictions.jsonl', scored)
+                cot_summary = None
+                for mode, mode_target in targets.items():
+                    if (mode_target / 'summary.json').exists():
+                        continue
+                    records = generate_response_records(session.model, session.tokenizer,
+                        generation_rows(rows, mode), run.model,
+                        config['batch_size'], config['max_new_tokens'], run.seed,
+                        **({'stop_strings': ['\n']} if mode == 'direct' else {}))
+                    if mode == 'direct':
+                        records = [dict(r, response='#### ' + r['response']) for r in records]
+                    scored = score_rows(rows, records)
+                    write_predictions(mode_target / 'predictions.jsonl', scored)
+                    if mode == 'cot' and config.get('answer_sensitivity', True):
+                        cot_summary = summary(scored)
+                    else:
+                        write_json(mode_target / 'summary.json', summary(scored))
+                if not config.get('answer_sensitivity', True):
+                    continue
                 # Same answer completion under both paired questions. This is a
                 # conditional sensitivity measurement, not a scalar MI estimate.
                 by_template = defaultdict(list)
@@ -172,14 +204,16 @@ def run(config, source, out, index, smoke=False):
                 with torch.inference_mode():
                     nll = completion_nll(session.model, session.tokenizer, answer_rows, run.model, 1536, config['batch_size'])
                 write_predictions(target / 'answer_nll.jsonl', [dict(k, **s) for k, s in zip(answer_keys, nll, strict=True)])
-                write_json(target / 'summary.json', summary(scored))
+                if cot_summary is not None:
+                    write_json(target / 'summary.json', cot_summary)
             # F3: use the identical generated prefix with both suffix adapters.
             # Replaying text clears the cache in every arm; raw/raw and mask/mask
             # control for that restart rather than confounding it with a switch.
             pairs = [(length, kind) for length in config.get('prefix_lengths', [config['prefix_tokens']])
                      for kind in config.get('crossover_kinds', ['raw', 'mask_half'])]
             if smoke:
-                pairs = [(config.get('prefix_lengths', [config['prefix_tokens']])[0], kind) for kind in ('raw', 'mask_half')]
+                pairs = [(length, kind) for length in config.get('prefix_lengths', [config['prefix_tokens']])[:1]
+                         for kind in ('raw', 'mask_half')]
             for prefix_length, prefix_kind in pairs:
                 apply_adapter_tensors(session.model, transformations[prefix_kind])
                 crossover_root = root / 'crossovers' / f't{prefix_length}'

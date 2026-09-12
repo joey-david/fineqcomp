@@ -263,6 +263,8 @@ def generate_response_records(
     batch_size: int,
     max_new_tokens: int,
     generation_seed: int | None = None,
+    *,
+    stop_strings: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     device = model_device(model)
     old_padding = tokenizer.padding_side
@@ -295,6 +297,7 @@ def generate_response_records(
                         pad_token_id=tokenizer.pad_token_id,
                         eos_token_id=tokenizer.eos_token_id,
                         use_cache=True,
+                        **({'stop_strings': stop_strings, 'tokenizer': tokenizer} if stop_strings else {}),
                     )
                 prompt_width = encoded["input_ids"].shape[1]
                 for row in generated:
@@ -316,12 +319,15 @@ def generate_response_records(
                     response = tokenizer.decode(
                         completion, skip_special_tokens=True
                     )
+                    stopped_by_string = any(s in response for s in (stop_strings or []))
                     outputs.append(
                         {
                             "response": response,
                             "completion_tokens": token_count,
                             "terminated_with_eos": terminated,
-                            "hit_generation_limit": not terminated,
+                            "hit_generation_limit": not terminated and not stopped_by_string
+                                and token_count >= max_new_tokens,
+                            "stopped_by_string": stopped_by_string,
                             "repeated_8gram_fraction": repeated_ngram_fraction(
                                 response
                             ),
