@@ -1,7 +1,39 @@
 import torch
+import pytest
 
 from fineqcomp.correction_conditioning import candidates, score_rows, strict_answer
 from fineqcomp.data import Example
+
+
+def test_direct_answer_changes_only_the_instruction():
+    from fineqcomp.correction_conditioning import generation_rows
+    prompt = "Solve the problem. Show concise work and finish with '#### ' followed by the answer.\n\nQuestion: 2 + 3?\nAnswer:"
+    rows = [Example('x', prompt, '5', {'template': 'x'})]
+    direct = generation_rows(rows, 'direct')[0]
+    assert direct.prompt.split('\n\n', 1)[1] == prompt.split('\n\n', 1)[1] + ' #### '
+    assert direct.response == rows[0].response and direct.metadata == rows[0].metadata
+    assert 'Give only the final answer' in direct.prompt
+    assert generation_rows(rows, 'cot') is rows
+    with pytest.raises(ValueError, match='standard GSM prompt'):
+        generation_rows([Example('x', 'unexpected prompt', '5', {})], 'direct')
+
+
+def test_precision_sweep_does_not_change_the_uncompressed_tensors():
+    raw = {'layer.lora_A.weight': torch.randn(8, 12), 'layer.lora_B.weight': torch.randn(10, 8)}
+    cells = {key: (tensors, bits) for key, tensors, bits, _ in candidates(raw, 8, 11, {'uniform_bits': [2, 1]})}
+    for bits in (2, 1):
+        tensors, precision = cells[f'uniform_b{bits}']
+        assert tensors is raw and precision == bits
+
+
+def test_compression_analysis_requires_each_configured_state():
+    from fineqcomp.cot_compression_analysis import expected_states
+    config = dict(uniform_bits=[2, 1], scales=[], svd_ranks=[1, 4],
+                  svd_binary=True, random_draws=0)
+    assert expected_states(config, 16) == {
+        'base', 'raw', 'uniform_b2', 'uniform_b1', 'mask_half',
+        'svd_r1', 'svd_r4', 'svd_r2_binary',
+    }
 
 
 def test_scalar_control_changes_update_by_scale_not_scale_squared():
