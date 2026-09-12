@@ -20,6 +20,46 @@ MetaMathQA, then scores GSM8K.
 
 ## Locked causal test
 
+### Accuracy audit, 10 September 2026
+
+Re-reading 72 prediction files checks all 94,968 saved answers against the
+numeric parser and the published pair table. Means over three training seeds:
+
+| Correctly paired CoT training | Raw | Two-bit | Mixed 1.5-bit | Binary |
+|---|---:|---:|---:|---:|
+| Mistral-7B | 68.9% | 67.3% | 64.2% | 59.3% |
+| Qwen2.5-7B | 83.2% | 83.4% | 82.9% | 82.4% |
+| Llama-3.1-8B | 73.2% | 72.2% | 70.0% | 65.7% |
+
+Two-bit files occupy about 9.9–10.3 MB and binary files about 5.1–5.4 MB,
+including their decoder metadata. These sizes describe the adapter; the frozen
+NF4 base is unchanged. Labels name codec settings, not the size of the whole
+model or a universal information rate.
+
+**A shrinking aligned-minus-permuted gap does not by itself mean useful CoT
+performance was lost.** Qwen's correctly paired adapter loses only 0.83 points
+from raw to binary, while its mismatched-trace control improves from 23.7% to
+65.8%. About 98% of the 42.96-point gap contraction comes from the control's
+improvement. The frozen Qwen base already scores 77.6%. Compression removes much
+of the permuted adapter's measured harm while preserving most of the aligned
+adapter's measured benefit on this test.
+Mistral and Llama lose 9.60 and 7.53 points respectively, so the curve depends on
+the frozen model and its learned update.
+
+This supports a compact learned change in behavior relative to an existing
+base. It does not show that the adapter stores all reasoning ability, nor that
+its written steps faithfully describe its internal computation. The new
+`research/correction-conditioning` pilot crosses compressed files with CoT
+versus direct-answer instructions to test whether the benefit of requesting
+written working survives compression. It reuses matched trained adapters and
+does not select codecs from test results. Its corrected smoke passed; the locked
+6,400-response pilot is running as job 2072592, so no pilot result appears here yet.
+
+Reproduce the audit with `python -m fineqcomp.cot_compression_analysis` on that
+branch. [Plot and full audit](../../reports/cot_compression_2026_09_10/) include
+per-seed values and prediction-file hashes. Shaded plot bands show the observed
+seed range, not confidence intervals.
+
 The completed span split did not show whether useful reasoning comes from the
 trace text itself or from its fit to the problem. The locked test keeps every
 prompt, correct final answer, rationale-body multiset, training setting, and
@@ -75,8 +115,8 @@ evaluation-only cells are filled.
 
 Qwen2.5-7B, same three supervision targets, same three seeds.
 
-**Answer-only supervision destroys the model, and on Qwen it is spectacular.**
-GSM8K falls from the base model's 0.776 to 0.217 — fifty-six points — while
+**Answer-only supervision sharply lowers task accuracy.** On Qwen, GSM8K falls
+from the base model's 0.776 to 0.217 — fifty-six points — while
 the adapter memorises the final line. On Mistral the same arm went 0.064 to
 0.022. Supervising the final answer alone is not merely useless; it is worse
 than leaving the model alone, on both substrates.
@@ -90,10 +130,10 @@ than leaving the model alone, on both substrates.
 | Qwen | reasoning only | +0.100 | −0.08 | 0.790 |
 | Qwen | whole response | +0.101 | +0.02 | 0.832 |
 
-**Supervision targets are additive, to three decimal places, on both models.**
+**The measured reasoning-span gains are similar under both supervision targets.**
 The reasoning-span gain is 0.567 with the answer supervised and 0.568 without
-on Mistral; 0.101 and 0.100 on Qwen. Whatever an adapter writes for the answer
-format is disjoint from what it writes for the reasoning.
+on Mistral; 0.101 and 0.100 on Qwen. These similar gains do not establish that
+answer format and reasoning occupy disjoint parts of the adapter.
 
 **Each target still damages the span it does not cover**, in the same direction
 on both, though far more mildly on Qwen, which already knows both behaviours.
@@ -102,7 +142,7 @@ on both, though far more mildly on Qwen, which already knows both behaviours.
 
 The claim this folder previously led with. On Mistral the reasoning span needed
 1.07 bits per value to keep ninety per cent of its gain and the answer span
-0.58, so reasoning looked five times dearer to store. On Qwen the order
+0.58, so reasoning needed about 1.85 times the measured rate. On Qwen the order
 reverses: reasoning 0.471, answer 0.575.
 
 | model | reasoning R\* | answer R\* | answer-only R\* |
@@ -110,10 +150,11 @@ reverses: reasoning 0.471, answer 0.575.
 | Mistral | 1.070 | 0.578 | 0.209 |
 | Qwen | 0.471 | 0.575 | 0.147 |
 
-The mechanism is visible in the gains: Qwen already reasons well on GSM8K, so
-its reasoning adapter installs almost nothing (0.101 bits per token against
-Mistral's 0.567) and is correspondingly cheap. **"Reasoning costs more to store
-than answer formatting" is a statement about Mistral, not about reasoning.**
+The model-relative pattern is visible in the gains: Qwen already scores well on
+GSM8K, and its reasoning adapter gains only 0.101 bits per token against
+Mistral's 0.567. This is consistent with a smaller update being needed; it does
+not identify a storage mechanism. **"Reasoning costs more to store than answer
+formatting" is a statement about Mistral, not about reasoning.**
 This is the same lesson as the two-model panel in programme 1: rate is a
 property of the corpus and the frozen model together.
 
@@ -133,9 +174,8 @@ held-out NLL of 0.0004.
 
 **Reasoning supervision is unaffected by whether the answer is also
 supervised.** The reasoning-span gain is 0.567 with the answer supervised and
-0.568 without. The two targets are additive to three decimal places, so
-whatever the adapter writes for the answer format is disjoint from what it
-writes for the reasoning.
+0.568 without. This similarity does not establish independent mechanisms or
+disjoint storage in the adapter.
 
 ![spans under compression](span_supervision/spans_under_compression.png)
 
