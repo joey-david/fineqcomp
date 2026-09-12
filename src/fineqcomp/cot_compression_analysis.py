@@ -39,6 +39,30 @@ def answer_only(text):
     return re.fullmatch(r'\s*####\s*[-+]?\d[\d,]*(?:\.\d+)?\s*', text) is not None
 
 
+def paired_strict_difference(left, right):
+    """Compare matched answers and resample whole templates."""
+    right_by_id = {row['example_id']: row for row in right}
+    if set(right_by_id) != {row['example_id'] for row in left}:
+        raise ValueError('paired answer IDs differ')
+    deltas = defaultdict(list)
+    both = left_only = right_only = 0
+    for a in left:
+        b = right_by_id[a['example_id']]
+        ac, bc = bool(a['strict_correct']), bool(b['strict_correct'])
+        deltas[a['template']].append(int(ac) - int(bc))
+        both += ac and bc
+        left_only += ac and not bc
+        right_only += bc and not ac
+    values = np.array([np.mean(group) for group in deltas.values()])
+    rng = np.random.default_rng(260910)
+    interval = np.quantile(
+        values[rng.integers(0, len(values), (5000, len(values)))].mean(axis=1),
+        [.025, .975],
+    )
+    return dict(difference=float(values.mean()), ci95=interval.tolist(),
+                both_correct=both, left_only=left_only, right_only=right_only)
+
+
 def expected_states(config, rank):
     """Name every adapter state that the configured runner must write."""
     states = {'base', 'raw', 'mask_half'}
@@ -94,7 +118,7 @@ def historical(source):
 
 def pilot(root):
     lock = read_json(root / 'lock.json')
-    cells, missing = [], []
+    cells, missing, arm_rows = [], [], {}
     for spec in lock['cells']:
         run = root / 'cells' / spec['run_id']
         if not (run / 'complete.json').exists():
@@ -121,12 +145,11 @@ def pilot(root):
                 if not left:
                     continue
                 right = [direct[r['example_id']] for r in left]
-                deltas = defaultdict(list)
-                for a, b in zip(left, right, strict=True):
-                    deltas[a['template']].append(int(a['strict_correct']) - int(b['strict_correct']))
-                values = np.array([np.mean(v) for v in deltas.values()])
-                rng = np.random.default_rng(260910)
-                interval = np.quantile(values[rng.integers(0, len(values), (5000, len(values)))].mean(axis=1), [.025, .975])
+                paired = paired_strict_difference(left, right)
+                arm = 'permuted' if spec['dataset_key'].endswith('_permuted') else 'aligned'
+                arm_rows[(spec['model']['key'], spec['seed'], path.parent.name, split, arm)] = {
+                    'cot': left, 'direct': right,
+                }
                 cells.append(dict(model=spec['model']['key'], seed=spec['seed'], dataset=spec['dataset_key'],
                     codec=path.parent.name, split=split, n=len(left),
                     file_bytes=0 if storage is None else storage['file_bits'] / 8,
@@ -135,7 +158,7 @@ def pilot(root):
                     direct_strict_accuracy=float(np.mean([r['strict_correct'] for r in right])),
                     cot_strict_parse_rate=float(np.mean([r['strict_prediction'] is not None for r in left])),
                     direct_strict_parse_rate=float(np.mean([r['strict_prediction'] is not None for r in right])),
-                    paired_cot_minus_direct=float(values.mean()), paired_ci95=interval.tolist(),
+                    paired_cot_minus_direct=paired['difference'], paired_ci95=paired['ci95'],
                     cot_cap_rate=float(np.mean([r['hit_generation_limit'] for r in left])),
                     direct_cap_rate=float(np.mean([r['hit_generation_limit'] for r in right])),
                     cot_mean_tokens=float(np.mean([r['completion_tokens'] for r in left])),
@@ -148,7 +171,23 @@ def pilot(root):
                         len([line for line in r['response'].splitlines() if line.strip()]) > 1
                         for r in right])))
                 )
-    return dict(complete=not missing, missing=missing, cells=cells, config=lock['config'])
+    arm_comparisons = []
+    keys = sorted({key[:-1] for key in arm_rows})
+    for key in keys:
+        arms = {arm: arm_rows.get((*key, arm)) for arm in ('aligned', 'permuted')}
+        if any(rows is None for rows in arms.values()):
+            missing.append(f'{key}: unpaired training arms')
+            continue
+        for mode in ('cot', 'direct'):
+            paired = paired_strict_difference(arms['aligned'][mode], arms['permuted'][mode])
+            arm_comparisons.append(dict(
+                model=key[0], seed=key[1], codec=key[2], split=key[3], mode=mode,
+                n=len(arms['aligned'][mode]), paired_aligned_minus_permuted=paired['difference'],
+                paired_ci95=paired['ci95'], both_correct=paired['both_correct'],
+                aligned_only=paired['left_only'], permuted_only=paired['right_only'],
+            ))
+    return dict(complete=not missing, missing=sorted(set(missing)), cells=cells,
+                arm_comparisons=arm_comparisons, config=lock['config'])
 
 
 def plot(report, out):

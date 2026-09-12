@@ -27,7 +27,9 @@ def test_precision_sweep_does_not_change_the_uncompressed_tensors():
 
 
 def test_compression_analysis_requires_each_configured_state():
-    from fineqcomp.cot_compression_analysis import answer_only, expected_states
+    from fineqcomp.cot_compression_analysis import (
+        answer_only, expected_states, paired_strict_difference,
+    )
     config = dict(uniform_bits=[2, 1], scales=[], svd_ranks=[1, 4],
                   svd_binary=True, random_draws=0)
     assert expected_states(config, 16) == {
@@ -37,6 +39,13 @@ def test_compression_analysis_requires_each_configured_state():
     assert answer_only('#### -1,204.5\n')
     assert not answer_only('#### 13 * 8 = 104\n')
     assert not answer_only('#### 70 sushi rolls\n')
+    left = [dict(example_id='a', template='x', strict_correct=True),
+            dict(example_id='b', template='y', strict_correct=False)]
+    right = [dict(example_id='b', template='y', strict_correct=True),
+             dict(example_id='a', template='x', strict_correct=True)]
+    paired = paired_strict_difference(left, right)
+    assert paired['difference'] == -.5
+    assert (paired['both_correct'], paired['left_only'], paired['right_only']) == (1, 0, 1)
 
 
 def test_scalar_control_changes_update_by_scale_not_scale_squared():
