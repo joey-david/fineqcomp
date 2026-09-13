@@ -129,6 +129,8 @@ locks live under the immutable remote root `fq-policy-99b7297`. That job was
 stopped after its first 128-update checkpoints exposed a bad action-only score:
 moving the common response prefix into the prompt changed BPE tokens at the new
 boundary. Its full-response values remain valid development evidence, but no
-cell completed. The corrected score masks within the original response and
-requires a fresh source root and pilot launch. The repetition
+cell completed. The corrected score masks within the original response. The
+fresh smokes (job 2099103) and matched-base checks (job 2099109) passed from
+source root `fq-policy-d5822e1`; corrected pilot job 2099304 then replaced the
+cancelled job, again capped at two H100 tasks. The repetition
 and rank/seed follow-ups remain unsubmitted pending the pilot result.
