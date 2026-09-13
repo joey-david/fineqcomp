@@ -6,20 +6,20 @@ information_rows: 64
 evaluation_batch_size: 1
 
 codecs:
-  sub0_01_16: {method: uniform, bits: 0, blend: 0.0625}
-  sub0_02_16: {method: uniform, bits: 0, blend: 0.125}
-  sub0_04_16: {method: uniform, bits: 0, blend: 0.25}
+  sub0_01_16: {method: uniform, bits: 0, blend: 0.0625, score_task: false}
+  sub0_02_16: {method: uniform, bits: 0, blend: 0.125, score_task: false}
+  sub0_04_16: {method: uniform, bits: 0, blend: 0.25, score_task: false}
   sub0_08_16: {method: uniform, bits: 0, blend: 0.5}
-  sub0_12_16: {method: uniform, bits: 0, blend: 0.75}
+  sub0_12_16: {method: uniform, bits: 0, blend: 0.75, score_task: false}
   binary: {method: uniform, bits: 1}
-  blend1_25: {method: uniform, bits: 1, blend: 0.25}
+  blend1_25: {method: uniform, bits: 1, blend: 0.25, score_task: false}
   blend1_50: {method: uniform, bits: 1, blend: 0.5}
-  blend1_75: {method: uniform, bits: 1, blend: 0.75}
+  blend1_75: {method: uniform, bits: 1, blend: 0.75, score_task: false}
   uniform2: {method: uniform, bits: 2}
-  uniform3: {method: uniform, bits: 3}
-  uniform4: {method: uniform, bits: 4}
-  uniform8: {method: uniform, bits: 8}
-  fp16: {method: uniform, bits: 16}
+  uniform3: {method: uniform, bits: 3, score_task: false}
+  uniform4: {method: uniform, bits: 4, score_task: false}
+  uniform8: {method: uniform, bits: 8, score_task: false}
+  fp16: {method: uniform, bits: 16, score_task: false}
 
 models:
   qwen3_0_6b_thinking:

@@ -110,8 +110,6 @@ def test_native_reasoning_smoke_is_one_seed_with_a_wide_rate_grid():
         0.0625, 0.125, 0.25, 0.5, 0.75,
         1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0, 16.0,
     }
-
-
 def test_reasoning_data_smoke_caps_every_new_trace_source():
     campaign = load_campaign("configs/reasoning_data_smoke.yaml")
     runs = expand_campaign(campaign)
@@ -151,6 +149,12 @@ def test_numina_reasoning_pilot_is_a_matched_natural_pair():
         0.0625, 0.125, 0.25, 0.5, 0.75,
         1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0, 16.0,
     }
+    scored_rates = {
+        float(codec["bits"]) + float(codec.get("blend", 0.0))
+        for codec in campaign["codecs"].values()
+        if codec.get("score_task", True)
+    }
+    assert scored_rates == {0.5, 1.0, 1.5, 2.0}
 
 
 def test_reasoning_scaling_lock_matches_the_smoke_panel_and_rate_grid():
