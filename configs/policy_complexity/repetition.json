@@ -1,0 +1,5 @@
+{
+  "extends": "pilot.json",
+  "repeat_factors": [1, 4],
+  "checkpoints": [128, 512, 2048]
+}

@@ -1,0 +1,9 @@
+{
+  "extends": "pilot.json",
+  "n_values": [16],
+  "conditions": ["exceptions"],
+  "training_ranks": [2],
+  "checkpoints": [1, 2],
+  "data": {"train_pool_size": 32, "eval_size": 16, "exception_fraction": 0.25},
+  "codec": {"ranks": [1, 2], "bits": [1, 2]}
+}

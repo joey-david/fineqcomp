@@ -1,0 +1,7 @@
+{
+  "extends": "pilot.json",
+  "seeds": [22, 33],
+  "training_ranks": [1, 4, 16],
+  "checkpoints": [128, 512, 2048],
+  "compress_all_n": true
+}
