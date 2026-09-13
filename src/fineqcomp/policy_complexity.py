@@ -8,6 +8,7 @@ import itertools
 import json
 import math
 from pathlib import Path
+from fcntl import flock, LOCK_EX
 
 import torch
 
@@ -50,10 +51,15 @@ def contract(config):
 
 def prepare(config, out):
     locked = contract(config)
-    previous = read_json(out / 'lock.json')
-    if previous is not None and previous != locked:
-        raise ValueError('config or source differs from the output lock; use a new output root')
-    write_json(out / 'lock.json', locked)
+    out.mkdir(parents=True, exist_ok=True)
+    # Array tasks can start together. Serialize the initial atomic JSON write.
+    with (out / '.prepare.lock').open('a') as handle:
+        flock(handle.fileno(), LOCK_EX)
+        previous = read_json(out / 'lock.json')
+        if previous is not None and previous != locked:
+            raise ValueError('config or source differs from the output lock; use a new output root')
+        if previous is None:
+            write_json(out / 'lock.json', locked)
     return locked
 
 
@@ -88,6 +94,13 @@ def score(session, rows, config):
     result['action_nll'] = sum(r['sum_nll'] for r in action) / sum(r['tokens'] for r in action)
     for row, a in zip(result['rows'], action, strict=True):
         row['action_sum_nll'], row['action_tokens'] = a['sum_nll'], a['tokens']
+    result['strata'] = {}
+    for covered, exception in itertools.product((False, True), repeat=2):
+        subset = [r for r in result['rows'] if r['covered'] == covered and r['is_exception'] == exception]
+        if subset:
+            result['strata'][f'covered_{covered}_exception_{exception}'] = dict(
+                examples=len(subset), nll=sum(r['sum_nll'] for r in subset) / sum(r['tokens'] for r in subset),
+                action_nll=sum(r['action_sum_nll'] for r in subset) / sum(r['action_tokens'] for r in subset))
     return result
 
 
