@@ -81,6 +81,12 @@ def reduce(root):
                     value['unsettled_n_values'] = unsettled
                     if unsettled and value['area'] is not None:
                         value['status'] = 'optimization_unresolved'
+                    action_reference = reference['checkpoints'][-1]['scores'][split]['action_nll']
+                    value['reference_action_nll'] = action_reference
+                    value['common_action_target'] = min(config['common_nll_targets'])
+                    value['reference_target_reached'] = action_reference <= value['common_action_target']
+                    if not value['reference_target_reached'] and value['area'] is not None:
+                        value['status'] = 'reference_target_unattained'
                     areas.append(dict(group=list(key), domain=domain, metric=metric, step=step, **value))
                 for target in config['common_nll_targets']:
                     budgets.append(dict(group=list(key), domain=domain, metric=metric,
