@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import replace
 import hashlib
 import itertools
 import json
@@ -86,11 +85,12 @@ def score(session, rows, config):
                         for e, r in zip(rows, records, strict=True)])
     # Diagnostic excludes common response wording, so format learning cannot
     # masquerade as learning the policy. The primary score remains full text.
-    content = [replace(e, prompt=e.prompt + ' The correct action is ',
-                       response=e.response.split(' The correct action is ', 1)[1]) for e in rows]
-    validate_tokens(session, content, config['training']['max_length'])
-    action = completion_nll(session.model, session.tokenizer, content, session.spec,
-                           config['training']['max_length'], config['batch_size'])
+    # Mask within the original response. Moving its prefix into the prompt
+    # changes BPE tokens at the new boundary and does not score the suffix the
+    # model saw during training.
+    action = completion_nll(session.model, session.tokenizer, rows, session.spec,
+                           config['training']['max_length'], config['batch_size'],
+                           label_span='answer', answer_marker=' ACTION_')
     result['action_nll'] = sum(r['sum_nll'] for r in action) / sum(r['tokens'] for r in action)
     for row, a in zip(result['rows'], action, strict=True):
         row['action_sum_nll'], row['action_tokens'] = a['sum_nll'], a['tokens']

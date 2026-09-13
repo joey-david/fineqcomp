@@ -42,7 +42,8 @@ Before any training, the full-response base-NLL spread across policies must be
 at most 0.1 nats/token per model and seed. A failure stops training and requires
 an explicit design amendment; no policy is selected using test outcomes. Also
 retain action-suffix NLL: predictable common wording can dilute full-text error.
-The suffix diagnostic has its own fixed token boundary and includes EOS.
+The suffix diagnostic masks the common words within the original response, so
+it scores the same action tokens as the full-response measure and includes EOS.
 
 Evaluation keeps a fixed subset of training-eligible entities as n increases,
 with fresh request IDs and separate calibration/verification contexts. Retain
@@ -124,5 +125,10 @@ The amended real-model smokes completed on Mistral and Qwen (Jean-Zay job
 (job 2089200). Full-response NLL spreads were 0.01496 for Mistral and 0.01721
 for Qwen, so both passed the registered 0.1-nat gate. The 18-cell pilot was then
 submitted as job 2098790 with at most two H100 tasks at once. Source and output
-locks live under the immutable remote root `fq-policy-99b7297`. The repetition
+locks live under the immutable remote root `fq-policy-99b7297`. That job was
+stopped after its first 128-update checkpoints exposed a bad action-only score:
+moving the common response prefix into the prompt changed BPE tokens at the new
+boundary. Its full-response values remain valid development evidence, but no
+cell completed. The corrected score masks within the original response and
+requires a fresh source root and pilot launch. The repetition
 and rank/seed follow-ups remain unsubmitted pending the pilot result.

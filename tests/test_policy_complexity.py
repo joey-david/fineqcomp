@@ -99,3 +99,30 @@ def test_real_tiny_model_runs_training_and_decoded_codec(tmp_path, monkeypatch):
     assert record['grid'][0]['file_bits'] == 8 * (tmp_path / 'cells/0000/codecs/r1_b1.fqcb').stat().st_size
     assert len(record['grid'][0]['scores']['verification_recall']['rows']) == 16
     assert reduce(tmp_path)['complete']
+
+
+def test_action_span_keeps_tokens_from_the_original_response():
+    import torch
+    from fineqcomp.config import ModelSpec
+    from fineqcomp.data import Example
+    from fineqcomp.modeling import CausalExampleDataset
+
+    class Tokenizer:
+        eos_token_id = 2
+        def encode(self, text, add_special_tokens=False):
+            # Treat a leading-space word as one token. Splitting after that
+            # space would produce a different sequence, as real BPEs can.
+            pieces = text.replace(' The', '|The').replace(' ACTION_', '|ACTION_').split('|')
+            ids = [10 + len(piece) for piece in pieces if piece]
+            return ([1] if add_special_tokens else []) + ids
+
+    row = Example('x', 'prompt', ' The correct action is ACTION_07.', {})
+    spec = ModelSpec(key='tiny', name='unused', revision='test', backbone='bf16')
+    full = CausalExampleDataset(Tokenizer(), [row], spec, 32)
+    action = CausalExampleDataset(Tokenizer(), [row], spec, 32, 'answer', ' ACTION_')
+    full_labels = full[0]['labels']
+    action_labels = action[0]['labels']
+    kept = action_labels != -100
+    assert kept.any()
+    assert torch.equal(action_labels[kept], full_labels[kept])
+    assert int(kept.sum()) < int((full_labels != -100).sum())
