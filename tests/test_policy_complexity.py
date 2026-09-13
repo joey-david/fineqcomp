@@ -58,3 +58,44 @@ def test_simultaneous_array_preparation_has_one_immutable_lock(tmp_path):
     with ThreadPoolExecutor(max_workers=4) as pool:
         records = list(pool.map(lambda _: prepare(config, tmp_path), range(8)))
     assert all(record == records[0] for record in records)
+
+
+def test_real_tiny_model_runs_training_and_decoded_codec(tmp_path, monkeypatch):
+    import torch
+    from transformers import LlamaConfig, LlamaForCausalLM
+    from fineqcomp.artifacts import read_json
+    from fineqcomp.modeling import ModelSession
+    from fineqcomp.policy_complexity import run_base, run_cell
+
+    class Tokenizer:
+        pad_token_id, eos_token_id = 0, 2
+        def encode(self, text, add_special_tokens=False):
+            return ([1] if add_special_tokens else []) + [3 + ord(c) % 120 for c in text]
+
+    def load(spec):
+        torch.manual_seed(7)
+        model = LlamaForCausalLM(LlamaConfig(vocab_size=128, hidden_size=16,
+            intermediate_size=32, num_hidden_layers=1, num_attention_heads=2,
+            num_key_value_heads=2, max_position_embeddings=256, use_cache=False))
+        for parameter in model.parameters():
+            parameter.requires_grad_(False)
+        return ModelSession(spec, model, Tokenizer())
+
+    monkeypatch.setattr(ModelSession, 'load', load)
+    config = load_config(CONFIG)
+    config['models'] = [dict(key='tiny', name='unused', revision='test', backbone='bf16')]
+    config['codec'] = dict(ranks=[1], bits=[1])
+    locked = prepare(config, tmp_path)
+    previous_threads = torch.get_num_threads()
+    try:
+        torch.set_num_threads(1)
+        run_base(config, tmp_path, 0)
+        run_cell(config, tmp_path, locked['cells'][0], 0)
+    finally:
+        torch.set_num_threads(previous_threads)
+    record = read_json(tmp_path / 'cells/0000/complete.json')
+    assert record['training']['optimizer_updates'] == 2
+    assert [r['step'] for r in record['checkpoints']] == [1, 2]
+    assert record['grid'][0]['file_bits'] == 8 * (tmp_path / 'cells/0000/codecs/r1_b1.fqcb').stat().st_size
+    assert len(record['grid'][0]['scores']['verification_recall']['rows']) == 16
+    assert reduce(tmp_path)['complete']
