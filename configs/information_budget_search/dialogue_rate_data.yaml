@@ -1,0 +1,22 @@
+# Prepared-data input for the receiver-relative rate panel. The old dialogue
+# adapter still uses the bit_budget.yaml training and calibration rows. Only
+# the rate panel changes: it scores unseen preferred dialogue completions from
+# HH-RLHF instead of the retained-capability GSM8K test used by training runs.
+datasets:
+  kind_dialogue:
+    train_source:
+      path: Anthropic/hh-rlhf
+      name: default
+      revision: 09be8c5bbc57cb3887f3a9732ad6aa7ec602a1fa
+      split: train
+      converter: hh_rlhf
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 500
+    evaluations:
+    - key: kind_dialogue
+      path: Anthropic/hh-rlhf
+      name: default
+      revision: 09be8c5bbc57cb3887f3a9732ad6aa7ec602a1fa
+      split: test
+      converter: hh_rlhf
