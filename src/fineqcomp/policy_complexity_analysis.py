@@ -67,11 +67,20 @@ def reduce(root):
             for metric in ('nll', 'action_nll'):
                 split = f'verification_{domain}'
                 for checkpoint_index, step in enumerate(config['checkpoints']):
+                    if key[3] != max(config['training_ranks']):
+                        continue
                     losses = [r['checkpoints'][checkpoint_index]['scores'][split][metric] for r in group]
                     final = reference['checkpoints'][-1]['scores'][split][metric]
                     previous = reference['checkpoints'][-2]['scores'][split][metric]
                     value = learning_area(ns, losses, reference['base'][split][metric], final, previous,
                                           config['plateau_fraction'])
+                    gain = reference['base'][split][metric] - final
+                    unsettled = [r['cell']['n'] for r in group if gain <= 0 or abs(
+                        r['checkpoints'][-1]['scores'][split][metric] -
+                        r['checkpoints'][-2]['scores'][split][metric]) > config['plateau_fraction'] * gain]
+                    value['unsettled_n_values'] = unsettled
+                    if unsettled and value['area'] is not None:
+                        value['status'] = 'optimization_unresolved'
                     areas.append(dict(group=list(key), domain=domain, metric=metric, step=step, **value))
                 for target in config['common_nll_targets']:
                     budgets.append(dict(group=list(key), domain=domain, metric=metric,

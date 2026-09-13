@@ -1,4 +1,5 @@
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
@@ -50,3 +51,10 @@ def test_missing_cells_are_not_silently_removed(tmp_path):
     result = reduce(tmp_path)
     assert not result['complete'] and result['completed_cells'] == 0
     assert len(result['missing_cells']) == result['expected_cells']
+
+
+def test_simultaneous_array_preparation_has_one_immutable_lock(tmp_path):
+    config = load_config(CONFIG)
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        records = list(pool.map(lambda _: prepare(config, tmp_path), range(8)))
+    assert all(record == records[0] for record in records)

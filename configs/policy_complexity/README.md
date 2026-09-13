@@ -51,8 +51,8 @@ not generalization to new random facts. A separate fixed set of unseen entities
 tests rule generalization; independent unseen exceptions cannot be predicted.
 
 Reference error is the final predetermined checkpoint, never the best test
-checkpoint. A change exceeding 5% of the base-to-reference gain between the last
-two checkpoints marks optimization unresolved. Passing is only a plateau screen,
+checkpoint. At any data size, a change exceeding 5% of the base-to-reference gain
+between the last two checkpoints marks optimization unresolved. Passing is only a plateau screen,
 not proof of convergence. The action-suffix curve checks whether the learner
 acquired the policy rather than only common response wording.
 
