@@ -116,3 +116,13 @@ and reduce. Run both smoke model cells first. Then run the pilot base diagnostic
 and inspect the mismatch gates before submitting the 18 training cells. A run
 lock prevents concurrent duplicate work; completed cells skip on resume. An
 interrupted incomplete training cell restarts deterministically.
+
+## Run record: 2026-09-13
+
+The amended real-model smokes completed on Mistral and Qwen (Jean-Zay job
+2089199, two cells, exit code zero). The fresh baseline check also completed
+(job 2089200). Full-response NLL spreads were 0.01496 for Mistral and 0.01721
+for Qwen, so both passed the registered 0.1-nat gate. The 18-cell pilot was then
+submitted as job 2098790 with at most two H100 tasks at once. Source and output
+locks live under the immutable remote root `fq-policy-99b7297`. The repetition
+and rank/seed follow-ups remain unsubmitted pending the pilot result.
