@@ -12,6 +12,7 @@ MetaMathQA, then scores GSM8K.
 |---|---|
 | [`span_supervision/`](span_supervision/) | complete, 9 Mistral + 9 Qwen runs, 3 seeds |
 | [`conditional_trace_rate/`](conditional_trace_rate/) | both locked primary tests pass across 9 matched pairs; half-bit secondary point incomplete |
+| [paired CoT/direct pilot](../../reports/cot_compression_2026_09_10/) | complete: 6,400 responses, 64 audited cells |
 | [`reasoning_scaling_battery_lock.json`](reasoning_scaling_battery_lock.json) | prospective native-model, data, GRPO, and scaling-law gates frozen; model and data smokes only |
 | [`reasoning_scaling_battery_amendment_1.json`](reasoning_scaling_battery_amendment_1.json) | pre-pilot correction after the original data gate and first L_rel formula failed |
 | [`reasoning_scaling_battery_amendment_2.json`](reasoning_scaling_battery_amendment_2.json) | surface-control, controlled-generator, fixed-GRPO-buffer, and native-generation gates added after two retrieval smokes |
@@ -48,12 +49,51 @@ the frozen model and its learned update.
 
 This supports a compact learned change in behavior relative to an existing
 base. It does not show that the adapter stores all reasoning ability, nor that
-its written steps faithfully describe its internal computation. The new
-`research/correction-conditioning` pilot crosses compressed files with CoT
-versus direct-answer instructions to test whether the benefit of requesting
-written working survives compression. It reuses matched trained adapters and
-does not select codecs from test results. Its corrected smoke passed; the locked
-6,400-response pilot is running as job 2072592, so no pilot result appears here yet.
+its written steps faithfully describe its internal computation.
+
+### Paired CoT/direct pilot, 13 September 2026
+
+The corrected `research/correction-conditioning` pilot is complete. It crosses
+the same question and answer boundary with a concise-CoT request versus a
+one-line direct-answer request, and crosses correctly paired versus permuted
+trace training. It evaluates eight serialized adapter states on 100 fixed
+GSM-Symbolic items for each of Mistral-7B and Qwen2.5-7B: 26 development and 74
+test items. The full run produced 6,400 responses. All 64 expected result cells
+are present, their example IDs are unique, and rescoring agrees with the saved
+scores. The table gives strict test answers out of 74; `A/P` means aligned and
+permuted trace training.
+
+| serialized adapter state | Mistral A/P | Qwen A/P |
+|---|---:|---:|
+| frozen base | 1 / 1 | 54 / 54 |
+| raw, 74--77 MB | 50 / 3 | 62 / 7 |
+| uniform two-bit, 9.9--10.3 MB | 51 / 5 | 60 / 10 |
+| uniform one-bit, 5.1--5.4 MB | 35 / 13 | 60 / 34 |
+| rank four, 18.7--19.5 MB | 43 / 2 | 59 / 10 |
+| rank one, 4.8--4.9 MB | 30 / 28 | 57 / 18 |
+| rank-two binary, 0.72--0.76 MB | 10 / 14 | 58 / 60 |
+
+Two-bit coding preserves the aligned result within two test answers on both
+models. One-bit coding costs Mistral 15 answers but costs Qwen only two. The
+smallest code gives a sharper warning: Qwen still gets 58 answers right, but
+the permuted control gets 60. Mistral shows the same loss of distinction at
+10 versus 14. The paired aligned-minus-permuted intervals include zero for both
+models at this point. High final-answer accuracy therefore does not show that a
+code retained the information supplied by matching each trace to its problem.
+
+Rank four retains most of the pairing-specific gap at about one quarter of the
+raw file size. At rank one, that gap remains large on Qwen but vanishes on
+Mistral. This is one training seed, so the subspace result needs replication;
+it already rules out treating adapter size or rank as a model-independent
+measure of reasoning.
+
+The request for written work also matters. With raw aligned adapters, Mistral
+scores 50/74 under the CoT request and 0/74 under the direct request; Qwen scores
+62/74 and 8/74. The direct run stops after one output line and tests answer
+elicitation without visible working. It cannot establish that the model did no
+internal computation. The result shows that the fine-tune's measured benefit
+depends on allowing its learned output procedure, not just on the final answer
+boundary.
 
 Reproduce the audit with `python -m fineqcomp.cot_compression_analysis` on that
 branch. [Plot and full audit](../../reports/cot_compression_2026_09_10/) include
