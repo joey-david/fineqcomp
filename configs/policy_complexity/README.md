@@ -32,8 +32,8 @@ with the existing scorer, which also supplies per-example losses. Prompts are
 masked and no response may be dropped or truncated.
 
 Policies use identical prompts and exactly balanced sixteen-label histograms:
-the first copies signal A, the second computes A xor B, and the third permutes
-the second policy's labels on 25% of entities. We do not assume this ordering
+the first maps signal A through a shared label code, the second maps A xor B,
+and the third changes the second policy's labels on 25% of entities. We do not assume this ordering
 implies an ordering in learning difficulty. Entity keys and irrelevant request
 IDs do not reveal the policy. Labels for exceptions are fixed across contexts.
 
@@ -61,8 +61,6 @@ Balanced SVD of the product removes factor gauge, but every result remains an
 achieved upper bound within this training route and codec family. Freeze the
 base, restore trained factors between interventions, and decode each actual file.
 
-## Following experiments, implemented through the same runner
-
 ### Amendment 1: label code, before any full training
 
 The first baseline-only check failed the 0.1-nat matching threshold: spreads
@@ -78,6 +76,8 @@ evidence of a law. Smokes and baseline checks repeat after the amendment.
 Learning-area eligibility also requires the final reference to reach the smallest
 registered action-NLL target (0.1); a flat but poor learner must not count as a
 valid complexity measurement. Otherwise retain its curve as target-unattained.
+
+## Following experiments, implemented through the same runner
 
 1. `repetition.json`: repeat each training row four times at the same update and
    batch budgets, against a one-copy control. Distinct entity coverage and the
