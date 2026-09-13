@@ -197,12 +197,19 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
-    parser.add_argument('--phase', choices=('prepare', 'base', 'run', 'reduce'), required=True)
+    parser.add_argument('--phase', choices=('prepare', 'base', 'run', 'smoke', 'reduce'), required=True)
     parser.add_argument('--cell', type=int, default=0)
     args = parser.parse_args()
     config = load_config(args.config)
     locked = prepare(config, args.out)
-    if args.phase == 'base':
+    if args.phase == 'smoke':
+        if max(config['checkpoints']) > 4:
+            raise ValueError('smoke requires an explicit tiny training config')
+        run_base(config, args.out, args.cell)
+        for index, cell in enumerate(locked['cells']):
+            if cell['model'] == config['models'][args.cell]:
+                run_cell(config, args.out, cell, index)
+    elif args.phase == 'base':
         run_base(config, args.out, args.cell)
     elif args.phase == 'run':
         run_cell(config, args.out, locked['cells'][args.cell], args.cell)
