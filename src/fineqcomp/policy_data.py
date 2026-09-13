@@ -8,6 +8,8 @@ from fineqcomp.data import Example
 
 POLICIES = ('rule', 'composition', 'exceptions')
 LABELS = tuple(f'ACTION_{i:02d}' for i in range(16))
+# Shared label code removes the first version's direct decimal-copy advantage.
+LABEL_CODE = (7, 12, 1, 14, 9, 2, 15, 4, 11, 0, 13, 6, 3, 10, 5, 8)
 
 
 def _rng(seed, *parts):
@@ -54,7 +56,8 @@ def make_policy_data(policy, n_train, *, seed=11, exception_fraction=.25,
         raise ValueError('invalid coverage or repetition')
     if 16 * exception_fraction != round(16 * exception_fraction):
         raise ValueError('exception fraction must be an exact multiple of 1/16')
-    pools = {p: _entities(seed, p, train_pool_size if p == 'train' else eval_size,
+    pools = {p: _entities(seed, 'matching_v2' if p == 'matching' else p,
+                         train_pool_size if p == 'train' else eval_size,
                          exception_fraction) for p in ('train', 'unseen', 'matching')}
     blocks = _rng(seed, 'recall_blocks').sample(range(train_pool_size // 16), eval_size // 16)
     recall_indices = sorted(b * 16 + j for b in blocks for j in range(16))
@@ -69,7 +72,7 @@ def make_policy_data(policy, n_train, *, seed=11, exception_fraction=.25,
         rows = []
         for index in indices:
             entity = pools[pool][index]
-            label = entity[policy]
+            label = LABEL_CODE[entity[policy]]
             request = hashlib.sha256(f'{seed}:{split}:{index}'.encode()).hexdigest()[:8]
             prompt = (f'Request: {request}. Item: {entity["key"]}. '
                       f'Signal A: {entity["a"]:02d}. Signal B: {entity["b"]:02d}.\n'

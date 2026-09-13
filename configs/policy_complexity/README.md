@@ -63,6 +63,22 @@ base, restore trained factors between interventions, and decode each actual file
 
 ## Following experiments, implemented through the same runner
 
+### Amendment 1: label code, before any full training
+
+The first baseline-only check failed the 0.1-nat matching threshold: spreads
+were 0.177 on Mistral and 0.137 on Qwen. The simple copy rule started easier.
+No pilot training followed. Apply the same fixed bijection
+`[7,12,1,14,9,2,15,4,11,0,13,6,3,10,5,8]` to all policy labels, preserving label
+counts and exception membership. All policies now learn one common label code;
+the simple policy is a one-input lookup and composition still combines inputs.
+Recheck on fresh matching entities (`matching_v2`), retaining the original
+threshold and all failed-check artifacts. This is calibration, not prospective
+evidence of a law. Smokes and baseline checks repeat after the amendment.
+
+Learning-area eligibility also requires the final reference to reach the smallest
+registered action-NLL target (0.1); a flat but poor learner must not count as a
+valid complexity measurement. Otherwise retain its curve as target-unattained.
+
 1. `repetition.json`: repeat each training row four times at the same update and
    batch budgets, against a one-copy control. Distinct entity coverage and the
    evaluation universe stay fixed. Checkpoints 128/512/2048 test whether apparent
