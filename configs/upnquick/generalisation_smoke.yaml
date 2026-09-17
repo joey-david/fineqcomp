@@ -1,0 +1,60 @@
+# Tiny-scale smoke variant. Same arms and conditions, cut row counts.
+arms:
+  cls_flipped:
+    config: configs/upnquick/cls_flipped.yaml
+    dataset: paws_flipped
+    evaluator: paws
+    max_new_tokens: 8
+    model: qwen25_7b_base
+    rank: 16
+    study: paws_flipped_full
+  cot_arithmetic:
+    config: configs/upnquick/cot_arithmetic.yaml
+    dataset: cot_math_arithmetic
+    evaluator: gsm8k
+    model: qwen25_7b_base
+    rank: 16
+    study: trace_arithmetic_full
+  cot_permuted:
+    config: configs/upnquick/conditional_trace_rate.yaml
+    dataset: cot_math_permuted
+    evaluator: gsm8k
+    model: qwen25_7b_base
+    rank: 16
+    study: trace_permuted_full
+  cot_shuffled:
+    config: configs/upnquick/cot_shuffled.yaml
+    dataset: cot_math_shuffled
+    evaluator: gsm8k
+    model: qwen25_7b_base
+    rank: 16
+    study: trace_shuffled_full
+  summary_mismatched:
+    config: configs/upnquick/summary_mismatched.yaml
+    dataset: xsum_mismatched
+    evaluator: xsum
+    max_new_tokens: 64
+    model: qwen25_7b_base
+    rank: 16
+    study: summary_mismatched_full
+conditions:
+- base
+- raw
+- rank1_b1
+- rank1_b16
+- scale_head_0p5
+- norm_matched_b1
+- tail_b16
+evaluation_batch_size: 32
+max_new_tokens: 32
+multiple_choice_labels:
+- A
+- B
+- C
+- D
+- E
+seed: 11
+smoke: true
+smoke_rows: 8
+test_rows: 8
+version: 1

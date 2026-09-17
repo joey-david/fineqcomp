@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from fineqcomp.data import (
+    LABEL_CONTROLS, RATIONALE_CONTROLS, RESPONSE_CONTROLS,
+)
+
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Literal
@@ -205,10 +209,25 @@ def load_campaign(path: str | Path) -> dict[str, Any]:
             raise ValueError(
                 f"dataset {key}: evaluation_max_new_tokens must be positive"
             )
+        fraction = dataset.get("corruption_fraction")
+        if fraction is not None and not 0.0 < float(fraction) <= 1.0:
+            raise ValueError(
+                f"dataset {key}: corruption_fraction must be in (0, 1]"
+            )
+        response_control = dataset.get("response_control")
+        if response_control is not None and response_control not in RESPONSE_CONTROLS:
+            raise ValueError(
+                f"dataset {key}: unknown response control {response_control!r}"
+            )
+        label_control = dataset.get("label_control")
+        if label_control is not None and label_control not in LABEL_CONTROLS:
+            raise ValueError(
+                f"dataset {key}: unknown label control {label_control!r}"
+            )
         control = dataset.get("rationale_control")
         if control is None:
             continue
-        if control != "permuted":
+        if control not in RATIONALE_CONTROLS:
             raise ValueError(f"dataset {key}: unknown rationale control {control!r}")
         if not dataset.get("answer_marker"):
             raise ValueError(f"dataset {key}: a rationale control needs an answer_marker")

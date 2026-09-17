@@ -1,0 +1,94 @@
+# Summarisation with each document paired to another document's summary.
+#
+# Exactly the intervention the recorded arm applies to rationales, moved to a
+# task that is generative and has a strong output format but involves no
+# reasoning. The multiset of summaries is unchanged; only which document each
+# one is attached to moves.
+#
+# This is the arm that separates two readings of the recorded result. If the
+# overshoot is about *reasoning* being restored, it should not appear here. If it
+# is about a generative *format prior* surviving compression -- which is what the
+# mechanism study concluded -- then it should, because a summarisation adapter
+# learns a register too.
+#
+# 64 new tokens at evaluation: an XSum summary is one sentence, and the default
+# 512 would spend most of the run generating past the end of the answer.
+adapters:
+  all_linear_r16:
+    alpha: 32
+    dropout: 0.0
+    last_n_layers: null
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+codecs:
+  binary:
+    bits: 1
+    method: uniform
+datasets:
+  xsum_mismatched:
+    evaluation_max_new_tokens: 64
+    evaluations:
+    - converter: xsum
+      key: xsum
+      name: default
+      path: EdinburghNLP/xsum
+      revision: 7d4d486c2f8ef850b1a11aead99b894ff3dd7da9
+      split: test
+    maximum_baseline_score: 0.45
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    response_control: mismatched
+    screening_binomial: false
+    screening_metric: rouge_l
+    task_type: generative
+    test_rows: 500
+    train_rows: 8000
+    train_source:
+      converter: xsum
+      name: default
+      path: EdinburghNLP/xsum
+      revision: 7d4d486c2f8ef850b1a11aead99b894ff3dd7da9
+      split: train
+    validation_rows: 256
+evaluation_batch_size: 32
+information_rows: 256
+models:
+  qwen25_7b_base:
+    backbone: nf4
+    chat: false
+    name: Qwen/Qwen2.5-7B
+    revision: d149729398750b98c0af14eb82c78cfe92750796
+studies:
+  summary_mismatched_full:
+    adapters:
+    - all_linear_r16
+    datasets:
+    - xsum_mismatched
+    kind: natural
+    models:
+    - qwen25_7b_base
+    seeds:
+    - 11
+    training: summary_1ep
+training:
+  summary_1ep:
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    effective_batch_size: 16
+    epochs: 1
+    eval_every_updates: 200
+    label_span: all
+    learning_rate: 0.0002
+    max_grad_norm: 1.0
+    max_length: 1024
+    micro_batch_size: 4
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+version: 1

@@ -5,8 +5,9 @@ from __future__ import annotations
 import hashlib
 import json
 import random
+import re
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -462,7 +463,294 @@ RESPONSE_TRANSFORMS = {
     "symbolic": _symbolic,
 }
 
-RATIONALE_CONTROLS = {"permuted"}
+RATIONALE_CONTROLS = {"permuted", "arithmetic", "shuffled"}
+
+# Controls that act on a whole response rather than on a rationale body, for
+# tasks that have no answer line to split on.
+RESPONSE_CONTROLS = {"mismatched"}
+
+# Controls that act on a classification label.
+LABEL_CONTROLS = {"scrambled", "flipped"}
+
+_COMPUTATION = re.compile(r"=\s*(-?\d+(?:\.\d+)?)")
+# The answer line's numeral. Kept separate from the computation pattern because
+# an answer is a bare number while a computation is a number after an equals.
+NUMBER_PATTERN = re.compile(r"-?\d+(?:\.\d+)?")
+
+
+def _wrong_number(value: str, rng: random.Random) -> str:
+    """A different number of the same shape: same sign convention, similar size.
+
+    Corrupting arithmetic by replacing results with values of a wildly
+    different magnitude would change the surface statistics of the text as well
+    as its correctness, and the adapter could then learn the former instead of
+    the latter. Staying within a third of the original keeps the corruption
+    about the arithmetic.
+    """
+    if "." in value:
+        number = float(value)
+        step = max(round(abs(number) * rng.uniform(0.1, 0.5), 2), 0.1)
+        moved = number + rng.choice((-1.0, 1.0)) * step
+        return f"{moved:.2f}".rstrip("0").rstrip(".")
+    number = int(value)
+    span = max(1, abs(number) // 3)
+    moved = number + rng.randint(1, span) * rng.choice((-1, 1))
+    return str(moved + 1 if moved == number else moved)
+
+
+def corrupt_arithmetic(
+    rows: list[Example],
+    marker: str,
+    seed: int,
+    *,
+    fraction: float = 0.5,
+    from_end: bool = True,
+) -> list[Example]:
+    """Make the computations wrong, and the stated answer agree with them.
+
+    This is a different corruption from `permute_rationales` in a way that
+    matters. A permuted rationale is about the wrong problem but does correct
+    arithmetic and states the right answer; this one stays about the right
+    problem, in the right format, and is wrong on the arithmetic -- with the
+    answer following the wrong chain rather than the question. An adapter
+    trained on it is taught to compute badly, not to talk about the wrong
+    thing.
+
+    The answer is moved by tracking which computation originally produced it,
+    so the row remains internally consistent: a reader following the corrupted
+    chain arrives at the corrupted answer.
+    """
+    if not 0.0 < fraction <= 1.0:
+        raise ValueError("fraction must be in (0, 1]")
+    rng = random.Random(seed)
+    corrupted, skipped = [], 0
+    for row in rows:
+        body, tail = _split_response(row.response, marker, from_end=from_end)
+        hits = list(_COMPUTATION.finditer(body))
+        answer = NUMBER_PATTERN.findall(tail)
+        if not answer:
+            # No numeral to move. The row stays as it was, but it is still part
+            # of this arm and is labelled as such -- an untagged row would make
+            # the split look like a mixture of two controls.
+            skipped += 1
+            corrupted.append(
+                replace(row, metadata={
+                    **row.metadata,
+                    "rationale_control": "arithmetic",
+                    "corruption_applied": False,
+                })
+            )
+            continue
+        target = answer[-1]
+        chosen = {index for index in range(len(hits)) if rng.random() < fraction}
+        chosen.add(len(hits) - 1)
+        pieces, cursor, replacement = [], 0, None
+        for index, hit in enumerate(hits):
+            pieces.append(body[cursor : hit.start(1)])
+            original = hit.group(1)
+            moved = _wrong_number(original, rng) if index in chosen else original
+            pieces.append(moved)
+            # Whichever computation produced the stated answer decides what the
+            # stated answer becomes, so the chain and its conclusion agree.
+            if original == target:
+                replacement = moved
+            cursor = hit.end(1)
+        pieces.append(body[cursor:])
+        # A row whose answer was never produced by a written computation still
+        # gets a wrong answer, so every row in the arm is corrupted rather than
+        # a fifth of them passing through clean.
+        if replacement is None or replacement == target:
+            replacement = _wrong_number(target, rng)
+        new_tail = tail.replace(target, replacement, 1)
+        # `_split_response` leaves the marker on the tail, so re-adding it here
+        # would emit it twice.
+        corrupted.append(
+            replace(
+                row,
+                response="".join(pieces) + new_tail,
+                metadata={
+                    **row.metadata,
+                    "rationale_control": "arithmetic",
+                    "corruption_applied": True,
+                    "corrupted_computations": len(chosen),
+                    "original_answer": target,
+                    "corrupted_answer": replacement,
+                },
+            )
+        )
+    if skipped > len(rows) // 2:
+        raise ValueError(
+            f"arithmetic corruption reached only {len(rows) - skipped} of "
+            f"{len(rows)} rows; the marker or number format is wrong"
+        )
+    return corrupted
+
+
+def shuffle_rationale_steps(
+    rows: list[Example], marker: str, seed: int, *, from_end: bool = True
+) -> list[Example]:
+    """Reorder a rationale's lines, keeping every line and the answer intact.
+
+    The multiset of steps, the topic, the arithmetic and the answer all survive;
+    only their order does not. It isolates whether the adapter is learning the
+    content of a chain or its sequence.
+    """
+    rng = random.Random(seed)
+    out = []
+    for row in rows:
+        body, tail = _split_response(row.response, marker, from_end=from_end)
+        lines = [line for line in body.split("\n") if line.strip()]
+        if len(lines) < 3:
+            # Too few lines to reorder into anything different. Tagged anyway,
+            # for the same reason as above.
+            out.append(
+                replace(row, metadata={
+                    **row.metadata,
+                    "rationale_control": "shuffled",
+                    "corruption_applied": False,
+                })
+            )
+            continue
+        order = list(range(len(lines)))
+        for _ in range(64):
+            rng.shuffle(order)
+            if order != sorted(order):
+                break
+        shuffled = "\n".join(lines[index] for index in order)
+        out.append(
+            replace(
+                row,
+                response=shuffled + "\n" + tail,
+                metadata={
+                    **row.metadata,
+                    "rationale_control": "shuffled",
+                    "corruption_applied": True,
+                },
+            )
+        )
+    return out
+
+
+def scramble_labels(
+    rows: list[Example], seed: int, *, fraction: float = 1.0
+) -> list[Example]:
+    """Move a classification label to a different one of its own choices.
+
+    For a multiple-choice row the response is one letter, so there is no
+    rationale to corrupt and no format to damage -- only the mapping from
+    question to answer. That makes it the cleanest test of whether the
+    compression result needs a chain of thought at all.
+    """
+    rng = random.Random(seed)
+    out = []
+    for row in rows:
+        count = int(row.metadata.get("choice_count", 0))
+        if count < 2 or rng.random() > fraction:
+            out.append(row)
+            continue
+        target = int(row.metadata["label_index"])
+        moved = rng.choice([i for i in range(count) if i != target])
+        out.append(
+            replace(
+                row,
+                response=chr(ord("A") + moved),
+                metadata={
+                    **row.metadata,
+                    "label_control": "scrambled",
+                    "label_index": moved,
+                    "original_label_index": target,
+                },
+            )
+        )
+    return out
+
+
+def flip_text_labels(
+    rows: list[Example], seed: int, *, fraction: float = 1.0, maximum: int = 10
+) -> list[Example]:
+    """Move each row's answer to a different one of the answers the task uses.
+
+    The multiple-choice version of this reads `choice_count` from metadata, which
+    a task whose answer is a short string rather than a letter does not carry.
+    Here the label set is whatever the split actually contains -- " yes" and
+    " no" for a paraphrase task -- and each row is moved to a different member of
+    it. For a binary task that is a flip.
+
+    `maximum` is a guard, not a tuning knob: applied to a task whose responses
+    are free text, every response would be its own "label" and the function
+    would silently become a response permutation. Refusing is better than
+    quietly running a different experiment.
+    """
+    labels = sorted({row.response for row in rows})
+    if not 2 <= len(labels) <= maximum:
+        raise ValueError(
+            f"flip_text_labels needs between 2 and {maximum} distinct answers; "
+            f"this split has {len(labels)}"
+        )
+    rng = random.Random(seed)
+    out = []
+    for row in rows:
+        if rng.random() > fraction:
+            out.append(row)
+            continue
+        moved = rng.choice([label for label in labels if label != row.response])
+        out.append(
+            replace(
+                row,
+                response=moved,
+                metadata={
+                    **row.metadata,
+                    "label_control": "flipped",
+                    "original_response": row.response,
+                },
+            )
+        )
+    return out
+
+
+def mismatch_responses(
+    rows: list[Example], seed: int, *, block_size: int = 32
+) -> list[Example]:
+    """Pair each prompt with another row's whole response.
+
+    The same intervention as `permute_rationales` for a task that has no answer
+    line to preserve -- summarisation, say. The multiset of responses is
+    unchanged; only which prompt each one is attached to moves. Length-sorted
+    blocks keep truncation exposure comparable, exactly as in the rationale
+    version.
+    """
+    if len(rows) < 2:
+        raise ValueError("response mismatching needs at least two rows")
+    ordered = sorted(range(len(rows)), key=lambda i: (len(rows[i].response), i))
+    blocks = [
+        ordered[start : start + block_size]
+        for start in range(0, len(ordered), block_size)
+    ]
+    if len(blocks) > 1 and len(blocks[-1]) == 1:
+        blocks[-2].extend(blocks.pop())
+    donors: dict[int, int] = {}
+    for block_index, recipients in enumerate(blocks):
+        rng = random.Random((int(seed) << 16) + block_index)
+        candidate = list(recipients)
+        for _ in range(10_000):
+            rng.shuffle(candidate)
+            if all(a != b for a, b in zip(recipients, candidate, strict=True)):
+                break
+        else:
+            raise ValueError("could not find a derangement for a block")
+        donors.update(dict(zip(recipients, candidate, strict=True)))
+    return [
+        replace(
+            row,
+            response=rows[donors[index]].response,
+            metadata={
+                **row.metadata,
+                "response_control": "mismatched",
+                "donor_id": rows[donors[index]].example_id,
+            },
+        )
+        for index, row in enumerate(rows)
+    ]
 
 
 def _split_response(
@@ -797,17 +1085,53 @@ def _load_natural_from_hub(
                 splits[split] = transform_responses(splits[split], str(transform))
         rationale_control = spec.get("rationale_control")
         if rationale_control is not None:
-            if str(rationale_control) not in RATIONALE_CONTROLS:
-                raise ValueError(f"unknown rationale control {rationale_control!r}")
+            control = str(rationale_control)
+            if control not in RATIONALE_CONTROLS:
+                raise ValueError(f"unknown rationale control {control!r}")
             marker = spec.get("answer_marker")
             if not marker:
                 raise ValueError("a rationale control needs an answer_marker")
+            from_end = bool(spec.get("answer_marker_from_end", True))
+            fraction = float(spec.get("corruption_fraction", 0.5))
             for offset, split in enumerate(("train", "calibration")):
-                splits[split] = permute_rationales(
-                    splits[split],
-                    str(marker),
-                    seed=int(seed) * 2 + offset,
-                    from_end=bool(spec.get("answer_marker_from_end", True)),
+                # Train and calibration get different seeds so the corruption is
+                # not the same draw on both, exactly as the permuted arm does.
+                key = int(seed) * 2 + offset
+                if control == "permuted":
+                    splits[split] = permute_rationales(
+                        splits[split], str(marker), seed=key, from_end=from_end
+                    )
+                elif control == "arithmetic":
+                    splits[split] = corrupt_arithmetic(
+                        splits[split], str(marker), seed=key,
+                        fraction=fraction, from_end=from_end,
+                    )
+                else:
+                    splits[split] = shuffle_rationale_steps(
+                        splits[split], str(marker), seed=key, from_end=from_end
+                    )
+        response_control = spec.get("response_control")
+        if response_control is not None:
+            if str(response_control) not in RESPONSE_CONTROLS:
+                raise ValueError(f"unknown response control {response_control!r}")
+            # For tasks with no answer line to preserve, the whole response moves.
+            for offset, split in enumerate(("train", "calibration")):
+                splits[split] = mismatch_responses(
+                    splits[split], seed=int(seed) * 2 + offset
+                )
+        label_control = spec.get("label_control")
+        if label_control is not None:
+            if str(label_control) not in LABEL_CONTROLS:
+                raise ValueError(f"unknown label control {label_control!r}")
+            fraction = float(spec.get("corruption_fraction", 1.0))
+            mover = (
+                scramble_labels
+                if str(label_control) == "scrambled"
+                else flip_text_labels
+            )
+            for offset, split in enumerate(("train", "calibration")):
+                splits[split] = mover(
+                    splits[split], seed=int(seed) * 2 + offset, fraction=fraction
                 )
         return splits
     dataset = load_dataset(spec["path"], spec.get("name"), revision=spec["revision"])
@@ -892,7 +1216,40 @@ def validate_natural_dataset(
                 f"expected {sorted(expected)} ({missing} rows missing evaluator); "
                 "run prepare again before submitting jobs"
             )
-    if expected_rationale_control is not None:
+    if expected_rationale_control is not None and expected_rationale_control != "permuted":
+        # The bijection check below is about the permutation specifically --
+        # donor ids, and a rationale multiset preserved exactly. The other
+        # controls rewrite each row in place and have their own invariants.
+        for split in ("train", "calibration"):
+            rows = splits[split]
+            controls = {row.metadata.get("rationale_control") for row in rows}
+            if controls != {expected_rationale_control}:
+                raise ValueError(
+                    f"{root}: {split} carries controls {sorted(map(str, controls))}, "
+                    f"expected {expected_rationale_control!r}; run prepare again"
+                )
+            if expected_rationale_control == "arithmetic":
+                moved = sum(
+                    row.metadata.get("original_answer")
+                    != row.metadata.get("corrupted_answer")
+                    for row in rows
+                    if "corrupted_answer" in row.metadata
+                )
+                if moved < len(rows) * 0.9:
+                    raise ValueError(
+                        f"{root}: {split} moved the answer on only {moved} of "
+                        f"{len(rows)} rows; the corruption did not take"
+                    )
+            if expected_rationale_control == "shuffled":
+                applied = sum(
+                    bool(row.metadata.get("corruption_applied")) for row in rows
+                )
+                if applied < len(rows) * 0.8:
+                    raise ValueError(
+                        f"{root}: {split} reordered only {applied} of "
+                        f"{len(rows)} rows; the corruption did not take"
+                    )
+    elif expected_rationale_control is not None:
         if not answer_marker:
             raise ValueError("a rationale control needs an answer marker")
         for split in ("train", "calibration"):

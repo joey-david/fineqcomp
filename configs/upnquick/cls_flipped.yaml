@@ -1,0 +1,99 @@
+# Paraphrase classification with every label flipped.
+#
+# The control that asks whether any of this needs a chain of thought. A PAWS row
+# is two sentences and a one-word answer: there is no rationale to corrupt, no
+# working to segment, and nothing a format prior could be about.
+#
+# ARC-Easy would have been the cleaner multiple-choice version and its cache on
+# this host holds only a builder lock, so the task is a binary text label
+# instead. The structure that matters is the same: one token of answer, and the
+# corruption touching only the mapping from question to answer.
+#
+# Prediction, and it is a split one. Compression should still recover toward the
+# base model, because that part is shrinkage and shrinkage does not care what the
+# task is. The overshoot *above* base should not appear, because on the recorded
+# task it came from a chain-of-thought register this task cannot express. An
+# overshoot here would refute the format-prior account outright.
+#
+# Two epochs over 8,000 short rows: enough optimizer steps to install the flip
+# deeply, which is what leaves something for compression to recover.
+adapters:
+  all_linear_r16:
+    alpha: 32
+    dropout: 0.0
+    last_n_layers: null
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+codecs:
+  binary:
+    bits: 1
+    method: uniform
+datasets:
+  paws_flipped:
+    corruption_fraction: 1.0
+    evaluation_max_new_tokens: 8
+    evaluations:
+    - converter: paws
+      key: paws
+      name: labeled_final
+      path: google-research-datasets/paws
+      revision: 161ece9501cf0a11f3e48bd356eaa82de46d6a09
+      split: test
+    label_control: flipped
+    maximum_baseline_score: 0.95
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    screening_binomial: true
+    screening_metric: exact_match
+    task_type: generative
+    test_rows: 500
+    train_rows: 8000
+    train_source:
+      converter: paws
+      name: labeled_final
+      path: google-research-datasets/paws
+      revision: 161ece9501cf0a11f3e48bd356eaa82de46d6a09
+      split: train
+    validation_rows: 256
+evaluation_batch_size: 32
+information_rows: 256
+models:
+  qwen25_7b_base:
+    backbone: nf4
+    chat: false
+    name: Qwen/Qwen2.5-7B
+    revision: d149729398750b98c0af14eb82c78cfe92750796
+studies:
+  paws_flipped_full:
+    adapters:
+    - all_linear_r16
+    datasets:
+    - paws_flipped
+    kind: natural
+    models:
+    - qwen25_7b_base
+    seeds:
+    - 11
+    training: cls_2ep
+training:
+  cls_2ep:
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    effective_batch_size: 16
+    epochs: 2
+    eval_every_updates: 200
+    label_span: all
+    learning_rate: 0.0002
+    max_grad_norm: 1.0
+    max_length: 256
+    micro_batch_size: 4
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+version: 1
