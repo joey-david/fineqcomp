@@ -1,0 +1,93 @@
+# The collaborator's second and third questions, on an H100.
+#
+#   "mesurer separement performance sur la tache propre et propension a
+#    reproduire les CoT corrompues"
+#   "comparer l'adapter corrompu compresse a un adapter entraine sur donnees
+#    propres pour voir s'il se rapproche fonctionnellement de cette solution"
+#
+# The first question -- rank-1 FP16 against rank-1 1-bit against a family of
+# alpha*dW -- was answered on upnquick and is recorded in
+# `results/3_chain_of_thought_under_compression/denoise_vs_shrinkage/`: the
+# recovery is a shrinkage effect, and against the best point on the alpha curve
+# the coded cell has no advantage at all. So the alpha sweep here is cut to the
+# two points that answer served up -- the optimum near 0.2-0.5 -- because they
+# are needed as the *control* for the other two questions, not as the question.
+#
+# What is new here is the host and the scale of the apparatus: the damaged arm
+# is the Jean-Zay cell of the running scale ladder, trained under the ladder's
+# recipe on an H100, rather than the upnquick adapter. If the upnquick answers
+# are host- or run-specific, this is where that shows.
+#
+# Question two is answered by three measurements taken on the same conditions:
+# GSM8K accuracy (the clean task as trained), GSM-Symbolic instances (the clean
+# task on fresh numbers, so a score cannot come from having memorised the test),
+# and reasoning-span likelihood on 256 paired rows -- the permuted rationale
+# against its own aligned counterpart, identical prompt and identical answer
+# line -- which is the propensity to reproduce the corrupted chain, measured
+# directly rather than inferred from accuracy.
+#
+# Question three is answered by the clean arm: the update geometry between the
+# compressed damaged adapter and an adapter trained on the same rows with their
+# own explanations, and that clean adapter scored raw and at the same one-bit
+# rung, so "is one bit at rank one a good code for an update generally, or only
+# for a corrupted one" gets an answer too.
+version: 1
+seed: 11
+
+# The damaged rank-16 adapter is the scale ladder's 7B cell. Named by study,
+# model and rank rather than by run id, so an edited training config comes back
+# as a missing adapter rather than as a silently mismatched reference.
+damaged_arm:
+  config: configs/jean_zay/scale_and_tasks.yaml
+  study: scale_ladder
+  model: qwen25_7b_base
+  rank: 16
+
+clean_arm:
+  config: configs/jean_zay/aligned_cot.yaml
+  study: cot_aligned_full
+  model: qwen25_7b_base
+  rank: 16
+
+# One bit is the rung the recovery happens on; sixteen is the uncoded rank-one
+# reference and doubles as the alpha = 1 end of the head sweep.
+compression_bits: [1, 16]
+
+# The shrinkage control, at the two points the upnquick alpha curve turned over.
+# These are here so question three can be asked of a rescaling as well as of a
+# code: if the coded adapter approaches the clean solution and a rescaling of
+# equal accuracy does not, that separates them.
+scale_sweep_head: [0.2, 0.5]
+scale_sweep_full: []
+
+# The exact shrinkage control at the rung that matters: the same rank-one
+# directions rescaled to the same decoded update norm, so the pair differ only
+# in having gone through a file.
+norm_matched_bits: [1]
+
+# The clean adapter scored raw and at one bit.
+clean_compression_bits: [1]
+
+calibration_rows: 128
+gsm8k_test_rows: 500
+symbolic_instances: [0]
+symbolic_source: prepared/gsm-symbolic-source.jsonl
+symbolic_sha256: 945055837b232bd9b56827b1e3a5aa019075f29e8ba4669d9a9df8b4439a291f
+generation_batch_size: 32
+max_new_tokens: 512
+bootstrap_draws: 10000
+analysis_seed: 9172026
+
+# The likelihood probe. 256 paired rows, scored on the reasoning span only:
+# the answer line is identical between a row's permuted and aligned variants,
+# so including it would dilute exactly the difference being measured.
+nll_rows: 256
+nll_batch_size: 4
+answer_marker: 'The answer is:'
+
+# How many words of a generated rationale count as its opening, for the share
+# of answers that recite the modal one.
+opening_words: 24
+
+# Rows for the throughput probe, which sizes the job before it is committed.
+probe_rows: 64
