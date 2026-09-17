@@ -37,4 +37,12 @@ if [[ -n "${MODELS:-}" ]]; then
   read -r -a models <<< "$MODELS"
   args+=(--models "${models[@]}")
 fi
+# A config that declares more than one study can be launched a study at a time,
+# which is what lets an expensive second tranche wait on the first one's result
+# instead of being submitted alongside it. Unset, the shard runs the whole
+# manifest exactly as before.
+if [[ -n "${STUDIES:-}" ]]; then
+  read -r -a studies <<< "$STUDIES"
+  args+=(--studies "${studies[@]}")
+fi
 exec "$PYTHON" "${args[@]}"

@@ -127,8 +127,25 @@ full)
   shards="${INFO_SHARDS:-12}"
   command+=(--shard "$task" --shards "$shards")
   ;;
+cells)
+  # Gate a grid whose vocabulary is not the one `smoke` hardcodes. `smoke` asks
+  # for study `main` and conditions `constant` and `random`; a config built
+  # around prototype sharing has neither, and the shard then selects no cells
+  # and exits 1 without running anything. Worse, `random` at 512 mappings is
+  # harder than anything such a grid contains, so passing or failing it says
+  # nothing about the cells that matter. Name the cell to gate instead.
+  #
+  #   sbatch --array=0-0 --export=ALL,MODE=cells,INFO_STUDIES=hidden,\
+  #     INFO_CONDITIONS=p16,INFO_SEEDS=11,INFO_PREFIXES=512,... this_script
+  read -r -a studies <<< "${INFO_STUDIES:?set INFO_STUDIES}"
+  read -r -a conditions <<< "${INFO_CONDITIONS:?set INFO_CONDITIONS}"
+  read -r -a seeds <<< "${INFO_SEEDS:-11}"
+  read -r -a prefixes <<< "${INFO_PREFIXES:-512}"
+  command+=(--studies "${studies[@]}" --conditions "${conditions[@]}"
+    --seeds "${seeds[@]}" --prefixes "${prefixes[@]}")
+  ;;
 *)
-  echo "unknown MODE=$mode; expected smoke, probe, validate or full" >&2
+  echo "unknown MODE=$mode; expected smoke, cells, probe, validate or full" >&2
   exit 2
   ;;
 esac

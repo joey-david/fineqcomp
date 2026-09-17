@@ -1,0 +1,249 @@
+# F05 -- a functional distortion profile replaces one complexity scalar.
+#
+# Claim: correction storage depends on the distribution of independently
+# necessary functional distinctions, so corpora with equal total information
+# can have predictably different rate-distortion curves.
+#
+# This file trains nothing. Studies, models, datasets, seeds, adapter, training
+# key and row caps are copied verbatim from transposed_receiver_panel.yaml, so
+# every run id expands onto an adapter that panel already trained; only the
+# codec ladder differs. `run` reuses the stored raw adapter and adds the
+# missing rungs.
+#
+# What it buys is the whole achievable curve on each corpus and receiver rather
+# than one r90 crossing: sixteen rungs from sub-one-bit to fp16, every one of
+# them scoring the task, so the curve can be read at any margin instead of at
+# the single margin a scalar was fitted to. Two corpora with the same fitted
+# r90 and different curve shapes is the F05 signal; identical curves kill it.
+#
+# Blocking the full design: the query-weight arm -- uniform against
+# heavy-tailed against block-correlated evaluation mass at fixed total entropy
+# -- needs weighted evaluation with importance weights, which the evaluator
+# does not have. This config is the measurement half of F05, not the test.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+codecs:
+  fp16:
+    method: uniform
+    bits: 16
+  uniform4:
+    method: uniform
+    bits: 4
+  uniform3:
+    method: uniform
+    bits: 3
+  uniform2:
+    method: uniform
+    bits: 2
+  blend1_75:
+    method: uniform
+    bits: 1
+    blend: 0.75
+  blend1_50:
+    method: uniform
+    bits: 1
+    blend: 0.5
+  blend1_25:
+    method: uniform
+    bits: 1
+    blend: 0.25
+  binary:
+    method: uniform
+    bits: 1
+  sub0_875:
+    method: uniform
+    bits: 0
+    blend: 0.875
+  sub0_750:
+    method: uniform
+    bits: 0
+    blend: 0.75
+  sub0_625:
+    method: uniform
+    bits: 0
+    blend: 0.625
+  sub0_500:
+    method: uniform
+    bits: 0
+    blend: 0.5
+  sub0_375:
+    method: uniform
+    bits: 0
+    blend: 0.375
+  sub0_250:
+    method: uniform
+    bits: 0
+    blend: 0.25
+  sub0_125:
+    method: uniform
+    bits: 0
+    blend: 0.125
+  sub0_0625:
+    method: uniform
+    bits: 0
+    blend: 0.0625
+models:
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  llama31_8b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/meta-llama/Llama-3.1-8B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen3_8b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen3-8B-Base
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_math_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-Math-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  gemma2_9b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/google/gemma-2-9b
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  gemma2_9b_instruct:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/google/gemma-2-9b-it
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+training:
+  panel_4ep:
+    epochs: 4
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+datasets:
+  kind_code:
+    task_type: generative
+    train_source:
+      path: ise-uiuc/Magicoder-Evol-Instruct-110K
+      name: default
+      revision: b0079beaa0361d82412520b873715bee59cc7dd4
+      split: train
+      converter: magicoder
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 164
+    evaluations:
+    - key: humaneval
+      path: openai/openai_humaneval
+      name: openai_humaneval
+      revision: 7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544
+      split: test
+      converter: humaneval
+    screening_metric: pass_at_1
+    maximum_baseline_score: 0.75
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  panel_math:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 1319
+    evaluations:
+    - key: gsm8k
+      path: openai/gsm8k
+      name: main
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: test
+      converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  xbrl_tags:
+    task_type: generative
+    train_source:
+      path: wangd12/XBRL_analysis
+      name: tags
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: train
+      converter: xbrl_tags
+    validation_rows: 256
+    train_rows: 8000
+    test_rows: 500
+    evaluations:
+    - key: xbrl_tags
+      path: wangd12/XBRL_analysis
+      name: tags
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: test
+      converter: xbrl_tags
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+studies:
+  transposed_code:
+    kind: natural
+    models: &id001
+    - mistral_7b_base
+    - llama31_8b_base
+    - qwen25_7b_base
+    - qwen3_8b_base
+    - qwen25_math_7b_base
+    - gemma2_9b_base
+    - gemma2_9b_instruct
+    datasets:
+    - kind_code
+    seeds: &id002
+    - 11
+    - 22
+    - 33
+    adapters: &id003
+    - all_linear_r16
+    training: panel_4ep
+  transposed_math:
+    kind: natural
+    models: *id001
+    datasets:
+    - panel_math
+    seeds: *id002
+    adapters: *id003
+    training: panel_4ep
+  transposed_xbrl:
+    kind: natural
+    models: *id001
+    datasets:
+    - xbrl_tags
+    seeds: *id002
+    adapters: *id003
+    training: panel_4ep

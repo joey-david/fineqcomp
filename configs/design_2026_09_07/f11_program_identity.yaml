@@ -1,0 +1,73 @@
+# F11 -- program identity versus parameter payload.
+#
+# Claim: when a receiver already implements a public family of algorithms,
+# selecting one of them costs a program-identity message, while changing a
+# table inside it costs payload information that scales differently.
+#
+# This is program_selection.yaml on the two development receivers rather than
+# three, at all four families and three seeds. Dropping Llama is not a scope
+# cut for its own sake: the diagnose stage is one model per array task and the
+# lock it writes is per model, so a third receiver triples the qualification
+# cost before a single selection arm runs. Add it back once G3 and G4 hold.
+#
+# Stage order is the guard. `audit` needs no GPU and no model and proves the
+# training region is genuinely ambiguous and the splits are disjoint; run it
+# first and read it. `diagnose` writes the lock naming the dominant program,
+# the target program and the single targeted example. The training stage
+# refuses to start on a family and model the diagnose stage has not locked, so
+# nothing in the selection rule can be re-chosen after a result exists.
+#
+# Blocking the full design: the payload axis -- 0, 8, 64 and 512 bits of table
+# inside a selected program, against libraries of 8, 64, 512 and 4,096 programs
+# -- needs a library constructor with a size parameter, and this module has
+# four fixed families. What runs today is the identity half: selection is
+# cheap, and one example chosen against the model's prior can switch it.
+version: 1
+models:
+- mistral_7b_base
+- qwen25_7b_base
+adapter: all_linear_r16
+families:
+- chain
+- middle
+- count
+- field
+seeds:
+- 11
+- 22
+- 33
+base_rows: 128
+ambiguous_extra:
+- 10
+- 100
+- 1000
+- 10000
+ambiguous_eval_rows: 256
+diagnostic_rows: 512
+diagnostic_shots: 8
+targeted_candidates: 512
+probe_rows: 1024
+matched_window: 32
+influence_candidates: 96
+optimizer_updates: 256
+scoring_batch_size: 16
+generation_batch_size: 32
+generation_max_new_tokens: 12
+gates:
+  training_region_accuracy: 0.9
+  ambiguous_stability: 0.1
+  targeted_switch_gain: 0.3
+  control_margin: 0.2
+training:
+  epochs: 1
+  learning_rate: 0.0002
+  effective_batch_size: 16
+  micro_batch_size: 8
+  max_length: 512
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  max_grad_norm: 1.0
+  eval_every_updates: 64
+  restore_best: false

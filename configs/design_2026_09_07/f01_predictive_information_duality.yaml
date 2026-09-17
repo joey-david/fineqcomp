@@ -1,0 +1,157 @@
+# F01 -- storage-learning duality, tested prospectively.
+#
+# Claim: an early predictive-information curve forecasts the bytes needed to
+# deliver a specified correction on a receiver the forecast was never fitted
+# on, and the relation has a stated domain where it breaks.
+#
+# The calibration this file makes prospective was run on Mistral. Everything
+# below is the same grid on Qwen2.5-7B, which that fit never saw. The
+# extrapolation rule and the forecast are frozen against the Mistral result
+# before any cell here is opened; the final loss on this receiver is never an
+# input to the forecast. That is the whole design: the same conditions on an
+# unseen receiver, forecast first, measured second.
+#
+# The information axis is exact by construction. Prompts, rows, optimizer and
+# optimizer updates are identical across conditions; only the labels change,
+# from a constant (zero source bits) through prototype counts to independent
+# draws (four bits per mapping). Prefix length buys information, not gradient
+# steps, because the update budget is fixed and the epochs are derived.
+#
+# Run MODE=smoke first and read it as a gate, not a warm-up. The label
+# alphabet was chosen to be one token each under the Mistral tokenizer;
+# `validate_single_token_labels` will reject it on Qwen if that does not hold,
+# and the whole grid is meaningless until it does.
+#
+# The rank study is the control that decides what R* is measuring: flat in rank
+# means the file is paying for task content, scaling with parameter count means
+# it is paying to address a point in weight space.
+version: 2
+model: qwen25_7b_base
+seeds:
+- 11
+- 22
+- 33
+labels:
+- A
+- B
+- C
+- D
+- E
+- F
+- G
+- H
+- I
+- J
+- K
+- L
+- M
+- N
+- O
+- P
+codebook_dir: codebooks
+mappings: 768
+items_per_family: 16
+prompt_layout: fields
+optimizer_updates: 2048
+learning_gate_bits_per_mapping: 1.0
+retention_target: 0.9
+evaluation_batch_size: 128
+conditions:
+- name: constant
+  constant: true
+- name: p1
+  prototype_count: 1
+- name: p2
+  prototype_count: 2
+- name: p4
+  prototype_count: 4
+- name: p8
+  prototype_count: 8
+- name: p16
+  prototype_count: 16
+- name: random
+- name: p4_cue
+  prototype_count: 4
+  reveal_prototype: true
+- name: p16_cue
+  prototype_count: 16
+  reveal_prototype: true
+training:
+  epochs: 1
+  learning_rate: 0.0002
+  effective_batch_size: 16
+  micro_batch_size: 16
+  max_length: 64
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  max_grad_norm: 1.0
+  eval_every_updates: 128
+  restore_best: false
+adapter_codecs:
+- key: sub0_0625
+  bits: 0
+  blend: 0.0625
+- key: sub0_125
+  bits: 0
+  blend: 0.125
+- key: sub0_250
+  bits: 0
+  blend: 0.25
+- key: sub0_375
+  bits: 0
+  blend: 0.375
+- key: sub0_500
+  bits: 0
+  blend: 0.5
+- key: sub0_625
+  bits: 0
+  blend: 0.625
+- key: sub0_750
+  bits: 0
+  blend: 0.75
+- key: sub0_875
+  bits: 0
+  blend: 0.875
+- key: binary
+  bits: 1
+- key: blend1_25
+  bits: 1
+  blend: 0.25
+- key: blend1_50
+  bits: 1
+  blend: 0.5
+- key: blend1_75
+  bits: 1
+  blend: 0.75
+- key: uniform2
+  bits: 2
+grid:
+- study: main
+  conditions:
+  - constant
+  - p1
+  - p2
+  - p4
+  - p8
+  - p16
+  - random
+  adapters:
+  - all_linear_r16
+  prefixes:
+  - 64
+  - 128
+  - 256
+  - 512
+- study: rank
+  conditions:
+  - constant
+  - p1
+  - p16
+  - random
+  adapters:
+  - all_linear_r4
+  - all_linear_r64
+  prefixes:
+  - 512
