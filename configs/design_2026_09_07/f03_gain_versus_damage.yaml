@@ -1,0 +1,155 @@
+# F03 -- useful corrections and damage have different rate frontiers.
+#
+# Claim: the rate needed to keep the task improvement is not the rate needed to
+# imitate the finished fine-tune, because training writes both a compact useful
+# correction and removable damage.
+#
+# This file trains nothing new. The study names, models, datasets, seeds,
+# adapter, training key and row caps are copied exactly from cot_panel.yaml
+# (aligned) and conditional_trace_rate.yaml (permuted), so every run id it
+# expands to is a run those campaigns already paid for. Only the codec ladder
+# is different: `run` reuses the stored raw adapter and adds the missing rungs.
+# Change any identity field above and the runs stop matching and start
+# retraining.
+#
+# The ladder is dense below two bits because both frontiers cross there, and it
+# scores the task at every rung rather than only on the held-out likelihood.
+# The whole point of F03 is that the two frontiers separate, and a rung that
+# only carries retained bits cannot show that.
+#
+# Blocking the full design: the norm-matched and random-direction shrinkage
+# controls need a codec that perturbs a trained adapter instead of quantizing
+# it. `fp16` against the sub-one-bit rungs is the weaker stand-in until then.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+
+codecs:
+  fp16: {method: uniform, bits: 16}
+  uniform2: {method: uniform, bits: 2}
+  blend1_75: {method: uniform, bits: 1, blend: 0.75}
+  blend1_50: {method: uniform, bits: 1, blend: 0.5}
+  blend1_25: {method: uniform, bits: 1, blend: 0.25}
+  binary: {method: uniform, bits: 1}
+  sub0_875: {method: uniform, bits: 0, blend: 0.875}
+  sub0_750: {method: uniform, bits: 0, blend: 0.75}
+  sub0_625: {method: uniform, bits: 0, blend: 0.625}
+  sub0_500: {method: uniform, bits: 0, blend: 0.5}
+  sub0_375: {method: uniform, bits: 0, blend: 0.375}
+  sub0_250: {method: uniform, bits: 0, blend: 0.25}
+  sub0_1875: {method: uniform, bits: 0, blend: 0.1875}
+  sub0_125: {method: uniform, bits: 0, blend: 0.125}
+  sub0_0625: {method: uniform, bits: 0, blend: 0.0625}
+
+models:
+  mistral_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  llama31_8b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/meta-llama/Llama-3.1-8B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+
+training:
+  cot_full_1ep:
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+    label_span: all
+
+datasets:
+  cot_math:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    answer_marker: 'The answer is:'
+    validation_rows: 256
+    train_rows: 32000
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  cot_math_permuted:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    answer_marker: 'The answer is:'
+    rationale_control: permuted
+    validation_rows: 256
+    train_rows: 32000
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.85
+    minimum_validation_nll_gain_bits_per_token: 0.02
+
+studies:
+  # Identity copied from cot_panel.yaml.
+  sup_full:
+    kind: natural
+    models: [mistral_7b_base]
+    datasets: [cot_math]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: cot_full_1ep
+  qwen_sup_full:
+    kind: natural
+    models: [qwen25_7b_base]
+    datasets: [cot_math]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: cot_full_1ep
+  # Identity copied from conditional_trace_rate.yaml.
+  trace_permuted_full:
+    kind: natural
+    models: [mistral_7b_base, qwen25_7b_base, llama31_8b_base]
+    datasets: [cot_math_permuted]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: cot_full_1ep

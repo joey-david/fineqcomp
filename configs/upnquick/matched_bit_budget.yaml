@@ -1,0 +1,93 @@
+# Single-GPU scoping variant of configs/matched_bit_budget.yaml, for upnquick.
+#
+# Three things are cut, and only these three. The grid itself is untouched,
+# because the grid is the experiment.
+#
+#   seeds        one (11) instead of three. The contrast under test is a ~60
+#                point collapse and a ~6 point overshoot above base; one seed
+#                resolves whether it is there at all, and the recorded result
+#                already replicated across all three. Seeds 22 and 33 are a
+#                confirmation pass, not a first look.
+#   gsm8k rows   500 of the 1,319 test questions, which puts a single cell's
+#                95% interval near +-4 points. That resolves the collapse and
+#                the overshoot comfortably; it does not resolve one-point
+#                differences between neighbouring cells, which is exactly what
+#                a confirmation pass at the full 1,319 rows is for.
+#   symbolic     one instance per template (100 questions) instead of five.
+#                GSM-Symbolic is scored only for the base model and the raw
+#                adapter here, as context for the GSM8K numbers rather than as
+#                a second grid.
+#
+# Every cut is a row count, not a condition. Re-running this config at the full
+# settings rescores the same cells rather than changing which cells exist.
+#
+# The arms' campaign paths point at the host configs that resolve Qwen2.5-7B
+# from the local Hugging Face cache instead of Jean-Zay's shared store. That
+# changes the pinned model revision and therefore every run id, which is why
+# this study cannot be mixed with Jean-Zay's adapters.
+version: 1
+ranks:
+- 1
+- 2
+- 4
+- 8
+- 16
+- 32
+- 64
+bits:
+- 1
+- 2
+- 4
+- 8
+- 16
+seeds:
+- 11
+arms:
+  permuted_r1:
+    config: configs/upnquick/low_rank_permuted.yaml
+    study: permuted_low_rank
+    model: qwen25_7b_base
+    rank: 1
+  permuted_r2:
+    config: configs/upnquick/low_rank_permuted.yaml
+    study: permuted_low_rank
+    model: qwen25_7b_base
+    rank: 2
+  permuted_r4:
+    config: configs/upnquick/low_rank_permuted.yaml
+    study: permuted_low_rank
+    model: qwen25_7b_base
+    rank: 4
+  permuted_r8:
+    config: configs/upnquick/low_rank_permuted.yaml
+    study: permuted_low_rank
+    model: qwen25_7b_base
+    rank: 8
+  permuted_r16:
+    config: configs/upnquick/conditional_trace_rate.yaml
+    study: trace_permuted_full
+    model: qwen25_7b_base
+    rank: 16
+  permuted_r32:
+    config: configs/upnquick/low_rank_permuted.yaml
+    study: permuted_high_rank
+    model: qwen25_7b_base
+    rank: 32
+  permuted_r64:
+    config: configs/upnquick/low_rank_permuted.yaml
+    study: permuted_high_rank
+    model: qwen25_7b_base
+    rank: 64
+candidate_splits:
+- gsm8k
+calibration_rows: 128
+gsm8k_test_rows: 500
+symbolic_instances:
+- 0
+symbolic_source: prepared/gsm-symbolic-source.jsonl
+symbolic_sha256: 945055837b232bd9b56827b1e3a5aa019075f29e8ba4669d9a9df8b4439a291f
+generation_batch_size: 32
+max_new_tokens: 512
+bootstrap_draws: 10000
+analysis_seed: 9172026
+probe_rows: 32

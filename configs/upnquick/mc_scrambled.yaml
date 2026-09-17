@@ -1,0 +1,93 @@
+# Multiple choice with every label moved to a different one of its choices.
+#
+# The control that asks whether any of this needs a chain of thought. An ARC-Easy
+# row is a question, four options and one letter: there is no rationale to
+# corrupt, no working to segment, and the answer is a single token. A format
+# prior has nowhere to live here.
+#
+# So the prediction is a split one. Compression should still recover toward the
+# base model, because that part is shrinkage and shrinkage does not care what the
+# task is. The *overshoot above base* should not appear, because on the recorded
+# task it came from a chain-of-thought register that this task cannot express. An
+# overshoot here would refute the format-prior account outright.
+#
+# Four epochs rather than one: 1,800 rows is a fiftieth of the MetaMathQA arm, and
+# a single pass over them does not install the corruption deeply enough to damage
+# the model, which would leave nothing to recover.
+adapters:
+  all_linear_r16:
+    alpha: 32
+    dropout: 0.0
+    last_n_layers: null
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+codecs:
+  binary:
+    bits: 1
+    method: uniform
+datasets:
+  arc_easy_scrambled:
+    corruption_fraction: 1.0
+    label_control: scrambled
+    maximum_baseline_score: 0.95
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    name: ARC-Easy
+    path: allenai/ai2_arc
+    question_field: question
+    revision: 210d026faf9955653af8916fad021475a3f00453
+    screening_metric: accuracy
+    task_type: multiple_choice
+    test_rows: 500
+    test_split: validation
+    train_rows: 1800
+    train_split: train
+    validation_rows: 256
+evaluation_batch_size: 32
+information_rows: 256
+models:
+  qwen25_7b_base:
+    backbone: nf4
+    chat: false
+    name: Qwen/Qwen2.5-7B
+    revision: d149729398750b98c0af14eb82c78cfe92750796
+multiple_choice_labels:
+- A
+- B
+- C
+- D
+- E
+studies:
+  arc_scrambled_full:
+    adapters:
+    - all_linear_r16
+    datasets:
+    - arc_easy_scrambled
+    kind: natural
+    models:
+    - qwen25_7b_base
+    seeds:
+    - 11
+    training: mc_4ep
+training:
+  mc_4ep:
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    effective_batch_size: 16
+    epochs: 4
+    eval_every_updates: 100
+    label_span: all
+    learning_rate: 0.0002
+    max_grad_norm: 1.0
+    max_length: 512
+    micro_batch_size: 4
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+version: 1

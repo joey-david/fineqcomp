@@ -1,0 +1,177 @@
+# F10 -- information storage and rule discovery separate.
+#
+# Claim: two target functions of equal complexity can demand very different
+# learning effort while their converged storage stays comparable, which makes
+# discovery and storage two regimes rather than one quantity.
+#
+# The intervention is one bit of presentation. In the hidden arm the prompt
+# names the family and item and the learner has to find the sharing rule; in
+# the revealed arm the prompt names the prototype, so the same rule is given.
+# Source information, labels, rows, optimizer and update budget are identical
+# across the pair. Four prototype counts cross two prefix lengths, so the
+# contrast is measured where sharing is nearly free and where it is not.
+#
+# The prediction that separates the regimes: revealing the prototype changes
+# the learning curve -- prequential code length and the update at which the
+# gate is passed -- while leaving converged R* alone. If revealing also moves
+# R*, storage and discovery are the same axis and F10 is dead. If it moves
+# neither, the cue is not doing anything and the arm is not a test.
+#
+# The two existing cue conditions were run at 512 only; p2_cue and p8_cue are
+# added here so the revealed arm has the same four points as the hidden one.
+#
+# The `main` study is two conditions at one prefix and is not part of the
+# hidden/revealed contrast. It is here because the smoke mode of
+# scripts/jean_zay_information.sbatch is hardcoded to `--studies main
+# --conditions constant|random --prefixes 512`; without a study of that name
+# the shard selects no cells and the gate exits without running anything. It
+# also earns its place: `constant` is the zero-information intercept every
+# other condition is read against.
+#
+# Receiver changed from Mistral to Qwen on 7 September 2026, on measurement.
+# On Mistral this grid never reached the taught map: hidden/p16 saved 0.588 bits
+# at 2,048 optimizer updates and 0.759 at 8,192, against a learning-gate floor
+# of 1.0, and revealed/p16_cue saved 0.302. Four times the budget bought 0.17
+# bits, so the budget was not the binding constraint. Qwen cleared the strictly
+# harder `random` condition -- 512 arbitrary mappings, 2,048 source bits -- at
+# the original 2,048 updates with 4.890 bits saved. A grid whose cells sit below
+# the gate measures noise, and no amount of it answers F10.
+version: 2
+model: qwen25_7b_base
+seeds:
+- 11
+- 22
+- 33
+labels:
+- A
+- B
+- C
+- D
+- E
+- F
+- G
+- H
+- I
+- J
+- K
+- L
+- M
+- N
+- O
+- P
+codebook_dir: codebooks
+mappings: 768
+items_per_family: 16
+prompt_layout: fields
+optimizer_updates: 2048
+learning_gate_bits_per_mapping: 1.0
+retention_target: 0.9
+evaluation_batch_size: 128
+conditions:
+- name: constant
+  constant: true
+- name: p1
+  prototype_count: 1
+- name: p2
+  prototype_count: 2
+- name: p4
+  prototype_count: 4
+- name: p8
+  prototype_count: 8
+- name: p16
+  prototype_count: 16
+- name: random
+- name: p4_cue
+  prototype_count: 4
+  reveal_prototype: true
+- name: p16_cue
+  prototype_count: 16
+  reveal_prototype: true
+- name: p2_cue
+  prototype_count: 2
+  reveal_prototype: true
+- name: p8_cue
+  prototype_count: 8
+  reveal_prototype: true
+training:
+  epochs: 1
+  learning_rate: 0.0002
+  effective_batch_size: 16
+  micro_batch_size: 16
+  max_length: 64
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  max_grad_norm: 1.0
+  eval_every_updates: 128
+  restore_best: false
+adapter_codecs:
+- key: sub0_0625
+  bits: 0
+  blend: 0.0625
+- key: sub0_125
+  bits: 0
+  blend: 0.125
+- key: sub0_250
+  bits: 0
+  blend: 0.25
+- key: sub0_375
+  bits: 0
+  blend: 0.375
+- key: sub0_500
+  bits: 0
+  blend: 0.5
+- key: sub0_625
+  bits: 0
+  blend: 0.625
+- key: sub0_750
+  bits: 0
+  blend: 0.75
+- key: sub0_875
+  bits: 0
+  blend: 0.875
+- key: binary
+  bits: 1
+- key: blend1_25
+  bits: 1
+  blend: 0.25
+- key: blend1_50
+  bits: 1
+  blend: 0.5
+- key: blend1_75
+  bits: 1
+  blend: 0.75
+- key: uniform2
+  bits: 2
+grid:
+- study: main
+  conditions:
+  - constant
+  - random
+  adapters:
+  - all_linear_r16
+  prefixes:
+  - 512
+- study: hidden
+  conditions:
+  - p2
+  - p4
+  - p8
+  - p16
+  adapters:
+  - all_linear_r16
+  prefixes:
+  - 128
+  - 512
+- study: revealed
+  conditions:
+  - p2_cue
+  - p4_cue
+  - p8_cue
+  - p16_cue
+  adapters:
+  - all_linear_r16
+  prefixes:
+  - 128
+  - 512
