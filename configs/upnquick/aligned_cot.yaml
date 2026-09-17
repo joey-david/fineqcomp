@@ -1,0 +1,100 @@
+# The clean-data counterpart of the damaged rank-16 adapter, for upnquick.
+#
+# `configs/upnquick/conditional_trace_rate.yaml` trains a rank-16 LoRA on
+# MetaMathQA rows whose worked explanation was taken from a different problem.
+# This file trains the same adapter on the same rows with their *own*
+# explanations, and nothing else differs: same model revision, same converter
+# and dataset revision, same row caps, same training key, same seed, same
+# adapter placement, rank and alpha, same single codec rung. The dataset key
+# has to differ (`cot_math` rather than `cot_math_permuted`) because it names
+# the prepared corpus directory, and a shared name would put two different
+# corpora in one place.
+#
+# It exists so `denoise_vs_shrinkage` has a reference point rather than only a
+# direction of travel. The damaged adapter compressed to rank one at one bit
+# scores above the base model; the question that answer raises is whether it has
+# moved *toward the solution the corruption prevented*, and that question needs
+# that solution to have been trained.
+#
+# One seed. The damaged arm this is compared against is seed 11 on this host,
+# and an aligned arm at another seed would compare two different training runs
+# on two axes at once.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+codecs:
+  binary:
+    method: uniform
+    bits: 1
+models:
+  qwen25_7b_base:
+    name: Qwen/Qwen2.5-7B
+    revision: d149729398750b98c0af14eb82c78cfe92750796
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+training:
+  cot_full_1ep:
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+    label_span: all
+datasets:
+  cot_math:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    answer_marker: 'The answer is:'
+    validation_rows: 256
+    train_rows: 32000
+    test_rows: 500
+    evaluations:
+    - key: gsm8k
+      path: openai/gsm8k
+      name: main
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: test
+      converter: gsm8k
+    screening_metric: exact_match
+    # Copied from the damaged arm so both screen on identical terms. The base
+    # model scores 0.748 here, which clears the ceiling either way.
+    maximum_baseline_score: 0.85
+    minimum_validation_nll_gain_bits_per_token: 0.02
+studies:
+  trace_aligned_full:
+    kind: natural
+    models:
+    - qwen25_7b_base
+    datasets:
+    - cot_math
+    seeds:
+    - 11
+    adapters:
+    - all_linear_r16
+    training: cot_full_1ep
