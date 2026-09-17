@@ -1,0 +1,21 @@
+comparison,left,right,difference,ci95_low,ci95_high
+adapter vs base,forcing_adapter,forcing_bias0,0.054,0.014,0.092
+adapter vs bias-matched length,forcing_adapter,forcing_bias2,0.108,0.066,0.15
+layers 0-6 vs base,band_00_06,band_none,0.048,0.012,0.084
+layers 7-13 vs base,band_07_13,band_none,0.042,0.006,0.078
+layers 14-20 vs base,band_14_20,band_none,0.026,-0.004,0.054
+layers 21-27 vs base,band_21_27,band_none,0.0,-0.024,0.024
+layers 0-6 vs all layers,band_00_06,band_all,-0.006,-0.04,0.028
+metamath vs gsm8k register (confounded),style_metamath,style_gsm8k,-0.0423,-0.0825,-0.002
+segmented vs terse exemplars (same problems),matched_verbose,matched_terse,0.0443,0.0141,0.0744
+segmented exemplars vs none,matched_verbose,matched_none,0.0543,0.0181,0.0905
+terse exemplars vs none,matched_terse,matched_none,0.0101,-0.0262,0.0483
+adapter vs segmented exemplars,matched_adapter,matched_verbose,0.0,-0.0342,0.0342
+derived token shift vs base,segment_top80,forcing_bias0,0.004,-0.022,0.03
+scaled token shift 3x vs base,segscale_3,forcing_bias0,0.018,-0.006,0.042
+spectral tail fp16 vs base,spec_4_16_b16,forcing_bias0,0.08,0.042,0.12
+spectral tail fp16 vs the adapter,spec_4_16_b16,forcing_adapter,0.026,-0.004,0.056
+compressing the tail,spec_4_16_b1,spec_4_16_b16,-0.068,-0.102,-0.034
+compressing the top direction,spec_0_1_b1,spec_0_1_b16,0.4,0.354,0.448
+compressing ranks 2-4,spec_1_4_b1,spec_1_4_b16,0.344,0.294,0.396
+ranks 2-4 at 1 bit vs base,spec_1_4_b1,forcing_bias0,0.02,-0.018,0.058

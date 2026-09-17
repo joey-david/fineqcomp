@@ -1,0 +1,635 @@
+<title>Denoising or Shrinkage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --ground:#f7f8fa; --surface:#ffffff; --surface-2:#eef1f5;
+  --ink:#22262d; --ink-soft:#5c636e; --ink-faint:#858d99;
+  --rule:#dfe3e9; --rule-strong:#c6ccd6;
+  --accent:#d1521f; --accent-soft:#fbeade;
+  --accent-2:#2a78d6; --accent-2-soft:#e4eefb;
+  --good:#15855f; --good-soft:#e0f2ea;
+  --bad:#b5322d; --bad-soft:#fbe6e4;
+  --shadow:0 1px 2px rgba(28,34,44,.05),0 8px 24px -16px rgba(28,34,44,.28);
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --measure:68ch; --plate:1080px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#14171c; --surface:#1b1f26; --surface-2:#232830;
+    --ink:#cdd2da; --ink-soft:#98a0ac; --ink-faint:#737b87;
+    --rule:#2b313a; --rule-strong:#3b434e;
+    --accent:#f0793f; --accent-soft:#33211a;
+    --accent-2:#5b9df0; --accent-2-soft:#182533;
+    --good:#3fc294; --good-soft:#15291f;
+    --bad:#e2665f; --bad-soft:#2d1a19;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#14171c; --surface:#1b1f26; --surface-2:#232830;
+  --ink:#cdd2da; --ink-soft:#98a0ac; --ink-faint:#737b87;
+  --rule:#2b313a; --rule-strong:#3b434e;
+  --accent:#f0793f; --accent-soft:#33211a;
+  --accent-2:#5b9df0; --accent-2-soft:#182533;
+  --good:#3fc294; --good-soft:#15291f;
+  --bad:#e2665f; --bad-soft:#2d1a19;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px -18px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--sans); font-size:16.5px; line-height:1.68;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--plate); margin:0 auto; padding:0 24px 96px;}
+.col{max-width:var(--measure); margin-inline:auto;}
+p,ul,ol{margin:0 0 1.05em;}
+a{color:var(--accent); text-decoration-thickness:1px; text-underline-offset:2px;}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent-2); outline-offset:3px; border-radius:3px;}
+strong{font-weight:600;}
+code{font-family:var(--mono); font-size:.9em; background:var(--surface-2);
+     padding:.1em .34em; border-radius:3px;}
+
+/* ---------- masthead ---------- */
+header.mast{border-bottom:1px solid var(--rule); margin-bottom:44px; padding:64px 0 34px;}
+.eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-faint); margin:0 0 18px;}
+h1{font-family:var(--serif); font-weight:700; font-size:clamp(34px,5.2vw,52px);
+  line-height:1.08; letter-spacing:-.015em; margin:0 0 18px; text-wrap:balance;}
+.standfirst{font-family:var(--serif); font-size:20px; line-height:1.5;
+  color:var(--ink-soft); margin:0 0 26px; text-wrap:pretty;}
+.runline{display:flex; flex-wrap:wrap; gap:8px 20px; font-family:var(--mono);
+  font-size:12px; color:var(--ink-faint);}
+.runline span{white-space:nowrap;}
+
+/* ---------- answer box ---------- */
+.answer{background:var(--surface); border:1px solid var(--rule);
+  border-left:3px solid var(--accent); border-radius:2px; padding:22px 26px;
+  margin:0 0 52px; box-shadow:var(--shadow);}
+.answer h2{margin:0 0 10px; font-family:var(--mono); font-size:11.5px;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:600;}
+.answer p{margin:0 0 .7em;} .answer p:last-child{margin:0;}
+
+/* ---------- sections ---------- */
+section{margin:0 0 30px;}
+h2.sec{font-family:var(--serif); font-size:30px; font-weight:600; line-height:1.18;
+  letter-spacing:-.01em; margin:56px 0 6px; text-wrap:balance;}
+h2.sec .num{font-family:var(--mono); font-size:13px; color:var(--accent);
+  letter-spacing:.1em; display:block; margin-bottom:8px; font-weight:500;}
+h3{font-family:var(--serif); font-size:21px; font-weight:600; line-height:1.3;
+  margin:34px 0 8px; text-wrap:balance;}
+.lede{color:var(--ink-soft); font-size:17px;}
+
+/* ---------- verdict chips ---------- */
+.verdict{display:inline-flex; align-items:center; gap:7px; font-family:var(--mono);
+  font-size:11px; letter-spacing:.09em; text-transform:uppercase; font-weight:600;
+  padding:3px 9px; border-radius:2px; vertical-align:2px; white-space:nowrap;}
+.v-holds{background:var(--good-soft); color:var(--good);}
+.v-refuted{background:var(--bad-soft); color:var(--bad);}
+.v-partial{background:var(--accent-2-soft); color:var(--accent-2);}
+.dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex:none;}
+
+/* ---------- figures ---------- */
+figure{margin:34px auto 38px; max-width:var(--plate);}
+figure img{display:block; width:100%; height:auto; border:1px solid var(--rule);
+  border-radius:2px; background:var(--surface);}
+.fig-dark{display:none;}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .fig-light{display:none;}
+  :root:not([data-theme="light"]) .fig-dark{display:block;}
+}
+:root[data-theme="dark"] .fig-light{display:none;}
+:root[data-theme="dark"] .fig-dark{display:block;}
+figcaption{max-width:var(--measure); margin:14px auto 0; font-size:14px;
+  line-height:1.6; color:var(--ink-soft);}
+figcaption b{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-faint); font-weight:600;
+  display:block; margin-bottom:5px;}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto; margin:26px auto 30px; max-width:var(--plate);}
+table{border-collapse:collapse; width:100%; font-size:14.5px;
+  font-variant-numeric:tabular-nums;}
+caption{caption-side:top; text-align:left; font-family:var(--mono); font-size:11.5px;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint);
+  padding-bottom:10px; font-weight:600;}
+th,td{padding:8px 14px; text-align:right; border-bottom:1px solid var(--rule);}
+th:first-child,td:first-child{text-align:left; font-family:var(--mono); font-size:13px;}
+thead th{font-family:var(--sans); font-size:12.5px; font-weight:600;
+  color:var(--ink-soft); border-bottom:1px solid var(--rule-strong);
+  text-transform:none; letter-spacing:0;}
+tbody tr:hover{background:var(--surface-2);}
+tr.hero td{font-weight:600; color:var(--accent); background:var(--accent-soft);}
+tr.hero:hover td{background:var(--accent-soft);}
+td.ci{font-family:var(--mono); font-size:12.5px; color:var(--ink-soft);}
+td.pos{color:var(--good); font-weight:600;} td.neg{color:var(--bad); font-weight:600;}
+
+/* ---------- callouts ---------- */
+.note{border-left:2px solid var(--rule-strong); padding:2px 0 2px 18px;
+  margin:26px 0; color:var(--ink-soft); font-size:15.5px;}
+.retraction{background:var(--bad-soft); border:1px solid transparent;
+  border-left:3px solid var(--bad); border-radius:2px; padding:18px 22px; margin:30px 0;}
+.retraction h4{margin:0 0 8px; font-family:var(--mono); font-size:11.5px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--bad); font-weight:600;}
+.retraction p{margin:0 0 .6em; font-size:15.5px;} .retraction p:last-child{margin:0;}
+
+/* ---------- ledger ---------- */
+.ledger td:first-child{max-width:260px; white-space:normal;}
+.kind{font-family:var(--mono); font-size:11px; letter-spacing:.06em;
+  color:var(--ink-faint); text-transform:uppercase;}
+
+footer{border-top:1px solid var(--rule); margin-top:64px; padding-top:26px;
+  font-size:14px; color:var(--ink-faint);}
+footer p{margin:0 0 .6em;}
+
+@media (max-width:720px){
+  body{font-size:16px;} .wrap{padding:0 18px 72px;}
+  h2.sec{font-size:25px;} .standfirst{font-size:18px;}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="col">
+    <p class="eyebrow">fineQComp · results note · 17 September 2026</p>
+    <h1>Denoising or shrinkage?</h1>
+    <p class="standfirst">A LoRA trained on deliberately mismatched explanations loses two thirds of its
+      GSM8K accuracy. Compress it to rank&nbsp;1 at one bit and it beats the model it was
+      damaged from. Two studies on what is actually happening — and four hypotheses that died on the way.</p>
+    <div class="runline">
+      <span>Qwen2.5-7B base, nf4</span><span>MetaMathQA, rationales permuted across problems</span>
+      <span>GSM8K, 500 questions</span><span>one training seed</span><span>upnquick GPU 0 &amp; 1</span>
+    </div>
+  </div>
+</header>
+
+<div class="col">
+  <div class="answer">
+    <h2>The short answer</h2>
+    <p><strong>The recovery is shrinkage.</strong> Scaling the damaged update down by a tuned
+      constant works as well as compressing it — the coded adapter has no advantage over the
+      best scale (−0.6 points, 95% CI [−2.8, +1.6]).</p>
+    <p><strong>But compression removes corruption more efficiently.</strong> Held to the same
+      update norm, the coded adapter beats the rescaled one at all four bit widths, and it
+      retains the least corruption per unit of update of anything tested.</p>
+    <p><strong>And what survives is not task knowledge.</strong> It is cosine 0.006 to an adapter
+      trained on clean data that scores the same. What compression leaves behind is a
+      <em>chain-of-thought format prior</em>: write one reasoning step per line. That is worth
+      +5.4 points, because this model's arithmetic was never the bottleneck — its step-tracking was.</p>
+    <p><strong>The damage and the format prior are separable in the spectrum</strong> — and not the way
+      round you would guess. The corruption sits in the <em>dominant</em> singular directions.
+      Discard the top four and keep the tail at full precision, with no compression at all, and you
+      get <strong>+8.0 points</strong> — the best result in the project.</p>
+  </div>
+</div>
+
+<div class="col">
+<h2 class="sec"><span class="num">Part one</span>Is the recovery just making the update smaller?</h2>
+<p class="lede">Quantization shrinks an update as well as coarsening it. The recorded result varied
+precision at a single rank, so a plain rescaling of the same damaged update could in principle
+reproduce all of it. This is that control.</p>
+
+<p>Three operations that differ completely in kind land in the same place. Coarse coding at rank one,
+a scalar multiplying the rank-one direction, and a scalar multiplying the <em>whole</em> rank-16
+update — none of which involves discarding anything — all recover the base model and overshoot it
+by five to six points.</p>
+</div>
+
+<figure>
+  <img class="fig-light" src="18_recovery-landscape.light.svg" alt="Accuracy against update norm for four families of update. All families rise to about 80% as the update norm falls, and collapse toward 23% as it grows.">
+  <img class="fig-dark" src="18_recovery-landscape.dark.svg" alt="Accuracy against update norm for four families of update. All families rise to about 80% as the update norm falls, and collapse toward 23% as it grows.">
+  <figcaption><b>Figure 1 — the recovery landscape</b>
+    Accuracy against the magnitude of the update, for every family tested. The damaged adapter sits
+    at the far right; every way of making it smaller walks left and up. Reaching the base model is
+    easy. Reaching <em>past</em> it, to the level of an adapter trained on clean data, is what needs
+    explaining.</figcaption>
+</figure>
+
+<div class="col">
+<h3>Against a tuned scale, compression buys nothing <span class="verdict v-refuted"><span class="dot"></span>claim refuted</span></h3>
+<p>If you are allowed to pick the scale, you do not need the codec. The best point on the
+α&nbsp;curve reaches 80.8%; the one-bit coded adapter reaches 80.2%. That difference is noise.</p>
+
+<h3>Against a scale matched to its own norm, it buys a little <span class="verdict v-holds"><span class="dot"></span>holds</span></h3>
+<p>The fair comparison holds magnitude fixed: the same rank-one directions, rescaled to exactly the
+norm the codec produced — matched to a ratio of 1.000000. There the codec wins at every bit width
+tested, three of four intervals excluding zero.</p>
+</div>
+
+<figure>
+  <img class="fig-light" src="19_shrinkage-no-free-lunch.light.svg" alt="Two forest plots. Left: coded minus best alpha, centred on zero. Right: coded minus norm-matched rescaling at 1, 2, 4 and 8 bits, all positive.">
+  <img class="fig-dark" src="19_shrinkage-no-free-lunch.dark.svg" alt="Two forest plots. Left: coded minus best alpha, centred on zero. Right: coded minus norm-matched rescaling at 1, 2, 4 and 8 bits, all positive.">
+  <figcaption><b>Figure 2 — two different questions</b>
+    These are not the same comparison and they do not have the same answer. Against a scale you were
+    free to tune, the codec has no advantage. Against a scale pinned to the codec's own output norm,
+    it has a small consistent one. Anyone reporting "compression repairs a damaged adapter" owes the
+    reader the left-hand panel.</figcaption>
+</figure>
+
+<div class="col">
+<h3>Compression is a more efficient way to remove corruption <span class="verdict v-holds"><span class="dot"></span>holds</span></h3>
+<p>The denoising question is not "is there less corruption" — turning any update down achieves that —
+but "is there less corruption <em>for the same amount of update</em>". Corruption here is measured
+directly: reasoning-span likelihood on 256 paired training rows, the permuted rationale against its
+aligned counterpart, same prompt and same answer line.</p>
+</div>
+
+<figure>
+  <img class="fig-light" src="20_denoising-efficiency.light.svg" alt="Bar chart of corruption retained per unit of update norm. Rank 1 at 1 bit is lowest at 2.84; full rank times 0.1 is highest at 7.38.">
+  <img class="fig-dark" src="20_denoising-efficiency.dark.svg" alt="Bar chart of corruption retained per unit of update norm. Rank 1 at 1 bit is lowest at 2.84; full rank times 0.1 is highest at 7.38.">
+  <figcaption><b>Figure 3 — denoising efficiency</b>
+    Rank truncation improves this ratio and coarse quantization improves it further, in that order.
+    <em>Note the tension:</em> full&nbsp;rank&nbsp;×&nbsp;0.1 has the worst ratio of anything here and
+    still scores 79.6%, because once the update is small enough the corruption is negligible in
+    absolute terms whatever its share. Efficiency explains the matched-norm residual; it does not
+    explain the recovery.</figcaption>
+</figure>
+
+<div class="col">
+<h3>And it beats scaling even when scaling has the magnitude advantage <span class="verdict v-holds"><span class="dot"></span>holds</span></h3>
+<p>The likelihood gaps above were point estimates, because the first pass stored only a
+token-weighted aggregate. Recomputing them one row at a time makes the row the unit of analysis and
+lets the paired difference be bootstrapped — and it turns the efficiency argument into something
+stronger than a ratio.</p>
+
+<div class="tablewrap">
+<table>
+  <caption>Paired over the same 256 rows</caption>
+  <thead><tr><th>comparison</th><th>Δ bits/token</th><th>95% CI</th></tr></thead>
+  <tbody>
+    <tr class="hero"><td>coded vs the <em>same-norm</em> rescaling</td><td>−0.0651</td><td class="ci" style="color:inherit">[−0.0702, −0.0602]</td></tr>
+    <tr class="hero"><td>coded vs a <em>smaller-norm</em> rescaling</td><td>−0.0210</td><td class="ci" style="color:inherit">[−0.0232, −0.0188]</td></tr>
+    <tr><td>coded vs base model</td><td>+0.1819</td><td class="ci">[+0.1624, +0.2020]</td></tr>
+    <tr><td>same-norm rescaling vs base</td><td>+0.2470</td><td class="ci">[+0.2245, +0.2712]</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The second row is the one that settles it. The coded update sits at norm 9.18 and the rescaling it
+is measured against at 7.26 — <strong>21% smaller</strong> — and the coded update still retains less
+corruption. Its advantage is therefore not a magnitude effect in any form.</p>
+
+<p>The last two rows are the limit of the claim: neither reaches the base model's cleanliness.
+Compression denoises substantially, not completely.</p>
+</div>
+
+<figure>
+  <img class="fig-light" src="22_corruption-intervals.light.svg" alt="Left: corruption preference with confidence intervals for five updates, annotated with each one's norm. Right: two paired differences, both negative, showing coding removes more corruption.">
+  <img class="fig-dark" src="22_corruption-intervals.dark.svg" alt="Left: corruption preference with confidence intervals for five updates, annotated with each one's norm. Right: two paired differences, both negative, showing coding removes more corruption.">
+  <figcaption><b>Figure 4 — corruption removed, with intervals</b>
+    Each point is annotated with its update norm. The coded adapter (orange) sits cleaner than both
+    rescalings — including the one with a <em>smaller</em> norm — and every condition remains
+    dirtier than the base model.</figcaption>
+</figure>
+
+<div class="col">
+<h3>It does not move toward the clean solution <span class="verdict v-refuted"><span class="dot"></span>claim refuted</span></h3>
+<p>An adapter trained on the aligned rationales — identical in every other field — reaches 80.4%,
+statistically the same as the compressed damaged one. It is not, however, the same object, and
+compression moves <em>away</em> from it rather than toward it.</p>
+
+<div class="tablewrap">
+<table>
+  <caption>Cosine to the clean-trained update</caption>
+  <thead><tr><th>update</th><th>cosine</th><th>GSM8K</th></tr></thead>
+  <tbody>
+    <tr><td>damaged, uncompressed</td><td>0.033</td><td>23.0%</td></tr>
+    <tr class="hero"><td>damaged, rank 1 @ 1 bit</td><td>0.006</td><td>80.2%</td></tr>
+    <tr><td>damaged, rescaled to that norm</td><td>0.009</td><td>77.8%</td></tr>
+    <tr><td>clean adapter, rank 1 @ 1 bit <span class="kind">positive control</span></td><td>0.343</td><td>81.2%</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>So the compressed adapter reaches clean-adapter accuracy by a near-orthogonal route. It is not
+rediscovering the solution the corruption prevented. That is the fact that makes the second study
+necessary: if it is not task knowledge, what is it?</p>
+</div>
+
+<figure>
+  <img class="fig-light" src="15_distance-to-clean-adapter.light.svg" alt="Left: agreement with the clean adapter on commonly-wrong items plotted against accuracy, a tight monotone relation. Right: cosine bars, all near zero except the clean control at 0.343.">
+  <img class="fig-dark" src="15_distance-to-clean-adapter.dark.svg" alt="Left: agreement with the clean adapter on commonly-wrong items plotted against accuracy, a tight monotone relation. Right: cosine bars, all near zero except the clean control at 0.343.">
+  <figcaption><b>Figure 5 — distance to the clean solution</b>
+    Behavioural agreement (left) tracks accuracy and nothing else — the base model sits on the same
+    trend as everything else, so no condition is converging on the clean adapter beyond what being
+    accurate already implies. In weight space (right) there is nothing to converge on.</figcaption>
+</figure>
+
+<div class="col">
+<h2 class="sec"><span class="num">Part two</span>What is the surviving direction actually doing?</h2>
+<p class="lede">The compressed adapter writes 45% more words than the base model and almost exactly
+the same number of arithmetic operations. The obvious reading is that it thinks longer and longer
+is better. Four experiments say otherwise.</p>
+
+<h3>It is not length <span class="verdict v-refuted"><span class="dot"></span>hypothesis dead</span></h3>
+<p>Two instruments lengthen the base model's chain with no adapter attached: a constant negative bias
+on the answer-marker tokens, and a hard floor forbidding it to finish. At <em>matched chain length</em>
+the forced model scores 69.4% and the adapter 80.2% — a gap of <strong>+10.8 points,
+95% CI [+6.6, +15.0]</strong>, with length held equal. Neither instrument ever helps.</p>
+
+<p>The two arms also get there in opposite ways. Forcing length makes the model write
+<em>more computations</em> at the same verbal density. The adapter holds the computation count fixed
+and raises the density — the only condition tested that does.</p>
+
+<div class="tablewrap">
+<table>
+  <caption>What each intervention does to the chain</caption>
+  <thead><tr><th>condition</th><th>words</th><th>computations</th><th>words per computation</th><th>GSM8K</th></tr></thead>
+  <tbody>
+    <tr><td>base model</td><td>60.6</td><td>3.77</td><td>16.1</td><td>74.8%</td></tr>
+    <tr><td>marker bias 1.0</td><td>66.0</td><td>4.08</td><td>16.2</td><td>74.6%</td></tr>
+    <tr><td>marker bias 2.0</td><td>84.9</td><td>4.97</td><td>17.1</td><td>69.4%</td></tr>
+    <tr><td>marker bias 4.0</td><td>222.3</td><td>10.63</td><td>20.9</td><td>34.6%</td></tr>
+    <tr class="hero"><td>rank 1 @ 1 bit</td><td>88.0</td><td>3.86</td><td>22.8</td><td>80.2%</td></tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+<figure>
+  <img class="fig-light" src="16_cot-length-is-not-the-mechanism.light.svg" alt="Left: accuracy against chain length, with forced arms falling steeply and the adapter far above them at the same length. Right: accuracy gain and extra words by layer band.">
+  <img class="fig-dark" src="16_cot-length-is-not-the-mechanism.dark.svg" alt="Left: accuracy against chain length, with forced arms falling steeply and the adapter far above them at the same length. Right: accuracy gain and extra words by layer band.">
+  <figcaption><b>Figure 6 — length is not what is being bought</b>
+    Left: every way of making the base model write more traces a steep decline; the adapter sits far
+    above that curve at the same length. Right: the same effect by depth. Layers 0–6 alone are
+    statistically indistinguishable from the whole update (−0.6, CI [−4.0, +2.8]) and the top
+    quarter of the stack contributes exactly nothing.</figcaption>
+</figure>
+
+<div class="col">
+<h3>It is not a stopping prior either <span class="verdict v-refuted"><span class="dot"></span>hypothesis dead</span></h3>
+<p>Teacher-forcing the base model's own chains under both weight settings gives the update's real
+effect on the decision to stop: <strong>−0.13 nats</strong>, roughly uniform along the chain. That is
+four times smaller than the weakest bias swept above, which produced a tenth as much lengthening.
+Per nat of suppression the adapter lengthens the chain about 37 times as much. The arithmetic rules
+out the termination logit as the mediator.</p>
+
+<h3>What it does do: it breaks lines <span class="verdict v-holds"><span class="dot"></span>holds</span></h3>
+<p>Differencing the expected frequency of every token, across 14,383 chain positions, gives a
+dominant answer. Two tokens account for about two thirds of all the probability mass the update
+moves, and they are the same event:</p>
+
+<div class="tablewrap">
+<table>
+  <caption>Largest changes in expected token frequency</caption>
+  <thead><tr><th>token</th><th>base</th><th>with update</th><th>change</th></tr></thead>
+  <tbody>
+    <tr class="hero"><td>".\n"</td><td>0.00646</td><td>0.01579</td><td>+0.00933</td></tr>
+    <tr class="hero"><td>"."</td><td>0.03644</td><td>0.02575</td><td>−0.01070</td></tr>
+    <tr><td>" To"</td><td>0.00114</td><td>0.00199</td><td>+0.00085</td></tr>
+    <tr><td>" Therefore"</td><td>0.00124</td><td>0.00165</td><td>+0.00042</td></tr>
+    <tr><td>" Step"</td><td>0.00079</td><td>0.00013</td><td>−0.00066</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The update turns sentence-ending periods into line breaks. It rewrites the chain of thought from a
+running paragraph into one computation per line. The base model segments 14% of its sentences; the
+adapter segments 93%.</p>
+
+<h3>But copying that average does not copy the benefit <span class="verdict v-holds"><span class="dot"></span>holds</span></h3>
+<p>Putting the update's own measured per-token shift back onto the base model — its top 80 tokens,
+the first-order reconstruction of its effect on the output distribution — recovers 37% of the
+lengthening and <strong>7% of the accuracy gain</strong>. Scaling that shift up does not rescue it:
+the best point is +1.8 [−0.6, +4.2], and beyond 3× the intervention starts splitting decimal numbers
+across line breaks and collapses.</p>
+
+<p>The reason is in the ambiguity of the token itself. A "." ends a sentence <em>and</em> separates a
+decimal. Segmenting reasoning steps means telling those apart — and a constant logit shift cannot,
+even in principle.</p>
+</div>
+
+<figure>
+  <img class="fig-light" src="17_step-boundary-selectivity.light.svg" alt="Scatter of sentence-segmentation rate against decimal-corruption rate. The adapter sits at 93 percent segmentation with 0.8 percent corruption; uniform bias arms climb steeply in corruption.">
+  <img class="fig-dark" src="17_step-boundary-selectivity.dark.svg" alt="Scatter of sentence-segmentation rate against decimal-corruption rate. The adapter sits at 93 percent segmentation with 0.8 percent corruption; uniform bias arms climb steeply in corruption.">
+  <figcaption><b>Figure 7 — the selectivity test</b>
+    The adapter segments 93% of sentences while damaging 0.8% of decimals. To reach comparable
+    segmentation a context-blind bias has to damage 22.6% — twenty-seven times less selective at the
+    same behavioural target, and its accuracy collapses to 26.4%. This is the direct evidence that
+    the direction <em>conditions on context</em>.</figcaption>
+</figure>
+
+<div class="col">
+<h2 class="sec"><span class="num">Part three</span>Weights, or something a prompt could do?</h2>
+
+<div class="retraction">
+  <h4>Retraction — a conclusion I published mid-investigation and then overturned</h4>
+  <p>An earlier version of this note concluded that the effect was <em>"genuinely weight-level, not
+  reducible to an in-context prior"</em>, on the strength of an experiment where MetaMath-register
+  exemplars lost 4.2 points against a GSM8K-register control.</p>
+  <p>That experiment was confounded: the two exemplar sets differed in <em>problem distribution</em>
+  as well as register, because MetaMathQA problems are not GSM8K problems. Repeating it with the
+  three exemplar problems held fixed reverses the result. The conclusion was wrong and is withdrawn.</p>
+</div>
+
+<p>With only the register varying — terse solutions being GSM8K's own, segmented ones being what the
+adapter itself wrote for those same three problems, so neither is authored by hand — three
+demonstrations in the prompt reproduce the entire adapter gain, with no adapter attached.</p>
+
+<div class="tablewrap">
+<table>
+  <caption>Register held against problem distribution</caption>
+  <thead><tr><th>exemplars in the prompt</th><th>GSM8K</th><th>vs none</th><th>95% CI</th><th>segmented</th></tr></thead>
+  <tbody>
+    <tr><td>none</td><td>74.65%</td><td>—</td><td class="ci">—</td><td>14.3%</td></tr>
+    <tr><td>GSM8K gold, terse</td><td>75.65%</td><td>+1.0</td><td class="ci">[−2.6, +4.8]</td><td>64.6%</td></tr>
+    <tr class="hero"><td>the adapter's own, segmented</td><td>80.08%</td><td>+5.4</td><td class="ci">[+1.8, +9.1]</td><td>72.2%</td></tr>
+    <tr><td>the adapter itself <span class="kind">weights</span></td><td>80.08%</td><td>+5.4</td><td class="ci">[+1.8, +9.2]</td><td>93.0%</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>So the dividing line is not weights against context. It is <strong>conditioning against no
+conditioning</strong>. A demonstration conveys <em>when</em> to segment; a constant bias can only say
+<em>whether</em>. Interventions in the first group reproduce the benefit; interventions in the second
+reproduce the form and none of it.</p>
+
+<div class="note">
+  <p style="margin:0"><strong>Two caveats that keep this honest.</strong> Segmentation alone is not
+  sufficient: the terse exemplars also induce it — 64.6%, since gold GSM8K solutions are themselves
+  newline-separated — and buy only +1.0. And the adapter and the prompt are not the same function
+  despite identical accuracy: of the items each repairs over base (64 and 58), only 41 overlap, a
+  Jaccard of 0.51.</p>
+</div>
+</div>
+
+<figure>
+  <img class="fig-light" src="21_form-versus-benefit.light.svg" alt="Scatter of form reproduced against benefit reproduced for twelve interventions. Context-blind interventions cluster at or below zero benefit regardless of form; the adapter, layer bands and segmented exemplars reach the full gain.">
+  <img class="fig-dark" src="21_form-versus-benefit.dark.svg" alt="Scatter of form reproduced against benefit reproduced for twelve interventions. Context-blind interventions cluster at or below zero benefit regardless of form; the adapter, layer bands and segmented exemplars reach the full gain.">
+  <figcaption><b>Figure 8 — the whole ledger on two axes</b>
+    Horizontal: how much of the adapter's <em>form</em> an intervention reproduces. Vertical: how much
+    of its <em>benefit</em>. Every context-blind intervention lands at or below zero however much form
+    it produces. Only the weight update and the demonstration reach the top.</figcaption>
+</figure>
+
+<div class="col">
+<h3>What does the direction actually read? <span class="verdict v-holds"><span class="dot"></span>holds</span></h3>
+<p>A rank-one update writes <code>b·(a·x)</code>, so every token carries one scalar per module saying
+how strongly the direction fires there. If this is a step-boundary detector, that coefficient should
+differ where a step is about to end from where it is not. Measured on the base model's own chains,
+so the text is identical across the positions being compared:</p>
+
+<div class="tablewrap">
+<table>
+  <caption>Coefficient at a step boundary against elsewhere, 196 modules</caption>
+  <thead><tr><th>quantity</th><th>value</th></tr></thead>
+  <tbody>
+    <tr><td>mean |standardised gap| observed</td><td>0.345</td></tr>
+    <tr><td>expected from sampling noise alone</td><td>0.032</td></tr>
+    <tr class="hero"><td>ratio</td><td>10.9×</td></tr>
+    <tr><td>modules with |gap| &gt; 0.2 σ</td><td>131 of 196</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The direction reads step boundaries about eleven times more strongly than chance, in two thirds of
+modules, with module-specific sign. <strong>The first version of this measurement used the
+<em>absolute</em> coefficient and reported nothing</strong> — a direction that writes +b at a boundary
+and −b elsewhere is perfectly selective and has an absolute ratio of exactly one.</p>
+
+<p>The depth profile is informative by disagreeing with the causal one. Layers 21–27 detect step
+boundaries as strongly as any band and are worth exactly zero points, which is what you would expect:
+by layer 25 there is no downstream computation left to use the information. Detecting a boundary and
+being useful are separable, and only the early layers have both.</p>
+</div>
+
+<figure>
+  <img class="fig-light" src="23_what-the-direction-reads.light.svg" alt="Left: histogram of standardised coefficient gaps across 196 modules, far wider than the narrow noise null. Right: bars comparing boundary detection and accuracy contribution by layer band, agreeing for early layers and diverging at the top of the stack.">
+  <img class="fig-dark" src="23_what-the-direction-reads.dark.svg" alt="Left: histogram of standardised coefficient gaps across 196 modules, far wider than the narrow noise null. Right: bars comparing boundary detection and accuracy contribution by layer band, agreeing for early layers and diverging at the top of the stack.">
+  <figcaption><b>Figure 9 — what the direction reads</b>
+    Left: the spread of boundary-sensitivity across modules against what sampling noise alone would
+    produce (dashed). Right: boundary detection (blue) against accuracy contribution (orange) by
+    depth. The top quarter of the stack reads the boundary as strongly as any band and contributes
+    nothing.</figcaption>
+</figure>
+
+<div class="col">
+<h2 class="sec"><span class="num">Part four</span>Where in the update does the damage live?</h2>
+<p class="lede">Compression keeps the top of the spectrum and drops the rest, which invites the
+reading that the top direction is signal and the tail is memorised noise. Slicing the spectrum tests
+it — and reverses it.</p>
+
+<p>A prefix always contains the top direction, so only the middle and tail bands can falsify the
+claim. Each band is evaluated twice: kept at full precision, and put through a one-bit file.</p>
+
+<div class="tablewrap">
+<table>
+  <caption>Each slice of the damaged update, on its own</caption>
+  <thead><tr><th>slice</th><th>energy</th><th>at fp16</th><th>at 1 bit</th><th>effect of compressing</th><th>95% CI</th></tr></thead>
+  <tbody>
+    <tr><td>rank 1 (top direction)</td><td>48.5%</td><td>40.2%</td><td>80.2%</td><td class="pos">+40.0</td><td class="ci">[+35.4, +44.8]</td></tr>
+    <tr><td>ranks 2&ndash;4</td><td>24.7%</td><td>42.4%</td><td>76.8%</td><td class="pos">+34.4</td><td class="ci">[+29.4, +39.6]</td></tr>
+    <tr class="hero"><td>ranks 5&ndash;16 (the tail)</td><td>26.8%</td><td>82.8%</td><td>76.0%</td><td>&minus;6.8</td><td class="ci" style="color:inherit">[&minus;10.2, &minus;3.4]</td></tr>
+    <tr><td>ranks 1&ndash;4</td><td>73.2%</td><td>23.4%</td><td>71.0%</td><td class="pos">+47.6</td><td class="ci">[+42.8, +52.4]</td></tr>
+    <tr><td>ranks 1&ndash;8</td><td>86.7%</td><td>22.6%</td><td>59.4%</td><td class="pos">+36.8</td><td class="ci">[+31.8, +41.8]</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p><strong>The corruption is concentrated in the dominant directions.</strong> Keeping the top eight
+at full precision reproduces the damaged adapter almost exactly (22.6% against 23.0%). Keeping only
+the tail &mdash; discarding 73% of the update's energy, including everything low-rank compression
+would have preserved &mdash; gives <strong>82.8%, or +8.0 points over base, 95% CI
+[+4.2, +12.0]</strong>. That is above the compressed adapter and above the clean-trained adapter,
+with no compression anywhere.</p>
+
+<p>In hindsight it is what training should produce. Every training row carried a mismatched
+rationale, so the corruption was a strong and consistent gradient signal, and strong consistent
+signals are what the dominant directions absorb. The format prior is the weaker, more diffuse
+residue.</p>
+
+<p><strong>And compression helps exactly where there is damage to destroy.</strong> Every band
+containing the dominant directions gains between +34 and +48 points from being coded at one bit. The
+tail &mdash; the one band containing none of them &mdash; <em>loses</em> 6.8, with an interval that
+excludes zero. Five bands, one rule. Rank-1 truncation keeps precisely the most corrupted component of the update, and
+survives only because one-bit coding mangles it past the point of doing harm.</p>
+
+<div class="note">
+  <p style="margin:0">One more thing this rules out. <code>rank 1 @ fp16</code> segments
+  <strong>81.6%</strong> of its sentences &mdash; nearly as much as the full adapter's 93% &mdash; and
+  scores <strong>40.2%</strong>. So segmentation is not sufficient either: the benefit needs the
+  segmentation <em>and</em> the corruption gone, and the top direction carries both at once.</p>
+</div>
+</div>
+
+<figure>
+  <img class="fig-light" src="24_spectral-bands.light.svg" alt="Left: accuracy of three spectral slices at full precision and at one bit. The top two slices jump forty and thirty-four points when compressed; the tail falls seven. Right: share of update energy per slice, with the top direction holding 48.5 percent.">
+  <img class="fig-dark" src="24_spectral-bands.dark.svg" alt="Left: accuracy of three spectral slices at full precision and at one bit. The top two slices jump forty and thirty-four points when compressed; the tail falls seven. Right: share of update energy per slice, with the top direction holding 48.5 percent.">
+  <figcaption><b>Figure 10 &mdash; the damage is at the top of the spectrum</b>
+    Compressing a slice is worth +40 points where that slice is corrupted and &minus;7 where it is
+    not. The tail kept at full precision is the best condition measured anywhere in this work, and it
+    is the part low-rank truncation discards first.</figcaption>
+</figure>
+
+<div class="col">
+<h2 class="sec"><span class="num">Part five</span>The ledger</h2>
+<p class="lede">Every intervention tried, and what each one reproduced. The negative results are the
+substance here: they are what rule out the simpler explanations.</p>
+</div>
+
+<div class="tablewrap">
+<table class="ledger">
+  <caption>Interventions, in order of how much conditioning they carry</caption>
+  <thead><tr><th>intervention</th><th>kind</th><th>form</th><th>benefit</th><th>verdict</th></tr></thead>
+  <tbody>
+    <tr><td>hard length floor, 100 tokens</td><td class="kind" style="text-align:left">decoding</td><td>overshoots</td><td class="neg">−37.6</td><td style="text-align:left"><span class="verdict v-refuted"><span class="dot"></span>no</span></td></tr>
+    <tr><td>answer-marker bias, 2 nats</td><td class="kind" style="text-align:left">decoding</td><td>matched</td><td class="neg">−5.4</td><td style="text-align:left"><span class="verdict v-refuted"><span class="dot"></span>no</span></td></tr>
+    <tr><td>measured token shift, top 80</td><td class="kind" style="text-align:left">decoding</td><td>37%</td><td class="neg">+0.4</td><td style="text-align:left"><span class="verdict v-refuted"><span class="dot"></span>no</span></td></tr>
+    <tr><td>measured token shift, ×3</td><td class="kind" style="text-align:left">decoding</td><td>partial</td><td>+1.8</td><td style="text-align:left"><span class="verdict v-refuted"><span class="dot"></span>no</span></td></tr>
+    <tr><td>MetaMath exemplars <span class="kind">confounded</span></td><td class="kind" style="text-align:left">context</td><td>partial</td><td class="neg">−3.6</td><td style="text-align:left"><span class="verdict v-refuted"><span class="dot"></span>void</span></td></tr>
+    <tr><td>terse exemplars, matched problems</td><td class="kind" style="text-align:left">context</td><td>64.6%</td><td>+1.0</td><td style="text-align:left"><span class="verdict v-refuted"><span class="dot"></span>no</span></td></tr>
+    <tr><td>layers 14–20 only</td><td class="kind" style="text-align:left">weights</td><td>none</td><td>+2.6</td><td style="text-align:left"><span class="verdict v-partial"><span class="dot"></span>partial</span></td></tr>
+    <tr class="hero"><td>segmented exemplars, matched problems</td><td class="kind" style="text-align:left">context</td><td>72.2%</td><td class="pos" style="color:inherit">+5.4</td><td style="text-align:left"><span class="verdict v-holds"><span class="dot"></span>yes</span></td></tr>
+    <tr class="hero"><td>layers 0–6 only</td><td class="kind" style="text-align:left">weights</td><td>67.0%</td><td class="pos" style="color:inherit">+4.8</td><td style="text-align:left"><span class="verdict v-holds"><span class="dot"></span>yes</span></td></tr>
+    <tr class="hero"><td>the whole rank-1 @ 1-bit adapter</td><td class="kind" style="text-align:left">weights</td><td>93.0%</td><td class="pos" style="color:inherit">+5.4</td><td style="text-align:left"><span class="verdict v-holds"><span class="dot"></span>yes</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="col">
+<h2 class="sec"><span class="num">Part six</span>What this does not establish</h2>
+
+<p><strong>One training seed, one model family, one corruption, one dataset pair.</strong> Seed
+variance is the main untested threat to every effect above.</p>
+
+<p><strong>"Register" describes behaviour, not a circuit.</strong> The effect is redundant across the
+lower half of the stack — layers 0–6 alone are indistinguishable from all 28 — so there is nothing to
+point at. And knowing the decision must be conditional does not say what it conditions on.</p>
+
+<p><strong>Five instrument bugs were found and fixed during this work</strong> — a wrong-corpus
+join, exemplars truncated before their answer line, few-shot run-on contaminating answer extraction,
+log-probabilities averaged where probabilities were needed, and an absolute coefficient measured
+where a signed one was required. Each produced a confident, plausible number before it was caught,
+and two of them reported a null that was not there. Given that rate, treat any single
+un-cross-checked measurement here as provisional.</p>
+
+<p><strong>Norm is the matched quantity, and that is a choice.</strong> A scalar is exactly what moves
+Frobenius norm, which is why it is the right control here, but a reader who thinks the relevant
+magnitude is something else is not answered by this grid.</p>
+
+<p><strong>Intervals are unadjusted</strong> for the number of conditions, and several sweeps were
+chosen adaptively — the bias grid after the hard floor overshot, the scaled grid after the unscaled
+one moved nothing.</p>
+
+<footer>
+  <p><strong>Methods.</strong> Qwen2.5-7B base on an nf4 backbone, LoRA rank 16 on all linear
+  projections, α/rank = 2, trained one epoch on 32,000 MetaMathQA rows whose worked explanation was
+  taken from a different problem. Accuracies are exact match on a fixed 500-question GSM8K slice;
+  intervals are paired bootstraps over items, 10,000 draws. Corruption is reasoning-span negative
+  log-likelihood on 256 paired training rows. Update norms carry a common α/rank factor and are
+  comparable across conditions rather than absolute.</p>
+  <p>Data, figures and per-condition tables:
+  <code>results/3_chain_of_thought_under_compression/denoise_vs_shrinkage/</code> and
+  <code>results/3_chain_of_thought_under_compression/cot_verbosity_mechanism/</code>.</p>
+</footer>
+</div>
+
+</div>

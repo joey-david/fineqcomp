@@ -1,0 +1,67 @@
+{
+  "by_decile": {
+    "0": {
+      "base_logp_marker": -12.65658275533712,
+      "positions": 1494,
+      "shift": -0.34550008389206077,
+      "update_logp_marker": -13.00208283922918
+    },
+    "1": {
+      "base_logp_marker": -14.838915282924,
+      "positions": 1435,
+      "shift": -0.3766457260278049,
+      "update_logp_marker": -15.215561008951806
+    },
+    "2": {
+      "base_logp_marker": -15.452780299312364,
+      "positions": 1442,
+      "shift": -0.2566669455183028,
+      "update_logp_marker": -15.709447244830667
+    },
+    "3": {
+      "base_logp_marker": -15.757740995194439,
+      "positions": 1435,
+      "shift": -0.2582122420600079,
+      "update_logp_marker": -16.015953237254447
+    },
+    "4": {
+      "base_logp_marker": -16.01816764669237,
+      "positions": 1419,
+      "shift": -0.16854882761153434,
+      "update_logp_marker": -16.186716474303903
+    },
+    "5": {
+      "base_logp_marker": -16.34970353837685,
+      "positions": 1455,
+      "shift": -0.19645767818201776,
+      "update_logp_marker": -16.54616121655887
+    },
+    "6": {
+      "base_logp_marker": -16.455580274895627,
+      "positions": 1447,
+      "shift": -0.18427545923814392,
+      "update_logp_marker": -16.63985573413377
+    },
+    "7": {
+      "base_logp_marker": -16.263162720620215,
+      "positions": 1430,
+      "shift": -0.24498282829364726,
+      "update_logp_marker": -16.508145548913863
+    },
+    "8": {
+      "base_logp_marker": -15.871344281379816,
+      "positions": 1447,
+      "shift": -0.19466661690182718,
+      "update_logp_marker": -16.066010898281643
+    },
+    "9": {
+      "base_logp_marker": -12.905614777570124,
+      "positions": 1379,
+      "shift": -0.28124588774956294,
+      "update_logp_marker": -13.186860665319687
+    }
+  },
+  "chains_scored": 127,
+  "mean_logp_marker_base": -14.26204932956245,
+  "mean_logp_marker_update": -14.391883482144573
+}
