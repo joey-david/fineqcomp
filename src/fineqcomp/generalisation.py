@@ -83,11 +83,17 @@ def arm_run(arm: dict[str, Any], seed: int) -> RunSpec:
         and run.model.key == arm["model"]
         and run.adapter.rank == int(arm["rank"])
         and run.seed == int(seed)
+        # A study that sweeps several corpora -- three pointer difficulties, say
+        # -- expands to several runs per model, and an arm names exactly one of
+        # them. Every arm already carries the dataset it is scored on, so the
+        # same field is what identifies the adapter.
+        and str(run.dataset_key) == str(arm["dataset"])
     ]
     if len(runs) != 1:
         raise ValueError(
-            f"arm {arm['study']} rank {arm['rank']} seed {seed} expands to"
-            f" {len(runs)} runs in {arm['config']}"
+            f"arm {arm['study']}/{arm['dataset']} on {arm['model']} rank"
+            f" {arm['rank']} seed {seed} expands to {len(runs)} runs in"
+            f" {arm['config']}"
         )
     return runs[0]
 
