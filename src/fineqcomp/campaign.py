@@ -105,6 +105,16 @@ def expand_campaign(raw: dict[str, Any]) -> list[RunSpec]:
                             payload["rationale_control"] = str(
                                 dataset_spec["rationale_control"]
                             )
+                        # Same reasoning as the rationale control above: two
+                        # arms that differ only in how their data was corrupted
+                        # must not hash to the same adapter.
+                        for extra in ("response_control", "label_control"):
+                            if dataset_spec.get(extra) is not None:
+                                payload[extra] = str(dataset_spec[extra])
+                        if dataset_spec.get("corruption_fraction") is not None:
+                            payload["corruption_fraction"] = float(
+                                dataset_spec["corruption_fraction"]
+                            )
                         if dataset_spec.get("distinct_source_problems") is not None:
                             payload["distinct_source_problems"] = int(
                                 dataset_spec["distinct_source_problems"]

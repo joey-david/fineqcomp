@@ -1,0 +1,86 @@
+# Chain of thought with its steps reordered.
+#
+# The weakest corruption in the set, and deliberately so. Content, topic,
+# arithmetic, format and answer all survive; only the order of the lines does
+# not. If the adapter is learning what a chain says rather than the sequence it
+# says it in, this arm should barely be damaged -- and an arm that is barely
+# damaged has little for compression to recover, which is itself a reading of
+# what the recovery is repairing.
+adapters:
+  all_linear_r16:
+    alpha: 32
+    dropout: 0.0
+    last_n_layers: null
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+codecs:
+  binary:
+    bits: 1
+    method: uniform
+datasets:
+  cot_math_shuffled:
+    answer_marker: 'The answer is:'
+    evaluations:
+    - converter: gsm8k
+      key: gsm8k
+      name: main
+      path: openai/gsm8k
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: test
+    maximum_baseline_score: 0.85
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    rationale_control: shuffled
+    screening_metric: exact_match
+    task_type: generative
+    test_rows: 500
+    train_rows: 32000
+    train_source:
+      converter: metamath
+      name: default
+      path: meta-math/MetaMathQA
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+    validation_rows: 256
+evaluation_batch_size: 32
+information_rows: 256
+models:
+  qwen25_7b_base:
+    backbone: nf4
+    chat: false
+    name: Qwen/Qwen2.5-7B
+    revision: d149729398750b98c0af14eb82c78cfe92750796
+studies:
+  trace_shuffled_full:
+    adapters:
+    - all_linear_r16
+    datasets:
+    - cot_math_shuffled
+    kind: natural
+    models:
+    - qwen25_7b_base
+    seeds:
+    - 11
+    training: cot_full_1ep
+training:
+  cot_full_1ep:
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    effective_batch_size: 16
+    epochs: 1
+    eval_every_updates: 200
+    label_span: all
+    learning_rate: 0.0002
+    max_grad_norm: 1.0
+    max_length: 1024
+    micro_batch_size: 4
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+version: 1
