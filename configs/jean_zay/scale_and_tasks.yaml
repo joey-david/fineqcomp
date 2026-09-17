@@ -1,0 +1,242 @@
+# Does "compression beats the base model" survive a change of scale, and a
+# change of task?
+#
+# The recorded result is one model at one size on one task: Qwen2.5-7B, an
+# adapter trained on MetaMathQA rows whose worked explanation was taken from a
+# different problem, scored on GSM8K. It loses the model (74.8% to 23.0%) and
+# then, truncated to rank one and coded at one bit, beats it (80.2%).
+#
+# Two axes here, sharing one apparatus.
+#
+# Scale. Qwen2.5 base at 0.5B, 1.5B, 3B, 7B, 14B and 32B, everything else held
+# fixed. Qwen is the family to run this on for two reasons: it showed the
+# largest recovery of the three (a 59-point rise over the damaged fine-tune,
+# against 22 on Llama and 13 on Mistral), and it is the only one of the three
+# whose base model is already competent at the task, so "beats the base" is a
+# real claim there rather than an artifact of a base model that cannot follow
+# the format at all. It is also the only family with a dense size ladder in the
+# shared store.
+#
+# Task. Pointer chasing: a map from numbers to numbers, a start value, and a
+# step count. Nothing is known in advance and nothing can be guessed; the only
+# route to the answer is to apply the map the requested number of times. Its
+# difficulty is set exactly by the hop count, which is what no retrieved dataset
+# offers, so the same task can be made easy enough for 1.5B and hard enough for
+# 32B. It is corrupted the same way the recorded arm is -- working that belongs
+# to a different question, with the right answer still attached.
+#
+# The chain-of-thought study concluded that what survives compression is a
+# conditional step-segmentation prior: write one step per line, then stop and
+# answer. A task that is nothing but steps is the sharpest available test of
+# that, and it is the reason to run this one before any other non-reasoning task.
+adapters:
+  all_linear_r16:
+    alpha: 32
+    dropout: 0.0
+    last_n_layers: null
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+codecs:
+  binary:
+    bits: 1
+    method: uniform
+models:
+  qwen25_0p5b_base:
+    backbone: nf4
+    chat: false
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-0.5B
+    revision: dsdir-shared-store
+  qwen25_1p5b_base:
+    backbone: nf4
+    chat: false
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-1.5B
+    revision: dsdir-shared-store
+  qwen25_3b_base:
+    backbone: nf4
+    chat: false
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-3B
+    revision: dsdir-shared-store
+  qwen25_7b_base:
+    backbone: nf4
+    chat: false
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+  qwen25_14b_base:
+    backbone: nf4
+    chat: false
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-14B
+    revision: dsdir-shared-store
+  qwen25_32b_base:
+    backbone: nf4
+    chat: false
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-32B
+    revision: dsdir-shared-store
+datasets:
+  # The recorded corruption, unchanged, so the 7B cell of the ladder is a
+  # replication of the published point and every other cell is read against it.
+  cot_math_permuted:
+    answer_marker: 'The answer is:'
+    evaluations:
+    - converter: gsm8k
+      key: gsm8k
+      name: main
+      path: openai/gsm8k
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: test
+    maximum_baseline_score: 0.95
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    rationale_control: permuted
+    screening_metric: exact_match
+    task_type: generative
+    test_rows: 500
+    train_rows: 32000
+    train_source:
+      converter: metamath
+      name: default
+      path: meta-math/MetaMathQA
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+    validation_rows: 256
+  # Three difficulties of the same generated task. Twenty map entries
+  # throughout, so only the walk length changes and the prompt stays the same
+  # size: any difference between these three is the number of steps and nothing
+  # else.
+  pointer_h2:
+    answer_marker: 'The answer is:'
+    evaluation_max_new_tokens: 160
+    hops: 2
+    maximum_baseline_score: 0.98
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    nodes: 20
+    rationale_control: permuted
+    screening_metric: exact_match
+    task_type: pointer_chasing
+    test_rows: 500
+    train_rows: 8000
+    validation_rows: 256
+  pointer_h4:
+    answer_marker: 'The answer is:'
+    evaluation_max_new_tokens: 160
+    hops: 4
+    maximum_baseline_score: 0.98
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    nodes: 20
+    rationale_control: permuted
+    screening_metric: exact_match
+    task_type: pointer_chasing
+    test_rows: 500
+    train_rows: 8000
+    validation_rows: 256
+  pointer_h8:
+    answer_marker: 'The answer is:'
+    evaluation_max_new_tokens: 200
+    hops: 8
+    maximum_baseline_score: 0.98
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    nodes: 20
+    rationale_control: permuted
+    screening_metric: exact_match
+    task_type: pointer_chasing
+    test_rows: 500
+    train_rows: 8000
+    validation_rows: 256
+  # The uncorrupted arm. Without it there is no way to say whether a compressed
+  # corrupt adapter lands where a clean adapter lands, which is the question the
+  # chain-of-thought study answered with a cosine of 0.006.
+  pointer_h4_clean:
+    answer_marker: 'The answer is:'
+    evaluation_max_new_tokens: 160
+    hops: 4
+    maximum_baseline_score: 0.98
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    nodes: 20
+    screening_metric: exact_match
+    task_type: pointer_chasing
+    test_rows: 500
+    train_rows: 8000
+    validation_rows: 256
+studies:
+  scale_ladder:
+    adapters:
+    - all_linear_r16
+    datasets:
+    - cot_math_permuted
+    kind: natural
+    models:
+    - qwen25_0p5b_base
+    - qwen25_1p5b_base
+    - qwen25_3b_base
+    - qwen25_7b_base
+    - qwen25_14b_base
+    - qwen25_32b_base
+    seeds:
+    - 11
+    training: cot_full_1ep
+  pointer_ladder:
+    adapters:
+    - all_linear_r16
+    datasets:
+    - pointer_h2
+    - pointer_h4
+    - pointer_h8
+    kind: natural
+    models:
+    - qwen25_1p5b_base
+    - qwen25_7b_base
+    - qwen25_32b_base
+    seeds:
+    - 11
+    training: pointer_2ep
+  pointer_clean:
+    adapters:
+    - all_linear_r16
+    datasets:
+    - pointer_h4_clean
+    kind: natural
+    models:
+    - qwen25_7b_base
+    seeds:
+    - 11
+    training: pointer_2ep
+training:
+  cot_full_1ep:
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    effective_batch_size: 16
+    epochs: 1
+    eval_every_updates: 200
+    label_span: all
+    learning_rate: 0.0002
+    max_grad_norm: 1.0
+    max_length: 1024
+    micro_batch_size: 4
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+  # Pointer items are short and the corpus is a quarter the size, so two epochs
+  # here buy roughly the gradient steps one epoch of MetaMathQA buys. The point
+  # of an arm like this is that the corruption is learned thoroughly; an adapter
+  # that failed to learn it would look like a recovery for the wrong reason.
+  pointer_2ep:
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    effective_batch_size: 16
+    epochs: 2
+    eval_every_updates: 200
+    label_span: all
+    learning_rate: 0.0002
+    max_grad_norm: 1.0
+    max_length: 512
+    micro_batch_size: 8
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+evaluation_batch_size: 32
+information_rows: 256
+version: 1

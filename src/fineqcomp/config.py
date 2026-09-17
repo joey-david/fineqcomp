@@ -224,6 +224,23 @@ def load_campaign(path: str | Path) -> dict[str, Any]:
             raise ValueError(
                 f"dataset {key}: unknown label control {label_control!r}"
             )
+        if dataset.get("task_type") == "pointer_chasing":
+            # A generated corpus is decided entirely by these numbers, so a
+            # typo in one of them silently produces a different task rather
+            # than failing to download something.
+            for field in ("nodes", "hops", "train_rows", "validation_rows", "test_rows"):
+                if field not in dataset:
+                    raise ValueError(f"dataset {key}: pointer_chasing needs {field}")
+            if int(dataset["nodes"]) < 2:
+                raise ValueError(f"dataset {key}: a map needs at least two labels")
+            if int(dataset["hops"]) < 1:
+                raise ValueError(f"dataset {key}: a walk needs at least one step")
+            span = int(dataset.get("label_high", 99)) - int(dataset.get("label_low", 10)) + 1
+            if int(dataset["nodes"]) > span:
+                raise ValueError(
+                    f"dataset {key}: {dataset['nodes']} labels do not fit in a"
+                    f" range of {span}"
+                )
         control = dataset.get("rationale_control")
         if control is None:
             continue
