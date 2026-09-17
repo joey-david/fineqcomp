@@ -1,0 +1,96 @@
+# The solution the corruption prevented, on Jean-Zay.
+#
+# `configs/jean_zay/scale_and_tasks.yaml` trains a rank-16 LoRA on MetaMathQA
+# rows whose worked explanation was taken from a different problem. This file
+# trains the same adapter on the same rows with their *own* explanations, and
+# nothing else differs: same model, same converter and dataset revision, same
+# row caps, same training recipe, same seed, same adapter placement, rank and
+# alpha. The dataset key has to differ -- `cot_math` rather than
+# `cot_math_permuted` -- because it names the prepared corpus directory.
+#
+# It is a separate file rather than another study inside the grid config on
+# purpose. The running grid's lock digests its config by content, so adding a
+# study there would invalidate every sweep still to come.
+#
+# It exists so `denoise_vs_shrinkage` has a reference point rather than only a
+# direction of travel. The damaged adapter compressed to rank one at one bit
+# scores above the base model; the question that raises is whether it has moved
+# *toward* the solution the corruption prevented, and answering that needs that
+# solution trained under the same recipe.
+adapters:
+  all_linear_r16:
+    alpha: 32
+    dropout: 0.0
+    last_n_layers: null
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+codecs:
+  binary:
+    bits: 1
+    method: uniform
+datasets:
+  cot_math:
+    answer_marker: 'The answer is:'
+    evaluations:
+    - converter: gsm8k
+      key: gsm8k
+      name: main
+      path: openai/gsm8k
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: test
+    maximum_baseline_score: 0.95
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    screening_metric: exact_match
+    task_type: generative
+    test_rows: 500
+    train_rows: 32000
+    train_source:
+      converter: metamath
+      name: default
+      path: meta-math/MetaMathQA
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+    validation_rows: 256
+evaluation_batch_size: 32
+information_rows: 256
+models:
+  qwen25_7b_base:
+    backbone: nf4
+    chat: false
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+studies:
+  cot_aligned_full:
+    adapters:
+    - all_linear_r16
+    datasets:
+    - cot_math
+    kind: natural
+    models:
+    - qwen25_7b_base
+    seeds:
+    - 11
+    training: cot_full_1ep
+training:
+  cot_full_1ep:
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    effective_batch_size: 16
+    epochs: 1
+    eval_every_updates: 200
+    label_span: all
+    learning_rate: 0.0002
+    max_grad_norm: 1.0
+    max_length: 1024
+    micro_batch_size: 4
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+version: 1
