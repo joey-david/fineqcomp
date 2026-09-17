@@ -204,8 +204,8 @@ by five to six points.</p>
 </div>
 
 <figure>
-  <img class="fig-light" src="18_recovery-landscape.light.svg" alt="Accuracy against update norm for four families of update. All families rise to about 80% as the update norm falls, and collapse toward 23% as it grows.">
-  <img class="fig-dark" src="18_recovery-landscape.dark.svg" alt="Accuracy against update norm for four families of update. All families rise to about 80% as the update norm falls, and collapse toward 23% as it grows.">
+  <img class="fig-light" src="figures/18_recovery-landscape.light.svg" alt="Accuracy against update norm for four families of update. All families rise to about 80% as the update norm falls, and collapse toward 23% as it grows.">
+  <img class="fig-dark" src="figures/18_recovery-landscape.dark.svg" alt="Accuracy against update norm for four families of update. All families rise to about 80% as the update norm falls, and collapse toward 23% as it grows.">
   <figcaption><b>Figure 1 — the recovery landscape</b>
     Accuracy against the magnitude of the update, for every family tested. The damaged adapter sits
     at the far right; every way of making it smaller walks left and up. Reaching the base model is
@@ -225,8 +225,8 @@ tested, three of four intervals excluding zero.</p>
 </div>
 
 <figure>
-  <img class="fig-light" src="19_shrinkage-no-free-lunch.light.svg" alt="Two forest plots. Left: coded minus best alpha, centred on zero. Right: coded minus norm-matched rescaling at 1, 2, 4 and 8 bits, all positive.">
-  <img class="fig-dark" src="19_shrinkage-no-free-lunch.dark.svg" alt="Two forest plots. Left: coded minus best alpha, centred on zero. Right: coded minus norm-matched rescaling at 1, 2, 4 and 8 bits, all positive.">
+  <img class="fig-light" src="figures/19_shrinkage-no-free-lunch.light.svg" alt="Two forest plots. Left: coded minus best alpha, centred on zero. Right: coded minus norm-matched rescaling at 1, 2, 4 and 8 bits, all positive.">
+  <img class="fig-dark" src="figures/19_shrinkage-no-free-lunch.dark.svg" alt="Two forest plots. Left: coded minus best alpha, centred on zero. Right: coded minus norm-matched rescaling at 1, 2, 4 and 8 bits, all positive.">
   <figcaption><b>Figure 2 — two different questions</b>
     These are not the same comparison and they do not have the same answer. Against a scale you were
     free to tune, the codec has no advantage. Against a scale pinned to the codec's own output norm,
@@ -243,8 +243,8 @@ aligned counterpart, same prompt and same answer line.</p>
 </div>
 
 <figure>
-  <img class="fig-light" src="20_denoising-efficiency.light.svg" alt="Bar chart of corruption retained per unit of update norm. Rank 1 at 1 bit is lowest at 2.84; full rank times 0.1 is highest at 7.38.">
-  <img class="fig-dark" src="20_denoising-efficiency.dark.svg" alt="Bar chart of corruption retained per unit of update norm. Rank 1 at 1 bit is lowest at 2.84; full rank times 0.1 is highest at 7.38.">
+  <img class="fig-light" src="figures/20_denoising-efficiency.light.svg" alt="Bar chart of corruption retained per unit of update norm. Rank 1 at 1 bit is lowest at 2.84; full rank times 0.1 is highest at 7.38.">
+  <img class="fig-dark" src="figures/20_denoising-efficiency.dark.svg" alt="Bar chart of corruption retained per unit of update norm. Rank 1 at 1 bit is lowest at 2.84; full rank times 0.1 is highest at 7.38.">
   <figcaption><b>Figure 3 — denoising efficiency</b>
     Rank truncation improves this ratio and coarse quantization improves it further, in that order.
     <em>Note the tension:</em> full&nbsp;rank&nbsp;×&nbsp;0.1 has the worst ratio of anything here and
@@ -282,8 +282,8 @@ Compression denoises substantially, not completely.</p>
 </div>
 
 <figure>
-  <img class="fig-light" src="22_corruption-intervals.light.svg" alt="Left: corruption preference with confidence intervals for five updates, annotated with each one's norm. Right: two paired differences, both negative, showing coding removes more corruption.">
-  <img class="fig-dark" src="22_corruption-intervals.dark.svg" alt="Left: corruption preference with confidence intervals for five updates, annotated with each one's norm. Right: two paired differences, both negative, showing coding removes more corruption.">
+  <img class="fig-light" src="figures/22_corruption-intervals.light.svg" alt="Left: corruption preference with confidence intervals for five updates, annotated with each one's norm. Right: two paired differences, both negative, showing coding removes more corruption.">
+  <img class="fig-dark" src="figures/22_corruption-intervals.dark.svg" alt="Left: corruption preference with confidence intervals for five updates, annotated with each one's norm. Right: two paired differences, both negative, showing coding removes more corruption.">
   <figcaption><b>Figure 4 — corruption removed, with intervals</b>
     Each point is annotated with its update norm. The coded adapter (orange) sits cleaner than both
     rescalings — including the one with a <em>smaller</em> norm — and every condition remains
@@ -315,8 +315,8 @@ necessary: if it is not task knowledge, what is it?</p>
 </div>
 
 <figure>
-  <img class="fig-light" src="15_distance-to-clean-adapter.light.svg" alt="Left: agreement with the clean adapter on commonly-wrong items plotted against accuracy, a tight monotone relation. Right: cosine bars, all near zero except the clean control at 0.343.">
-  <img class="fig-dark" src="15_distance-to-clean-adapter.dark.svg" alt="Left: agreement with the clean adapter on commonly-wrong items plotted against accuracy, a tight monotone relation. Right: cosine bars, all near zero except the clean control at 0.343.">
+  <img class="fig-light" src="figures/15_distance-to-clean-adapter.light.svg" alt="Left: agreement with the clean adapter on commonly-wrong items plotted against accuracy, a tight monotone relation. Right: cosine bars, all near zero except the clean control at 0.343.">
+  <img class="fig-dark" src="figures/15_distance-to-clean-adapter.dark.svg" alt="Left: agreement with the clean adapter on commonly-wrong items plotted against accuracy, a tight monotone relation. Right: cosine bars, all near zero except the clean control at 0.343.">
   <figcaption><b>Figure 5 — distance to the clean solution</b>
     Behavioural agreement (left) tracks accuracy and nothing else — the base model sits on the same
     trend as everything else, so no condition is converging on the clean adapter beyond what being
@@ -355,8 +355,8 @@ and raises the density — the only condition tested that does.</p>
 </div>
 
 <figure>
-  <img class="fig-light" src="16_cot-length-is-not-the-mechanism.light.svg" alt="Left: accuracy against chain length, with forced arms falling steeply and the adapter far above them at the same length. Right: accuracy gain and extra words by layer band.">
-  <img class="fig-dark" src="16_cot-length-is-not-the-mechanism.dark.svg" alt="Left: accuracy against chain length, with forced arms falling steeply and the adapter far above them at the same length. Right: accuracy gain and extra words by layer band.">
+  <img class="fig-light" src="figures/16_cot-length-is-not-the-mechanism.light.svg" alt="Left: accuracy against chain length, with forced arms falling steeply and the adapter far above them at the same length. Right: accuracy gain and extra words by layer band.">
+  <img class="fig-dark" src="figures/16_cot-length-is-not-the-mechanism.dark.svg" alt="Left: accuracy against chain length, with forced arms falling steeply and the adapter far above them at the same length. Right: accuracy gain and extra words by layer band.">
   <figcaption><b>Figure 6 — length is not what is being bought</b>
     Left: every way of making the base model write more traces a steep decline; the adapter sits far
     above that curve at the same length. Right: the same effect by depth. Layers 0–6 alone are
@@ -408,8 +408,8 @@ even in principle.</p>
 </div>
 
 <figure>
-  <img class="fig-light" src="17_step-boundary-selectivity.light.svg" alt="Scatter of sentence-segmentation rate against decimal-corruption rate. The adapter sits at 93 percent segmentation with 0.8 percent corruption; uniform bias arms climb steeply in corruption.">
-  <img class="fig-dark" src="17_step-boundary-selectivity.dark.svg" alt="Scatter of sentence-segmentation rate against decimal-corruption rate. The adapter sits at 93 percent segmentation with 0.8 percent corruption; uniform bias arms climb steeply in corruption.">
+  <img class="fig-light" src="figures/17_step-boundary-selectivity.light.svg" alt="Scatter of sentence-segmentation rate against decimal-corruption rate. The adapter sits at 93 percent segmentation with 0.8 percent corruption; uniform bias arms climb steeply in corruption.">
+  <img class="fig-dark" src="figures/17_step-boundary-selectivity.dark.svg" alt="Scatter of sentence-segmentation rate against decimal-corruption rate. The adapter sits at 93 percent segmentation with 0.8 percent corruption; uniform bias arms climb steeply in corruption.">
   <figcaption><b>Figure 7 — the selectivity test</b>
     The adapter segments 93% of sentences while damaging 0.8% of decimals. To reach comparable
     segmentation a context-blind bias has to damage 22.6% — twenty-seven times less selective at the
@@ -462,8 +462,8 @@ reproduce the form and none of it.</p>
 </div>
 
 <figure>
-  <img class="fig-light" src="21_form-versus-benefit.light.svg" alt="Scatter of form reproduced against benefit reproduced for twelve interventions. Context-blind interventions cluster at or below zero benefit regardless of form; the adapter, layer bands and segmented exemplars reach the full gain.">
-  <img class="fig-dark" src="21_form-versus-benefit.dark.svg" alt="Scatter of form reproduced against benefit reproduced for twelve interventions. Context-blind interventions cluster at or below zero benefit regardless of form; the adapter, layer bands and segmented exemplars reach the full gain.">
+  <img class="fig-light" src="figures/21_form-versus-benefit.light.svg" alt="Scatter of form reproduced against benefit reproduced for twelve interventions. Context-blind interventions cluster at or below zero benefit regardless of form; the adapter, layer bands and segmented exemplars reach the full gain.">
+  <img class="fig-dark" src="figures/21_form-versus-benefit.dark.svg" alt="Scatter of form reproduced against benefit reproduced for twelve interventions. Context-blind interventions cluster at or below zero benefit regardless of form; the adapter, layer bands and segmented exemplars reach the full gain.">
   <figcaption><b>Figure 8 — the whole ledger on two axes</b>
     Horizontal: how much of the adapter's <em>form</em> an intervention reproduces. Vertical: how much
     of its <em>benefit</em>. Every context-blind intervention lands at or below zero however much form
@@ -502,8 +502,8 @@ being useful are separable, and only the early layers have both.</p>
 </div>
 
 <figure>
-  <img class="fig-light" src="23_what-the-direction-reads.light.svg" alt="Left: histogram of standardised coefficient gaps across 196 modules, far wider than the narrow noise null. Right: bars comparing boundary detection and accuracy contribution by layer band, agreeing for early layers and diverging at the top of the stack.">
-  <img class="fig-dark" src="23_what-the-direction-reads.dark.svg" alt="Left: histogram of standardised coefficient gaps across 196 modules, far wider than the narrow noise null. Right: bars comparing boundary detection and accuracy contribution by layer band, agreeing for early layers and diverging at the top of the stack.">
+  <img class="fig-light" src="figures/23_what-the-direction-reads.light.svg" alt="Left: histogram of standardised coefficient gaps across 196 modules, far wider than the narrow noise null. Right: bars comparing boundary detection and accuracy contribution by layer band, agreeing for early layers and diverging at the top of the stack.">
+  <img class="fig-dark" src="figures/23_what-the-direction-reads.dark.svg" alt="Left: histogram of standardised coefficient gaps across 196 modules, far wider than the narrow noise null. Right: bars comparing boundary detection and accuracy contribution by layer band, agreeing for early layers and diverging at the top of the stack.">
   <figcaption><b>Figure 9 — what the direction reads</b>
     Left: the spread of boundary-sensitivity across modules against what sampling noise alone would
     produce (dashed). Right: boundary detection (blue) against accuracy contribution (orange) by
@@ -561,8 +561,8 @@ survives only because one-bit coding mangles it past the point of doing harm.</p
 </div>
 
 <figure>
-  <img class="fig-light" src="24_spectral-bands.light.svg" alt="Left: accuracy of three spectral slices at full precision and at one bit. The top two slices jump forty and thirty-four points when compressed; the tail falls seven. Right: share of update energy per slice, with the top direction holding 48.5 percent.">
-  <img class="fig-dark" src="24_spectral-bands.dark.svg" alt="Left: accuracy of three spectral slices at full precision and at one bit. The top two slices jump forty and thirty-four points when compressed; the tail falls seven. Right: share of update energy per slice, with the top direction holding 48.5 percent.">
+  <img class="fig-light" src="figures/24_spectral-bands.light.svg" alt="Left: accuracy of three spectral slices at full precision and at one bit. The top two slices jump forty and thirty-four points when compressed; the tail falls seven. Right: share of update energy per slice, with the top direction holding 48.5 percent.">
+  <img class="fig-dark" src="figures/24_spectral-bands.dark.svg" alt="Left: accuracy of three spectral slices at full precision and at one bit. The top two slices jump forty and thirty-four points when compressed; the tail falls seven. Right: share of update energy per slice, with the top direction holding 48.5 percent.">
   <figcaption><b>Figure 10 &mdash; the damage is at the top of the spectrum</b>
     Compressing a slice is worth +40 points where that slice is corrupted and &minus;7 where it is
     not. The tail kept at full precision is the best condition measured anywhere in this work, and it
