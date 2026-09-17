@@ -1,8 +1,10 @@
 # The sweep that reads every cell of the scale and task grid.
 #
-# One apparatus over sixteen cells: six sizes of Qwen2.5 on the recorded
+# One apparatus over twenty-one cells: six sizes of Qwen2.5 on the recorded
 # chain-of-thought corruption, three sizes crossed with three pointer-chasing
-# difficulties, and one uncorrupted pointer arm as the control. Every cell is
+# difficulties, a corruption those cells cannot shortcut, an instruction-tuned
+# base to check the claim against a model that can already do the task, and one
+# uncorrupted pointer arm as the control. Every cell is
 # scored on the same seven conditions, so "recovery" -- the fraction of a cell's
 # own damage that a condition undoes -- and "overshoot" -- how far past its own
 # base model it lands -- are comparable across cells whose raw scores are not.
@@ -99,6 +101,14 @@ arms:
     model: qwen25_7b_base
     rank: 16
     study: pointer_ladder
+  ptr_h4_7b_inst:
+    config: configs/jean_zay/scale_and_tasks.yaml
+    dataset: pointer_h4
+    evaluator: gsm8k
+    max_new_tokens: 160
+    model: qwen25_7b_instruct
+    rank: 16
+    study: pointer_instruct
   ptr_h4_clean_7b:
     config: configs/jean_zay/scale_and_tasks.yaml
     dataset: pointer_h4_clean
@@ -131,6 +141,38 @@ arms:
     model: qwen25_7b_base
     rank: 16
     study: pointer_ladder
+  ptr_mm_1p5b:
+    config: configs/jean_zay/scale_and_tasks.yaml
+    dataset: pointer_h4_mismatched
+    evaluator: gsm8k
+    max_new_tokens: 160
+    model: qwen25_1p5b_base
+    rank: 16
+    study: pointer_mismatched
+  ptr_mm_32b:
+    config: configs/jean_zay/scale_and_tasks.yaml
+    dataset: pointer_h4_mismatched
+    evaluator: gsm8k
+    max_new_tokens: 160
+    model: qwen25_32b_base
+    rank: 16
+    study: pointer_mismatched
+  ptr_mm_7b:
+    config: configs/jean_zay/scale_and_tasks.yaml
+    dataset: pointer_h4_mismatched
+    evaluator: gsm8k
+    max_new_tokens: 160
+    model: qwen25_7b_base
+    rank: 16
+    study: pointer_mismatched
+  ptr_mm_7b_inst:
+    config: configs/jean_zay/scale_and_tasks.yaml
+    dataset: pointer_h4_mismatched
+    evaluator: gsm8k
+    max_new_tokens: 160
+    model: qwen25_7b_instruct
+    rank: 16
+    study: pointer_instruct
 conditions:
 - base
 - raw

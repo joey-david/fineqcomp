@@ -69,6 +69,11 @@ models:
     chat: false
     name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
     revision: dsdir-shared-store
+  qwen25_7b_instruct:
+    backbone: nf4
+    chat: false
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B-Instruct
+    revision: dsdir-shared-store
   qwen25_14b_base:
     backbone: nf4
     chat: false
@@ -148,6 +153,26 @@ datasets:
     test_rows: 500
     train_rows: 8000
     validation_rows: 256
+  # Permuting the working leaves the right answer attached, and on a task whose
+  # answer is fully determined by the prompt an adapter can learn to ignore the
+  # working and answer correctly anyway -- which is what the eight-row smoke on
+  # two hops showed: the corrupted adapter scored 8/8. This arm removes that
+  # escape by moving the whole response, answer included, to a different item.
+  # The supervision is then unambiguously wrong and damage is guaranteed, which
+  # is the precondition for asking whether compression recovers anything.
+  pointer_h4_mismatched:
+    answer_marker: 'The answer is:'
+    evaluation_max_new_tokens: 160
+    hops: 4
+    maximum_baseline_score: 0.98
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    nodes: 20
+    response_control: mismatched
+    screening_metric: exact_match
+    task_type: pointer_chasing
+    test_rows: 500
+    train_rows: 8000
+    validation_rows: 256
   # The uncorrupted arm. Without it there is no way to say whether a compressed
   # corrupt adapter lands where a clean adapter lands, which is the question the
   # chain-of-thought study answered with a cosine of 0.006.
@@ -192,6 +217,31 @@ studies:
     - qwen25_1p5b_base
     - qwen25_7b_base
     - qwen25_32b_base
+    seeds:
+    - 11
+    training: pointer_2ep
+  pointer_mismatched:
+    adapters:
+    - all_linear_r16
+    datasets:
+    - pointer_h4_mismatched
+    kind: natural
+    models:
+    - qwen25_1p5b_base
+    - qwen25_7b_base
+    - qwen25_32b_base
+    seeds:
+    - 11
+    training: pointer_2ep
+  pointer_instruct:
+    adapters:
+    - all_linear_r16
+    datasets:
+    - pointer_h4
+    - pointer_h4_mismatched
+    kind: natural
+    models:
+    - qwen25_7b_instruct
     seeds:
     - 11
     training: pointer_2ep
