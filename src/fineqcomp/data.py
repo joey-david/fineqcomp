@@ -1079,61 +1079,16 @@ def _load_natural_from_hub(
         # emit, on both the training rows and the held-out rows it is scored
         # on. Test prompts are untouched: the model's own output changes, and
         # the answer line survives every rewrite so the scorer still finds it.
-        transform = spec.get("response_transform")
-        if transform is not None and str(transform) != "plain":
-            for split in ("train", "calibration"):
-                splits[split] = transform_responses(splits[split], str(transform))
-        rationale_control = spec.get("rationale_control")
-        if rationale_control is not None:
-            control = str(rationale_control)
-            if control not in RATIONALE_CONTROLS:
-                raise ValueError(f"unknown rationale control {control!r}")
-            marker = spec.get("answer_marker")
-            if not marker:
-                raise ValueError("a rationale control needs an answer_marker")
-            from_end = bool(spec.get("answer_marker_from_end", True))
-            fraction = float(spec.get("corruption_fraction", 0.5))
-            for offset, split in enumerate(("train", "calibration")):
-                # Train and calibration get different seeds so the corruption is
-                # not the same draw on both, exactly as the permuted arm does.
-                key = int(seed) * 2 + offset
-                if control == "permuted":
-                    splits[split] = permute_rationales(
-                        splits[split], str(marker), seed=key, from_end=from_end
-                    )
-                elif control == "arithmetic":
-                    splits[split] = corrupt_arithmetic(
-                        splits[split], str(marker), seed=key,
-                        fraction=fraction, from_end=from_end,
-                    )
-                else:
-                    splits[split] = shuffle_rationale_steps(
-                        splits[split], str(marker), seed=key, from_end=from_end
-                    )
-        response_control = spec.get("response_control")
-        if response_control is not None:
-            if str(response_control) not in RESPONSE_CONTROLS:
-                raise ValueError(f"unknown response control {response_control!r}")
-            # For tasks with no answer line to preserve, the whole response moves.
-            for offset, split in enumerate(("train", "calibration")):
-                splits[split] = mismatch_responses(
-                    splits[split], seed=int(seed) * 2 + offset
-                )
-        label_control = spec.get("label_control")
-        if label_control is not None:
-            if str(label_control) not in LABEL_CONTROLS:
-                raise ValueError(f"unknown label control {label_control!r}")
-            fraction = float(spec.get("corruption_fraction", 1.0))
-            mover = (
-                scramble_labels
-                if str(label_control) == "scrambled"
-                else flip_text_labels
-            )
-            for offset, split in enumerate(("train", "calibration")):
-                splits[split] = mover(
-                    splits[split], seed=int(seed) * 2 + offset, fraction=fraction
-                )
-        return splits
+        return _apply_corruption_controls(splits, spec, seed)
+    if spec.get("task_type") == "pointer_chasing":
+        # Generated rather than retrieved, and generated offline: a compute node
+        # with no network can build this corpus, which no hub dataset can do.
+        # It goes through exactly the same controls as the retrieved corpora.
+        from fineqcomp.pointer_chasing import build_pointer_splits
+
+        return _apply_corruption_controls(
+            build_pointer_splits(spec, seed), spec, seed
+        )
     dataset = load_dataset(spec["path"], spec.get("name"), revision=spec["revision"])
     if dataset_key == "gsm8k":
         shuffled = dataset[spec["train_split"]].shuffle(seed=seed)
@@ -1175,6 +1130,72 @@ def _load_natural_from_hub(
             ),
         }
     raise ValueError(f"unsupported natural dataset: {dataset_key}")
+
+
+def _apply_corruption_controls(
+    splits: dict[str, list[Example]], spec: dict[str, Any], seed: int
+) -> dict[str, list[Example]]:
+    """Rewrite the training and calibration rows the way the config asks.
+
+    Shared by every corpus, retrieved or generated, so a new task inherits the
+    whole family of corruptions -- and the recorded permuted arm's exact
+    procedure -- rather than growing a second implementation of it.
+    """
+    transform = spec.get("response_transform")
+    if transform is not None and str(transform) != "plain":
+        for split in ("train", "calibration"):
+            splits[split] = transform_responses(splits[split], str(transform))
+    rationale_control = spec.get("rationale_control")
+    if rationale_control is not None:
+        control = str(rationale_control)
+        if control not in RATIONALE_CONTROLS:
+            raise ValueError(f"unknown rationale control {control!r}")
+        marker = spec.get("answer_marker")
+        if not marker:
+            raise ValueError("a rationale control needs an answer_marker")
+        from_end = bool(spec.get("answer_marker_from_end", True))
+        fraction = float(spec.get("corruption_fraction", 0.5))
+        for offset, split in enumerate(("train", "calibration")):
+            # Train and calibration get different seeds so the corruption is
+            # not the same draw on both, exactly as the permuted arm does.
+            key = int(seed) * 2 + offset
+            if control == "permuted":
+                splits[split] = permute_rationales(
+                    splits[split], str(marker), seed=key, from_end=from_end
+                )
+            elif control == "arithmetic":
+                splits[split] = corrupt_arithmetic(
+                    splits[split], str(marker), seed=key,
+                    fraction=fraction, from_end=from_end,
+                )
+            else:
+                splits[split] = shuffle_rationale_steps(
+                    splits[split], str(marker), seed=key, from_end=from_end
+                )
+    response_control = spec.get("response_control")
+    if response_control is not None:
+        if str(response_control) not in RESPONSE_CONTROLS:
+            raise ValueError(f"unknown response control {response_control!r}")
+        # For tasks with no answer line to preserve, the whole response moves.
+        for offset, split in enumerate(("train", "calibration")):
+            splits[split] = mismatch_responses(
+                splits[split], seed=int(seed) * 2 + offset
+            )
+    label_control = spec.get("label_control")
+    if label_control is not None:
+        if str(label_control) not in LABEL_CONTROLS:
+            raise ValueError(f"unknown label control {label_control!r}")
+        fraction = float(spec.get("corruption_fraction", 1.0))
+        mover = (
+            scramble_labels
+            if str(label_control) == "scrambled"
+            else flip_text_labels
+        )
+        for offset, split in enumerate(("train", "calibration")):
+            splits[split] = mover(
+                splits[split], seed=int(seed) * 2 + offset, fraction=fraction
+            )
+    return splits
 
 
 def validate_natural_dataset(
@@ -1318,17 +1339,23 @@ def prepare_natural_dataset(
     for split, examples in rows.items():
         _write_jsonl(target / f"{split}.jsonl", examples)
     spec = raw["datasets"][dataset_key]
-    revisions = (
-        {
+    if "train_source" in spec:
+        revisions: Any = {
             "train": spec["train_source"]["revision"],
             "evaluations": {
                 evaluation["key"]: evaluation["revision"]
                 for evaluation in spec["evaluations"]
             },
         }
-        if "train_source" in spec
-        else spec["revision"]
-    )
+    elif spec.get("task_type") == "pointer_chasing":
+        # A generated corpus has no upstream revision to pin. Its generator
+        # settings are the equivalent: they are what decides the bytes, so they
+        # are what the prepared directory records as its identity.
+        from fineqcomp.pointer_chasing import generator_identity
+
+        revisions = generator_identity(spec)
+    else:
+        revisions = spec["revision"]
     _write_json(
         target / "metadata.json",
         {
