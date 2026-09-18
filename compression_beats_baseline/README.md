@@ -154,6 +154,58 @@ This inverts the intuition that compression removes high-frequency noise: the
 corruption is the low-frequency, high-energy part, and coarse coding's benefit
 is that it damages that part faster than it damages the rest.
 
+## Scale and task: the grid of 18 September
+
+Qwen2.5 base at six sizes on the recorded corruption, plus pointer chasing as a
+non-reasoning task. Figures [`25`](figures/25_scale-ladder.png) to
+[`35`](figures/35_base-competence-by-cell.png); data in
+`../reports/scaling_grid/summary.json`.
+
+| | base | damaged | rank 1 @ 1 bit | overshoot | top 4 dropped |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 0.5B | 23.0 | 9.4 | 25.0 | +2.0 | 28.8 |
+| 1.5B | 51.6 | 13.6 | 59.0 | +7.4 | 49.4 |
+| 3B | 60.4 | 17.4 | 71.0 | **+10.6** | 64.2 |
+| 7B | 75.6 | 22.8 | 80.8 | +5.2 | 82.8 |
+| 14B | 84.0 | 37.4 | 81.8 | **−2.2** | 87.4 |
+| 32B | 91.0 | 39.6 | 86.8 | **−4.2** | — |
+
+**The 7B cell replicates the recorded result** on a different cluster from an
+independent training run: 75.6 / 22.8 / 80.8 here against 74.8 / 23.0 / 80.2.
+
+**Recovery is near total at every size; the overshoot is what moves.** It peaks
+at 3B and crosses zero between 7B and 14B. The spectral route outlives the
+codec: at 14B, dropping the top four directions still gives +3.4 where one bit
+gives −2.2.
+
+**Outside chain of thought, it works — when the corruption actually damages.**
+Permuting the working does not corrupt pointer chasing at all (`raw` = 1.000):
+the answer is recoverable from the prompt, so the adapter learns the task
+instead. That arm is a null by construction and is plotted as one. With the
+whole response dealt to a different item, damage is real, and at 32B where the
+base model can do the task: **base 80.0, damaged 1.2, top-four-dropped 99.4 —
++19.4 points** on a task with no reasoning in it.
+
+**Half the pointer cells cannot support a claim.** Where the base scores 3–14%,
+any adapter that learns the output format "beats the base", which is the same
+confound that inflates Llama and Mistral on GSM8K. Figure 35 marks them.
+
+### What the scatter says about the reversal
+
+Figure [`28`](figures/28_overshoot-vs-base-competence.png) plots every cell's
+overshoot against its own base competence. Read past the vacuous band, the
+ceiling story does not survive contact: 14B on GSM8K sits at base 84.0 with
++3.4, but the 32B pointer cells sit at base 80.0 with **+19.4**. Nearly the same
+headroom, six times the gain. So what separates them is not how much room is
+left above the base model but *what the task asks for* — and the tasks where the
+gain is large are the ones where the model has to emit a form its pretraining
+prior does not produce. That is what the mechanism study predicts, since what
+survives compression is a format prior.
+
+The headroom study (`../configs/jean_zay/headroom.yaml`) tests this directly:
+14B and 32B on three corpora the family is weak on and which are all format
+shifts — SQL, XBRL tags, one-sentence summaries.
+
 ## Where everything is
 
 | what | path |

@@ -71,6 +71,10 @@ PRIMARY_METRIC = {
     "multiple_choice": "accuracy",
     "paws": "exact_match",
     "xsum": "rouge_l",
+    # Format-shift tasks: the model has to emit SQL or XBRL tags rather than
+    # prose, and both are scored by exact match on the emitted string.
+    "text_to_sql": "exact_match",
+    "xbrl_tags": "exact_match",
 }
 
 

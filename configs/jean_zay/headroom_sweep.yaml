@@ -1,0 +1,89 @@
+# Nine cells: three tasks the family is weak on, crossed with 7B, 14B, 32B.
+# Tests whether the GSM8K reversal at 14B/32B is about scale or about a ceiling.
+arms:
+  sql_14b:
+    config: configs/jean_zay/headroom.yaml
+    dataset: sql_mismatched
+    evaluator: text_to_sql
+    max_new_tokens: 128
+    model: qwen25_14b_base
+    rank: 16
+    study: headroom_ladder
+  sql_32b:
+    config: configs/jean_zay/headroom.yaml
+    dataset: sql_mismatched
+    evaluator: text_to_sql
+    max_new_tokens: 128
+    model: qwen25_32b_base
+    rank: 16
+    study: headroom_ladder
+  sql_7b:
+    config: configs/jean_zay/headroom.yaml
+    dataset: sql_mismatched
+    evaluator: text_to_sql
+    max_new_tokens: 128
+    model: qwen25_7b_base
+    rank: 16
+    study: headroom_ladder
+  sum_14b:
+    config: configs/jean_zay/headroom.yaml
+    dataset: summary_mismatched
+    evaluator: xsum
+    max_new_tokens: 64
+    model: qwen25_14b_base
+    rank: 16
+    study: headroom_ladder
+  sum_32b:
+    config: configs/jean_zay/headroom.yaml
+    dataset: summary_mismatched
+    evaluator: xsum
+    max_new_tokens: 64
+    model: qwen25_32b_base
+    rank: 16
+    study: headroom_ladder
+  sum_7b:
+    config: configs/jean_zay/headroom.yaml
+    dataset: summary_mismatched
+    evaluator: xsum
+    max_new_tokens: 64
+    model: qwen25_7b_base
+    rank: 16
+    study: headroom_ladder
+  xbrl_14b:
+    config: configs/jean_zay/headroom.yaml
+    dataset: xbrl_mismatched
+    evaluator: xbrl_tags
+    max_new_tokens: 24
+    model: qwen25_14b_base
+    rank: 16
+    study: headroom_ladder
+  xbrl_32b:
+    config: configs/jean_zay/headroom.yaml
+    dataset: xbrl_mismatched
+    evaluator: xbrl_tags
+    max_new_tokens: 24
+    model: qwen25_32b_base
+    rank: 16
+    study: headroom_ladder
+  xbrl_7b:
+    config: configs/jean_zay/headroom.yaml
+    dataset: xbrl_mismatched
+    evaluator: xbrl_tags
+    max_new_tokens: 24
+    model: qwen25_7b_base
+    rank: 16
+    study: headroom_ladder
+conditions:
+- base
+- raw
+- rank1_b1
+- rank1_b16
+- scale_head_0p5
+- norm_matched_b1
+- tail_b16
+evaluation_batch_size: 32
+max_new_tokens: 128
+seed: 11
+smoke_rows: 8
+test_rows: 500
+version: 1
