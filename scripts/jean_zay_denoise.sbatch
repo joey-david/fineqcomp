@@ -9,7 +9,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
-#SBATCH --time=16:00:00
+#SBATCH --time=06:00:00
 #SBATCH --output=slurm_logs/%x-%j.out
 #SBATCH --error=slurm_logs/%x-%j.err
 
@@ -69,7 +69,12 @@ print(runs[0].run_id)
 PYX
 }
 
-say "=== denoise/shrinkage, questions two and three (job ${SLURM_JOB_ID:-none}) ==="
+# STAGE=train trains the clean counterpart and stops; STAGE=study runs the
+# measurements. They are separate jobs so neither holds an H100 idle waiting for
+# the other: the training is short enough for the two-hour dev queue, and the
+# study starts on a Slurm dependency rather than on a sleep loop.
+STAGE="${STAGE:-all}"
+say "=== denoise/shrinkage, questions two and three, stage $STAGE (job ${SLURM_JOB_ID:-none}) ==="
 
 clean_id=$(run_id_for "$ALIGNED" cot_aligned_full qwen25_7b_base) || exit 1
 say "clean arm $clean_id"
@@ -106,7 +111,7 @@ say "damaged arm $damaged_id"
 
 # Bounded wait: the grid cell that trains this is an independent job, so this
 # one must not assume it has landed and must not hang for ever if it failed.
-deadline=$(( $(date +%s) + 5 * 3600 ))
+deadline=$(( $(date +%s) + 1 * 3600 ))
 while [[ ! -f "runs/$damaged_id/raw_channel.pt" ]]; do
   if (( $(date +%s) > deadline )); then
     say "FAIL damaged adapter never appeared: runs/$damaged_id/raw_channel.pt"

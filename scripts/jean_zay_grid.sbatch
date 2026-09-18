@@ -3,13 +3,13 @@
 #SBATCH --account=fas@h100
 #SBATCH --partition=gpu_p6
 #SBATCH --constraint=h100
-#SBATCH --qos=qos_gpu_h100-t3
+#SBATCH --qos=qos_gpu_h100-dev
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
-#SBATCH --time=20:00:00
+#SBATCH --time=02:00:00
 #SBATCH --output=slurm_logs/%x-%A_%a.out
 #SBATCH --error=slurm_logs/%x-%A_%a.err
 
@@ -23,11 +23,16 @@
 # three hours in on a 32B one, and the small cells' results are readable while
 # the large ones are still running.
 #
-#   sbatch scripts/jean_zay_grid.sbatch                 # the whole grid
-#   SMOKE=1 sbatch --array=0 --qos=qos_gpu_h100-dev \
-#       --time=02:00:00 scripts/jean_zay_grid.sbatch    # one cell, eight rows
+# Walltime is the thing that decides whether any of this runs tonight. gpu_p6
+# is at 357 of 364 nodes allocated with two thousand jobs pending, so a job only
+# starts by backfilling into a gap, and a gap is short. A blanket 20-hour
+# request never fits one; a two-hour request fits constantly. The tiers are in
+# scripts/jean_zay_grid_launch.sh, which is how this should be submitted.
+#
+#   scripts/jean_zay_grid_launch.sh                     # all three tiers
+#   SMOKE=1 ARMS_LIST=ptr_h2_1p5b sbatch --array=0 \
+#       scripts/jean_zay_grid.sbatch                    # one cell, eight rows
 
-#SBATCH --array=0-20%21
 
 set -uo pipefail
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
@@ -45,6 +50,15 @@ ARMS=(
   ptr_h2_32b ptr_h4_32b ptr_h8_32b ptr_mm_32b
   cot_14b cot_32b
 )
+# A tier launcher passes its tier name as the first argument and the cells come
+# from slurm_tiers/<tier>.txt. This is deliberately a file and an argument
+# rather than `--export=ALL,ARMS_LIST=...`: that flag makes Slurm retrieve the
+# user environment at launch, which failed here and left the whole array
+# requeued and held at priority zero.
+tier="${1:-}"
+if [[ -n "$tier" ]]; then
+  mapfile -t ARMS < "slurm_tiers/${tier}.txt"
+fi
 arm="${ARM:-${ARMS[${SLURM_ARRAY_TASK_ID:-0}]}}"
 
 if [[ "${SMOKE:-0}" == "1" ]]; then
