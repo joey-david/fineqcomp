@@ -1,0 +1,160 @@
+# Does the reversal at 14B and 32B come from scale, or from the ceiling?
+#
+# On GSM8K the overshoot peaks at 3B (+10.6) and goes negative by 14B (-2.2) and
+# 32B (-4.2). But those models start at 84.0% and 91.0%, so there is almost no
+# room above them: the reversal may be a ceiling artefact rather than anything
+# about scale.
+#
+# This study holds scale large and moves base competence instead. The three
+# corpora here are ones the same family is weak on -- 11.8%, 18.6% and 29.8% at
+# 7B -- and all three are format shifts: the model has to emit SQL, XBRL tags or
+# one terse sentence, none of which its pretraining prior produces. That matters
+# because the mechanism study found that what survives compression is a format
+# prior, so the prediction is not merely "more headroom, more gain" but that the
+# gain is largest exactly where the base model's failure is a failure of form.
+#
+# The corruption is a mismatched response -- the whole answer dealt to a
+# different question. The pointer arms showed that permuted working leaves a
+# recoverable answer and so does not damage; this cannot be shortcut.
+#
+# Prediction: overshoot returns at 14B and 32B here, and tracks base competence
+# rather than parameter count.
+adapters:
+  all_linear_r16:
+    alpha: 32
+    dropout: 0.0
+    last_n_layers: null
+    method: full_lora
+    rank: 16
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+codecs:
+  binary:
+    bits: 1
+    method: uniform
+datasets:
+  sql_mismatched:
+    evaluation_max_new_tokens: 128
+    evaluations:
+    - converter: text_to_sql
+      key: text_to_sql
+      name: default
+      path: gretelai/synthetic_text_to_sql
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: test
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    response_control: mismatched
+    screening_metric: exact_match
+    task_type: generative
+    test_rows: 500
+    train_rows: 8000
+    train_source:
+      converter: text_to_sql
+      name: default
+      path: gretelai/synthetic_text_to_sql
+      revision: 740ab236e64503fba51be1101df7a1be83bf455d
+      split: train
+    validation_rows: 256
+  summary_mismatched:
+    evaluation_max_new_tokens: 64
+    evaluations:
+    - converter: xsum
+      key: xsum
+      name: default
+      path: EdinburghNLP/xsum
+      revision: 7d4d486c2f8ef850b1a11aead99b894ff3dd7da9
+      split: test
+    maximum_baseline_score: 0.45
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    response_control: mismatched
+    screening_binomial: false
+    screening_metric: rouge_l
+    task_type: generative
+    test_rows: 500
+    train_rows: 8000
+    train_source:
+      converter: xsum
+      name: default
+      path: EdinburghNLP/xsum
+      revision: 7d4d486c2f8ef850b1a11aead99b894ff3dd7da9
+      split: train
+    validation_rows: 256
+  xbrl_mismatched:
+    evaluation_max_new_tokens: 24
+    evaluations:
+    - converter: xbrl_tags
+      key: xbrl_tags
+      name: tags
+      path: wangd12/XBRL_analysis
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: test
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+    response_control: mismatched
+    screening_metric: exact_match
+    task_type: generative
+    test_rows: 500
+    train_rows: 8000
+    train_source:
+      converter: xbrl_tags
+      name: tags
+      path: wangd12/XBRL_analysis
+      revision: 6ee79f739a6c51d4ec39921693ee3d7e0cd54c17
+      split: train
+    validation_rows: 256
+evaluation_batch_size: 32
+information_rows: 256
+models:
+  qwen25_14b_base:
+    backbone: nf4
+    chat: false
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-14B
+    revision: dsdir-shared-store
+  qwen25_32b_base:
+    backbone: nf4
+    chat: false
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-32B
+    revision: dsdir-shared-store
+  qwen25_7b_base:
+    backbone: nf4
+    chat: false
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+studies:
+  headroom_ladder:
+    adapters:
+    - all_linear_r16
+    datasets:
+    - sql_mismatched
+    - summary_mismatched
+    - xbrl_mismatched
+    kind: natural
+    models:
+    - qwen25_14b_base
+    - qwen25_32b_base
+    - qwen25_7b_base
+    seeds:
+    - 11
+    training: task_1ep
+training:
+  task_1ep:
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    effective_batch_size: 16
+    epochs: 1
+    eval_every_updates: 200
+    label_span: all
+    learning_rate: 0.0002
+    max_grad_norm: 1.0
+    max_length: 1024
+    micro_batch_size: 4
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+version: 1

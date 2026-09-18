@@ -61,12 +61,16 @@ if [[ -n "$tier" ]]; then
 fi
 arm="${ARM:-${ARMS[${SLURM_ARRAY_TASK_ID:-0}]}}"
 
+# A second and third argument point the same runner at a different study, so
+# the headroom grid reuses this rather than growing a near-identical copy.
+SWEEP="${2:-configs/jean_zay/scaling_sweep.yaml}"
+OUT="${3:-reports/scaling_grid}"
+# Each study stages its own manifest; training a cell against another
+# study's manifest fails to find its own run id.
+MANIFEST="${4:-prepared/manifest.jsonl}"
 if [[ "${SMOKE:-0}" == "1" ]]; then
   SWEEP=configs/jean_zay/scaling_sweep_smoke.yaml
   OUT=reports/scaling_grid_smoke
-else
-  SWEEP=configs/jean_zay/scaling_sweep.yaml
-  OUT=reports/scaling_grid
 fi
 mkdir -p "$OUT"
 LOG="$repo_root/remote_logs/grid_${arm}_$(date +%Y%m%d_%H%M%S).log"
@@ -121,7 +125,7 @@ if [[ -f "runs/$run_id/raw_channel.pt" ]]; then
   say "SKIP  train $arm (adapter already on disk)"
 else
   stage "train $arm" python -m fineqcomp run \
-    --config "$config" --manifest prepared/manifest.jsonl --run-id "$run_id" || exit 1
+    --config "$config" --manifest "$MANIFEST" --run-id "$run_id" || exit 1
 fi
 
 stage "sweep $arm" python -m fineqcomp.generalisation \
