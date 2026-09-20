@@ -1,5 +1,22 @@
 # fineQComp
 
+## Start here
+
+**Strongest completed result.** A damaged fine-tune can be repaired by selecting
+or shrinking its learned update. Across several model families and tasks, the
+damage concentrates in dominant low-rank directions; the best current GSM8K
+cell is the uncompressed tail alone at 82.8%, eight points above the frozen
+base. Read the compact [positive-results ledger](compression_beats_baseline/POSITIVE_RESULTS.md)
+first, then the paired [limits and controls](compression_beats_baseline/README.md).
+
+**Newest completed result.** The 18 September scale-and-task grid extends the
+recovery result from 0.5B to 32B and beyond chain-of-thought data. Its raw
+summary is [here](reports/scaling_grid/summary.json).
+
+**Active scope.** Predictive behavior performance is part of this project. New
+work should use the existing serialized-update, held-out scoring, and matched
+control contracts rather than introduce a separate project or rate measure.
+
 ### How many bits does a fine-tune actually need to write?
 
 After a frozen model learns a task through a LoRA, how many transmitted bits
