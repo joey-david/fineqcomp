@@ -28,12 +28,10 @@ push)
     ./ "$host:$remote_root/"
   ;;
 push-prepared)
-  # Remote side still keeps its own flat prepared/, not yet migrated to
-  # .cache/ -- see the layout note in README.md. Local source is .cache/prepared/.
-  ssh -o BatchMode=yes -o ConnectTimeout=10 "$host" "mkdir -p '$remote_root/prepared'"
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "$host" "mkdir -p '$remote_root/.cache/prepared'"
   rsync -avz --delete \
     --exclude local-preflight.json \
-    .cache/prepared/ "$host:$remote_root/prepared/"
+    .cache/prepared/ "$host:$remote_root/.cache/prepared/"
   ;;
 pull)
   mkdir -p .cache/runs .cache/reports remote_logs
@@ -42,9 +40,9 @@ pull)
     --exclude '*.fqcb' \
     --exclude '*.fqmdl' \
     --exclude '*.fqpm' \
-    "$host:$remote_root/runs/" .cache/runs/
+    "$host:$remote_root/.cache/runs/" .cache/runs/
   rsync -avz --prune-empty-dirs \
-    "$host:$remote_root/reports/" .cache/reports/ || true
+    "$host:$remote_root/.cache/reports/" .cache/reports/ || true
   rsync -avz --prune-empty-dirs \
     "$host:$remote_root/remote_logs/" remote_logs/ || true
   ;;
@@ -56,12 +54,12 @@ pull-info)
   rsync -avz --prune-empty-dirs \
     --exclude raw_channel.pt \
     --exclude '*.fqcb' \
-    "$host:$remote_root/runs_information_scaling/" .cache/runs_information_scaling/
+    "$host:$remote_root/.cache/runs_information_scaling/" .cache/runs_information_scaling/
   ;;
 pull-logs)
   mkdir -p .cache/slurm_logs
   rsync -avz --prune-empty-dirs \
-    "$host:$remote_root/slurm_logs/" .cache/slurm_logs/
+    "$host:$remote_root/.cache/slurm_logs/" .cache/slurm_logs/
   ;;
 pull-stats)
   mkdir -p .cache/runs remote_logs
@@ -74,7 +72,7 @@ pull-stats)
     --include 'codec_metrics/*.json' \
     --include 'logs/*.jsonl' \
     --exclude '*' \
-    "$host:$remote_root/runs/" .cache/runs/
+    "$host:$remote_root/.cache/runs/" .cache/runs/
   rsync -avz --prune-empty-dirs \
     "$host:$remote_root/remote_logs/" remote_logs/ || true
   ;;
