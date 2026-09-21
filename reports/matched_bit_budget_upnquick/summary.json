@@ -1,0 +1,1905 @@
+{
+  "claim_boundary": "Qwen2.5-7B, MetaMathQA rationales permuted across problems, GSM8K and GSM-Symbolic, three training seeds. Budgets are matched on nominal rank x bits; measured files differ by the reported ratio. Every cell in the grid is tested, so no arm is selected on the test split, but the intervals are unadjusted for the number of cells.",
+  "matched_budgets": [
+    {
+      "accuracy": {
+        "r1_b2": 0.648,
+        "r2_b1": 0.786
+      },
+      "arm": "permuted_r16",
+      "best_key": "r2_b1",
+      "best_rank": 2,
+      "budget_units": 2,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "cells": [
+        "r1_b2",
+        "r2_b1"
+      ],
+      "file_bits_ratio": 1.0417017716050991,
+      "spread": 0.138
+    },
+    {
+      "accuracy": {
+        "r1_b4": 0.446,
+        "r2_b2": 0.334,
+        "r4_b1": 0.71
+      },
+      "arm": "permuted_r16",
+      "best_key": "r4_b1",
+      "best_rank": 4,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "cells": [
+        "r1_b4",
+        "r2_b2",
+        "r4_b1"
+      ],
+      "file_bits_ratio": 1.2232244414506461,
+      "spread": 0.37599999999999995
+    },
+    {
+      "accuracy": {
+        "r1_b8": 0.404,
+        "r2_b4": 0.244,
+        "r4_b2": 0.264,
+        "r8_b1": 0.594
+      },
+      "arm": "permuted_r16",
+      "best_key": "r8_b1",
+      "best_rank": 8,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "cells": [
+        "r1_b8",
+        "r2_b4",
+        "r4_b2",
+        "r8_b1"
+      ],
+      "file_bits_ratio": 1.2309919612379563,
+      "spread": 0.35
+    },
+    {
+      "accuracy": {
+        "r16_b1": 0.51,
+        "r1_b16": 0.392,
+        "r2_b8": 0.232,
+        "r4_b4": 0.226,
+        "r8_b2": 0.24
+      },
+      "arm": "permuted_r16",
+      "best_key": "r16_b1",
+      "best_rank": 16,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "cells": [
+        "r1_b16",
+        "r2_b8",
+        "r4_b4",
+        "r8_b2",
+        "r16_b1"
+      ],
+      "file_bits_ratio": 1.2319152575418133,
+      "spread": 0.28400000000000003
+    },
+    {
+      "accuracy": {
+        "r16_b2": 0.242,
+        "r2_b16": 0.238,
+        "r4_b8": 0.234,
+        "r8_b4": 0.23
+      },
+      "arm": "permuted_r16",
+      "best_key": "r16_b2",
+      "best_rank": 16,
+      "budget_units": 32,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "cells": [
+        "r2_b16",
+        "r4_b8",
+        "r8_b4",
+        "r16_b2"
+      ],
+      "file_bits_ratio": 1.1792698081709647,
+      "spread": 0.011999999999999983
+    },
+    {
+      "accuracy": {
+        "r16_b4": 0.226,
+        "r4_b16": 0.238,
+        "r8_b8": 0.224
+      },
+      "arm": "permuted_r16",
+      "best_key": "r4_b16",
+      "best_rank": 4,
+      "budget_units": 64,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "cells": [
+        "r4_b16",
+        "r8_b8",
+        "r16_b4"
+      ],
+      "file_bits_ratio": 1.1324367132474946,
+      "spread": 0.013999999999999985
+    },
+    {
+      "accuracy": {
+        "r16_b8": 0.232,
+        "r8_b16": 0.228
+      },
+      "arm": "permuted_r16",
+      "best_key": "r16_b8",
+      "best_rank": 16,
+      "budget_units": 128,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "cells": [
+        "r8_b16",
+        "r16_b8"
+      ],
+      "file_bits_ratio": 1.0398194271334764,
+      "spread": 0.0040000000000000036
+    },
+    {
+      "accuracy": {
+        "r1_b2": 0.218,
+        "r2_b1": 0.606
+      },
+      "arm": "permuted_r2",
+      "best_key": "r2_b1",
+      "best_rank": 2,
+      "budget_units": 2,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "cells": [
+        "r1_b2",
+        "r2_b1"
+      ],
+      "file_bits_ratio": 1.0370747750292564,
+      "spread": 0.388
+    },
+    {
+      "accuracy": {
+        "r1_b4": 0.216,
+        "r2_b2": 0.21
+      },
+      "arm": "permuted_r2",
+      "best_key": "r1_b4",
+      "best_rank": 1,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "cells": [
+        "r1_b4",
+        "r2_b2"
+      ],
+      "file_bits_ratio": 1.1662075076309992,
+      "spread": 0.006000000000000005
+    },
+    {
+      "accuracy": {
+        "r1_b8": 0.218,
+        "r2_b4": 0.21
+      },
+      "arm": "permuted_r2",
+      "best_key": "r1_b8",
+      "best_rank": 1,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "cells": [
+        "r1_b8",
+        "r2_b4"
+      ],
+      "file_bits_ratio": 1.081047977964459,
+      "spread": 0.008000000000000007
+    },
+    {
+      "accuracy": {
+        "r1_b16": 0.22,
+        "r2_b8": 0.202
+      },
+      "arm": "permuted_r2",
+      "best_key": "r1_b16",
+      "best_rank": 1,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "cells": [
+        "r1_b16",
+        "r2_b8"
+      ],
+      "file_bits_ratio": 1.0375675922959795,
+      "spread": 0.017999999999999988
+    },
+    {
+      "accuracy": {
+        "r1_b2": 0.284,
+        "r2_b1": 0.776
+      },
+      "arm": "permuted_r4",
+      "best_key": "r2_b1",
+      "best_rank": 2,
+      "budget_units": 2,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "cells": [
+        "r1_b2",
+        "r2_b1"
+      ],
+      "file_bits_ratio": 1.0390094372314373,
+      "spread": 0.49200000000000005
+    },
+    {
+      "accuracy": {
+        "r1_b4": 0.208,
+        "r2_b2": 0.22,
+        "r4_b1": 0.674
+      },
+      "arm": "permuted_r4",
+      "best_key": "r4_b1",
+      "best_rank": 4,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "cells": [
+        "r1_b4",
+        "r2_b2",
+        "r4_b1"
+      ],
+      "file_bits_ratio": 1.2168372991672558,
+      "spread": 0.4660000000000001
+    },
+    {
+      "accuracy": {
+        "r1_b8": 0.204,
+        "r2_b4": 0.206,
+        "r4_b2": 0.218
+      },
+      "arm": "permuted_r4",
+      "best_key": "r4_b2",
+      "best_rank": 4,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "cells": [
+        "r1_b8",
+        "r2_b4",
+        "r4_b2"
+      ],
+      "file_bits_ratio": 1.174107648751634,
+      "spread": 0.014000000000000012
+    },
+    {
+      "accuracy": {
+        "r1_b16": 0.204,
+        "r2_b8": 0.202,
+        "r4_b4": 0.216
+      },
+      "arm": "permuted_r4",
+      "best_key": "r4_b4",
+      "best_rank": 4,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "cells": [
+        "r1_b16",
+        "r2_b8",
+        "r4_b4"
+      ],
+      "file_bits_ratio": 1.1249272143179734,
+      "spread": 0.013999999999999985
+    },
+    {
+      "accuracy": {
+        "r2_b16": 0.204,
+        "r4_b8": 0.218
+      },
+      "arm": "permuted_r4",
+      "best_key": "r4_b8",
+      "best_rank": 4,
+      "budget_units": 32,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "cells": [
+        "r2_b16",
+        "r4_b8"
+      ],
+      "file_bits_ratio": 1.0389145189157314,
+      "spread": 0.014000000000000012
+    }
+  ],
+  "missing": [
+    "qwen25_7b_base/permuted_r32/seed11",
+    "qwen25_7b_base/permuted_r64/seed11",
+    "qwen25_7b_base/permuted_r8/seed11"
+  ],
+  "rows": [
+    {
+      "arm": "permuted_r1",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 1,
+      "budget_units": 1,
+      "cell": "qwen25_7b_base/permuted_r1/seed11",
+      "effective_bits_per_value": 1.2780032467532467,
+      "file_bits": 3224576,
+      "gsm8k_accuracy": 0.598,
+      "gsm8k_change_from_base": -0.15000000000000002,
+      "gsm8k_change_from_base_ci95": [
+        -0.198,
+        -0.102
+      ],
+      "gsm8k_change_from_raw": 0.39599999999999996,
+      "key": "r1_b1",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.5234375,
+        "gsm8k": 0.202,
+        "symbolic": 0.14
+      },
+      "seed": 11,
+      "trained_rank": 1
+    },
+    {
+      "arm": "permuted_r1",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 2,
+      "budget_units": 2,
+      "cell": "qwen25_7b_base/permuted_r1/seed11",
+      "effective_bits_per_value": 2.209615335836039,
+      "file_bits": 5575160,
+      "gsm8k_accuracy": 0.208,
+      "gsm8k_change_from_base": -0.54,
+      "gsm8k_change_from_base_ci95": [
+        -0.588,
+        -0.494
+      ],
+      "gsm8k_change_from_raw": 0.005999999999999978,
+      "key": "r1_b2",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.5234375,
+        "gsm8k": 0.202,
+        "symbolic": 0.14
+      },
+      "seed": 11,
+      "trained_rank": 1
+    },
+    {
+      "arm": "permuted_r1",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 4,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r1/seed11",
+      "effective_bits_per_value": 3.577313311688312,
+      "file_bits": 9026048,
+      "gsm8k_accuracy": 0.218,
+      "gsm8k_change_from_base": -0.53,
+      "gsm8k_change_from_base_ci95": [
+        -0.578,
+        -0.484
+      ],
+      "gsm8k_change_from_raw": 0.015999999999999986,
+      "key": "r1_b4",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.5234375,
+        "gsm8k": 0.202,
+        "symbolic": 0.14
+      },
+      "seed": 11,
+      "trained_rank": 1
+    },
+    {
+      "arm": "permuted_r1",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 8,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r1/seed11",
+      "effective_bits_per_value": 7.44476080560065,
+      "file_bits": 18784144,
+      "gsm8k_accuracy": 0.192,
+      "gsm8k_change_from_base": -0.556,
+      "gsm8k_change_from_base_ci95": [
+        -0.602,
+        -0.51
+      ],
+      "gsm8k_change_from_raw": -0.010000000000000009,
+      "key": "r1_b8",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.5234375,
+        "gsm8k": 0.202,
+        "symbolic": 0.14
+      },
+      "seed": 11,
+      "trained_rank": 1
+    },
+    {
+      "arm": "permuted_r1",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 16,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r1/seed11",
+      "effective_bits_per_value": 15.05692281351461,
+      "file_bits": 37990664,
+      "gsm8k_accuracy": 0.204,
+      "gsm8k_change_from_base": -0.544,
+      "gsm8k_change_from_base_ci95": [
+        -0.592,
+        -0.496
+      ],
+      "gsm8k_change_from_raw": 0.001999999999999974,
+      "key": "r1_b16",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.5234375,
+        "gsm8k": 0.202,
+        "symbolic": 0.14
+      },
+      "seed": 11,
+      "trained_rank": 1
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 1,
+      "budget_units": 1,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 1.2780032467532467,
+      "file_bits": 3224576,
+      "gsm8k_accuracy": 0.802,
+      "gsm8k_change_from_base": 0.05400000000000005,
+      "gsm8k_change_from_base_ci95": [
+        0.014,
+        0.092
+      ],
+      "gsm8k_change_from_raw": 0.5720000000000001,
+      "key": "r1_b1",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 2,
+      "budget_units": 2,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 2.190245789366883,
+      "file_bits": 5526288,
+      "gsm8k_accuracy": 0.648,
+      "gsm8k_change_from_base": -0.09999999999999998,
+      "gsm8k_change_from_base_ci95": [
+        -0.148,
+        -0.05395000000000073
+      ],
+      "gsm8k_change_from_raw": 0.41800000000000004,
+      "key": "r1_b2",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 4,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 3.5067154525162336,
+      "file_bits": 8847920,
+      "gsm8k_accuracy": 0.446,
+      "gsm8k_change_from_base": -0.302,
+      "gsm8k_change_from_base_ci95": [
+        -0.356,
+        -0.25
+      ],
+      "gsm8k_change_from_raw": 0.216,
+      "key": "r1_b4",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 8,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 7.335132153003247,
+      "file_bits": 18507536,
+      "gsm8k_accuracy": 0.404,
+      "gsm8k_change_from_base": -0.344,
+      "gsm8k_change_from_base_ci95": [
+        -0.396,
+        -0.2939500000000007
+      ],
+      "gsm8k_change_from_raw": 0.17400000000000002,
+      "key": "r1_b8",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 16,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 15.07373046875,
+      "file_bits": 38033072,
+      "gsm8k_accuracy": 0.392,
+      "gsm8k_change_from_base": -0.356,
+      "gsm8k_change_from_base_ci95": [
+        -0.408,
+        -0.304
+      ],
+      "gsm8k_change_from_raw": 0.162,
+      "key": "r1_b16",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 1,
+      "budget_units": 2,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 1.1407914595170454,
+      "file_bits": 5756744,
+      "gsm8k_accuracy": 0.786,
+      "gsm8k_change_from_base": 0.038000000000000034,
+      "gsm8k_change_from_base_ci95": [
+        -0.004,
+        0.078
+      ],
+      "gsm8k_change_from_raw": 0.556,
+      "key": "r2_b1",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 2,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 2.055243950385552,
+      "file_bits": 10371320,
+      "gsm8k_accuracy": 0.334,
+      "gsm8k_change_from_base": -0.414,
+      "gsm8k_change_from_base_ci95": [
+        -0.466,
+        -0.362
+      ],
+      "gsm8k_change_from_raw": 0.10400000000000001,
+      "key": "r2_b2",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 4,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 3.372694932021104,
+      "file_bits": 17019536,
+      "gsm8k_accuracy": 0.244,
+      "gsm8k_change_from_base": -0.504,
+      "gsm8k_change_from_base_ci95": [
+        -0.554,
+        -0.456
+      ],
+      "gsm8k_change_from_raw": 0.013999999999999985,
+      "key": "r2_b4",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 8,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 7.201867834314124,
+      "file_bits": 36342584,
+      "gsm8k_accuracy": 0.232,
+      "gsm8k_change_from_base": -0.516,
+      "gsm8k_change_from_base_ci95": [
+        -0.566,
+        -0.468
+      ],
+      "gsm8k_change_from_raw": 0.0020000000000000018,
+      "key": "r2_b8",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 16,
+      "budget_units": 32,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 14.936938793628247,
+      "file_bits": 75375856,
+      "gsm8k_accuracy": 0.238,
+      "gsm8k_change_from_base": -0.51,
+      "gsm8k_change_from_base_ci95": [
+        -0.558,
+        -0.462
+      ],
+      "gsm8k_change_from_raw": 0.00799999999999998,
+      "key": "r2_b16",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 1,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 1.07237501268263,
+      "file_bits": 10822992,
+      "gsm8k_accuracy": 0.71,
+      "gsm8k_change_from_base": -0.038000000000000034,
+      "gsm8k_change_from_base_ci95": [
+        -0.084,
+        0.006
+      ],
+      "gsm8k_change_from_raw": 0.48,
+      "key": "r4_b1",
+      "rank": 4,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 2,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 1.988491306057224,
+      "file_bits": 20068936,
+      "gsm8k_accuracy": 0.264,
+      "gsm8k_change_from_base": -0.484,
+      "gsm8k_change_from_base_ci95": [
+        -0.534,
+        -0.434
+      ],
+      "gsm8k_change_from_raw": 0.034,
+      "key": "r4_b2",
+      "rank": 4,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 4,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 3.313491623122971,
+      "file_bits": 33441560,
+      "gsm8k_accuracy": 0.226,
+      "gsm8k_change_from_base": -0.522,
+      "gsm8k_change_from_base_ci95": [
+        -0.57,
+        -0.474
+      ],
+      "gsm8k_change_from_raw": -0.0040000000000000036,
+      "key": "r4_b4",
+      "rank": 4,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 8,
+      "budget_units": 32,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 7.149117606026786,
+      "file_bits": 72152784,
+      "gsm8k_accuracy": 0.234,
+      "gsm8k_change_from_base": -0.514,
+      "gsm8k_change_from_base_ci95": [
+        -0.562,
+        -0.466
+      ],
+      "gsm8k_change_from_raw": 0.0040000000000000036,
+      "key": "r4_b8",
+      "rank": 4,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 16,
+      "budget_units": 64,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 14.861322576349432,
+      "file_bits": 149988552,
+      "gsm8k_accuracy": 0.238,
+      "gsm8k_change_from_base": -0.51,
+      "gsm8k_change_from_base_ci95": [
+        -0.558,
+        -0.462
+      ],
+      "gsm8k_change_from_raw": 0.00799999999999998,
+      "key": "r4_b16",
+      "rank": 4,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 1,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 1.0379400872564934,
+      "file_bits": 20950912,
+      "gsm8k_accuracy": 0.594,
+      "gsm8k_change_from_base": -0.15400000000000003,
+      "gsm8k_change_from_base_ci95": [
+        -0.2,
+        -0.108
+      ],
+      "gsm8k_change_from_raw": 0.364,
+      "key": "r8_b1",
+      "rank": 8,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 2,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 1.9551233068689124,
+      "file_bits": 39464336,
+      "gsm8k_accuracy": 0.24,
+      "gsm8k_change_from_base": -0.508,
+      "gsm8k_change_from_base_ci95": [
+        -0.55605,
+        -0.46
+      ],
+      "gsm8k_change_from_raw": 0.009999999999999981,
+      "key": "r8_b2",
+      "rank": 8,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 4,
+      "budget_units": 32,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 3.2881501433137177,
+      "file_bits": 66371600,
+      "gsm8k_accuracy": 0.23,
+      "gsm8k_change_from_base": -0.518,
+      "gsm8k_change_from_base_ci95": [
+        -0.566,
+        -0.47
+      ],
+      "gsm8k_change_from_raw": 0.0,
+      "key": "r8_b4",
+      "rank": 8,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 8,
+      "budget_units": 64,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 7.128353762936283,
+      "file_bits": 143886448,
+      "gsm8k_accuracy": 0.224,
+      "gsm8k_change_from_base": -0.524,
+      "gsm8k_change_from_base_ci95": [
+        -0.572,
+        -0.476
+      ],
+      "gsm8k_change_from_raw": -0.006000000000000005,
+      "key": "r8_b8",
+      "rank": 8,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 16,
+      "budget_units": 128,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 14.819889217228084,
+      "file_bits": 299140768,
+      "gsm8k_accuracy": 0.228,
+      "gsm8k_change_from_base": -0.52,
+      "gsm8k_change_from_base_ci95": [
+        -0.568,
+        -0.472
+      ],
+      "gsm8k_change_from_raw": -0.0020000000000000018,
+      "key": "r8_b16",
+      "rank": 8,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 1,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 1.0204852215655438,
+      "file_bits": 41197168,
+      "gsm8k_accuracy": 0.51,
+      "gsm8k_change_from_base": -0.238,
+      "gsm8k_change_from_base_ci95": [
+        -0.288,
+        -0.19
+      ],
+      "gsm8k_change_from_raw": 0.28,
+      "key": "r16_b1",
+      "rank": 16,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 2,
+      "budget_units": 32,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 1.938808094371449,
+      "file_bits": 78270024,
+      "gsm8k_accuracy": 0.242,
+      "gsm8k_change_from_base": -0.506,
+      "gsm8k_change_from_base_ci95": [
+        -0.556,
+        -0.458
+      ],
+      "gsm8k_change_from_raw": 0.011999999999999983,
+      "key": "r16_b2",
+      "rank": 16,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 4,
+      "budget_units": 64,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 3.28082850072291,
+      "file_bits": 132447624,
+      "gsm8k_accuracy": 0.226,
+      "gsm8k_change_from_base": -0.522,
+      "gsm8k_change_from_base_ci95": [
+        -0.57,
+        -0.474
+      ],
+      "gsm8k_change_from_raw": -0.0040000000000000036,
+      "key": "r16_b4",
+      "rank": 16,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 8,
+      "budget_units": 128,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 7.126184042398032,
+      "file_bits": 287685304,
+      "gsm8k_accuracy": 0.232,
+      "gsm8k_change_from_base": -0.516,
+      "gsm8k_change_from_base_ci95": [
+        -0.564,
+        -0.468
+      ],
+      "gsm8k_change_from_raw": 0.0020000000000000018,
+      "key": "r16_b8",
+      "rank": 16,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r16",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 16,
+      "budget_units": 256,
+      "cell": "qwen25_7b_base/permuted_r16/seed11",
+      "effective_bits_per_value": 14.798288320566153,
+      "file_bits": 597409504,
+      "gsm8k_accuracy": 0.23,
+      "gsm8k_change_from_base": -0.518,
+      "gsm8k_change_from_base_ci95": [
+        -0.566,
+        -0.47
+      ],
+      "gsm8k_change_from_raw": 0.0,
+      "key": "r16_b16",
+      "rank": 16,
+      "raw_accuracy": {
+        "calibration": 0.6875,
+        "gsm8k": 0.23,
+        "symbolic": 0.17
+      },
+      "seed": 11,
+      "trained_rank": 16
+    },
+    {
+      "arm": "permuted_r2",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 1,
+      "budget_units": 1,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "effective_bits_per_value": 1.2780032467532467,
+      "file_bits": 3224576,
+      "gsm8k_accuracy": 0.782,
+      "gsm8k_change_from_base": 0.03400000000000003,
+      "gsm8k_change_from_base_ci95": [
+        -0.004,
+        0.074
+      ],
+      "gsm8k_change_from_raw": 0.5740000000000001,
+      "key": "r1_b1",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.5703125,
+        "gsm8k": 0.208,
+        "symbolic": 0.13
+      },
+      "seed": 11,
+      "trained_rank": 2
+    },
+    {
+      "arm": "permuted_r2",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 2,
+      "budget_units": 2,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "effective_bits_per_value": 2.2000177556818183,
+      "file_bits": 5550944,
+      "gsm8k_accuracy": 0.218,
+      "gsm8k_change_from_base": -0.53,
+      "gsm8k_change_from_base_ci95": [
+        -0.578,
+        -0.482
+      ],
+      "gsm8k_change_from_raw": 0.010000000000000009,
+      "key": "r1_b2",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.5703125,
+        "gsm8k": 0.208,
+        "symbolic": 0.13
+      },
+      "seed": 11,
+      "trained_rank": 2
+    },
+    {
+      "arm": "permuted_r2",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 4,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "effective_bits_per_value": 3.5389959161931817,
+      "file_bits": 8929368,
+      "gsm8k_accuracy": 0.216,
+      "gsm8k_change_from_base": -0.532,
+      "gsm8k_change_from_base_ci95": [
+        -0.58,
+        -0.486
+      ],
+      "gsm8k_change_from_raw": 0.008000000000000007,
+      "key": "r1_b4",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.5703125,
+        "gsm8k": 0.208,
+        "symbolic": 0.13
+      },
+      "seed": 11,
+      "trained_rank": 2
+    },
+    {
+      "arm": "permuted_r2",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 8,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "effective_bits_per_value": 7.388012378246753,
+      "file_bits": 18640960,
+      "gsm8k_accuracy": 0.218,
+      "gsm8k_change_from_base": -0.53,
+      "gsm8k_change_from_base_ci95": [
+        -0.578,
+        -0.484
+      ],
+      "gsm8k_change_from_raw": 0.010000000000000009,
+      "key": "r1_b8",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.5703125,
+        "gsm8k": 0.208,
+        "symbolic": 0.13
+      },
+      "seed": 11,
+      "trained_rank": 2
+    },
+    {
+      "arm": "permuted_r2",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 16,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "effective_bits_per_value": 15.065439199472403,
+      "file_bits": 38012152,
+      "gsm8k_accuracy": 0.22,
+      "gsm8k_change_from_base": -0.528,
+      "gsm8k_change_from_base_ci95": [
+        -0.576,
+        -0.482
+      ],
+      "gsm8k_change_from_raw": 0.01200000000000001,
+      "key": "r1_b16",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.5703125,
+        "gsm8k": 0.208,
+        "symbolic": 0.13
+      },
+      "seed": 11,
+      "trained_rank": 2
+    },
+    {
+      "arm": "permuted_r2",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 1,
+      "budget_units": 2,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "effective_bits_per_value": 1.1407914595170454,
+      "file_bits": 5756744,
+      "gsm8k_accuracy": 0.606,
+      "gsm8k_change_from_base": -0.14200000000000002,
+      "gsm8k_change_from_base_ci95": [
+        -0.188,
+        -0.096
+      ],
+      "gsm8k_change_from_raw": 0.398,
+      "key": "r2_b1",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.5703125,
+        "gsm8k": 0.208,
+        "symbolic": 0.13
+      },
+      "seed": 11,
+      "trained_rank": 2
+    },
+    {
+      "arm": "permuted_r2",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 2,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "effective_bits_per_value": 2.0636018034699677,
+      "file_bits": 10413496,
+      "gsm8k_accuracy": 0.21,
+      "gsm8k_change_from_base": -0.538,
+      "gsm8k_change_from_base_ci95": [
+        -0.586,
+        -0.49
+      ],
+      "gsm8k_change_from_raw": 0.0020000000000000018,
+      "key": "r2_b2",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.5703125,
+        "gsm8k": 0.208,
+        "symbolic": 0.13
+      },
+      "seed": 11,
+      "trained_rank": 2
+    },
+    {
+      "arm": "permuted_r2",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 4,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "effective_bits_per_value": 3.417060356635552,
+      "file_bits": 17243416,
+      "gsm8k_accuracy": 0.21,
+      "gsm8k_change_from_base": -0.538,
+      "gsm8k_change_from_base_ci95": [
+        -0.586,
+        -0.492
+      ],
+      "gsm8k_change_from_raw": 0.0020000000000000018,
+      "key": "r2_b4",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.5703125,
+        "gsm8k": 0.208,
+        "symbolic": 0.13
+      },
+      "seed": 11,
+      "trained_rank": 2
+    },
+    {
+      "arm": "permuted_r2",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 8,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "effective_bits_per_value": 7.259979644379058,
+      "file_bits": 36635832,
+      "gsm8k_accuracy": 0.202,
+      "gsm8k_change_from_base": -0.546,
+      "gsm8k_change_from_base_ci95": [
+        -0.594,
+        -0.5
+      ],
+      "gsm8k_change_from_raw": -0.005999999999999978,
+      "key": "r2_b8",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.5703125,
+        "gsm8k": 0.208,
+        "symbolic": 0.13
+      },
+      "seed": 11,
+      "trained_rank": 2
+    },
+    {
+      "arm": "permuted_r2",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 16,
+      "budget_units": 32,
+      "cell": "qwen25_7b_base/permuted_r2/seed11",
+      "effective_bits_per_value": 14.964596438717532,
+      "file_bits": 75515424,
+      "gsm8k_accuracy": 0.206,
+      "gsm8k_change_from_base": -0.542,
+      "gsm8k_change_from_base_ci95": [
+        -0.588,
+        -0.496
+      ],
+      "gsm8k_change_from_raw": -0.0020000000000000018,
+      "key": "r2_b16",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.5703125,
+        "gsm8k": 0.208,
+        "symbolic": 0.13
+      },
+      "seed": 11,
+      "trained_rank": 2
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 1,
+      "budget_units": 1,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 1.2780032467532467,
+      "file_bits": 3224576,
+      "gsm8k_accuracy": 0.81,
+      "gsm8k_change_from_base": 0.062000000000000055,
+      "gsm8k_change_from_base_ci95": [
+        0.024,
+        0.1
+      ],
+      "gsm8k_change_from_raw": 0.5880000000000001,
+      "key": "r1_b1",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 2,
+      "budget_units": 2,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 2.1959212662337664,
+      "file_bits": 5540608,
+      "gsm8k_accuracy": 0.284,
+      "gsm8k_change_from_base": -0.464,
+      "gsm8k_change_from_base_ci95": [
+        -0.516,
+        -0.414
+      ],
+      "gsm8k_change_from_raw": 0.06199999999999997,
+      "key": "r1_b2",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 4,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 3.5249657568993507,
+      "file_bits": 8893968,
+      "gsm8k_accuracy": 0.208,
+      "gsm8k_change_from_base": -0.54,
+      "gsm8k_change_from_base_ci95": [
+        -0.588,
+        -0.494
+      ],
+      "gsm8k_change_from_raw": -0.014000000000000012,
+      "key": "r1_b4",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 8,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 7.367523589691558,
+      "file_bits": 18589264,
+      "gsm8k_accuracy": 0.204,
+      "gsm8k_change_from_base": -0.544,
+      "gsm8k_change_from_base_ci95": [
+        -0.59005,
+        -0.498
+      ],
+      "gsm8k_change_from_raw": -0.018000000000000016,
+      "key": "r1_b8",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 16,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 15.068600344967532,
+      "file_bits": 38020128,
+      "gsm8k_accuracy": 0.204,
+      "gsm8k_change_from_base": -0.544,
+      "gsm8k_change_from_base_ci95": [
+        -0.592,
+        -0.498
+      ],
+      "gsm8k_change_from_raw": -0.018000000000000016,
+      "key": "r1_b16",
+      "rank": 1,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 1,
+      "budget_units": 2,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 1.1407914595170454,
+      "file_bits": 5756744,
+      "gsm8k_accuracy": 0.776,
+      "gsm8k_change_from_base": 0.028000000000000025,
+      "gsm8k_change_from_base_ci95": [
+        -0.012,
+        0.068
+      ],
+      "gsm8k_change_from_raw": 0.554,
+      "key": "r2_b1",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 2,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 2.0613775872564934,
+      "file_bits": 10402272,
+      "gsm8k_accuracy": 0.22,
+      "gsm8k_change_from_base": -0.528,
+      "gsm8k_change_from_base_ci95": [
+        -0.576,
+        -0.48
+      ],
+      "gsm8k_change_from_raw": -0.0020000000000000018,
+      "key": "r2_b2",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 4,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 3.3995202795251624,
+      "file_bits": 17154904,
+      "gsm8k_accuracy": 0.206,
+      "gsm8k_change_from_base": -0.542,
+      "gsm8k_change_from_base_ci95": [
+        -0.59,
+        -0.494
+      ],
+      "gsm8k_change_from_raw": -0.016000000000000014,
+      "key": "r2_b4",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 8,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 7.241543856534091,
+      "file_bits": 36542800,
+      "gsm8k_accuracy": 0.202,
+      "gsm8k_change_from_base": -0.546,
+      "gsm8k_change_from_base_ci95": [
+        -0.594,
+        -0.498
+      ],
+      "gsm8k_change_from_raw": -0.01999999999999999,
+      "key": "r2_b8",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 16,
+      "budget_units": 32,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 14.942557198660714,
+      "file_bits": 75404208,
+      "gsm8k_accuracy": 0.204,
+      "gsm8k_change_from_base": -0.544,
+      "gsm8k_change_from_base_ci95": [
+        -0.592,
+        -0.496
+      ],
+      "gsm8k_change_from_raw": -0.018000000000000016,
+      "key": "r2_b16",
+      "rank": 2,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 1,
+      "budget_units": 4,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 1.0723274528206168,
+      "file_bits": 10822512,
+      "gsm8k_accuracy": 0.674,
+      "gsm8k_change_from_base": -0.07399999999999995,
+      "gsm8k_change_from_base_ci95": [
+        -0.12,
+        -0.03
+      ],
+      "gsm8k_change_from_raw": 0.45200000000000007,
+      "key": "r4_b1",
+      "rank": 4,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 2,
+      "budget_units": 8,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 1.9957013811383928,
+      "file_bits": 20141704,
+      "gsm8k_accuracy": 0.218,
+      "gsm8k_change_from_base": -0.53,
+      "gsm8k_change_from_base_ci95": [
+        -0.578,
+        -0.482
+      ],
+      "gsm8k_change_from_raw": -0.0040000000000000036,
+      "key": "r4_b2",
+      "rank": 4,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 4,
+      "budget_units": 16,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 3.348794516030844,
+      "file_bits": 33797856,
+      "gsm8k_accuracy": 0.216,
+      "gsm8k_change_from_base": -0.532,
+      "gsm8k_change_from_base_ci95": [
+        -0.58,
+        -0.486
+      ],
+      "gsm8k_change_from_raw": -0.006000000000000005,
+      "key": "r4_b4",
+      "rank": 4,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 8,
+      "budget_units": 32,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 7.1914276519379055,
+      "file_bits": 72579800,
+      "gsm8k_accuracy": 0.218,
+      "gsm8k_change_from_base": -0.53,
+      "gsm8k_change_from_base_ci95": [
+        -0.578,
+        -0.482
+      ],
+      "gsm8k_change_from_raw": -0.0040000000000000036,
+      "key": "r4_b8",
+      "rank": 4,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    },
+    {
+      "arm": "permuted_r4",
+      "base_accuracy": {
+        "calibration": 0.3515625,
+        "gsm8k": 0.748,
+        "symbolic": 0.71
+      },
+      "bits": 16,
+      "budget_units": 64,
+      "cell": "qwen25_7b_base/permuted_r4/seed11",
+      "effective_bits_per_value": 14.881702769886363,
+      "file_bits": 150194240,
+      "gsm8k_accuracy": 0.216,
+      "gsm8k_change_from_base": -0.532,
+      "gsm8k_change_from_base_ci95": [
+        -0.58,
+        -0.484
+      ],
+      "gsm8k_change_from_raw": -0.006000000000000005,
+      "key": "r4_b16",
+      "rank": 4,
+      "raw_accuracy": {
+        "calibration": 0.578125,
+        "gsm8k": 0.222,
+        "symbolic": 0.18
+      },
+      "seed": 11,
+      "trained_rank": 4
+    }
+  ],
+  "scratch_versus_compressed": [],
+  "status": "partial"
+}
