@@ -24,3 +24,7 @@ slurm_logs/
 # LaTeX build output.
 tex/.latex-build/
 tex/main.pdf
+
+# Local scratch, not repo content.
+incoming/
+*.bib
