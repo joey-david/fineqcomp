@@ -220,7 +220,12 @@ def spearman(left, right):
              if a is not None and b is not None and np.isfinite(a) and np.isfinite(b)]
     if len(pairs) < 3:
         return None
-    ranked = [np.argsort(np.argsort(np.array(column, float))) for column in zip(*pairs)]
+    ranked = []
+    for column in zip(*pairs):
+        _, inverse, counts = np.unique(column, return_inverse=True, return_counts=True)
+        # Tied values share their mean rank; row order must not create signal.
+        ranks = np.cumsum(counts) - (counts + 1) / 2
+        ranked.append(ranks[inverse])
     if min(np.std(column) for column in ranked) < 1e-12:
         return None
     return float(np.corrcoef(*ranked)[0, 1])
@@ -364,16 +369,10 @@ def load_rows(config, source, stage):
 
 
 def zero_point(rows, exclusions):
-    """Separate a receiver that needed no correction from one that learned nothing.
+    """Compare observed training gains across receivers on the same task.
 
-    A cell with no positive gain is currently one status covering two opposite
-    situations: the base already produced the behaviour, so there was nothing to
-    transmit, or the fine-tune failed, so nothing was transmitted. Nothing inside
-    a single cell tells them apart. What does is the other receivers on the same
-    task: if they gained and this one did not, this base had less to learn, while
-    if none of them gained the task or its data is the problem rather than any
-    receiver. That is a receiver-relative zero point, and it costs no new
-    measurement.
+    Peer gains cannot tell whether a base already met the utility target or its
+    fine-tune failed to learn. Keep that question open until a target is defined.
     """
     everything = list(rows) + list(exclusions)
     gained = defaultdict(set)

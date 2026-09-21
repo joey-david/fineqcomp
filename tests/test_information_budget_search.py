@@ -257,6 +257,19 @@ def test_budget_interval_keeps_undefined_targets_and_verification_failures():
     assert budget_interval([], base, reference, .9)['status'] == 'no_codecs'
 
 
+def test_rank_correlation_does_not_invent_signal_from_ties():
+    from fineqcomp.information_budget_prediction import spearman
+    assert spearman([5, 5, 5, 5], [1, 2, 3, 4]) is None
+    assert spearman([1, 2, 3, 4], [5, 5, 5, 5]) is None
+    left, right = [1, 1, 2, 3], [1, 2, 2, 3]
+    # Mean ranks are [0.5, 0.5, 2, 3] and [0, 1.5, 1.5, 3].
+    expected = 5 / 6
+    assert spearman(left, right) == pytest.approx(expected)
+    order = [3, 1, 0, 2]
+    assert spearman([left[i] for i in order], [right[i] for i in order]) == pytest.approx(expected)
+    assert spearman([None, 1, 1, 2, 3], [0, 1, 2, 2, 3]) == pytest.approx(expected)
+
+
 def test_redundant_measures_are_reported_as_one_scalar_not_five_theories():
     from fineqcomp.information_budget_prediction import measure_redundancy
     rows = screening_panel(signal=True)  # every measure carries the same value
