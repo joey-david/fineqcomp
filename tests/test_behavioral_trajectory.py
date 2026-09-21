@@ -12,6 +12,12 @@ from fineqcomp.behavioral_trajectory import (
     select_files, train_cell,
 )
 from fineqcomp.config import AdapterSpec, ModelSpec, RunSpec, TrainingSpec
+from fineqcomp.cot_verbosity_mechanism import (
+    functional_spectrum_predictions,
+    functional_spectrum_summary,
+    spectral_coordinates,
+    spectral_projection,
+)
 from fineqcomp.data import Example
 from fineqcomp.modeling import ModelSession
 from fineqcomp.training import train_adapter
@@ -133,6 +139,46 @@ def test_binary_norm_controls_and_linear_scale(tmp_path):
         torch.testing.assert_close(product(candidates[f'scale_{label}_0.1_b16']),
                                    product(candidates[f'scale_{label}_1_b16']) * 0.1)
     torch.testing.assert_close(product(candidates['scale_full_1_b16']), product(tensors))
+
+
+def test_functional_spectrum_recovers_band_attenuation_and_residual():
+    torch.manual_seed(52)
+    trained = {
+        'layer.lora_A.default.weight': torch.randn(4, 7),
+        'layer.lora_B.default.weight': torch.randn(9, 4),
+    }
+    bands = [(0, 1), (1, 2), (2, 4)]
+    coefficients = [0.25, -0.5, 0.8]
+    candidate = spectral_projection(trained, bands, coefficients)
+    geometry = spectral_coordinates(trained, candidate, bands)
+    assert geometry['coefficients'] == pytest.approx(coefficients, abs=1e-5)
+    assert geometry['residual_fraction'] == pytest.approx(0.0, abs=1e-5)
+
+    unrelated = {
+        'layer.lora_A.default.weight': torch.randn(1, 7),
+        'layer.lora_B.default.weight': torch.randn(9, 1),
+    }
+    assert spectral_coordinates(trained, unrelated, bands)['residual_fraction'] > 0
+
+
+def test_signed_functional_spectrum_beats_unsigned_energy_on_signed_bands():
+    rows = [
+        {'key': 'tail', 'file_bits': 1, 'geometry': {
+            'coefficients': [0.0, 1.0], 'scalar_to_full': 0.5},
+         'calibration_gain': 0.6, 'projection_calibration_gain': 0.6,
+         'test_gain': 0.6},
+        {'key': 'head', 'file_bits': 2, 'geometry': {
+            'coefficients': [1.0, 0.0], 'scalar_to_full': 0.5},
+         'calibration_gain': -0.2, 'projection_calibration_gain': -0.2,
+         'test_gain': -0.2},
+    ]
+    predicted = functional_spectrum_predictions(
+        rows, base_calibration=1.0, full_calibration=0.6,
+        band_marginals=[-0.2, 0.6])
+    summary = functional_spectrum_summary(predicted)
+    assert summary['scores']['signed']['rmse'] == pytest.approx(0.0)
+    assert summary['scores']['energy']['rmse'] > 0.3
+    assert summary['scores']['signed']['mean_selection_regret'] == pytest.approx(0.0)
 
 
 def test_transformer_train_decode_generate_select_test_and_report(tiny, tmp_path):

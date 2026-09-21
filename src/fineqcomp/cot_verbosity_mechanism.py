@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import time
 from pathlib import Path
@@ -63,7 +64,7 @@ from fineqcomp.evaluation import (
     _normalize_number, render_prompt, repeated_ngram_fraction, write_predictions,
 )
 from fineqcomp.denoise_vs_shrinkage import (
-    NLL_SPLITS, nll_examples, update_geometry,
+    NLL_SPLITS, frobenius_inner, lora_pairs, nll_examples, update_geometry,
 )
 from fineqcomp.modeling import (
     ModelSession, generation_policy, inference_autocast, model_device,
@@ -555,9 +556,145 @@ def slice_energy(tensors: dict[str, torch.Tensor], low: int, high: int) -> float
     return part / max(whole, 1e-30)
 
 
+def spectral_coordinates(
+    trained: dict[str, torch.Tensor],
+    candidate: dict[str, torch.Tensor],
+    bands: list[tuple[int, int]],
+) -> dict[str, Any]:
+    """Project a candidate onto disjoint bands of the trained update.
+
+    LoRA products are compared in weight space with small factor Gram matrices.
+    The returned residual is therefore the codec change that no scalar
+    attenuation of the trained spectral bands can express.
+    """
+    native = max(t.shape[0] for n, t in trained.items() if ".lora_A." in n)
+    covered = [index for low, high in bands for index in range(low, high)]
+    if sorted(covered) != list(range(native)) or len(set(covered)) != native:
+        raise ValueError("spectral bands must partition the trained rank")
+    parts = [spectral_slice(trained, low, high) for low, high in bands]
+    candidate_squared = update_geometry(candidate)["update_norm"] ** 2
+    trained_squared = update_geometry(trained)["update_norm"] ** 2
+    coefficients = []
+    projected_squared = 0.0
+    total_cross = 0.0
+    for part in parts:
+        part_squared = update_geometry(part)["update_norm"] ** 2
+        cross = 0.0
+        for a_name, b_name in lora_pairs(part):
+            cross += frobenius_inner(
+                part[a_name], part[b_name], candidate[a_name], candidate[b_name]
+            )
+        coefficient = cross / max(part_squared, 1e-30)
+        coefficients.append(coefficient)
+        total_cross += cross
+        projected_squared += coefficient * coefficient * part_squared
+    residual_squared = max(candidate_squared - projected_squared, 0.0)
+    return {
+        "coefficients": coefficients,
+        "scalar_to_full": total_cross / max(trained_squared, 1e-30),
+        "candidate_norm": math.sqrt(candidate_squared),
+        "projected_norm": math.sqrt(projected_squared),
+        "residual_norm": math.sqrt(residual_squared),
+        "residual_fraction": math.sqrt(residual_squared / max(candidate_squared, 1e-30)),
+    }
+
+
+def spectral_projection(
+    trained: dict[str, torch.Tensor],
+    bands: list[tuple[int, int]],
+    coefficients: list[float],
+) -> dict[str, torch.Tensor]:
+    """Apply one scalar coefficient to each trained spectral band."""
+    if len(bands) != len(coefficients):
+        raise ValueError("every spectral band needs one coefficient")
+    native = max(t.shape[0] for n, t in trained.items() if ".lora_A." in n)
+    covered = [index for low, high in bands for index in range(low, high)]
+    if sorted(covered) != list(range(native)) or len(set(covered)) != native:
+        raise ValueError("spectral bands must partition the trained rank")
+    balanced = truncate_lora_rank(trained, native)
+    projected = {name: value.clone() for name, value in balanced.items()}
+    for a_name, b_name in lora_pairs(projected):
+        scales = torch.zeros(native, dtype=projected[b_name].dtype)
+        for (low, high), coefficient in zip(bands, coefficients, strict=True):
+            scales[low:high] = float(coefficient)
+        projected[b_name] *= scales.to(projected[b_name].device)[None, :]
+    return projected
+
+
+def functional_spectrum_predictions(
+    rows: list[dict[str, Any]],
+    *,
+    base_calibration: float,
+    full_calibration: float,
+    band_marginals: list[float],
+) -> list[dict[str, Any]]:
+    """Predict test-set NLL gains from calibration-only spectral measurements."""
+    full_gain = base_calibration - full_calibration
+    predictions = []
+    for row in rows:
+        coefficients = row["geometry"]["coefficients"]
+        signed_gain = full_gain + sum(
+            (coefficient - 1.0) * marginal
+            for coefficient, marginal in zip(
+                coefficients, band_marginals, strict=True
+            )
+        )
+        scalar = float(row["geometry"]["scalar_to_full"])
+        energy_gain = scalar * full_gain
+        codec_gain = signed_gain + (
+            float(row["calibration_gain"])
+            - float(row["projection_calibration_gain"])
+        )
+        predictions.append(
+            {
+                **row,
+                "predicted_gain": {
+                    "energy": energy_gain,
+                    "signed": signed_gain,
+                    "codec_aware": codec_gain,
+                    "calibration_only": float(row["calibration_gain"]),
+                },
+            }
+        )
+    return predictions
+
+
+def functional_spectrum_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Score surface RMSE and byte-budget selection regret."""
+    methods = ("energy", "signed", "codec_aware", "calibration_only")
+    scores = {}
+    for method in methods:
+        errors = [
+            float(row["predicted_gain"][method]) - float(row["test_gain"])
+            for row in rows
+        ]
+        scores[method] = {
+            "rmse": math.sqrt(sum(error * error for error in errors) / len(errors)),
+            "bias": sum(errors) / len(errors),
+        }
+    regrets = {method: [] for method in methods}
+    for budget in sorted({int(row["file_bits"]) for row in rows}):
+        eligible = [row for row in rows if int(row["file_bits"]) <= budget]
+        oracle = max(float(row["test_gain"]) for row in eligible)
+        for method in methods:
+            chosen = max(
+                eligible,
+                key=lambda row: (float(row["predicted_gain"][method]), -int(row["file_bits"])),
+            )
+            regrets[method].append(oracle - float(chosen["test_gain"]))
+    for method in methods:
+        scores[method]["mean_selection_regret"] = sum(regrets[method]) / len(regrets[method])
+        scores[method]["max_selection_regret"] = max(regrets[method])
+    return {"surface_cells": len(rows), "scores": scores}
+
+
 def run_experiment(name: str, config: dict, out: Path, runs: Path, prepared: Path) -> None:
     seed = int(config["seed"])
-    run = RunSpec.from_dict(read_json(Path(config["source_lock"]))["damaged_run"])
+    source_run = str(config.get("functional_source_run", "damaged_run"))
+    source_lock = read_json(Path(config["source_lock"]))
+    if source_run not in source_lock:
+        raise KeyError(f"source lock has no run named {source_run!r}")
+    run = RunSpec.from_dict(source_lock[source_run])
     data = study_data(config, seed, prepared)
     examples = data["gsm8k"]
     if config.get("smoke"):
@@ -826,6 +963,124 @@ def run_experiment(name: str, config: dict, out: Path, runs: Path, prepared: Pat
                            lambda: generate(session, run, examples, config, 0))
             return
 
+        if name == "functional_spectrum":
+            bands = [
+                tuple(int(value) for value in pair)
+                for pair in config["functional_spectral_bands"]
+            ]
+            calibration = data["calibration"][: int(config["functional_calibration_rows"])]
+            test = data["gsm8k"][: int(config["functional_test_rows"])]
+            if config.get("smoke"):
+                calibration = calibration[: int(config["smoke_rows"])]
+                test = test[: int(config["smoke_rows"])]
+            if not calibration or not test:
+                raise ValueError("functional spectrum needs calibration and test rows")
+
+            def measure(label: str, tensors: dict[str, torch.Tensor], rows: list) -> float:
+                path = out / "functional_spectrum" / f"{label}.json"
+                found = read_json(path)
+                if found is None:
+                    apply_adapter_tensors(session.model, pad_lora_rank(tensors, native))
+                    found = causal_nll(
+                        session.model,
+                        session.tokenizer,
+                        rows,
+                        run.model,
+                        run.training.max_length,
+                        int(config["nll_batch_size"]),
+                        label_span=str(config.get("functional_label_span", "all")),
+                        answer_marker=config.get("answer_marker"),
+                    )
+                    write_json(path, found)
+                return float(found["bits_per_token"])
+
+            base_calibration = measure("base_calibration", base, calibration)
+            base_test = measure("base_test", base, test)
+            full_calibration = measure("full_calibration", trained, calibration)
+            full_test = measure("full_test", trained, test)
+            band_rows = []
+            marginals = []
+            for index, (low, high) in enumerate(bands):
+                band = spectral_slice(trained, low, high)
+                coefficients = [1.0] * len(bands)
+                coefficients[index] = 0.0
+                complement = spectral_projection(trained, bands, coefficients)
+                band_nll = measure(f"band_{low}_{high}_calibration", band, calibration)
+                complement_nll = measure(
+                    f"without_{low}_{high}_calibration", complement, calibration
+                )
+                marginal = complement_nll - full_calibration
+                marginals.append(marginal)
+                band_rows.append(
+                    {
+                        "band": [low, high],
+                        "energy_fraction": slice_energy(trained, low, high),
+                        "standalone_gain": base_calibration - band_nll,
+                        "ablation_marginal": marginal,
+                    }
+                )
+
+            surface = []
+            scratch = out / "functional_spectrum" / "scratch"
+            scratch.mkdir(parents=True, exist_ok=True)
+            for rank in config["functional_ranks"]:
+                reduced = truncate_lora_rank(trained, int(rank))
+                for bits in config["functional_bits"]:
+                    key = f"r{int(rank)}_b{int(bits)}"
+                    path = scratch / f"{key}.fqcb"
+                    storage = encode_tensor_map(reduced, path, int(bits))
+                    _, candidate = decode_adapter_tensor_map(path)
+                    geometry = spectral_coordinates(trained, candidate, bands)
+                    projection = spectral_projection(
+                        trained, bands, geometry["coefficients"]
+                    )
+                    candidate_calibration = measure(
+                        f"{key}_calibration", candidate, calibration
+                    )
+                    projection_calibration = measure(
+                        f"{key}_projection_calibration", projection, calibration
+                    )
+                    candidate_test = measure(f"{key}_test", candidate, test)
+                    surface.append(
+                        {
+                            "key": key,
+                            "rank": int(rank),
+                            "bits": int(bits),
+                            "file_bits": int(storage["file_bits"]),
+                            "geometry": geometry,
+                            "calibration_gain": base_calibration - candidate_calibration,
+                            "projection_calibration_gain": (
+                                base_calibration - projection_calibration
+                            ),
+                            "test_gain": base_test - candidate_test,
+                        }
+                    )
+                    path.unlink(missing_ok=True)
+            predictions = functional_spectrum_predictions(
+                surface,
+                base_calibration=base_calibration,
+                full_calibration=full_calibration,
+                band_marginals=marginals,
+            )
+            summary = {
+                "status": "complete",
+                "source_run": source_run,
+                "run_id": run.run_id,
+                "utility": "reduction in held-out bits per scored token",
+                "calibration_rows": len(calibration),
+                "test_rows": len(test),
+                "base_calibration_bits_per_token": base_calibration,
+                "base_test_bits_per_token": base_test,
+                "full_calibration_bits_per_token": full_calibration,
+                "full_test_bits_per_token": full_test,
+                "bands": band_rows,
+                "surface": predictions,
+                **functional_spectrum_summary(predictions),
+            }
+            write_json(out / "functional_spectrum" / "summary.json", summary)
+            print(json.dumps({"bands": band_rows, "scores": summary["scores"]}, indent=2))
+            return
+
         if name == "per_row_nll":
             # The companion study reports corruption-preference gaps without
             # intervals, because only the aggregate bits/token was stored. This
@@ -1028,12 +1283,21 @@ def main() -> None:
                         default=Path("reports/cot_verbosity_upnquick"))
     parser.add_argument("--runs", type=Path, default=Path("runs"))
     parser.add_argument("--prepared", type=Path, default=Path("prepared"))
+    parser.add_argument("--smoke", action="store_true",
+                        help="restrict configured measurements to smoke_rows")
+    parser.add_argument("--source-run", choices=["damaged_run", "clean_run"],
+                        help="select an adapter arm from the source lock")
     parser.add_argument("--experiment", required=True,
                         choices=["forcing", "bands", "pressure", "style", "style_matched",
                                  "readout", "segment", "segment_scaled",
-                                 "spectral", "per_row_nll", "coefficient"])
+                                 "spectral", "functional_spectrum", "per_row_nll",
+                                 "coefficient"])
     args = parser.parse_args()
     config = yaml.safe_load(args.config.read_text())
+    if args.smoke:
+        config["smoke"] = True
+    if args.source_run:
+        config["functional_source_run"] = args.source_run
     started = time.monotonic()
     run_experiment(args.experiment, config, args.out, args.runs, args.prepared)
     print(f"{args.experiment} finished in {time.monotonic() - started:.0f}s", flush=True)
