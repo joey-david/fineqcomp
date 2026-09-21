@@ -26,7 +26,7 @@ from fineqcomp.modeling import ModelSession
 
 def examples(config, source):
     rows = []
-    for line in (source / 'prepared/gsm-symbolic-source.jsonl').read_text().splitlines():
+    for line in (source / '.cache/prepared/gsm-symbolic-source.jsonl').read_text().splitlines():
         row = json.loads(line)
         if row['instance'] not in config['instances']:
             continue
@@ -114,7 +114,7 @@ def summary(rows):
 
 
 def prepare(config, source, out):
-    manifest = [json.loads(line) for line in (source / 'prepared/f03-manifest.jsonl').read_text().splitlines()]
+    manifest = [json.loads(line) for line in (source / '.cache/prepared/f03-manifest.jsonl').read_text().splitlines()]
     cells = [r for r in manifest if r['model']['key'] in config['models'] and r['seed'] in config['seeds']]
     cells.sort(key=lambda r: (r['model']['key'], r['seed'], r['dataset_key']))
     if len(cells) != len(config['models']) * len(config['seeds']) * 2:
@@ -122,7 +122,7 @@ def prepare(config, source, out):
     rows = examples(config, source)
     lock = {'config': config, 'cells': cells, 'examples': [r.to_dict() for r in rows],
             'source_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-            'symbolic_sha256': hashlib.sha256((source / 'prepared/gsm-symbolic-source.jsonl').read_bytes()).hexdigest()}
+            'symbolic_sha256': hashlib.sha256((source / '.cache/prepared/gsm-symbolic-source.jsonl').read_bytes()).hexdigest()}
     out.mkdir(parents=True, exist_ok=True)
     with (out / '.prepare.lock').open('a') as handle:
         fcntl.flock(handle, fcntl.LOCK_EX)

@@ -14,7 +14,7 @@
 # currently fails: it agrees with the direction of R* in two of four families
 # where response redundancy agrees in four.
 #
-# Every dataset here is already staged under prepared/natural for seeds
+# Every dataset here is already staged under .cache/prepared/natural for seeds
 # 11, 22 and 33, so the manifest is written with --no-data and no run touches
 # the Hub.
 version: 1

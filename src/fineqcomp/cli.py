@@ -669,16 +669,16 @@ def build_parser() -> argparse.ArgumentParser:
         "prepare", help="materialize the fixed manifest and pinned datasets"
     )
     prepare.add_argument("--config", default="configs/campaign.yaml")
-    prepare.add_argument("--manifest", default="prepared/manifest.jsonl")
-    prepare.add_argument("--prepared-root", default="prepared")
+    prepare.add_argument("--manifest", default=".cache/prepared/manifest.jsonl")
+    prepare.add_argument("--prepared-root", default=".cache/prepared")
     prepare.add_argument("--no-data", action="store_true")
     prepare.set_defaults(func=_prepare)
 
     run = subparsers.add_parser("run", help="run one cost-balanced manifest shard")
     run.add_argument("--config", default="configs/campaign.yaml")
-    run.add_argument("--manifest", default="prepared/manifest.jsonl")
-    run.add_argument("--prepared-root", default="prepared")
-    run.add_argument("--runs-root", default="runs")
+    run.add_argument("--manifest", default=".cache/prepared/manifest.jsonl")
+    run.add_argument("--prepared-root", default=".cache/prepared")
+    run.add_argument("--runs-root", default=".cache/runs")
     run.add_argument("--shard", type=int, default=0)
     run.add_argument("--shards", type=int, default=2)
     run.add_argument("--worker", type=int)
@@ -701,8 +701,8 @@ def build_parser() -> argparse.ArgumentParser:
     analysis = subparsers.add_parser(
         "analyze", help="make fixed campaign tables and plots"
     )
-    analysis.add_argument("--root", default="runs")
-    analysis.add_argument("--out", default="reports")
+    analysis.add_argument("--root", default=".cache/runs")
+    analysis.add_argument("--out", default=".cache/reports")
     analysis.set_defaults(func=_analyze)
 
     information = subparsers.add_parser(
@@ -710,9 +710,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="measure how much information each arm's training data carries",
     )
     information.add_argument("--config", default="configs/compressibility.yaml")
-    information.add_argument("--manifest", default="prepared/manifest.jsonl")
-    information.add_argument("--prepared-root", default="prepared")
-    information.add_argument("--out", default="reports/dataset_information.json")
+    information.add_argument("--manifest", default=".cache/prepared/manifest.jsonl")
+    information.add_argument("--prepared-root", default=".cache/prepared")
+    information.add_argument("--out", default=".cache/reports/dataset_information.json")
     information.add_argument("--sample-rows", type=int, default=1024)
     information.add_argument(
         "--split", default="train", choices=["train", "calibration"],
@@ -735,7 +735,7 @@ def build_parser() -> argparse.ArgumentParser:
     relative.add_argument("--config", required=True)
     relative.add_argument("--manifest", required=True)
     relative.add_argument("--run-id", required=True)
-    relative.add_argument("--prepared-root", default="prepared")
+    relative.add_argument("--prepared-root", default=".cache/prepared")
     relative.add_argument("--out", required=True)
     relative.add_argument("--split", default="train", choices=["train", "calibration"])
     relative.add_argument("--rows", type=int, default=256)
@@ -766,7 +766,7 @@ def build_parser() -> argparse.ArgumentParser:
     retrieval.add_argument("--config", required=True)
     retrieval.add_argument("--manifest", required=True)
     retrieval.add_argument("--run-id", required=True)
-    retrieval.add_argument("--prepared-root", default="prepared")
+    retrieval.add_argument("--prepared-root", default=".cache/prepared")
     retrieval.add_argument("--out", required=True)
     retrieval.add_argument("--split", default="train", choices=["train", "calibration"])
     retrieval.add_argument("--rows", type=int, default=128)
@@ -785,7 +785,7 @@ def build_parser() -> argparse.ArgumentParser:
     generation_smoke.add_argument("--config", required=True)
     generation_smoke.add_argument("--manifest", required=True)
     generation_smoke.add_argument("--run-id", required=True)
-    generation_smoke.add_argument("--prepared-root", default="prepared")
+    generation_smoke.add_argument("--prepared-root", default=".cache/prepared")
     generation_smoke.add_argument("--out", required=True)
     generation_smoke.add_argument("--split", default="test", choices=["test"])
     generation_smoke.add_argument("--rows", type=int, default=8)
@@ -811,9 +811,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="rank frozen-model information measures against finished R* runs",
     )
     relative_report.add_argument(
-        "--results", default="reports/relative_information"
+        "--results", default=".cache/reports/relative_information"
     )
-    relative_report.add_argument("--runs-root", default="runs")
+    relative_report.add_argument("--runs-root", default=".cache/runs")
     relative_report.add_argument(
         "--out",
         default="results/1_rate_behaviour_frontier/relative_information_candidates",
@@ -832,7 +832,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rank.add_argument("--run", required=True)
     rank.add_argument("--config", default="configs/campaign.yaml")
-    rank.add_argument("--prepared-root", default="prepared")
+    rank.add_argument("--prepared-root", default=".cache/prepared")
     rank.add_argument("--out", required=True)
     rank.add_argument(
         "--ranks", type=int, nargs="+", default=[1, 2, 4, 8, 16]
@@ -844,8 +844,8 @@ def build_parser() -> argparse.ArgumentParser:
         "rank-frontier-report",
         help="join swept adapters and score truncation against the random mask",
     )
-    rank_report.add_argument("--results", default="reports/rank_frontier")
-    rank_report.add_argument("--runs-root", default="runs")
+    rank_report.add_argument("--results", default=".cache/reports/rank_frontier")
+    rank_report.add_argument("--runs-root", default=".cache/runs")
     rank_report.add_argument(
         "--out", default="results/1_rate_behaviour_frontier/rank_frontier"
     )
@@ -855,8 +855,8 @@ def build_parser() -> argparse.ArgumentParser:
         "relative-law",
         help="audit the rate law: candidate gate, forward model, receiver test",
     )
-    relative_law.add_argument("--results", default="reports/relative_information_channel")
-    relative_law.add_argument("--runs-root", default="runs")
+    relative_law.add_argument("--results", default=".cache/reports/relative_information_channel")
+    relative_law.add_argument("--runs-root", default=".cache/runs")
     relative_law.add_argument(
         "--out", default="results/1_rate_behaviour_frontier/rate_law_audit"
     )
@@ -891,7 +891,7 @@ def build_parser() -> argparse.ArgumentParser:
     channel_validate.add_argument("--development-results", required=True)
     channel_validate.add_argument("--prospective-results", required=True)
     channel_validate.add_argument("--prospective-manifest", required=True)
-    channel_validate.add_argument("--runs-root", default="runs")
+    channel_validate.add_argument("--runs-root", default=".cache/runs")
     channel_validate.add_argument("--lock", required=True)
     channel_validate.add_argument("--out", required=True)
     channel_validate.set_defaults(func=_relative_information_channel_validate)
@@ -905,11 +905,11 @@ def build_parser() -> argparse.ArgumentParser:
         " representation shift, on adapters that already exist",
     )
     profile.add_argument("--config", default="configs/compressibility.yaml")
-    profile.add_argument("--manifest", default="prepared/compressibility-manifest.jsonl")
-    profile.add_argument("--prepared-root", default="prepared")
-    profile.add_argument("--runs-root", default="runs")
-    profile.add_argument("--out", default="reports/layer_profile")
-    profile.add_argument("--work-dir", default="reports/layer_profile/work")
+    profile.add_argument("--manifest", default=".cache/prepared/compressibility-manifest.jsonl")
+    profile.add_argument("--prepared-root", default=".cache/prepared")
+    profile.add_argument("--runs-root", default=".cache/runs")
+    profile.add_argument("--out", default=".cache/reports/layer_profile")
+    profile.add_argument("--work-dir", default=".cache/reports/layer_profile/work")
     profile.add_argument("--studies", nargs="+")
     profile.add_argument("--seeds", nargs="+", type=int)
     profile.add_argument("--rows", type=int, default=256)
@@ -944,9 +944,9 @@ def build_parser() -> argparse.ArgumentParser:
     star = subparsers.add_parser(
         "rstar", help="R* against both information measures, with the overfit gap"
     )
-    star.add_argument("--root", default="runs")
-    star.add_argument("--information", default="reports/dataset_information.json")
-    star.add_argument("--out", default="reports")
+    star.add_argument("--root", default=".cache/runs")
+    star.add_argument("--information", default=".cache/reports/dataset_information.json")
+    star.add_argument("--out", default=".cache/reports")
     star.add_argument("--target", type=float, default=0.90)
     star.add_argument("--config", default="configs/compressibility.yaml")
     star.add_argument(
@@ -960,10 +960,10 @@ def build_parser() -> argparse.ArgumentParser:
         "screen", help="measure base-task headroom before natural-task training"
     )
     screen.add_argument("--config", default="configs/campaign.yaml")
-    screen.add_argument("--manifest", default="prepared/manifest.jsonl")
-    screen.add_argument("--prepared-root", default="prepared")
-    screen.add_argument("--runs-root", default="runs")
-    screen.add_argument("--out", default="prepared/baseline_screening.json")
+    screen.add_argument("--manifest", default=".cache/prepared/manifest.jsonl")
+    screen.add_argument("--prepared-root", default=".cache/prepared")
+    screen.add_argument("--runs-root", default=".cache/runs")
+    screen.add_argument("--out", default=".cache/prepared/baseline_screening.json")
     screen.add_argument("--shard", type=int, default=0)
     screen.add_argument("--shards", type=int, default=1)
     screen.set_defaults(func=_screen)
@@ -972,9 +972,9 @@ def build_parser() -> argparse.ArgumentParser:
         "preflight", help="check the remote runtime without starting the grid"
     )
     preflight.add_argument("--config", default="configs/campaign.yaml")
-    preflight.add_argument("--manifest", default="prepared/manifest.jsonl")
-    preflight.add_argument("--prepared-root", default="prepared")
-    preflight.add_argument("--report", default="prepared/preflight.json")
+    preflight.add_argument("--manifest", default=".cache/prepared/manifest.jsonl")
+    preflight.add_argument("--prepared-root", default=".cache/prepared")
+    preflight.add_argument("--report", default=".cache/prepared/preflight.json")
     preflight.add_argument("--shards", type=int, default=5)
     preflight.add_argument("--require-gpus", action="store_true")
     preflight.add_argument("--require-dependencies", action="store_true")
@@ -997,7 +997,7 @@ def build_parser() -> argparse.ArgumentParser:
         "cache-models", help="download and verify every pinned model snapshot"
     )
     cache.add_argument("--config", default="configs/campaign.yaml")
-    cache.add_argument("--report", default="prepared/model-cache.json")
+    cache.add_argument("--report", default=".cache/prepared/model-cache.json")
     cache.set_defaults(func=_cache_models)
     return parser
 

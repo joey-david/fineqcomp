@@ -10,8 +10,8 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=4-04:00:00
-#SBATCH --output=slurm_logs/%x-%A_%a.out
-#SBATCH --error=slurm_logs/%x-%A_%a.err
+#SBATCH --output=.cache/slurm_logs/%x-%A_%a.out
+#SBATCH --error=.cache/slurm_logs/%x-%A_%a.err
 
 set -euo pipefail
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
@@ -23,10 +23,10 @@ source "$repo_root/scripts/jean_zay_env.sh"
 #
 #   sbatch --array=0-8%9 --export=ALL,\
 #     CONFIG=configs/transposed_receiver_panel.yaml,\
-#     MANIFEST=prepared/transposed-manifest.jsonl,SHARDS=9 \
+#     MANIFEST=.cache/prepared/transposed-manifest.jsonl,SHARDS=9 \
 #     scripts/jean_zay_array.sbatch
 config="${CONFIG:-configs/campaign.yaml}"
-manifest="${MANIFEST:-prepared/manifest.jsonl}"
+manifest="${MANIFEST:-.cache/prepared/manifest.jsonl}"
 shards="${SHARDS:-16}"
 args=(
   -m fineqcomp run

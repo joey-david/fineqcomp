@@ -4,8 +4,8 @@
 #SBATCH --partition=prepost
 #SBATCH --cpus-per-task=8
 #SBATCH --time=08:00:00
-#SBATCH --output=slurm_logs/%x-%j.out
-#SBATCH --error=slurm_logs/%x-%j.err
+#SBATCH --output=.cache/slurm_logs/%x-%j.out
+#SBATCH --error=.cache/slurm_logs/%x-%j.err
 
 set -euo pipefail
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
@@ -41,6 +41,6 @@ fi
 "$PYTHON" -m fineqcomp prepare --config configs/campaign.yaml
 "$PYTHON" -m fineqcomp cache-models --config configs/campaign.yaml
 "$PYTHON" -m fineqcomp preflight --require-dependencies --tokenizers --shards 16 \
-  --report prepared/stage-preflight.json
-test -s prepared/model-cache.json
-test -s prepared/stage-preflight.json
+  --report .cache/prepared/stage-preflight.json
+test -s .cache/prepared/model-cache.json
+test -s .cache/prepared/stage-preflight.json

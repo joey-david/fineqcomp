@@ -33,7 +33,7 @@ export HF_HOME="${HF_HOME:-${repo_root}/.hf_cache}"
 export HF_HUB_DISABLE_XET="${HF_HUB_DISABLE_XET:-1}"
 mkdir -p remote_logs
 
-if [[ ! -s prepared/manifest.jsonl ]]; then
+if [[ ! -s .cache/prepared/manifest.jsonl ]]; then
   echo 'missing prepared campaign data; run scripts/remote.sh push-prepared first' >&2
   exit 2
 fi
@@ -55,11 +55,11 @@ stop_workers() {
 trap stop_workers INT TERM
 
 CUDA_VISIBLE_DEVICES=0 "$python_bin" -m fineqcomp screen \
-  --shard 0 --shards 2 --out prepared/baseline_screening_gpu0.json \
+  --shard 0 --shards 2 --out .cache/prepared/baseline_screening_gpu0.json \
   >remote_logs/baseline_screening_gpu0.log 2>&1 &
 worker_pids+=("$!")
 CUDA_VISIBLE_DEVICES=1 "$python_bin" -m fineqcomp screen \
-  --shard 1 --shards 2 --out prepared/baseline_screening_gpu1.json \
+  --shard 1 --shards 2 --out .cache/prepared/baseline_screening_gpu1.json \
   >remote_logs/baseline_screening_gpu1.log 2>&1 &
 worker_pids+=("$!")
 screen_status=0

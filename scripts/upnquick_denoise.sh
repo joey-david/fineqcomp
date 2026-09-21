@@ -28,11 +28,11 @@ export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 # GPU1 is somebody else's job. Never widen this without looking first.
 
 STUDY="${STUDY:-configs/upnquick/denoise_vs_shrinkage.yaml}"
-OUT="${OUT:-reports/denoise_vs_shrinkage_upnquick}"
+OUT="${OUT:-.cache/reports/denoise_vs_shrinkage_upnquick}"
 ALIGNED_CONFIG=configs/upnquick/aligned_cot.yaml
-ALIGNED_MANIFEST=prepared/upnquick-aligned-manifest.jsonl
+ALIGNED_MANIFEST=.cache/prepared/upnquick-aligned-manifest.jsonl
 TRACE_CONFIG=configs/upnquick/conditional_trace_rate.yaml
-TRACE_MANIFEST=prepared/upnquick-trace-manifest.jsonl
+TRACE_MANIFEST=.cache/prepared/upnquick-trace-manifest.jsonl
 DEADLINE="${DEADLINE:-$(date -d 'tomorrow 07:00' +%s 2>/dev/null || echo 0)}"
 LOG="$root/remote_logs/denoise_$(date +%Y%m%d_%H%M%S).log"
 mkdir -p remote_logs "$OUT"
@@ -108,7 +108,7 @@ stage "report (control only)" "$PY" -m fineqcomp.denoise_vs_shrinkage \
 
 # --- the reference point ----------------------------------------------------
 aligned_id=$(run_id_for "$ALIGNED_CONFIG" trace_aligned_full 16 11) || aligned_id=""
-if [[ -n "$aligned_id" && -f "runs/$aligned_id/raw_channel.pt" ]]; then
+if [[ -n "$aligned_id" && -f ".cache/runs/$aligned_id/raw_channel.pt" ]]; then
   say "SKIP  train aligned r16 (adapter exists)"
 else
   stage "train aligned r16" "$PY" -m fineqcomp run \

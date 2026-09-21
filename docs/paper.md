@@ -43,7 +43,7 @@ large recovery gain solely to quantization's change in direction. A stronger
 claim needs a scale chosen on calibration and tested on new evaluation data;
 these benchmarks now serve as development evidence for that comparison.
 
-Artifacts: `reports/scale_recovery_v1/accuracy_table.csv`,
+Artifacts: `.cache/reports/scale_recovery_v1/accuracy_table.csv`,
 `extracted_contrasts.json`, `scale_controls.png`, and the raw `summary.json`.
 No experiment code changed during extraction.
 
@@ -113,7 +113,7 @@ points on GSM8K and 10–22 points on Symbolic (paired 95% intervals), so the
 proposed accuracy plateau is absent in that run. The remaining trajectory and
 intervention evaluations are still pending or running.
 
-Artifacts: `reports/spectral_recovery_v1/summary.json`, `accuracy_table.csv`,
+Artifacts: `.cache/reports/spectral_recovery_v1/summary.json`, `accuracy_table.csv`,
 `extracted_contrasts.json`, and `recovery_controls.png` in the same directory.
 The extraction checks 42 candidate/benchmark results, prediction IDs and row
 counts, and uses the existing paired-bootstrap implementation. Jean-Zay jobs
@@ -161,7 +161,7 @@ is a separate, stronger claim and is not required for recovery.
 Jean-Zay follow-up: H100 smoke `1797265`; three-seed evaluation array
 `1797312` (three H100s, starts only after a successful smoke); report `1797313`.
 The isolated checkout is `studies/spectral-recovery-20260905` and the output is
-`reports/spectral_recovery_v1`. The 15 focused tests and Ruff pass locally.
+`.cache/reports/spectral_recovery_v1`. The 15 focused tests and Ruff pass locally.
 
 The broader trajectory campaign continues, but replication receives new compute
 first. The matched-example field runs completed; their single-exposure effects
@@ -320,7 +320,7 @@ a frozen run requires a new output directory; no cached-result mixing.
 The isolated Jean-Zay checkout is
 `/lustre/fswork/projects/rech/fas/uul94gf/fineQComp/studies/behavioral-trajectory-20260905`.
 Job IDs, commands, cells and dependencies are recorded in
-`reports/behavioral_trajectory_v1/jobs.json`: field 1780015, existing pilot
+`.cache/reports/behavioral_trajectory_v1/jobs.json`: field 1780015, existing pilot
 1780016, trajectory-training pilot 1780017, existing replication 1780018,
 training replication 1780019, trajectory evaluation 1780020, intervention
 training 1780021, intervention evaluation 1780022, final report 1780023.
@@ -349,5 +349,5 @@ narrow the mechanism claim. This finite grid does not rule out all other scales.
 Launch: H100 smoke `1812419`; three-seed evaluation array `1812421` requests
 three H100s and depends on smoke success; summary job `1812423` follows the
 evaluations. Isolated checkout: `studies/scale-recovery-20260906`. Output:
-`reports/scale_recovery_v1`. All 16 focused local tests, Ruff, and remote source
+`.cache/reports/scale_recovery_v1`. All 16 focused local tests, Ruff, and remote source
 preflight pass. The launch journal records the exact scheduler arguments.

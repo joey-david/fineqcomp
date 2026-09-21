@@ -6,9 +6,9 @@
 # ordinary campaign path before this script is useful:
 #
 #   $PYTHON -m fineqcomp prepare --config configs/low_rank_permuted.yaml \
-#     --manifest prepared/low-rank-permuted-manifest.jsonl
+#     --manifest .cache/prepared/low-rank-permuted-manifest.jsonl
 #   sbatch --array=0-5%6 --export=ALL,CONFIG=configs/low_rank_permuted.yaml,\
-#     MANIFEST=prepared/low-rank-permuted-manifest.jsonl,SHARDS=6,\
+#     MANIFEST=.cache/prepared/low-rank-permuted-manifest.jsonl,SHARDS=6,\
 #     STUDIES=permuted_low_rank scripts/jean_zay_array.sbatch
 #
 # That is the twelve low-rank runs. The six high-rank ones are the same command
@@ -77,8 +77,8 @@
 #SBATCH --hint=nomultithread
 #SBATCH --qos=qos_gpu_h100-t3
 #SBATCH --time=10:00:00
-#SBATCH --output=slurm_logs/%x-%A_%a.out
-#SBATCH --error=slurm_logs/%x-%A_%a.err
+#SBATCH --output=.cache/slurm_logs/%x-%A_%a.out
+#SBATCH --error=.cache/slurm_logs/%x-%A_%a.err
 
 set -euo pipefail
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
@@ -87,10 +87,10 @@ cd "$repo_root"
 mode="${MODE:?choose prepare, check, cells, probe, sweep or report}"
 task="${SLURM_ARRAY_TASK_ID:-0}"
 config="${MB_CONFIG:-configs/matched_bit_budget.yaml}"
-out="${MB_OUT:-reports/matched_bit_budget_v1}"
-runs_root="${MB_RUNS_ROOT:-runs}"
+out="${MB_OUT:-.cache/reports/matched_bit_budget_v1}"
+runs_root="${MB_RUNS_ROOT:-.cache/runs}"
 
-mkdir -p slurm_logs
+mkdir -p .cache/slurm_logs
 source "$repo_root/scripts/jean_zay_env.sh"
 export PYTHONUNBUFFERED=1
 export SLURM_EXPORT_ENV=ALL

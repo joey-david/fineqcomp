@@ -10,8 +10,8 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=06:00:00
-#SBATCH --output=slurm_logs/%x-%j.out
-#SBATCH --error=slurm_logs/%x-%j.err
+#SBATCH --output=.cache/slurm_logs/%x-%j.out
+#SBATCH --error=.cache/slurm_logs/%x-%j.err
 
 # The collaborator's second and third questions on one H100: clean-task
 # performance and corruption propensity measured separately, and the compressed
@@ -27,14 +27,14 @@
 set -uo pipefail
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
-mkdir -p slurm_logs remote_logs
+mkdir -p .cache/slurm_logs remote_logs
 source "$repo_root/scripts/jean_zay_env.sh"
 export PYTHONUNBUFFERED=1 HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1
 
 STUDY=configs/jean_zay/denoise_vs_shrinkage.yaml
 ALIGNED=configs/jean_zay/aligned_cot.yaml
 GRID=configs/jean_zay/scale_and_tasks.yaml
-OUT=reports/denoise_vs_shrinkage_jz
+OUT=.cache/reports/denoise_vs_shrinkage_jz
 LOG="$repo_root/remote_logs/denoise_$(date +%Y%m%d_%H%M%S).log"
 mkdir -p "$OUT"
 
@@ -78,16 +78,16 @@ say "=== denoise/shrinkage, questions two and three, stage $STAGE (job ${SLURM_J
 
 clean_id=$(run_id_for "$ALIGNED" cot_aligned_full qwen25_7b_base) || exit 1
 say "clean arm $clean_id"
-if [[ -f "runs/$clean_id/raw_channel.pt" ]]; then
+if [[ -f ".cache/runs/$clean_id/raw_channel.pt" ]]; then
   say "SKIP  train clean arm (adapter already on disk)"
 else
   # Its own manifest, not the grid's. `prepare` rewrites whatever manifest it
   # is pointed at, and the grid's twenty-one-run manifest is being read by
   # array tasks that have not started yet.
   stage "prepare clean corpus" python -m fineqcomp prepare \
-    --config "$ALIGNED" --manifest prepared/aligned-manifest.jsonl || exit 1
+    --config "$ALIGNED" --manifest .cache/prepared/aligned-manifest.jsonl || exit 1
   stage "train clean arm" python -m fineqcomp run \
-    --config "$ALIGNED" --manifest prepared/aligned-manifest.jsonl --run-id "$clean_id" || exit 1
+    --config "$ALIGNED" --manifest .cache/prepared/aligned-manifest.jsonl --run-id "$clean_id" || exit 1
 fi
 
 damaged_id=$(python - "$GRID" <<'PYX'
@@ -112,9 +112,9 @@ say "damaged arm $damaged_id"
 # Bounded wait: the grid cell that trains this is an independent job, so this
 # one must not assume it has landed and must not hang for ever if it failed.
 deadline=$(( $(date +%s) + 1 * 3600 ))
-while [[ ! -f "runs/$damaged_id/raw_channel.pt" ]]; do
+while [[ ! -f ".cache/runs/$damaged_id/raw_channel.pt" ]]; do
   if (( $(date +%s) > deadline )); then
-    say "FAIL damaged adapter never appeared: runs/$damaged_id/raw_channel.pt"
+    say "FAIL damaged adapter never appeared: .cache/runs/$damaged_id/raw_channel.pt"
     say "     the grid's cot_7b cell has to finish before this study can run"
     exit 1
   fi

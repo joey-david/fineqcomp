@@ -17,7 +17,7 @@
 # share one arm-by-seed shape:
 #   sbatch --array=0-47%16 --export=ALL,BY_INDEX=1,\
 #     CONFIG=configs/information_lever.yaml,\
-#     MANIFEST=prepared/information-lever-manifest.jsonl \
+#     MANIFEST=.cache/prepared/information-lever-manifest.jsonl \
 #     scripts/jean_zay_compress.sbatch
 #
 # A full cell trains for about 53 minutes and then spends roughly 19 more on
@@ -35,14 +35,14 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=04:00:00
-#SBATCH --output=slurm_logs/%x-%A_%a.out
-#SBATCH --error=slurm_logs/%x-%A_%a.err
+#SBATCH --output=.cache/slurm_logs/%x-%A_%a.out
+#SBATCH --error=.cache/slurm_logs/%x-%A_%a.err
 
 set -euo pipefail
 
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
-mkdir -p slurm_logs reports
+mkdir -p .cache/slurm_logs .cache/reports
 
 arms=(arm_e arm_a arm_b arm_c arm_d)
 if [[ -n "${BY_INDEX:-}" ]]; then
@@ -63,7 +63,7 @@ fi
 arm="${ARM:-}"
 seed="${SEED:-}"
 config="${CONFIG:-configs/compressibility.yaml}"
-manifest="${MANIFEST:-prepared/compressibility-manifest.jsonl}"
+manifest="${MANIFEST:-.cache/prepared/compressibility-manifest.jsonl}"
 
 source "$repo_root/scripts/jean_zay_env.sh"
 export PYTHONUNBUFFERED=1
@@ -102,6 +102,6 @@ fi
 echo "run_id=$run_id"
 
 "$PYTHON" -m fineqcomp run --config "$config" --manifest "$manifest" \
-  --runs-root runs --run-id "$run_id" --shards 1
+  --runs-root .cache/runs --run-id "$run_id" --shards 1
 
 echo "arm $arm seed $seed complete"

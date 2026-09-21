@@ -796,10 +796,10 @@ def main() -> None:
         default=Path("configs/upnquick/denoise_vs_shrinkage.yaml"),
     )
     parser.add_argument(
-        "--out", type=Path, default=Path("reports/denoise_vs_shrinkage_upnquick")
+        "--out", type=Path, default=Path(".cache/reports/denoise_vs_shrinkage_upnquick")
     )
-    parser.add_argument("--runs", type=Path, default=Path("runs"))
-    parser.add_argument("--prepared", type=Path, default=Path("prepared"))
+    parser.add_argument("--runs", type=Path, default=Path(".cache/runs"))
+    parser.add_argument("--prepared", type=Path, default=Path(".cache/prepared"))
     parser.add_argument(
         "--phase", required=True,
         choices=["prepare", "check", "probe", "sweep", "report"],

@@ -11,7 +11,7 @@ first, then the paired [limits and controls](compression_beats_baseline/README.m
 
 **Newest completed result.** The 18 September scale-and-task grid extends the
 recovery result from 0.5B to 32B and beyond chain-of-thought data. Its raw
-summary is [here](reports/scaling_grid/summary.json).
+summary is [here](.cache/reports/scaling_grid/summary.json).
 
 **Active scope.** Predictive behavior performance is part of this project. New
 work should use the existing serialized-update, held-out scoring, and matched
@@ -35,7 +35,7 @@ code on the `archive` branch (see its `ARCHIVE.md`) rather than being deleted.
 | `src/fineqcomp/` | the package: codec, training, evaluation, and each study's analysis module |
 | `tests/` | one test module per `src/fineqcomp` module it covers |
 | `codebooks/` | fixed hex codebooks used by the codec |
-| `reports/` | generated locally, gitignored; a few small summary artifacts that headline results cite are tracked anyway |
+| `.cache/reports/` | generated locally, gitignored; a few small summary artifacts that headline results cite are tracked anyway |
 
 ### How many bits does a fine-tune actually need to write?
 
@@ -89,16 +89,16 @@ mid-rise code at the same packed width. Keeping both on the same axes is how
 the campaign separates code geometry from rate.
 
 ```bash
-RUN=runs/<run-id>
+RUN=.cache/runs/<run-id>
 bash scripts/run_pareto_distributed.sh "$RUN"          # fixed-rate controls
-.venv/bin/python -m fineqcomp rstar --root runs --out reports/rstar
+.venv/bin/python -m fineqcomp rstar --root .cache/runs --out .cache/reports/rstar
 ```
 
 ## Measuring a corpus against a frozen model
 
 ```bash
 # measure one arm
-python -m fineqcomp relative-information --config <config> --run-id <run-id> --out reports/<root>
+python -m fineqcomp relative-information --config <config> --run-id <run-id> --out .cache/reports/<root>
 
 # rank candidates, and audit what the ranking is really made of
 python -m fineqcomp relative-information-report --results <root> --out <dir>
@@ -122,7 +122,7 @@ saturates at `64*K` bits, `random` draws a fresh label per mapping.
 
 ```bash
 sbatch --array=0-11%12 --export=ALL,MODE=full scripts/jean_zay_information.sbatch
-python -m fineqcomp.information_scaling --out runs_information_scaling/full --aggregate
+python -m fineqcomp.information_scaling --out .cache/runs_information_scaling/full --aggregate
 ```
 
 See `docs/experiments.md` for the protocol and claim gates, and

@@ -41,8 +41,8 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=04:00:00
-#SBATCH --output=slurm_logs/%x-%A_%a.out
-#SBATCH --error=slurm_logs/%x-%A_%a.err
+#SBATCH --output=.cache/slurm_logs/%x-%A_%a.out
+#SBATCH --error=.cache/slurm_logs/%x-%A_%a.err
 
 set -euo pipefail
 
@@ -53,7 +53,7 @@ mode="${MODE:-smoke}"
 task="${SLURM_ARRAY_TASK_ID:-0}"
 config="${INFO_CONFIG:-configs/information_scaling.yaml}"
 campaign="${INFO_CAMPAIGN:-configs/compressibility.yaml}"
-out="${INFO_OUT:-runs_information_scaling/$mode}"
+out="${INFO_OUT:-.cache/runs_information_scaling/$mode}"
 
 command=(python -m fineqcomp.information_scaling
   --config "$config" --campaign "$campaign" --out "$out")
@@ -105,7 +105,7 @@ probe)
   # Cells differ in more than the run identity covers, so each gets its own
   # output root rather than silently reusing a neighbour's result.json.
   tag="${condition}_n${prefix}_lr${rate//./}_u${updates}_${layout}"
-  out="${INFO_OUT:-runs_information_scaling/probe/$tag}"
+  out="${INFO_OUT:-.cache/runs_information_scaling/probe/$tag}"
   command=(python -m fineqcomp.information_scaling
     --config "$config" --campaign "$campaign" --out "$out"
     --studies main --conditions "$condition" --seeds 11
@@ -118,7 +118,7 @@ validate)
   # with the grid: the validation grid is fifteen cells, the payload grid is
   # twenty-four. Hardcoding fifteen silently dropped cells off the end.
   config="${INFO_CONFIG:-configs/information_validation.yaml}"
-  out="${INFO_OUT:-runs_information_scaling/validate}"
+  out="${INFO_OUT:-.cache/runs_information_scaling/validate}"
   command=(python -m fineqcomp.information_scaling
     --config "$config" --campaign "$campaign" --out "$out"
     --shard "$task" --shards "${INFO_SHARDS:-15}")
@@ -157,7 +157,7 @@ if [[ "${INFO_DRY_RUN:-0}" == 1 ]]; then
   printf '\n'
 fi
 
-mkdir -p slurm_logs "$out"
+mkdir -p .cache/slurm_logs "$out"
 source "$repo_root/scripts/jean_zay_env.sh"
 export PYTHONUNBUFFERED=1
 command[0]="$PYTHON"

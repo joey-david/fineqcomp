@@ -1330,7 +1330,7 @@ def validate_natural_dataset(
 
 
 def prepare_natural_dataset(
-    raw: dict[str, Any], dataset_key: str, seed: int, root: str | Path = "prepared"
+    raw: dict[str, Any], dataset_key: str, seed: int, root: str | Path = ".cache/prepared"
 ) -> Path:
     """Materialize one pinned natural dataset so workers never need the Hub."""
     rows = _load_natural_from_hub(raw, dataset_key, seed)

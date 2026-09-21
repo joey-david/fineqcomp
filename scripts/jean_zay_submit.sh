@@ -59,7 +59,7 @@ if [[ "$target" == bit-budget ]]; then
   # proves every panel cell has a finished adapter to predict and a prepared
   # corpus to read, and a non-zero exit there stops the chain before any GPU
   # is spent on a panel that cannot be joined up.
-  mkdir -p slurm_logs
+  mkdir -p .cache/slurm_logs
   script=scripts/jean_zay_bit_budget.sbatch
   receivers="${BB_ARRAY:-0-6}"
   manifest_id="$(sbatch --parsable --array=0-0 --export=ALL,MODE=manifest "$script")"
@@ -81,7 +81,7 @@ if [[ "$target" != campaign ]]; then
   exit $?
 fi
 
-mkdir -p slurm_logs
+mkdir -p .cache/slurm_logs
 stage_id="$(sbatch --parsable scripts/jean_zay_stage.sbatch)"
 smoke_id="$(sbatch --parsable --dependency="afterok:$stage_id" \
   scripts/jean_zay_smoke.sbatch)"

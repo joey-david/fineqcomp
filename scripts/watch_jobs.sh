@@ -3,7 +3,7 @@
 #
 # Polls squeue at a low rate, stays silent while jobs run, and on completion
 # writes the exit states, artifact counts and any failing logs to stdout and to
-# slurm_logs/watch_jobs.log. It does not call Claude and does not notify
+# .cache/slurm_logs/watch_jobs.log. It does not call Claude and does not notify
 # anything: read the log when you want to know, or start a session yourself.
 #
 #   scripts/watch_jobs.sh fqcomp                   # watch one job name
@@ -11,7 +11,7 @@
 #
 # Runs in the foreground. To walk away:
 #   nohup scripts/watch_jobs.sh fqcomp >/dev/null 2>&1 &
-#   tail -f slurm_logs/watch_jobs.log
+#   tail -f .cache/slurm_logs/watch_jobs.log
 
 set -uo pipefail
 
@@ -21,7 +21,7 @@ interval="${3:-120}"                            # seconds between polls
 host="${JZ_HOST:-jean-zay}"
 root="${JZ_ROOT:-/lustre/fswork/projects/rech/fas/uul94gf/fineQComp}"
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-log="$repo/slurm_logs/watch_jobs.log"
+log="$repo/.cache/slurm_logs/watch_jobs.log"
 mkdir -p "$(dirname "$log")"
 
 filter=(-u '$USER' -h)
@@ -55,7 +55,7 @@ summary="$(ssh -o BatchMode=yes "$host" "bash -lc '
   cd $root
   sacct -u \$USER -S now-24hours -X -n -o JobID,JobName%10,State,Elapsed,ExitCode 2>/dev/null ${name:+| grep $name} | tail -30
   echo \"---artifacts---\"
-  for d in runs/*/; do
+  for d in .cache/runs/*/; do
     [ -d \"\$d\" ] || continue
     c=\$(ls \$d/codec_metrics 2>/dev/null | wc -l | tr -d \" \")
     [ \"\$c\" = \"0\" ] && [ ! -f \$d/raw_channel.pt ] && continue
@@ -65,7 +65,7 @@ summary="$(ssh -o BatchMode=yes "$host" "bash -lc '
   # Scoped to this job name and to logs touched in the last day. Grepping the
   # whole directory reported setup failures from three weeks earlier as if they
   # belonged to the run that just finished.
-  find slurm_logs -name \"${name:-*}-*.err\" -mtime -1 2>/dev/null \
+  find .cache/slurm_logs -name \"${name:-*}-*.err\" -mtime -1 2>/dev/null \
     | xargs -r grep -l -E \"Traceback|CUDA out of memory|DUE TO TIME LIMIT\" 2>/dev/null | tail -10
 '" 2>/dev/null)"
 

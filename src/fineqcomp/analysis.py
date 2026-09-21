@@ -406,7 +406,7 @@ def _save_placement(rows: list[dict[str, Any]], path: Path) -> None:
     plt.close(fig)
 
 
-def analyze(root: str | Path = "runs", out: str | Path = "reports") -> dict[str, Any]:
+def analyze(root: str | Path = ".cache/runs", out: str | Path = ".cache/reports") -> dict[str, Any]:
     import matplotlib
 
     matplotlib.use("Agg")

@@ -124,8 +124,8 @@ class RunEngine:
     def __init__(
         self,
         campaign: dict[str, Any],
-        prepared_root: str | Path = "prepared",
-        runs_root: str | Path = "runs",
+        prepared_root: str | Path = ".cache/prepared",
+        runs_root: str | Path = ".cache/runs",
         pilot_rows: int | None = None,
     ) -> None:
         self.campaign = campaign

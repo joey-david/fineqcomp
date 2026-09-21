@@ -25,7 +25,7 @@ COLUMNS = [
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--out", type=Path, default=Path("reports/scaling_grid"))
+    parser.add_argument("--out", type=Path, default=Path(".cache/reports/scaling_grid"))
     args = parser.parse_args()
 
     path = args.out / "summary.json"

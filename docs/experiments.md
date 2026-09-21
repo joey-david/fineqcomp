@@ -43,8 +43,8 @@ report MATH exact match as a second held-out measure.
 
 ### Outputs
 
-- `reports/baseline_screening.csv`
-- `reports/learning_gates.csv`
+- `.cache/reports/baseline_screening.csv`
+- `.cache/reports/learning_gates.csv`
 - raw task predictions in each run's `predictions/raw_task.jsonl`
 
 ### Results
@@ -78,9 +78,9 @@ Pareto points.
 
 ### Outputs
 
-- `reports/natural_pareto.png`
-- `reports/quantization_retention.png`
-- `reports/summary.csv`
+- `.cache/reports/natural_pareto.png`
+- `.cache/reports/quantization_retention.png`
+- `.cache/reports/summary.csv`
 
 ### Results
 
@@ -108,8 +108,8 @@ code, and rate-distortion claims stated in nominal bits are underspecified.
 
 ### Outputs
 
-- `reports/quantization_retention.png`
-- the `quantizer` and `relative_rmse` columns in `reports/summary.csv`
+- `.cache/reports/quantization_retention.png`
+- the `quantizer` and `relative_rmse` columns in `.cache/reports/summary.csv`
 
 ### Results
 
@@ -134,7 +134,7 @@ decoded reconstruction error is checked against the error the encoder reported.
 
 ### Outputs
 
-- storage columns in `reports/summary.csv`
+- storage columns in `.cache/reports/summary.csv`
 - the reloadable files in each run's `codecs/` directory
 
 ### Results
@@ -157,8 +157,8 @@ saved with exact artifact bits for each task and codec.
 
 ### Outputs
 
-- `reports/behavioral_write.png`
-- behavioral information columns in `reports/summary.csv`
+- `.cache/reports/behavioral_write.png`
+- behavioral information columns in `.cache/reports/summary.csv`
 
 ### Results
 
@@ -181,7 +181,7 @@ file bits, task gain, retained gain, and behavioral bits.
 
 ### Outputs
 
-- `reports/placement_control.png`
+- `.cache/reports/placement_control.png`
 - adapter rank and trainable parameter fields in each run's metrics
 
 ### Results
@@ -204,10 +204,10 @@ evaluation. Keep screened, failed, and no-learning cells in the status report.
 
 ### Outputs
 
-- `prepared/manifest.jsonl`
+- `.cache/prepared/manifest.jsonl`
 - per-run `config.json`, `training_metrics.json`, `codec_metrics/`, and
   `status.json`
-- `reports/summary.json`
+- `.cache/reports/summary.json`
 
 ### Results
 
@@ -338,11 +338,11 @@ sbatch --array=0-1%2 --export=ALL,MODE=smoke \
 sbatch --array=0-11%12 --export=ALL,MODE=full \
   scripts/jean_zay_information.sbatch
 
-python -m fineqcomp.information_scaling --out runs_information_scaling/full --aggregate
+python -m fineqcomp.information_scaling --out .cache/runs_information_scaling/full --aggregate
 ```
 
 Configuration: `configs/information_scaling.yaml`. Outputs:
-`runs_information_scaling/<mode>/cells.csv`, `prequential.csv`, `gates.json`,
+`.cache/runs_information_scaling/<mode>/cells.csv`, `prequential.csv`, `gates.json`,
 `information_scaling.png`, and per-cell `result.json`, raw checkpoints and
 predictions.
 

@@ -177,13 +177,13 @@ def pairs(manifest, config):
 
 def prepare(config, source, out):
     manifest = [json.loads(line) for line in
-                (source / 'prepared/f03-manifest.jsonl').read_text().splitlines()]
+                (source / '.cache/prepared/f03-manifest.jsonl').read_text().splitlines()]
     cells = pairs(manifest, config)
     rows = examples(config, source)
     lock = {'config': config, 'cells': cells, 'examples': [r.to_dict() for r in rows],
             'source_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
             'symbolic_sha256': hashlib.sha256(
-                (source / 'prepared/gsm-symbolic-source.jsonl').read_bytes()).hexdigest()}
+                (source / '.cache/prepared/gsm-symbolic-source.jsonl').read_bytes()).hexdigest()}
     out.mkdir(parents=True, exist_ok=True)
     with (out / '.prepare.lock').open('a') as handle:
         fcntl.flock(handle, fcntl.LOCK_EX)

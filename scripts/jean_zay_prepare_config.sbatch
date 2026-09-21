@@ -3,20 +3,20 @@
 # original campaign bootstrap: it does not install packages or touch models.
 #
 # sbatch --export=ALL,CONFIG=configs/high_gain_panel.yaml,\
-#   MANIFEST=prepared/highgain-manifest.jsonl scripts/jean_zay_prepare_config.sbatch
+#   MANIFEST=.cache/prepared/highgain-manifest.jsonl scripts/jean_zay_prepare_config.sbatch
 #SBATCH --job-name=fqprepare
 #SBATCH --account=fas@cpu
 #SBATCH --partition=prepost
 #SBATCH --cpus-per-task=8
 #SBATCH --time=01:00:00
-#SBATCH --output=slurm_logs/%x-%j.out
-#SBATCH --error=slurm_logs/%x-%j.err
+#SBATCH --output=.cache/slurm_logs/%x-%j.out
+#SBATCH --error=.cache/slurm_logs/%x-%j.err
 
 set -euo pipefail
 
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
-mkdir -p slurm_logs
+mkdir -p .cache/slurm_logs
 
 config="${CONFIG:?set CONFIG}"
 manifest="${MANIFEST:?set MANIFEST}"
@@ -35,7 +35,7 @@ prepare_args=(
   -m fineqcomp prepare
   --config "$config" \
   --manifest "$manifest" \
-  --prepared-root prepared
+  --prepared-root .cache/prepared
 )
 if [[ "${NO_DATA:-0}" == 1 ]]; then
   prepare_args+=(--no-data)

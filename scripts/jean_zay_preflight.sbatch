@@ -2,7 +2,7 @@
 # Run the real two-row adapter, codec, and model-load smoke for one campaign.
 #
 # sbatch --export=ALL,CONFIG=configs/external_llama_panel.yaml,\
-#   MANIFEST=prepared/external-llama-manifest.jsonl \
+#   MANIFEST=.cache/prepared/external-llama-manifest.jsonl \
 #   scripts/jean_zay_preflight.sbatch
 #SBATCH --job-name=fqpreflight
 #SBATCH --account=fas@h100
@@ -15,18 +15,18 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=00:30:00
-#SBATCH --output=slurm_logs/%x-%j.out
-#SBATCH --error=slurm_logs/%x-%j.err
+#SBATCH --output=.cache/slurm_logs/%x-%j.out
+#SBATCH --error=.cache/slurm_logs/%x-%j.err
 
 set -euo pipefail
 
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
-mkdir -p slurm_logs prepared
+mkdir -p .cache/slurm_logs .cache/prepared
 
 config="${CONFIG:?set CONFIG}"
 manifest="${MANIFEST:?set MANIFEST}"
-report="${REPORT:-prepared/preflight.json}"
+report="${REPORT:-.cache/prepared/preflight.json}"
 source "$repo_root/scripts/jean_zay_env.sh"
 export PYTHONUNBUFFERED=1
 
@@ -42,7 +42,7 @@ nvidia-smi --query-gpu=name,memory.total --format=csv,noheader
 exec "$PYTHON" -m fineqcomp preflight \
   --config "$config" \
   --manifest "$manifest" \
-  --prepared-root prepared \
+  --prepared-root .cache/prepared \
   --report "$report" \
   --shards 1 \
   --require-gpus \

@@ -10,13 +10,13 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=02:00:00
-#SBATCH --output=slurm_logs/%x-%j.out
-#SBATCH --error=slurm_logs/%x-%j.err
+#SBATCH --output=.cache/slurm_logs/%x-%j.out
+#SBATCH --error=.cache/slurm_logs/%x-%j.err
 
 set -euo pipefail
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
-mkdir -p slurm_logs
+mkdir -p .cache/slurm_logs
 source "$repo_root/scripts/jean_zay_env.sh"
 export PYTHONUNBUFFERED=1 HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1
 
@@ -38,7 +38,7 @@ fi
 
 args=(
   --config "${CONFIG:-configs/jean_zay/functional_spectrum.yaml}"
-  --out "${OUT:-reports/functional_spectrum_v1}"
+  --out "${OUT:-.cache/reports/functional_spectrum_v1}"
   --experiment functional_spectrum
 )
 if [[ -n "${SOURCE_RUN:-}" ]]; then
@@ -47,7 +47,7 @@ fi
 if [[ "${SMOKE:-0}" == 1 ]]; then
   args=(
     --config configs/jean_zay/functional_spectrum.yaml
-    --out reports/functional_spectrum_smoke
+    --out .cache/reports/functional_spectrum_smoke
     --experiment functional_spectrum
     --smoke
   )
