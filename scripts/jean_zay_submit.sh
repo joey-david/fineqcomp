@@ -4,6 +4,56 @@ set -euo pipefail
 usage="usage: scripts/jean_zay_submit.sh <batch-script|campaign|bit-budget>"
 target="${1:?$usage}"
 
+# Jean-Zay calls this a QoS, not a partition. The short H100 QoS has a hard
+# two-hour wall-time limit and a much shorter queue. Route a batch script whose
+# declared wall time fits that limit to the matching architecture-specific QoS.
+# A command-line --time passed to sbatch still takes precedence when a caller
+# deliberately submits a different wall time.
+time_to_seconds() {
+  local value="$1" days=0 hours=0 minutes=0 seconds=0
+  if [[ "$value" == *-* ]]; then
+    days="${value%%-*}"
+    value="${value#*-}"
+  fi
+  IFS=: read -r hours minutes seconds <<< "$value"
+  if [[ -z "${seconds:-}" ]]; then
+    seconds="$minutes"
+    minutes="$hours"
+    hours=0
+  fi
+  printf '%d\n' "$((10#$days * 86400 + 10#$hours * 3600 + 10#$minutes * 60 + 10#$seconds))"
+}
+
+script_option() {
+  local option="$1" script="$2"
+  sed -n "s/^[[:space:]]*#SBATCH[[:space:]]*${option}[=[:space:]]*\([^[:space:]]*\).*/\1/p" \
+    "$script" | head -n 1
+}
+
+submit_script() {
+  local script="$1"
+  local walltime constraint qos seconds
+  walltime="${JZ_EXPECTED_TIME:-$(script_option '--time' "$script")}"
+  constraint="$(script_option '--constraint' "$script")"
+  if [[ -z "$constraint" ]]; then
+    constraint="$(script_option '--C' "$script")"
+  fi
+  if [[ "${JZ_AUTO_DEV:-1}" == 1 && -n "$walltime" ]]; then
+    seconds="$(time_to_seconds "$walltime")"
+    if (( seconds > 0 && seconds <= 7200 )); then
+      case "$constraint" in
+        *h100*) qos="qos_gpu_h100-dev" ;;
+        *a100*) qos="qos_gpu_a100-dev" ;;
+        *) qos="qos_gpu-dev" ;;
+      esac
+      printf 'routing %s (%s, %ss) to %s\n' "$script" "$walltime" "$seconds" "$qos" >&2
+      sbatch --qos="$qos" "$script"
+      return
+    fi
+  fi
+  sbatch "$script"
+}
+
 if [[ "$target" == bit-budget ]]; then
   # Five stages, each holding the next. `check` is the one that matters: it
   # proves every panel cell has a finished adapter to predict and a prepared
@@ -27,7 +77,8 @@ if [[ "$target" == bit-budget ]]; then
 fi
 
 if [[ "$target" != campaign ]]; then
-  exec sbatch "$target"
+  submit_script "$target"
+  exit $?
 fi
 
 mkdir -p slurm_logs
