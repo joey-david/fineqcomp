@@ -1,0 +1,1796 @@
+{
+  "cells": [
+    {
+      "arm": "cot_0p5b",
+      "dataset": "cot_math_permuted",
+      "evaluator": "gsm8k",
+      "id": 0,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "cot_math_permuted",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_0p5b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-0.5B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "scale-ladder__qwen25-0p5b-base__cot-math-permuted__all-linear-r16__s11__b524239cee",
+        "seed": 11,
+        "study": "scale_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 1,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 1024,
+          "max_updates": null,
+          "micro_batch_size": 4,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "cot_0p5b/seed11"
+    },
+    {
+      "arm": "cot_14b",
+      "dataset": "cot_math_permuted",
+      "evaluator": "gsm8k",
+      "id": 1,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "cot_math_permuted",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_14b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-14B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "scale-ladder__qwen25-14b-base__cot-math-permuted__all-linear-r16__s11__9db4f4d6f0",
+        "seed": 11,
+        "study": "scale_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 1,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 1024,
+          "max_updates": null,
+          "micro_batch_size": 4,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "cot_14b/seed11"
+    },
+    {
+      "arm": "cot_1p5b",
+      "dataset": "cot_math_permuted",
+      "evaluator": "gsm8k",
+      "id": 2,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "cot_math_permuted",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_1p5b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-1.5B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "scale-ladder__qwen25-1p5b-base__cot-math-permuted__all-linear-r16__s11__ace6ebdd17",
+        "seed": 11,
+        "study": "scale_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 1,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 1024,
+          "max_updates": null,
+          "micro_batch_size": 4,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "cot_1p5b/seed11"
+    },
+    {
+      "arm": "cot_32b",
+      "dataset": "cot_math_permuted",
+      "evaluator": "gsm8k",
+      "id": 3,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "cot_math_permuted",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_32b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-32B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "scale-ladder__qwen25-32b-base__cot-math-permuted__all-linear-r16__s11__3961a37cda",
+        "seed": 11,
+        "study": "scale_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 1,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 1024,
+          "max_updates": null,
+          "micro_batch_size": 4,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "cot_32b/seed11"
+    },
+    {
+      "arm": "cot_3b",
+      "dataset": "cot_math_permuted",
+      "evaluator": "gsm8k",
+      "id": 4,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "cot_math_permuted",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_3b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-3B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "scale-ladder__qwen25-3b-base__cot-math-permuted__all-linear-r16__s11__b98f092884",
+        "seed": 11,
+        "study": "scale_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 1,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 1024,
+          "max_updates": null,
+          "micro_batch_size": 4,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "cot_3b/seed11"
+    },
+    {
+      "arm": "cot_7b",
+      "dataset": "cot_math_permuted",
+      "evaluator": "gsm8k",
+      "id": 5,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "cot_math_permuted",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_7b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "scale-ladder__qwen25-7b-base__cot-math-permuted__all-linear-r16__s11__2f29dcfd59",
+        "seed": 11,
+        "study": "scale_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 1,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 1024,
+          "max_updates": null,
+          "micro_batch_size": 4,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "cot_7b/seed11"
+    },
+    {
+      "arm": "ptr_h2_1p5b",
+      "dataset": "pointer_h2",
+      "evaluator": "gsm8k",
+      "id": 6,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h2",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_1p5b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-1.5B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-ladder__qwen25-1p5b-base__pointer-h2__all-linear-r16__s11__71899b486e",
+        "seed": 11,
+        "study": "pointer_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_h2_1p5b/seed11"
+    },
+    {
+      "arm": "ptr_h2_32b",
+      "dataset": "pointer_h2",
+      "evaluator": "gsm8k",
+      "id": 7,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h2",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_32b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-32B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-ladder__qwen25-32b-base__pointer-h2__all-linear-r16__s11__3491ab5118",
+        "seed": 11,
+        "study": "pointer_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_h2_32b/seed11"
+    },
+    {
+      "arm": "ptr_h2_7b",
+      "dataset": "pointer_h2",
+      "evaluator": "gsm8k",
+      "id": 8,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h2",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_7b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-ladder__qwen25-7b-base__pointer-h2__all-linear-r16__s11__0ac2c93d81",
+        "seed": 11,
+        "study": "pointer_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_h2_7b/seed11"
+    },
+    {
+      "arm": "ptr_h4_1p5b",
+      "dataset": "pointer_h4",
+      "evaluator": "gsm8k",
+      "id": 9,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h4",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_1p5b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-1.5B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-ladder__qwen25-1p5b-base__pointer-h4__all-linear-r16__s11__53e8d22e91",
+        "seed": 11,
+        "study": "pointer_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_h4_1p5b/seed11"
+    },
+    {
+      "arm": "ptr_h4_32b",
+      "dataset": "pointer_h4",
+      "evaluator": "gsm8k",
+      "id": 10,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h4",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_32b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-32B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-ladder__qwen25-32b-base__pointer-h4__all-linear-r16__s11__da7631ff7e",
+        "seed": 11,
+        "study": "pointer_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_h4_32b/seed11"
+    },
+    {
+      "arm": "ptr_h4_7b",
+      "dataset": "pointer_h4",
+      "evaluator": "gsm8k",
+      "id": 11,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h4",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_7b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-ladder__qwen25-7b-base__pointer-h4__all-linear-r16__s11__7d8e03122d",
+        "seed": 11,
+        "study": "pointer_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_h4_7b/seed11"
+    },
+    {
+      "arm": "ptr_h4_7b_inst",
+      "dataset": "pointer_h4",
+      "evaluator": "gsm8k",
+      "id": 12,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h4",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_7b_instruct",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B-Instruct",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-instruct__qwen25-7b-instruct__pointer-h4__all-linear-r16__s11__5aae185efa",
+        "seed": 11,
+        "study": "pointer_instruct",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_h4_7b_inst/seed11"
+    },
+    {
+      "arm": "ptr_h4_clean_7b",
+      "dataset": "pointer_h4_clean",
+      "evaluator": "gsm8k",
+      "id": 13,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h4_clean",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_7b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-clean__qwen25-7b-base__pointer-h4-clean__all-linear-r16__s11__153d65d8ac",
+        "seed": 11,
+        "study": "pointer_clean",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_h4_clean_7b/seed11"
+    },
+    {
+      "arm": "ptr_h8_1p5b",
+      "dataset": "pointer_h8",
+      "evaluator": "gsm8k",
+      "id": 14,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h8",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_1p5b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-1.5B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-ladder__qwen25-1p5b-base__pointer-h8__all-linear-r16__s11__92492379f1",
+        "seed": 11,
+        "study": "pointer_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_h8_1p5b/seed11"
+    },
+    {
+      "arm": "ptr_h8_32b",
+      "dataset": "pointer_h8",
+      "evaluator": "gsm8k",
+      "id": 15,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h8",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_32b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-32B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-ladder__qwen25-32b-base__pointer-h8__all-linear-r16__s11__a57170fefa",
+        "seed": 11,
+        "study": "pointer_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_h8_32b/seed11"
+    },
+    {
+      "arm": "ptr_h8_7b",
+      "dataset": "pointer_h8",
+      "evaluator": "gsm8k",
+      "id": 16,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h8",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_7b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-ladder__qwen25-7b-base__pointer-h8__all-linear-r16__s11__611280f00e",
+        "seed": 11,
+        "study": "pointer_ladder",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_h8_7b/seed11"
+    },
+    {
+      "arm": "ptr_mm_1p5b",
+      "dataset": "pointer_h4_mismatched",
+      "evaluator": "gsm8k",
+      "id": 17,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h4_mismatched",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_1p5b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-1.5B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-mismatched__qwen25-1p5b-base__pointer-h4-mismatched__all-linear-r16__s11__5364af7716",
+        "seed": 11,
+        "study": "pointer_mismatched",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_mm_1p5b/seed11"
+    },
+    {
+      "arm": "ptr_mm_32b",
+      "dataset": "pointer_h4_mismatched",
+      "evaluator": "gsm8k",
+      "id": 18,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h4_mismatched",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_32b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-32B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-mismatched__qwen25-32b-base__pointer-h4-mismatched__all-linear-r16__s11__135a56ceb1",
+        "seed": 11,
+        "study": "pointer_mismatched",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_mm_32b/seed11"
+    },
+    {
+      "arm": "ptr_mm_7b",
+      "dataset": "pointer_h4_mismatched",
+      "evaluator": "gsm8k",
+      "id": 19,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h4_mismatched",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_7b_base",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-mismatched__qwen25-7b-base__pointer-h4-mismatched__all-linear-r16__s11__2dd031b52b",
+        "seed": 11,
+        "study": "pointer_mismatched",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_mm_7b/seed11"
+    },
+    {
+      "arm": "ptr_mm_7b_inst",
+      "dataset": "pointer_h4_mismatched",
+      "evaluator": "gsm8k",
+      "id": 20,
+      "run": {
+        "adapter": {
+          "alpha": 32,
+          "dropout": 0.0,
+          "key": "all_linear_r16",
+          "last_n_layers": null,
+          "method": "full_lora",
+          "rank": 16,
+          "reference_rank": null,
+          "reference_target_modules": [],
+          "target_modules": [
+            "q_proj",
+            "k_proj",
+            "v_proj",
+            "o_proj",
+            "gate_proj",
+            "up_proj",
+            "down_proj"
+          ]
+        },
+        "codecs": [
+          {
+            "bits": 1,
+            "blend": 0.0,
+            "group_size": 128,
+            "high_bits": null,
+            "key": "binary",
+            "low_bits": null,
+            "method": "uniform",
+            "optimize_steps": 0,
+            "quantizer": "midrise",
+            "score_task": true,
+            "variance_ratio": null
+          }
+        ],
+        "dataset_key": "pointer_h4_mismatched",
+        "kind": "natural",
+        "model": {
+          "backbone": "nf4",
+          "chat": false,
+          "disable_thinking": false,
+          "generation_profile": "greedy",
+          "key": "qwen25_7b_instruct",
+          "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B-Instruct",
+          "revision": "dsdir-shared-store"
+        },
+        "run_id": "pointer-instruct__qwen25-7b-instruct__pointer-h4-mismatched__all-linear-r16__s11__50706afb12",
+        "seed": 11,
+        "study": "pointer_instruct",
+        "training": {
+          "adam_beta1": 0.9,
+          "adam_beta2": 0.95,
+          "effective_batch_size": 16,
+          "epochs": 2,
+          "eval_every_updates": 200,
+          "label_span": "all",
+          "learning_rate": 0.0002,
+          "max_grad_norm": 1.0,
+          "max_length": 512,
+          "max_updates": null,
+          "micro_batch_size": 8,
+          "restore_best": true,
+          "warmup_ratio": 0.03,
+          "weight_decay": 0.0
+        }
+      },
+      "slug": "ptr_mm_7b_inst/seed11"
+    }
+  ],
+  "conditions": [
+    "base",
+    "raw",
+    "rank1_b1",
+    "rank1_b16",
+    "scale_head_0p5",
+    "norm_matched_b1",
+    "tail_b16"
+  ],
+  "config": {
+    "arms": {
+      "cot_0p5b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "cot_math_permuted",
+        "evaluator": "gsm8k",
+        "model": "qwen25_0p5b_base",
+        "rank": 16,
+        "study": "scale_ladder"
+      },
+      "cot_14b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "cot_math_permuted",
+        "evaluator": "gsm8k",
+        "model": "qwen25_14b_base",
+        "rank": 16,
+        "study": "scale_ladder"
+      },
+      "cot_1p5b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "cot_math_permuted",
+        "evaluator": "gsm8k",
+        "model": "qwen25_1p5b_base",
+        "rank": 16,
+        "study": "scale_ladder"
+      },
+      "cot_32b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "cot_math_permuted",
+        "evaluator": "gsm8k",
+        "model": "qwen25_32b_base",
+        "rank": 16,
+        "study": "scale_ladder"
+      },
+      "cot_3b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "cot_math_permuted",
+        "evaluator": "gsm8k",
+        "model": "qwen25_3b_base",
+        "rank": 16,
+        "study": "scale_ladder"
+      },
+      "cot_7b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "cot_math_permuted",
+        "evaluator": "gsm8k",
+        "model": "qwen25_7b_base",
+        "rank": 16,
+        "study": "scale_ladder"
+      },
+      "ptr_h2_1p5b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h2",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_1p5b_base",
+        "rank": 16,
+        "study": "pointer_ladder"
+      },
+      "ptr_h2_32b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h2",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_32b_base",
+        "rank": 16,
+        "study": "pointer_ladder"
+      },
+      "ptr_h2_7b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h2",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_7b_base",
+        "rank": 16,
+        "study": "pointer_ladder"
+      },
+      "ptr_h4_1p5b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h4",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_1p5b_base",
+        "rank": 16,
+        "study": "pointer_ladder"
+      },
+      "ptr_h4_32b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h4",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_32b_base",
+        "rank": 16,
+        "study": "pointer_ladder"
+      },
+      "ptr_h4_7b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h4",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_7b_base",
+        "rank": 16,
+        "study": "pointer_ladder"
+      },
+      "ptr_h4_7b_inst": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h4",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_7b_instruct",
+        "rank": 16,
+        "study": "pointer_instruct"
+      },
+      "ptr_h4_clean_7b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h4_clean",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_7b_base",
+        "rank": 16,
+        "study": "pointer_clean"
+      },
+      "ptr_h8_1p5b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h8",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 200,
+        "model": "qwen25_1p5b_base",
+        "rank": 16,
+        "study": "pointer_ladder"
+      },
+      "ptr_h8_32b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h8",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 200,
+        "model": "qwen25_32b_base",
+        "rank": 16,
+        "study": "pointer_ladder"
+      },
+      "ptr_h8_7b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h8",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 200,
+        "model": "qwen25_7b_base",
+        "rank": 16,
+        "study": "pointer_ladder"
+      },
+      "ptr_mm_1p5b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h4_mismatched",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_1p5b_base",
+        "rank": 16,
+        "study": "pointer_mismatched"
+      },
+      "ptr_mm_32b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h4_mismatched",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_32b_base",
+        "rank": 16,
+        "study": "pointer_mismatched"
+      },
+      "ptr_mm_7b": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h4_mismatched",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_7b_base",
+        "rank": 16,
+        "study": "pointer_mismatched"
+      },
+      "ptr_mm_7b_inst": {
+        "config": "configs/jean_zay/scale_and_tasks.yaml",
+        "dataset": "pointer_h4_mismatched",
+        "evaluator": "gsm8k",
+        "max_new_tokens": 160,
+        "model": "qwen25_7b_instruct",
+        "rank": 16,
+        "study": "pointer_instruct"
+      }
+    },
+    "conditions": [
+      "base",
+      "raw",
+      "rank1_b1",
+      "rank1_b16",
+      "scale_head_0p5",
+      "norm_matched_b1",
+      "tail_b16"
+    ],
+    "evaluation_batch_size": 32,
+    "max_new_tokens": 512,
+    "seed": 11,
+    "smoke_rows": 8,
+    "test_rows": 500,
+    "version": 1
+  },
+  "implementation": {
+    "src/fineqcomp/__init__.py": "bfd5257de7c5608391ac3d1bfe55c5e68d44a0c0f971ee9050b883c366a54d6c",
+    "src/fineqcomp/__main__.py": "2d00442d4fa9a9f500b4558a4e786e87a29aff93b77625a0853381c7b22d1572",
+    "src/fineqcomp/adapters.py": "c20768aed91d3278cf5eb112fc15546167c39bb934370b478c1479502fa39bec",
+    "src/fineqcomp/analysis.py": "f07930d36218d809ba9155398a2d44bd959d6d9d5df945600675533b72816670",
+    "src/fineqcomp/artifacts.py": "94243d2e081e3334321a73e8fe9fa9cbe8d070e8bffa66504437de3d45677f1b",
+    "src/fineqcomp/behavioral_trajectory.py": "68f8b710f3b3abd403b97934f35997b0a0d18647affa2fdf42065d771a9e3468",
+    "src/fineqcomp/budget_probe.py": "df48a8ed874ac30866941159b7b9516d6ffdc5d5bb5f98d2cc98f1afa73341b3",
+    "src/fineqcomp/campaign.py": "f9b51f27c4f560611c0711f9c0ccf22b1f3bedffe20f675eb448f329dd1a9c11",
+    "src/fineqcomp/cli.py": "6a43ea0ae3a17de0ddacce1fbe6e42181913560352a1b3eb85a411731d5e83f8",
+    "src/fineqcomp/codec.py": "5e63844c33f1d946e55b37733c477b8f48c763dab3ef4152dd53fbd54501abd0",
+    "src/fineqcomp/config.py": "6fa63a05c9531e4251fcc140173b0829fdce1805a919193b68df2bdb9e4745d8",
+    "src/fineqcomp/cot_verbosity_mechanism.py": "51ecb61a9e1823ffe6ff1461aa6adc09a1f4dafcafea8be9cfb4ecdc81e3ddb7",
+    "src/fineqcomp/data.py": "afc3fbce47b8926a3feca3ee276cf7920f8b224ae1de6efe6fc3c337b397508a",
+    "src/fineqcomp/dataset_info.py": "cba75241480486af5634a8b102fcf539d9a7799f0db2b3a1fa74db304f6007d8",
+    "src/fineqcomp/denoise_vs_shrinkage.py": "3596f210dab426913669c9c14a9e99a527289178118eb988a4e6ffd71cee39e2",
+    "src/fineqcomp/evaluation.py": "bc7efc51ddafa43b89bba05acd94c4c31ab587e7360c23370a8a3642579860cb",
+    "src/fineqcomp/figures.py": "08898e76b41037355a1a02fe96cbf50f6dfa8ef367349c07f8f29f27478601c0",
+    "src/fineqcomp/generalisation.py": "ae08257e30df0d95989f84b4a441606f1363966ab065ff8988f2945cb91b5c08",
+    "src/fineqcomp/grpo_control.py": "eab6313c3bb360ea40c567b6e259a2b3ebd7dbdb6b0d83b5b073f75329688b3e",
+    "src/fineqcomp/gsm_symbolic_analysis.py": "3e1da4e21e7f6a5b0ebec20eb6bdf1c6d6e69f519fe85f3c6daf2ec315346adc",
+    "src/fineqcomp/gsm_symbolic_transfer.py": "fe3a587d3502c32565cc908343497bf12296765c5c6cc504f28d95bae44101f7",
+    "src/fineqcomp/information_scaling.py": "e46eb451bf3dd25e6c26c11594114fec2b9947fae7967f2d240c3d142c4d0c77",
+    "src/fineqcomp/layer_profile.py": "e6f1316037f14c03ada2aa3082718ec0b0f17e0ba63724d03d39297a7b30768a",
+    "src/fineqcomp/matched_budget.py": "21cbd44b09eddb141c34e0fe96a80fb2f13a271877e7e37af9122947508050a1",
+    "src/fineqcomp/mdl.py": "b1c69477bde240f84622c6ae47666c652886f565c42dfe3f1a21c9266ff9caa1",
+    "src/fineqcomp/modeling.py": "403fc618a12310af628efdd8c1108956bb423f161f43dd010a29e63a03a4044b",
+    "src/fineqcomp/pareto.py": "242472173b1a177f8130a64acda720da4f9c942d4ffe8dbcbee2a93986705370",
+    "src/fineqcomp/pilot_report.py": "c4db9a01fa64b187c4bf859d9c2810038cf65cc8e167b6f53c284edbd7816a3e",
+    "src/fineqcomp/pointer_chasing.py": "d60e1ccddb4e8c0915ba6e3242f00600ad444d1be1260dfb82d974a88c669c72",
+    "src/fineqcomp/predictive_scaling.py": "8faf027513c933e8ad66b5bbcdf619466a6c21477ce043312aaad30073b1731b",
+    "src/fineqcomp/preflight.py": "fc36803e733f84ebba35497dd6bf81772776173fd0ca44581aeeabfae9e2e296",
+    "src/fineqcomp/program_selection.py": "fba78df16ff7fc5d21d7585c7d9a6971ec36748b5a350d87084b8c3f605f8c5f",
+    "src/fineqcomp/progress.py": "58dade684b5dec083fd45efc9bf4b9c130b9ea4d5d95350c6912e740435fd3c3",
+    "src/fineqcomp/progress_cli.py": "fabcffa0f119bab7477da8670ad06f83dc0d4e78088a4e0d5a833d7351aca355",
+    "src/fineqcomp/rank_frontier.py": "de4b998bdc31d6b928010947ec1a02f7e31ba6bdf76951ca80e87d1809cf810c",
+    "src/fineqcomp/reasoning_tasks.py": "24d57e911c932f2e070da75f41319959c6fdc810c962e6b41586d80f6860bf28",
+    "src/fineqcomp/relative_info.py": "b0c50f9086f4b7ddc8361df78dfc287ef9ae4abbbdae7a46f3b3c94f87a4dd3f",
+    "src/fineqcomp/relative_validation.py": "1062ce27d805b78af31a0a4638a3acfd2822f4b11171f5562e04610e98aa9f96",
+    "src/fineqcomp/rstar.py": "830ed59098b12f78a738011778a33158ce9705627781cad449f6393b806bcbae",
+    "src/fineqcomp/runner.py": "dd5dc93530669d8e8a19e27259e9190e8573fe029cbfdb779b718fdbafac6fb6",
+    "src/fineqcomp/sandbox.py": "6342edf880f1c12e11654fd50907af8cd8f55cd0e663b49bf89534bcc25c6eb6",
+    "src/fineqcomp/training.py": "d1892f62b1415ce979348f5880e3f742e4fced8fb9cdc88d5dff7ec5a5949ce2"
+  },
+  "inputs": {
+    "configs/jean_zay/scale_and_tasks.yaml": "1ccd7086f1933f76dda4a92d06df3ac10564f30cd3fd4b133978a5a560d114f6"
+  },
+  "seed": 11
+}

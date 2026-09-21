@@ -1,0 +1,36 @@
+{
+  "branch": "research/correction-conditioning",
+  "remote": "/lustre/fswork/projects/rech/fas/uul94gf/paper_experiments/2026_09_10/fq-cot-compression-v2-20260911",
+  "config": "configs/cot_compression.json",
+  "output": "outputs/cot_compression",
+  "failed_control_smoke": {
+    "job": "2004048",
+    "local": "pilot",
+    "result": "The direct instruction still produced a full chain of thought; no full v1 run followed."
+  },
+  "corrected_smoke": {
+    "job": "2011521",
+    "local": "pilot_v2/smoke",
+    "result": "Both model cells completed. All 24 direct generations contain one parseable answer line, with no token caps."
+  },
+  "full_job": "2072592",
+  "full_status_at_registration": "pending",
+  "full_status": "completed",
+  "full_tasks": {
+    "2072592": "COMPLETED 0:0",
+    "2072613": "COMPLETED 0:0",
+    "2072614": "COMPLETED 0:0",
+    "2073353": "COMPLETED 0:0"
+  },
+  "local_result": "reports/cot_compression_2026_09_10/pilot_v2",
+  "audit": "reports/cot_compression_2026_09_10/audit.json",
+  "audit_result": "64 of 64 expected cells present; no missing files; 6,400 responses",
+  "account": "fas@h100",
+  "qos": "qos_gpu_h100-dev",
+  "array": "0-3%2",
+  "time_limit_per_cell": "02:00:00",
+  "responses": 6400,
+  "panel": "Two models, aligned and permuted adapters, one training seed, 100 fixed GSM-Symbolic cases, eight actual serialized adapter states, and paired CoT/direct generation.",
+  "control": "The direct arm pre-fills the answer delimiter and stops at the first newline. It tests answering before written work, not the absence of internal computation.",
+  "submission_note": "A dependency submission failed without assigning a job ID after the completed smoke aged out of Slurm dependency handling. The full array was then submitted once without that dependency."
+}
