@@ -7,9 +7,9 @@
 # one job per adapter and the array width is however many you want at once.
 #
 #   ls runs | grep 'all-linear-r16' | grep -E 'panel-math|kind-code' \
-#     > prepared/rank-frontier-runs.txt
-#   sbatch --array=0-11%12 --export=ALL,RUNS=prepared/rank-frontier-runs.txt,\
-#     CONFIG=configs/campaign.yaml,OUT=reports/rank_frontier \
+#     > .cache/prepared/rank-frontier-runs.txt
+#   sbatch --array=0-11%12 --export=ALL,RUNS=.cache/prepared/rank-frontier-runs.txt,\
+#     CONFIG=configs/campaign.yaml,OUT=.cache/reports/rank_frontier \
 #     scripts/jean_zay_rank_frontier.sbatch
 #SBATCH --job-name=fqrank
 #SBATCH --account=fas@h100
@@ -22,18 +22,18 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=01:30:00
-#SBATCH --output=slurm_logs/%x-%A_%a.out
-#SBATCH --error=slurm_logs/%x-%A_%a.err
+#SBATCH --output=.cache/slurm_logs/%x-%A_%a.out
+#SBATCH --error=.cache/slurm_logs/%x-%A_%a.err
 
 set -euo pipefail
 
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
-mkdir -p slurm_logs reports
+mkdir -p .cache/slurm_logs .cache/reports
 
 runs_file="${RUNS:?set RUNS to a file of run ids}"
 config="${CONFIG:-configs/campaign.yaml}"
-out_root="${OUT:-reports/rank_frontier}"
+out_root="${OUT:-.cache/reports/rank_frontier}"
 index="${SLURM_ARRAY_TASK_ID:-0}"
 run_id="$(sed -n "$((index + 1))p" "$runs_file")"
 if [[ -z "$run_id" ]]; then
@@ -47,8 +47,8 @@ export PYTHONUNBUFFERED=1
 printf 'run=%s config=%s out=%s\n' "$run_id" "$config" "$out_root/$run_id"
 nvidia-smi --query-gpu=name,memory.total --format=csv,noheader || true
 exec "$PYTHON" -m fineqcomp rank-frontier \
-  --run "runs/$run_id" \
+  --run ".cache/runs/$run_id" \
   --config "$config" \
-  --prepared-root "${PREPARED_ROOT:-prepared}" \
+  --prepared-root "${PREPARED_ROOT:-.cache/prepared}" \
   --out "$out_root/$run_id" \
   --ranks ${RANKS:-1 2 4 8 16}

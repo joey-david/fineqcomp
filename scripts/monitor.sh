@@ -117,7 +117,7 @@ cell_pids=()
 # node kills; the failures were invisible because stderr goes to /dev/null and
 # the cell table just came back empty. Cap the fan-out.
 cell_limit="${MONITOR_JOBS:-12}"
-for d in runs/*/; do
+for d in .cache/runs/*/; do
   while (( $(jobs -rp | wc -l) >= cell_limit )); do
     wait -n 2>/dev/null || break
   done
@@ -176,7 +176,7 @@ fi
 
 printf '\n== crashes ==\n'
 found=0
-for f in $(find slurm_logs -type f -name "${filter:-*}-*.err" -printf '%T@ %p\n' 2>/dev/null | awk -v all="$show_all" -v cutoff="$latest_epoch" 'all || cutoff < 0 || $1 >= cutoff {sub(/^[^ ]+ /, ""); print}'); do
+for f in $(find .cache/slurm_logs -type f -name "${filter:-*}-*.err" -printf '%T@ %p\n' 2>/dev/null | awk -v all="$show_all" -v cutoff="$latest_epoch" 'all || cutoff < 0 || $1 >= cutoff {sub(/^[^ ]+ /, ""); print}'); do
   if grep -qE 'Traceback|CUDA out of memory|DUE TO TIME LIMIT' "$f" 2>/dev/null; then
     printf '   %s\n' "$f"
     grep -E 'Error|Traceback|DUE TO TIME' "$f" | tail -2 | sed 's/^/      /'

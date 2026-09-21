@@ -15,7 +15,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-manifest="$repo_root/reports/research_design_2026_09_07/launch/manifest.json"
+manifest="$repo_root/.cache/reports/research_design_2026_09_07/launch/manifest.json"
 python_bin="${PYTHON:-$repo_root/.venv/bin/python}"
 [[ -x "$python_bin" ]] || python_bin="$(command -v python3)"
 

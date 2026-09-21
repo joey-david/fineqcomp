@@ -189,7 +189,7 @@ def build_stages() -> list[Stage]:
             lambda: learned("configs/high_gain_panel.yaml",
                             ["mistral_text_to_sql", "qwen25_text_to_sql"]),
             [_compress("configs/diversity_sql.yaml",
-                       "prepared/diversity-sql-manifest.jsonl", 18, "fqdivsql")],
+                       ".cache/prepared/diversity-sql-manifest.jsonl", 18, "fqdivsql")],
             "18 runs: 10 / 25 / 100 domains x 2 models x 3 seeds",
         ),
         Stage(
@@ -197,7 +197,7 @@ def build_stages() -> list[Stage]:
             lambda: learned("configs/high_gain_panel.yaml",
                             ["mistral_xbrl_tags", "qwen25_xbrl_tags"]),
             [_compress("configs/diversity_xbrl.yaml",
-                       "prepared/diversity-xbrl-manifest.jsonl", 18, "fqdivxbrl",
+                       ".cache/prepared/diversity-xbrl-manifest.jsonl", 18, "fqdivxbrl",
                        hours="04:00:00")],
             "18 runs: 10 / 18 / 30 companies x 2 models x 3 seeds",
         ),
@@ -206,7 +206,7 @@ def build_stages() -> list[Stage]:
         # new corpora, so it has no gate beyond being declared.
         Stage(
             "cot_second_model", [], always,
-            [_compress("configs/cot_panel.yaml", "prepared/cot-panel-manifest.jsonl",
+            [_compress("configs/cot_panel.yaml", ".cache/prepared/cot-panel-manifest.jsonl",
                        18, "fqcotpanel")],
             "18 runs: 3 supervision spans x 2 models x 3 seeds",
         ),
@@ -215,13 +215,13 @@ def build_stages() -> list[Stage]:
         # measurement produces crossings at all.
         Stage(
             "payload_wide", ["payload_grid"],
-            lambda: r_star_available("runs_information_scaling/payload", 4),
+            lambda: r_star_available(".cache/runs_information_scaling/payload", 4),
             [[
                 "sbatch", "--array=0-10%11", "--time=04:00:00",
                 "--job-name=fqpayloadwide",
                 "--export=ALL,MODE=validate,"
                 "INFO_CONFIG=configs/program_and_payload_wide.yaml,"
-                "INFO_OUT=runs_information_scaling/payload_wide,INFO_SHARDS=11",
+                "INFO_OUT=.cache/runs_information_scaling/payload_wide,INFO_SHARDS=11",
                 "scripts/jean_zay_information.sbatch",
             ]],
             "33 cells over 11 shards: seven payload levels and a second rule",

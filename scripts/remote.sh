@@ -21,31 +21,30 @@ push)
     --exclude '*.fqmdl' \
     --exclude '*.fqpm' \
     --exclude '*.pt' \
-    --exclude prepared/ \
-    --exclude runs/ \
-    --exclude reports/ \
+    --exclude .cache/ \
     --exclude remote_results/ \
     --exclude tmp/ \
-    --exclude slurm_logs/ \
     --exclude remote_logs/ \
     ./ "$host:$remote_root/"
   ;;
 push-prepared)
+  # Remote side still keeps its own flat prepared/, not yet migrated to
+  # .cache/ -- see the layout note in README.md. Local source is .cache/prepared/.
   ssh -o BatchMode=yes -o ConnectTimeout=10 "$host" "mkdir -p '$remote_root/prepared'"
   rsync -avz --delete \
     --exclude local-preflight.json \
-    prepared/ "$host:$remote_root/prepared/"
+    .cache/prepared/ "$host:$remote_root/prepared/"
   ;;
 pull)
-  mkdir -p runs reports remote_logs
+  mkdir -p .cache/runs .cache/reports remote_logs
   rsync -avz --prune-empty-dirs \
     --exclude raw_channel.pt \
     --exclude '*.fqcb' \
     --exclude '*.fqmdl' \
     --exclude '*.fqpm' \
-    "$host:$remote_root/runs/" runs/
+    "$host:$remote_root/runs/" .cache/runs/
   rsync -avz --prune-empty-dirs \
-    "$host:$remote_root/reports/" reports/ || true
+    "$host:$remote_root/reports/" .cache/reports/ || true
   rsync -avz --prune-empty-dirs \
     "$host:$remote_root/remote_logs/" remote_logs/ || true
   ;;
@@ -53,19 +52,19 @@ pull-info)
   # The information-scaling study writes outside runs/. Everything here is
   # small except the raw checkpoints, which are left on the cluster: every
   # coded file is a deterministic function of them.
-  mkdir -p runs_information_scaling
+  mkdir -p .cache/runs_information_scaling
   rsync -avz --prune-empty-dirs \
     --exclude raw_channel.pt \
     --exclude '*.fqcb' \
-    "$host:$remote_root/runs_information_scaling/" runs_information_scaling/
+    "$host:$remote_root/runs_information_scaling/" .cache/runs_information_scaling/
   ;;
 pull-logs)
-  mkdir -p slurm_logs
+  mkdir -p .cache/slurm_logs
   rsync -avz --prune-empty-dirs \
-    "$host:$remote_root/slurm_logs/" slurm_logs/
+    "$host:$remote_root/slurm_logs/" .cache/slurm_logs/
   ;;
 pull-stats)
-  mkdir -p runs remote_logs
+  mkdir -p .cache/runs remote_logs
   rsync -avz --prune-empty-dirs \
     --include '*/' \
     --include 'config.json' \
@@ -75,7 +74,7 @@ pull-stats)
     --include 'codec_metrics/*.json' \
     --include 'logs/*.jsonl' \
     --exclude '*' \
-    "$host:$remote_root/runs/" runs/
+    "$host:$remote_root/runs/" .cache/runs/
   rsync -avz --prune-empty-dirs \
     "$host:$remote_root/remote_logs/" remote_logs/ || true
   ;;

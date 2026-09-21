@@ -11,8 +11,8 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=10:00:00
-#SBATCH --output=slurm_logs/%x-%A_%a.out
-#SBATCH --error=slurm_logs/%x-%A_%a.err
+#SBATCH --output=.cache/slurm_logs/%x-%A_%a.out
+#SBATCH --error=.cache/slurm_logs/%x-%A_%a.err
 
 set -euo pipefail
 repo_root="${SLURM_SUBMIT_DIR:?submit from the isolated study checkout}"
@@ -25,6 +25,6 @@ mode="${MODE:?choose smoke, train, evaluate, field or report}"
 task="${SLURM_ARRAY_TASK_ID:-0}"
 command=("$PYTHON" -m fineqcomp.behavioral_trajectory
   --config "${STUDY_CONFIG:-configs/behavioral_trajectory.yaml}"
-  --out "${STUDY_OUT:-reports/behavioral_trajectory_v1}" --phase "$mode" --cell "$task")
+  --out "${STUDY_OUT:-.cache/reports/behavioral_trajectory_v1}" --phase "$mode" --cell "$task")
 printf 'phase=%s cell=%s\n' "$mode" "$task"
 exec "${command[@]}"

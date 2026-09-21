@@ -30,11 +30,11 @@ export CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
 # GPU1 is somebody else's job. Never widen this without looking first.
 
 STUDY="${STUDY:-configs/upnquick/matched_bit_budget.yaml}"
-OUT="${OUT:-reports/matched_bit_budget_upnquick}"
+OUT="${OUT:-.cache/reports/matched_bit_budget_upnquick}"
 TRACE_CONFIG=configs/upnquick/conditional_trace_rate.yaml
 LOWRANK_CONFIG=configs/upnquick/low_rank_permuted.yaml
-TRACE_MANIFEST=prepared/upnquick-trace-manifest.jsonl
-LOWRANK_MANIFEST=prepared/upnquick-lowrank-manifest.jsonl
+TRACE_MANIFEST=.cache/prepared/upnquick-trace-manifest.jsonl
+LOWRANK_MANIFEST=.cache/prepared/upnquick-lowrank-manifest.jsonl
 # Stop starting new work at this wall-clock time. The report needs minutes, not
 # hours, but a sweep cell in flight can take one, so leave real margin.
 DEADLINE="${DEADLINE:-$(date -d 'tomorrow 06:30' +%s 2>/dev/null || echo 0)}"
@@ -98,7 +98,7 @@ PY
 train_one() {  # config manifest study rank
   local config="$1" manifest="$2" study="$3" rank="$4"
   local id; id=$(run_id_for "$config" "$study" "$rank" 11) || return 1
-  if [[ -f "runs/$id/raw_channel.pt" ]]; then
+  if [[ -f ".cache/runs/$id/raw_channel.pt" ]]; then
     say "SKIP  train r$rank (adapter exists)"
     return 0
   fi

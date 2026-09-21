@@ -11,8 +11,8 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=02:00:00
-#SBATCH --output=slurm_logs/%x-%A_%a.out
-#SBATCH --error=slurm_logs/%x-%A_%a.err
+#SBATCH --output=.cache/slurm_logs/%x-%A_%a.out
+#SBATCH --error=.cache/slurm_logs/%x-%A_%a.err
 
 set -euo pipefail
 
@@ -23,19 +23,19 @@ source "$repo_root/scripts/jean_zay_env.sh"
 config="${CONFIG:?set CONFIG}"
 manifest="${MANIFEST:?set MANIFEST}"
 run_ids="${RUN_IDS:?set RUN_IDS}"
-run_root="${RUNS_ROOT:-runs}"
+run_root="${RUNS_ROOT:-.cache/runs}"
 run_id="$(sed -n "$((SLURM_ARRAY_TASK_ID + 1))p" "$run_ids")"
 if [[ -z "$run_id" ]]; then
   echo "no run ID for array index $SLURM_ARRAY_TASK_ID" >&2
   exit 2
 fi
-mkdir -p "$run_root" slurm_logs
+mkdir -p "$run_root" .cache/slurm_logs
 
 args=(
   -m fineqcomp run
   --config "$config"
   --manifest "$manifest"
-  --prepared-root prepared
+  --prepared-root .cache/prepared
   --runs-root "$run_root"
   --run-id "$run_id"
 )

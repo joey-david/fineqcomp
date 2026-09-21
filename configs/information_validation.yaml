@@ -6,7 +6,7 @@ version: 2
 # to measure how much information a dataset adds to a base model; here that
 # number is fixed by construction, so a measurement can be checked against it.
 #
-# The probe (runs_information_scaling/probe) found the working range: a rank-16
+# The probe (.cache/runs_information_scaling/probe) found the working range: a rank-16
 # LoRA on Mistral-7B memorises arbitrary pairs perfectly to 128 and collapses
 # at 256, with learning rate, a 4x budget and prompt layout all making no
 # difference. So the largest prefix here is 128, inside the range, and the

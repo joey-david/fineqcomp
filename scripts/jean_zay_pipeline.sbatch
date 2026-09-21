@@ -20,14 +20,14 @@
 #SBATCH --cpus-per-task=2
 #SBATCH --hint=nomultithread
 #SBATCH --time=00:20:00
-#SBATCH --output=slurm_logs/%x-%j.out
-#SBATCH --error=slurm_logs/%x-%j.err
+#SBATCH --output=.cache/slurm_logs/%x-%j.out
+#SBATCH --error=.cache/slurm_logs/%x-%j.err
 
 set -uo pipefail
 
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
-mkdir -p slurm_logs pipeline
+mkdir -p .cache/slurm_logs pipeline
 
 source "$repo_root/scripts/jean_zay_env.sh"
 export PYTHONUNBUFFERED=1

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Figures for the scale-by-task grid, in the house style.
 
-Eleven panels, read from `reports/scaling_grid/summary.json` rather than typed
+Eleven panels, read from `.cache/reports/scaling_grid/summary.json` rather than typed
 in, so a rerun redraws instead of silently disagreeing with the report. Cells a
 run did not reach are skipped rather than drawn as zero.
 
@@ -386,7 +386,7 @@ def fig_base_competence(arms, out, mode):
 
 def main() -> None:
     source = Path(sys.argv[1] if len(sys.argv) > 1
-                  else "reports/scaling_grid/summary.json")
+                  else ".cache/reports/scaling_grid/summary.json")
     out = Path(sys.argv[2] if len(sys.argv) > 2
                else "compression_beats_baseline/figures")
     arms = json.loads(source.read_text()).get("arms", {})

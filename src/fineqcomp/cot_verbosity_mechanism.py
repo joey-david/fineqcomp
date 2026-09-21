@@ -1280,9 +1280,9 @@ def main() -> None:
     parser.add_argument("--config", type=Path,
                         default=Path("configs/upnquick/cot_verbosity.yaml"))
     parser.add_argument("--out", type=Path,
-                        default=Path("reports/cot_verbosity_upnquick"))
-    parser.add_argument("--runs", type=Path, default=Path("runs"))
-    parser.add_argument("--prepared", type=Path, default=Path("prepared"))
+                        default=Path(".cache/reports/cot_verbosity_upnquick"))
+    parser.add_argument("--runs", type=Path, default=Path(".cache/runs"))
+    parser.add_argument("--prepared", type=Path, default=Path(".cache/prepared"))
     parser.add_argument("--smoke", action="store_true",
                         help="restrict configured measurements to smoke_rows")
     parser.add_argument("--source-run", choices=["damaged_run", "clean_run"],

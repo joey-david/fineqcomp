@@ -8,8 +8,8 @@
 #
 #   sbatch --export=ALL,MEASURE=dataset-information,\
 #     CONFIG=configs/behavioural_change.yaml,\
-#     MANIFEST=prepared/behavioural-manifest.jsonl,\
-#     OUT=reports/behavioural_distance.json,WITH_BASE_MODEL=1 \
+#     MANIFEST=.cache/prepared/behavioural-manifest.jsonl,\
+#     OUT=.cache/reports/behavioural_distance.json,WITH_BASE_MODEL=1 \
 #     scripts/jean_zay_measure.sbatch
 #SBATCH --job-name=fqmeasure
 #SBATCH --account=fas@h100
@@ -22,14 +22,14 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=02:00:00
-#SBATCH --output=slurm_logs/%x-%j.out
-#SBATCH --error=slurm_logs/%x-%j.err
+#SBATCH --output=.cache/slurm_logs/%x-%j.out
+#SBATCH --error=.cache/slurm_logs/%x-%j.err
 
 set -euo pipefail
 
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
-mkdir -p slurm_logs reports
+mkdir -p .cache/slurm_logs .cache/reports
 
 measure="${MEASURE:?set MEASURE, e.g. dataset-information}"
 config="${CONFIG:?set CONFIG}"
@@ -41,7 +41,7 @@ export PYTHONUNBUFFERED=1
 
 command=("$PYTHON" -m fineqcomp "$measure"
   --config "$config" --manifest "$manifest"
-  --prepared-root "${PREPARED_ROOT:-prepared}" --out "$out")
+  --prepared-root "${PREPARED_ROOT:-.cache/prepared}" --out "$out")
 if [[ -n "${WITH_BASE_MODEL:-}" ]]; then
   command+=(--with-base-model --sample-rows "${SAMPLE_ROWS:-256}")
 fi

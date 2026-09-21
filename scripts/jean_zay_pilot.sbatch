@@ -28,19 +28,19 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=02:00:00
-#SBATCH --output=slurm_logs/%x-%j.out
-#SBATCH --error=slurm_logs/%x-%j.err
+#SBATCH --output=.cache/slurm_logs/%x-%j.out
+#SBATCH --error=.cache/slurm_logs/%x-%j.err
 
 set -euo pipefail
 
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
-mkdir -p slurm_logs
+mkdir -p .cache/slurm_logs
 
 seed="${SEED:?set SEED=11|22|33}"
 stage="${STAGE:?set STAGE=train|codecs|frontier}"
 config=${CONFIG:-configs/pilot_metamath.yaml}
-manifest=${MANIFEST:-prepared/pilot-metamath-manifest.jsonl}
+manifest=${MANIFEST:-.cache/prepared/pilot-metamath-manifest.jsonl}
 
 source "$repo_root/scripts/jean_zay_env.sh"
 export PYTHONUNBUFFERED=1
@@ -66,21 +66,21 @@ train)
   # fp16 is the cheapest point and forces the base and raw evaluations, so the
   # learning gate is decided in this stage rather than the next one.
   "$PYTHON" -m fineqcomp run --config "$config" --manifest "$manifest" \
-    --runs-root runs --run-id "$run_id" --shards 1 --codecs fp16
+    --runs-root .cache/runs --run-id "$run_id" --shards 1 --codecs fp16
   ;;
 codecs)
   "$PYTHON" -m fineqcomp run --config "$config" --manifest "$manifest" \
-    --runs-root runs --run-id "$run_id" --shards 1 \
+    --runs-root .cache/runs --run-id "$run_id" --shards 1 \
     --codecs fp16 uniform8 uniform4 uniform3 uniform2 binary \
              midtread3 midtread2 loraquant_2_08 loraquant_3_09
   ;;
 mdl)
-  PYTHONPATH="$repo_root/src:$repo_root/archive/mdl" "$PYTHON" -m mdl "runs/$run_id" \
-    --config "$config" --prepared-root prepared \
+  PYTHONPATH="$repo_root/src:$repo_root/archive/mdl" "$PYTHON" -m mdl ".cache/runs/$run_id" \
+    --config "$config" --prepared-root .cache/prepared \
     --target-rates ${RATES:?set RATES="0.25 0.5"}
   ;;
 report)
-  "$PYTHON" -m fineqcomp.pilot_report --runs-root runs --out reports/pilot
+  "$PYTHON" -m fineqcomp.pilot_report --runs-root .cache/runs --out .cache/reports/pilot
   ;;
 *)
   echo "unknown STAGE=$stage" >&2

@@ -360,8 +360,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--runs", type=Path, default=Path("runs"))
-    parser.add_argument("--prepared", type=Path, default=Path("prepared"))
+    parser.add_argument("--runs", type=Path, default=Path(".cache/runs"))
+    parser.add_argument("--prepared", type=Path, default=Path(".cache/prepared"))
     parser.add_argument("--phase", required=True,
                         choices=["prepare", "check", "sweep", "report"])
     parser.add_argument("--arm", type=str)

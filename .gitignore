@@ -12,13 +12,9 @@ dist/
 tex/
 
 # Generated locally or on the GPU host.
-prepared/
-runs/
-runs_information_scaling/
-reports/
+.cache/
 remote_logs/
 remote_results/
-slurm_logs/
 .hf_cache/
 
 # LaTeX build output.

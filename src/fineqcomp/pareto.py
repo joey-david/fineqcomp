@@ -462,7 +462,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("run_dir", type=Path)
     parser.add_argument("--config", type=Path, default=Path("configs/campaign.yaml"))
-    parser.add_argument("--prepared-root", type=Path, default=Path("prepared"))
+    parser.add_argument("--prepared-root", type=Path, default=Path(".cache/prepared"))
     parser.add_argument("--bits", type=int, nargs="+", default=list(DEFAULT_BITS))
     parser.add_argument("--out", type=Path)
     parser.add_argument("--force", action="store_true")

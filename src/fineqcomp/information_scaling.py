@@ -1279,7 +1279,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--campaign", type=Path, default=Path("configs/compressibility.yaml")
     )
-    parser.add_argument("--out", type=Path, default=Path("runs_information_scaling"))
+    parser.add_argument("--out", type=Path, default=Path(".cache/runs_information_scaling"))
     parser.add_argument("--studies", nargs="+", help="restrict to these grid studies")
     parser.add_argument("--conditions", nargs="+")
     parser.add_argument("--seeds", nargs="+", type=int)

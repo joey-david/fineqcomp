@@ -9,8 +9,8 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --hint=nomultithread
 #SBATCH --time=08:00:00
-#SBATCH --output=slurm_logs/%x-%A_%a.out
-#SBATCH --error=slurm_logs/%x-%A_%a.err
+#SBATCH --output=.cache/slurm_logs/%x-%A_%a.out
+#SBATCH --error=.cache/slurm_logs/%x-%A_%a.err
 set -euo pipefail
 repo_root="${SLURM_SUBMIT_DIR:?submit from the branch checkout}"
 cd "$repo_root"

@@ -17,7 +17,7 @@ export HF_HOME="${HF_HOME:-/home/lamsade/jdavid/fineQComp_hf_cache}"
 export HF_HUB_DISABLE_XET=1 HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1 PYTHONUNBUFFERED=1
 export CUDA_VISIBLE_DEVICES="${GPU:?set GPU}"
 STUDY=configs/upnquick/generalisation.yaml
-OUT=reports/generalisation_upnquick
+OUT=.cache/reports/generalisation_upnquick
 LOG="$root/remote_logs/generalisation_gpu${GPU}_$(date +%Y%m%d_%H%M%S).log"
 mkdir -p remote_logs "$OUT"
 say() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*" | tee -a "$LOG"; }
@@ -43,22 +43,22 @@ arm_field() {  # arm field -> value from the study config
 say "=== generalisation, GPU$GPU, queue: $QUEUE ==="
 for arm in $QUEUE; do
   if [[ "$arm" == smoke ]]; then
-    rm -rf reports/generalisation_smoke
+    rm -rf .cache/reports/generalisation_smoke
     stage "smoke lock" "$PY" -m fineqcomp.generalisation --config configs/upnquick/generalisation_smoke.yaml \
-      --out reports/generalisation_smoke --phase prepare || exit 1
+      --out .cache/reports/generalisation_smoke --phase prepare || exit 1
     stage "smoke sweep (cot_permuted)" "$PY" -m fineqcomp.generalisation \
-      --config configs/upnquick/generalisation_smoke.yaml --out reports/generalisation_smoke \
+      --config configs/upnquick/generalisation_smoke.yaml --out .cache/reports/generalisation_smoke \
       --phase sweep --arm cot_permuted || exit 1
     continue
   fi
   config=$(arm_field "$arm" config); study=$(arm_field "$arm" study)
   id=$(run_id_for "$config" "$study") || { say "FAIL resolve $arm"; continue; }
-  if [[ -f "runs/$id/raw_channel.pt" ]]; then
+  if [[ -f ".cache/runs/$id/raw_channel.pt" ]]; then
     say "SKIP  train $arm (adapter exists)"
   else
     base=$(basename "$config" .yaml)
     stage "train $arm" "$PY" -m fineqcomp run --config "$config" \
-      --manifest "prepared/upnquick-$base-manifest.jsonl" --run-id "$id" || continue
+      --manifest ".cache/prepared/upnquick-$base-manifest.jsonl" --run-id "$id" || continue
   fi
   stage "sweep $arm" "$PY" -m fineqcomp.generalisation --config "$STUDY" --out "$OUT" \
     --phase sweep --arm "$arm"

@@ -510,9 +510,9 @@ def report(lock: dict, out: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=Path("configs/matched_bit_budget.yaml"))
-    parser.add_argument("--out", type=Path, default=Path("reports/matched_bit_budget_v1"))
-    parser.add_argument("--runs", type=Path, default=Path("runs"))
-    parser.add_argument("--prepared", type=Path, default=Path("prepared"))
+    parser.add_argument("--out", type=Path, default=Path(".cache/reports/matched_bit_budget_v1"))
+    parser.add_argument("--runs", type=Path, default=Path(".cache/runs"))
+    parser.add_argument("--prepared", type=Path, default=Path(".cache/prepared"))
     parser.add_argument(
         "--phase", required=True,
         choices=["prepare", "check", "probe", "sweep", "report"],

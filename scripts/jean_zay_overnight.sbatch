@@ -29,20 +29,20 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=06:00:00
-#SBATCH --output=slurm_logs/%x-%j.out
-#SBATCH --error=slurm_logs/%x-%j.err
+#SBATCH --output=.cache/slurm_logs/%x-%j.out
+#SBATCH --error=.cache/slurm_logs/%x-%j.err
 
 set -euo pipefail
 
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
-mkdir -p slurm_logs reports
+mkdir -p .cache/slurm_logs .cache/reports
 
 seed="${SEED:?set SEED}"
 stage="${STAGE:?set STAGE}"
 model="${MODEL:-mistral_7b_base}"
 config="${CONFIG:-configs/overnight.yaml}"
-manifest="${MANIFEST:-prepared/overnight-manifest.jsonl}"
+manifest="${MANIFEST:-.cache/prepared/overnight-manifest.jsonl}"
 
 source "$repo_root/scripts/jean_zay_env.sh"
 export PYTHONUNBUFFERED=1
@@ -71,27 +71,27 @@ all_codecs="fp16 uniform8 uniform4 uniform3 uniform2 binary midtread3 midtread2 
 case "$stage" in
 train)
   "$PYTHON" -m fineqcomp run --config "$config" --manifest "$manifest" \
-    --runs-root runs --run-id "$run_id" --shards 1 --codecs fp16
+    --runs-root .cache/runs --run-id "$run_id" --shards 1 --codecs fp16
   ;;
 codecs)
   "$PYTHON" -m fineqcomp run --config "$config" --manifest "$manifest" \
-    --runs-root runs --run-id "$run_id" --shards 1 --codecs $all_codecs
+    --runs-root .cache/runs --run-id "$run_id" --shards 1 --codecs $all_codecs
   ;;
 mdl)
-  PYTHONPATH="$repo_root/src:$repo_root/archive/mdl" "$PYTHON" -m mdl "runs/$run_id" \
-    --config "$config" --prepared-root prepared \
+  PYTHONPATH="$repo_root/src:$repo_root/archive/mdl" "$PYTHON" -m mdl ".cache/runs/$run_id" \
+    --config "$config" --prepared-root .cache/prepared \
     --target-rates 0.25 0.5 0.75 1.0 1.25 1.5 2.0 3.0
   ;;
 mdl_nodrop)
   # Rates under about one bit per value are unreachable without dropping rows;
   # the sweep reports and skips those rather than failing.
-  PYTHONPATH="$repo_root/src:$repo_root/archive/mdl" "$PYTHON" -m mdl "runs/$run_id" --no-drop \
-    --config "$config" --prepared-root prepared \
+  PYTHONPATH="$repo_root/src:$repo_root/archive/mdl" "$PYTHON" -m mdl ".cache/runs/$run_id" --no-drop \
+    --config "$config" --prepared-root .cache/prepared \
     --target-rates 1.1 1.25 1.5 1.75 2.0 2.5 3.0 4.0
   ;;
 report)
-  "$PYTHON" -m fineqcomp.pilot_report --runs-root runs \
-    --run-prefix overnight__ --out reports/overnight
+  "$PYTHON" -m fineqcomp.pilot_report --runs-root .cache/runs \
+    --run-prefix overnight__ --out .cache/reports/overnight
   ;;
 *)
   echo "unknown STAGE=$stage" >&2

@@ -10,8 +10,8 @@
 #SBATCH --cpus-per-task=24
 #SBATCH --hint=nomultithread
 #SBATCH --time=02:00:00
-#SBATCH --output=slurm_logs/%x-%A_%a.out
-#SBATCH --error=slurm_logs/%x-%A_%a.err
+#SBATCH --output=.cache/slurm_logs/%x-%A_%a.out
+#SBATCH --error=.cache/slurm_logs/%x-%A_%a.err
 
 # One array task per cell of the scale-by-task grid: train the adapter, then
 # sweep the seven compression conditions over it. Cells are independent, so the
@@ -37,7 +37,7 @@
 set -uo pipefail
 repo_root="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 cd "$repo_root"
-mkdir -p slurm_logs remote_logs
+mkdir -p .cache/slurm_logs remote_logs
 source "$repo_root/scripts/jean_zay_env.sh"
 export PYTHONUNBUFFERED=1 HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1
 
@@ -64,13 +64,13 @@ arm="${ARM:-${ARMS[${SLURM_ARRAY_TASK_ID:-0}]}}"
 # A second and third argument point the same runner at a different study, so
 # the headroom grid reuses this rather than growing a near-identical copy.
 SWEEP="${2:-configs/jean_zay/scaling_sweep.yaml}"
-OUT="${3:-reports/scaling_grid}"
+OUT="${3:-.cache/reports/scaling_grid}"
 # Each study stages its own manifest; training a cell against another
 # study's manifest fails to find its own run id.
-MANIFEST="${4:-prepared/manifest.jsonl}"
+MANIFEST="${4:-.cache/prepared/manifest.jsonl}"
 if [[ "${SMOKE:-0}" == "1" ]]; then
   SWEEP=configs/jean_zay/scaling_sweep_smoke.yaml
-  OUT=reports/scaling_grid_smoke
+  OUT=.cache/reports/scaling_grid_smoke
 fi
 mkdir -p "$OUT"
 LOG="$repo_root/remote_logs/grid_${arm}_$(date +%Y%m%d_%H%M%S).log"
@@ -121,7 +121,7 @@ PYX
 ) || { say "FAIL resolve run id for $arm"; exit 1; }
 say "run id $run_id"
 
-if [[ -f "runs/$run_id/raw_channel.pt" ]]; then
+if [[ -f ".cache/runs/$run_id/raw_channel.pt" ]]; then
   say "SKIP  train $arm (adapter already on disk)"
 else
   stage "train $arm" python -m fineqcomp run \
