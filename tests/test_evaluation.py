@@ -3,6 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import torch
+import pytest
 
 from fineqcomp.config import ModelSpec
 from fineqcomp.data import Example
@@ -103,7 +104,8 @@ def test_math_and_xsum_share_one_paired_evaluation(monkeypatch):
     assert {row["evaluator"] for row in predictions} == {"math", "xsum"}
 
 
-def test_generation_records_distinguish_eos_from_hitting_the_limit():
+@pytest.mark.parametrize('stop_strings', [None, ['7']])
+def test_generation_records_distinguish_eos_from_hitting_the_limit(stop_strings):
     class Tokenizer:
         padding_side = "right"
         pad_token_id = 0
@@ -127,6 +129,9 @@ def test_generation_records_distinguish_eos_from_hitting_the_limit():
             return self.embedding
 
         def generate(self, input_ids, **unused):
+            if stop_strings:
+                assert unused['stop_strings'] == stop_strings
+                assert isinstance(unused['tokenizer'], Tokenizer)
             completion = torch.tensor([[5, 2, 0], [6, 7, 8]])
             return torch.cat([input_ids, completion], dim=1)
 
@@ -137,11 +142,13 @@ def test_generation_records_distinguish_eos_from_hitting_the_limit():
         ModelSpec("model", "model", "revision", "bf16"),
         2,
         3,
+        stop_strings=stop_strings,
     )
 
     assert records[0]["terminated_with_eos"] is True
     assert records[0]["completion_tokens"] == 2
-    assert records[1]["hit_generation_limit"] is True
+    assert records[1]["hit_generation_limit"] is (stop_strings is None)
+    assert records[1]["stopped_by_string"] is bool(stop_strings)
     assert records[1]["completion_tokens"] == 3
 
 

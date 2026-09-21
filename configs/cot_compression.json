@@ -1,0 +1,19 @@
+{
+  "models": ["mistral_7b_base", "qwen25_7b_base"],
+  "seeds": [11],
+  "instances": [8],
+  "batch_size": 16,
+  "max_new_tokens": 768,
+  "scales": [],
+  "uniform_bits": [2, 1],
+  "svd_ranks": [1, 4],
+  "svd_binary": true,
+  "random_draws": 0,
+  "generation_modes": ["cot", "direct"],
+  "answer_sensitivity": false,
+  "prefix_tokens": 64,
+  "prefix_lengths": [],
+  "smoke_keys": ["raw", "svd_r2_binary"],
+  "amendment": "2026-09-11, before v2 inference: the v1 smoke showed Mistral ignoring the direct-answer instruction and emitting a full CoT. The direct arm now appends the answer delimiter to the prompt and uses Transformers stop_strings to stop at the first generated newline. This tests answering before writing intermediate steps; it does not suppress internal computation. Keep the v1 smoke as evidence of the failed control, and use a fresh output lock. No full v1 array ran.",
+  "analysis": "Locked before this run. Pilot on 100 GSM-Symbolic templates, instance 8, two frozen bases and one matched aligned/permuted training seed. Reuse the completed 32000-example MetaMathQA rank-16 adapters; no new training. Eight states including base: raw FP16 serialization, full-rank two-bit and binary quantization, SVD rank 4 and 1 at FP16, SVD rank 2 binary, and the legacy half-rank mask. Always decode the actual file before evaluation and report its bytes, not nominal precision. Cross each state with concise CoT versus direct-answer instructions, keeping question, answer delimiter, decoding policy and token ceiling fixed. Primary: complete-answer accuracy versus actual bytes for aligned adapters, and the paired CoT-minus-direct difference. Secondary: aligned-minus-permuted gap, cap and strict-parse rates, generated length and repeated text. Direct-answer instructions do not guarantee absence of internal reasoning; report instruction adherence. Preserve all cases and both original and strict scores. Cluster by template, keep development/test split, select no codec on test. This tests loss of benefit from written working as adapter information is removed; it does not prove faithful reasoning, a universal minimum size, or compression of the frozen base. One seed is a pilot, not a replicated training result. Do not infer all-step correctness from final answers or equation snippets. A larger follow-up requires the raw aligned adapter to retain an accuracy gain over base on this panel and both generation modes to emit parseable final answers. Closest causal-CoT control: Lanham et al., Measuring Faithfulness in Chain-of-Thought Reasoning, 2023; this study changes the trained adapter while keeping the base fixed."
+}
