@@ -110,8 +110,6 @@ def test_native_reasoning_smoke_is_one_seed_with_a_wide_rate_grid():
         0.0625, 0.125, 0.25, 0.5, 0.75,
         1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0, 16.0,
     }
-
-
 def test_reasoning_data_smoke_caps_every_new_trace_source():
     campaign = load_campaign("configs/reasoning_data_smoke.yaml")
     runs = expand_campaign(campaign)
@@ -124,6 +122,39 @@ def test_reasoning_data_smoke_caps_every_new_trace_source():
         assert spec["train_rows"] == 128
         assert spec["validation_rows"] == 64
         assert spec["test_rows"] == 64
+
+
+def test_numina_reasoning_pilot_is_a_matched_natural_pair():
+    campaign = load_campaign("configs/reasoning_numina_pilot.yaml")
+    runs = expand_campaign(campaign)
+
+    assert len(runs) == 2
+    assert {run.seed for run in runs} == {11}
+    assert {run.model.key for run in runs} == {"qwen3_0_6b_thinking"}
+    assert {run.dataset_key for run in runs} == {
+        "numina_math_cot_pilot",
+        "numina_math_cot_permuted_pilot",
+    }
+    aligned = campaign["datasets"]["numina_math_cot_pilot"]
+    permuted = campaign["datasets"]["numina_math_cot_permuted_pilot"]
+    assert permuted["rationale_control"] == "permuted"
+    assert {key: value for key, value in permuted.items() if key != "rationale_control"} == aligned
+    assert aligned["train_source"]["path"] == "AI-MO/NuminaMath-CoT"
+    assert aligned["evaluations"][0]["path"] == "HuggingFaceH4/MATH-500"
+    rates = {
+        float(codec["bits"]) + float(codec.get("blend", 0.0))
+        for codec in campaign["codecs"].values()
+    }
+    assert rates == {
+        0.0625, 0.125, 0.25, 0.5, 0.75,
+        1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0, 16.0,
+    }
+    scored_rates = {
+        float(codec["bits"]) + float(codec.get("blend", 0.0))
+        for codec in campaign["codecs"].values()
+        if codec.get("score_task", True)
+    }
+    assert scored_rates == {0.5, 1.0, 1.5, 2.0}
 
 
 def test_reasoning_scaling_lock_matches_the_smoke_panel_and_rate_grid():

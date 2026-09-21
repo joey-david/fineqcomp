@@ -1,0 +1,101 @@
+# Natural-data micro-pilot for reasoning under adapter compression. The two
+# arms use the same NuminaMath-CoT prompts, answers, and rationale multiset.
+# The control assigns each rationale body to a different problem before SFT.
+version: 1
+information_rows: 64
+evaluation_batch_size: 1
+
+codecs:
+  sub0_01_16: {method: uniform, bits: 0, blend: 0.0625, score_task: false}
+  sub0_02_16: {method: uniform, bits: 0, blend: 0.125, score_task: false}
+  sub0_04_16: {method: uniform, bits: 0, blend: 0.25, score_task: false}
+  sub0_08_16: {method: uniform, bits: 0, blend: 0.5}
+  sub0_12_16: {method: uniform, bits: 0, blend: 0.75, score_task: false}
+  binary: {method: uniform, bits: 1}
+  blend1_25: {method: uniform, bits: 1, blend: 0.25, score_task: false}
+  blend1_50: {method: uniform, bits: 1, blend: 0.5}
+  blend1_75: {method: uniform, bits: 1, blend: 0.75, score_task: false}
+  uniform2: {method: uniform, bits: 2}
+  uniform3: {method: uniform, bits: 3, score_task: false}
+  uniform4: {method: uniform, bits: 4, score_task: false}
+  uniform8: {method: uniform, bits: 8, score_task: false}
+  fp16: {method: uniform, bits: 16, score_task: false}
+
+models:
+  qwen3_0_6b_thinking:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen3-0.6B
+    revision: c1899de289a04d12100db370d81485cdf75e47ca
+    backbone: nf4
+    chat: true
+    disable_thinking: false
+    generation_profile: qwen3_thinking
+
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+
+training:
+  numina_pilot:
+    epochs: 4
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 1
+    max_length: 4096
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 8
+    restore_best: true
+    label_span: all
+
+datasets:
+  numina_math_cot_pilot: &numina
+    task_type: generative
+    train_source:
+      path: AI-MO/NuminaMath-CoT
+      name: default
+      revision: 9d8d210c9f6a36c8f3cd84045668c9b7800ef517
+      split: train
+      converter: math
+    answer_marker: '\boxed{'
+    answer_bearing_only: true
+    validation_rows: 64
+    train_rows: 128
+    test_rows: 64
+    evaluations:
+    - key: math
+      path: HuggingFaceH4/MATH-500
+      name: default
+      revision: 6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be
+      split: test
+      converter: math
+    evaluation_max_new_tokens: 2048
+    screening_metric: exact_match
+    maximum_baseline_score: 0.95
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  numina_math_cot_permuted_pilot:
+    <<: *numina
+    rationale_control: permuted
+
+studies:
+  numina_aligned_pilot:
+    kind: natural
+    models: [qwen3_0_6b_thinking]
+    datasets: [numina_math_cot_pilot]
+    seeds: [11]
+    adapters: [all_linear_r16]
+    training: numina_pilot
+  numina_permuted_pilot:
+    kind: natural
+    models: [qwen3_0_6b_thinking]
+    datasets: [numina_math_cot_permuted_pilot]
+    seeds: [11]
+    adapters: [all_linear_r16]
+    training: numina_pilot
