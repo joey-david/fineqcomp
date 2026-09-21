@@ -178,6 +178,9 @@ def completion_nll(
     model_spec: ModelSpec,
     max_length: int,
     batch_size: int,
+    label_span: str = "all",
+    answer_marker: str | None = None,
+    answer_marker_from_end: bool = True,
 ) -> list[dict[str, float]]:
     """Negative log-likelihood of each example's response, one row per example.
 
@@ -190,7 +193,13 @@ def completion_nll(
     from fineqcomp.modeling import CausalExampleDataset, causal_collate
 
     dataset = CausalExampleDataset(
-        tokenizer, examples, model_spec, max_length
+        tokenizer,
+        examples,
+        model_spec,
+        max_length,
+        label_span,
+        answer_marker,
+        answer_marker_from_end,
     )
     if len(dataset) != len(examples):
         raise ValueError("tokenization dropped a row, so the scores would misalign")
