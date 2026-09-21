@@ -185,6 +185,9 @@ class CausalExampleDataset(Dataset[dict[str, torch.Tensor]]):
             raise ValueError(f"the {label_span} span needs an answer marker")
         self.rows = []
         self.dropped_without_marker = 0
+        self.dropped_by_length = 0
+        self.dropped_by_span = 0
+        self.token_lengths: list[tuple[int, int]] = []
         eos = tokenizer.eos_token_id
         for example in examples:
             prompt = render_prompt(tokenizer, example.prompt, model_spec)
@@ -216,7 +219,12 @@ class CausalExampleDataset(Dataset[dict[str, torch.Tensor]]):
                 for position in span:
                     labels[position] = -100
             if not any(label != -100 for label in labels):
+                if prompt_length >= len(input_ids):
+                    self.dropped_by_length += 1
+                else:
+                    self.dropped_by_span += 1
                 continue
+            self.token_lengths.append((len(prompt_ids), len(response_ids)))
             self.rows.append(
                 {
                     "input_ids": torch.tensor(input_ids, dtype=torch.long),

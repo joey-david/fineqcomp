@@ -89,6 +89,7 @@ def train_adapter(
     answer_marker: str | None = None,
     answer_marker_from_end: bool = True,
     on_update: Callable[[int, torch.optim.Optimizer], None] | None = None,
+    schedule_updates: int | None = None,
 ) -> dict[str, Any]:
     """Train only marked adapter tensors, ending on the best or the last state.
 
@@ -134,10 +135,13 @@ def train_adapter(
         total_updates = min(total_updates, int(spec.max_updates))
     if total_updates < 1:
         raise ValueError("training was asked for fewer than one optimizer update")
-    warmup_steps = int(total_updates * spec.warmup_ratio)
     from transformers import get_cosine_schedule_with_warmup
 
-    scheduler = get_cosine_schedule_with_warmup(optimizer, warmup_steps, total_updates)
+    horizon = total_updates if schedule_updates is None else int(schedule_updates)
+    if horizon < total_updates:
+        raise ValueError('scheduler horizon cannot precede the training cap')
+    warmup_steps = int(horizon * spec.warmup_ratio)
+    scheduler = get_cosine_schedule_with_warmup(optimizer, warmup_steps, horizon)
     device = model_device(model)
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
@@ -233,6 +237,7 @@ def train_adapter(
         "train_examples": len(dataset),
         "epochs": spec.epochs,
         "optimizer_updates": update,
+        "scheduler_updates": horizon,
         "best_validation_nll": best_nll,
         "restored_best": spec.restore_best,
         "trainable_parameters": sum(parameter.numel() for parameter in parameters),

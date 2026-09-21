@@ -1,0 +1,386 @@
+"""Receiver-relative codes and early functional frontiers on one locked panel."""
+
+from __future__ import annotations
+
+import argparse
+from dataclasses import replace
+import fcntl
+import hashlib
+import json
+import math
+from pathlib import Path
+
+import torch
+
+from fineqcomp.adapters import adapter_tensors, apply_adapter_tensors
+from fineqcomp.artifacts import claim_run, read_json, write_json
+from fineqcomp.codec import (encode_tensor_map, decode_adapter_tensor_map, pad_lora_rank,
+                            spectral_bits, truncate_lora_rank)
+from fineqcomp.config import RunSpec
+from fineqcomp.data import read_jsonl
+from fineqcomp.evaluation import completion_nll, write_predictions
+from fineqcomp.modeling import CausalExampleDataset, ModelSession
+from fineqcomp.training import train_adapter
+
+
+def group_key(row):
+    return str(row.metadata.get('source_problem') or row.prompt)
+
+
+def order_groups(rows, seed):
+    return sorted(rows, key=lambda r: (
+        hashlib.sha256(f'{seed}:{r.example_id}'.encode()).hexdigest(), r.example_id))
+
+
+def partition(rows, seed):
+    """Keep repeated prompts and source-problem augmentations in one half."""
+    result = [[], []]
+    for row in order_groups(rows, seed):
+        side = int(hashlib.sha256(f'split:{seed}:{group_key(row)}'.encode()).hexdigest()[:8], 16) % 2
+        result[side].append(row)
+    return result
+
+
+def measured_budget(grid, base, reference, retention, split='selection', scaled=False):
+    """An achieved file size; never interpolate it or discard censoring."""
+    gain = base[split] - reference[split]
+    if gain <= 0:
+        return {'status': 'no_positive_reference_gain', 'file_bits': None}
+    allowed = [r for r in grid if scaled or r['scale'] == 1.]
+    passing = [r for r in allowed if base[split] - r[split] >= retention * gain]
+    if not passing:
+        return {'status': 'above_grid', 'file_bits': None,
+                'largest_tested_bits': max(r['file_bits'] for r in allowed)}
+    best = min(passing, key=lambda r: (r['file_bits'], r['key']))
+    cheaper = [r for r in allowed if r['file_bits'] < best['file_bits']]
+    return {'status': 'measured', 'file_bits': best['file_bits'], 'key': best['key'],
+            'below_smallest_tested': not cheaper,
+            'verification_retention': ((base['verification'] - best['verification']) /
+                (base['verification'] - reference['verification'])
+                if base['verification'] > reference['verification'] else None)}
+
+
+def budget_interval(grid, base, reference, retention, resamples=256, seed=0, scaled=False):
+    """Resample the scored examples to put an interval on an achieved budget.
+
+    A budget is the smallest file in a grid of many codecs, so one achieved
+    number is the minimum of many correlated draws and reads lower than the
+    quantity it estimates. Resampling the examples the losses are summed over
+    reports three things a point estimate cannot: how often a budget is reached
+    at all, which codecs could have won, and how often a small reference gain
+    leaves the target undefined. Selection resamples independently of
+    verification, so the calibration panel never props up the test panel, and
+    verification failures are counted rather than dropped.
+    """
+    import numpy as np
+
+    allowed = [r for r in grid if scaled or r['scale'] == 1.]
+    if not allowed:
+        return dict(status='no_codecs', resamples=0)
+    splits = ('selection', 'verification')
+    codecs = {s: np.array([r[f'{s}_per_example'] for r in allowed], float) for s in splits}
+    anchor = {s: np.array(base[s]['per_example_bits'], float) for s in splits}
+    raw = {s: np.array(reference[f'{s}_per_example'], float) for s in splits}
+    generator = np.random.default_rng(seed)
+    statuses, achieved, chosen, verified = [], [], [], []
+    for _ in range(resamples):
+        draw = {s: generator.integers(0, anchor[s].size, anchor[s].size) for s in splits}
+        totals = {s: codecs[s][:, draw[s]].sum(axis=1) for s in splits}
+        rows = [dict(key=r['key'], scale=r['scale'], file_bits=r['file_bits'],
+                     selection=float(totals['selection'][i]), verification=float(totals['verification'][i]))
+                for i, r in enumerate(allowed)]
+        result = measured_budget(rows, {s: float(anchor[s][draw[s]].sum()) for s in splits},
+                                 {s: float(raw[s][draw[s]].sum()) for s in splits}, retention, scaled=True)
+        statuses.append(result['status'])
+        if result['status'] == 'measured':
+            achieved.append(result['file_bits'])
+            chosen.append(result['key'])
+            verified.append(result['verification_retention'])
+    counts = {status: statuses.count(status) for status in sorted(set(statuses))}
+    passed = [v for v in verified if v is not None]
+    return dict(resamples=resamples, status_counts=counts,
+        measured_fraction=len(achieved) / resamples,
+        file_bits_median=float(np.median(achieved)) if achieved else None,
+        file_bits_p05=float(np.percentile(achieved, 5)) if achieved else None,
+        file_bits_p95=float(np.percentile(achieved, 95)) if achieved else None,
+        distinct_codecs_selected=len(set(chosen)),
+        codec_counts=dict(sorted(((k, chosen.count(k)) for k in set(chosen)), key=lambda kv: -kv[1])[:5]),
+        verification_reported=len(passed),
+        verification_below_retention=sum(v < retention for v in passed),
+        boundary='Resampling of scored examples only. It does not cover training variance, '
+                 'the choice of grid, or the receivers left outside the panel.')
+
+
+def prepare(config, out):
+    owners = ('information_budget_search.py', 'training.py', 'modeling.py', 'adapters.py', 'codec.py', 'evaluation.py', 'data.py', 'config.py')
+    lock = dict(config=config, source_sha256={name: hashlib.sha256(
+        Path(__file__).with_name(name).read_bytes()).hexdigest() for name in owners})
+    out.mkdir(parents=True, exist_ok=True)
+    with (out / '.prepare.lock').open('a') as handle:
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        old = read_json(out / 'lock.json')
+        if old is not None and old != lock:
+            raise ValueError('inputs changed; choose a fresh output directory')
+        if old is None:
+            write_json(out / 'lock.json', lock)
+    return config['cells']
+
+
+def score(session, run, rows, path, config):
+    old = read_json(path)
+    if old is not None:
+        return old
+    with torch.inference_mode():
+        result = completion_nll(session.model, session.tokenizer, rows, run.model,
+                                config['max_length'], config['batch_size'])
+    records = [dict(example_id=r.example_id, **m) for r, m in zip(rows, result, strict=True)]
+    if any(r['tokens'] <= 0 or not math.isfinite(r['sum_nll']) for r in records):
+        raise ValueError('empty or invalid scored response')
+    write_predictions(path.with_suffix('.jsonl'), records)
+    summary = {'bits': sum(r['sum_nll'] for r in records) / math.log(2),
+        'tokens': sum(r['tokens'] for r in records), 'examples': len(records),
+        'per_example_bits': [r['sum_nll'] / math.log(2) for r in records],
+        'response_tokens': [r['tokens'] for r in records]}
+    write_json(path, summary)
+    return summary
+
+
+def sweep(session, run, tensors, data, root, config, scales):
+    grid = []
+    reference = {}
+    apply_adapter_tensors(session.model, tensors)
+    for split, rows in data.items():
+        summary = score(session, run, rows, root / f'raw_{split}.json', config)
+        reference[split] = summary['bits']
+        reference[f'{split}_per_example'] = summary['per_example_bits']
+    for rank in config['ranks']:
+        reduced = truncate_lora_rank(tensors, rank)
+        for bits in config['bits']:
+            for scale in scales:
+                key = f'r{rank}_b{bits}_s{scale:g}'
+                path = root / 'codecs' / f'{key}.fqcb'
+                path.parent.mkdir(parents=True, exist_ok=True)
+                scaled = {n: t * scale if '.lora_B.' in n else t for n, t in reduced.items()}
+                storage = encode_tensor_map(scaled, path, bits)
+                if storage['file_bits'] != path.stat().st_size * 8:
+                    raise ValueError('serialized length mismatch')
+                _, decoded = decode_adapter_tensor_map(path)
+                apply_adapter_tensors(session.model, pad_lora_rank(decoded, run.adapter.rank))
+                row = dict(key=key, rank=rank, precision=bits, scale=scale, file_bits=storage['file_bits'])
+                for split, rows in data.items():
+                    summary = score(session, run, rows, root / 'scores' / f'{key}_{split}.json', config)
+                    row[split] = summary['bits']
+                    row[f'{split}_per_example'] = summary['per_example_bits']
+                grid.append(row)
+    write_json(root / 'frontier.json', dict(reference=reference, grid=grid))
+    apply_adapter_tensors(session.model, tensors)
+    return reference, grid
+
+
+def exposure_record(data, rows, train_limit, score_limit, byte_filter):
+    """What a receiver is actually taught, beside the span the scorer reads.
+
+    Training truncates prompt plus response at `train_limit` and keeps the head,
+    while `score` reads the whole response up to `score_limit`. A row that
+    survives tokenization can therefore be supervised on a prefix of a response
+    it is later scored on in full, and a row count cannot show that. Counting
+    the untruncated lengths separates three different losses: rows the prompt
+    alone removes, response tokens the training limit cuts, and rows long enough
+    for the scorer itself to cut.
+    """
+    supervised = sum(int((r['labels'][1:] != -100).sum()) for r in data)
+    taught = data.token_lengths  # untruncated lengths of the rows that survived
+    response_tokens = sum(r for _, r in taught)
+    scored_tokens = sum(min(p + r, score_limit) - min(p, score_limit) for p, r in taught)
+    return dict(original_rows=len(rows), usable_rows=len(data),
+        dropped_by_length=data.dropped_by_length, dropped_by_span=data.dropped_by_span,
+        dropped_without_marker=data.dropped_without_marker,
+        train_limit=train_limit, score_limit=score_limit,
+        rows_truncated=sum(p + r > train_limit for p, r in taught),
+        rows_at_length_limit=sum(len(r['input_ids']) == train_limit for r in data),
+        rows_over_score_limit=sum(p + r > score_limit for p, r in taught),
+        supervised_tokens=supervised, response_tokens=response_tokens,
+        scored_tokens=scored_tokens, unsupervised_response_tokens=response_tokens - supervised,
+        rows_over_byte_filter=sum(len((r.prompt + r.response).encode()) > byte_filter for r in rows),
+        byte_filter=byte_filter,
+        boundary='Training rows are not byte-filtered; the rate panels are. '
+                 'Counts are exact token lengths before truncation, not a proxy.')
+
+
+def run_cell(config, source, out, index, smoke=False):
+    cell = prepare(config, out)[index]
+    run = RunSpec.from_dict(cell['run'])
+    root = out / ('smoke' if smoke else 'cells') / run.run_id
+    with claim_run(root) as acquired:
+        if not acquired:
+            raise RuntimeError('cell already claimed')
+        if (root / 'complete.json').exists():
+            return
+        cfg = dict(config)
+        if smoke:
+            cfg.update(replica_rows=16, steps=[1, 2], block_ends=[4, 8],
+                       feature_rows=4, rate_rows=8, block_updates=1, ranks=[1, 16], bits=[2, 16])
+        data_root = source / 'prepared/natural' / str(run.dataset_key) / f'seed{run.seed}'
+        original_train = read_jsonl(data_root / 'train.jsonl')
+        calibration = read_jsonl(data_root / 'calibration.jsonl')
+        test = read_jsonl(data_root / 'test.jsonl')
+        bounded = lambda rows: [r for r in rows if len((r.prompt + r.response).encode()) <= cfg['max_row_bytes']]
+        calibration_groups = {group_key(r) for r in calibration}
+        eval_groups = calibration_groups | {group_key(r) for r in test}
+        train = bounded([r for r in original_train if group_key(r) not in eval_groups])
+        sides = partition(train, cfg['seed'])
+        if min(map(len, sides)) < cfg['replica_rows']:
+            raise ValueError('too few distinct-group rows for independent replicas')
+        replicas = [s[:cfg['replica_rows']] for s in sides]
+        selected = order_groups(bounded(calibration), cfg['seed'])
+        verified = order_groups(bounded([r for r in test if group_key(r) not in calibration_groups]), cfg['seed'])
+        selection = selected[:cfg['rate_rows'] // 2]
+        verification = verified[:cfg['rate_rows'] // 2]
+        if min(len(selection), len(verification)) < cfg['rate_rows'] // 2:
+            raise ValueError('rate panels are undersized')
+        feature = selection[:cfg['feature_rows']]
+        rate_data = {'selection': selection, 'verification': verification}
+        target_path = source / 'runs' / run.run_id / 'raw_channel.pt'
+        contract = dict(stage=cell['stage'],
+            training_original=len(original_train), training_eligible=len(train),
+            overlap_groups=len({group_key(r) for r in original_train} & eval_groups),
+            replica_ids=[[r.example_id for r in s] for s in replicas],
+            replica_groups=[len({group_key(r) for r in s}) for s in replicas],
+            selection_ids=[r.example_id for r in selection], verification_ids=[r.example_id for r in verification],
+            verification_groups=[group_key(r) for r in verification],
+            files={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in data_root.glob('*.jsonl')},
+            target_sha256=hashlib.sha256(target_path.read_bytes()).hexdigest(),
+            byte_filter=cfg['max_row_bytes'], target='select on calibration; verify on test; entire bounded response')
+        prior = read_json(root / 'data_contract.json')
+        if prior is not None and prior != contract:
+            raise ValueError('data or finished adapter changed; refusing cached scores')
+        write_json(root / 'data_contract.json', contract)
+        session = ModelSession.load(run.model)
+        try:
+            session.attach(run.adapter, run.seed)
+            base_scores = {k: score(session, run, v, root / f'base_{k}.json', cfg) for k, v in rate_data.items()}
+            base = {k: v['bits'] for k, v in base_scores.items()}
+            base_feature = score(session, run, feature, root / 'base_feature.json', cfg)
+            base_halves = [score(session, run, s[:cfg['feature_rows']], root / f'base_half{i}.json', cfg)
+                           for i, s in enumerate(replicas)]
+            frozen = []
+            for count in (1, 4):
+                demos = []
+                for row in replicas[0]:
+                    if len(('\n\n'.join(demos + [row.prompt + row.response])).encode()) <= cfg['context_bytes']:
+                        demos.append(row.prompt + row.response)
+                    if len(demos) == count:
+                        break
+                if not demos:
+                    frozen.append(dict(requested=count, actual=0, gain_bits=None))
+                    continue
+                prefix = '\n\n'.join(demos) + '\n\n'
+                rows = [replace(r, prompt=prefix + r.prompt) for r in feature]
+                measured = score(session, run, rows, root / f'context_{count}.json', cfg)
+                if measured['response_tokens'] != base_feature['response_tokens']:
+                    raise ValueError('context changed the evaluated response span')
+                frozen.append(dict(requested=count, actual=len(demos), bytes=len(prefix.encode()),
+                                   gain_bits=base_feature['bits'] - measured['bits']))
+            # These are prefixes of a declared training schedule, not short
+            # runs whose cosine schedule reaches zero at the probe cutoff.
+            full_data = CausalExampleDataset(session.tokenizer, original_train, run.model,
+                run.training.max_length, run.training.label_span)
+            full_horizon = math.ceil(len(full_data) / run.training.effective_batch_size) * run.training.epochs
+            if run.training.max_updates is not None:
+                full_horizon = min(full_horizon, run.training.max_updates)
+            write_json(root / 'training_exposure.json', dict(full_horizon=full_horizon,
+                **exposure_record(full_data, original_train, run.training.max_length,
+                                  cfg['max_length'], cfg['max_row_bytes'])))
+            del full_data
+            traces = []
+            for replica, taught in enumerate(replicas):
+                if replica:
+                    session.unload(); session.attach(run.adapter, run.seed + replica)
+                # One nonempty epoch always supplies at least one update.
+                # A large epoch ceiling plus an exact cap survives row drops.
+                training = replace(run.training, epochs=max(cfg['steps']),
+                    effective_batch_size=16, micro_batch_size=4, max_updates=max(cfg['steps']),
+                    eval_every_updates=None, restore_best=False)
+                def checkpoint(step, optimizer):
+                    if step not in cfg['steps']:
+                        return
+                    tensors = adapter_tensors(session.model, run.adapter.method)
+                    path = root / f'replica{replica}/step{step}'
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    torch.save(tensors, path.with_suffix('.pt'))
+                    measured = score(session, run, feature, path / 'feature.json', cfg)
+                    other = score(session, run, replicas[1-replica][:cfg['feature_rows']], path / 'other_half.json', cfg)
+                    reference, grid = sweep(session, run, tensors, rate_data, path, cfg, [1.])
+                    traces.append(dict(replica=replica, step=step, feature=measured, other_half=other,
+                                       reference=reference, grid=grid,
+                                       spectral=spectral_bits(tensors)))
+                    session.model.train()
+                measured = train_adapter(session.model, session.tokenizer, taught, selection, run.model,
+                    training, run.seed + replica, root / f'replica{replica}/training.jsonl',
+                    on_update=checkpoint, schedule_updates=max(full_horizon, max(cfg['steps'])))
+                if measured['optimizer_updates'] != max(cfg['steps']) or {
+                    t['step'] for t in traces if t['replica'] == replica} != set(cfg['steps']):
+                    raise ValueError('probe stopped before a requested checkpoint')
+                write_json(root / f'replica{replica}/training.json', measured)
+            # A real block-prequential code: score each unseen block before
+            # training on it. Optimizer resets are part of this public learner.
+            session.unload(); session.attach(run.adapter, run.seed)
+            stream = replicas[0]
+            previous = 0
+            online = []
+            for end in cfg['block_ends']:
+                block = stream[previous:end]
+                before = score(session, run, block, root / f'online/block{end}_before.json', cfg)
+                training = replace(run.training, epochs=cfg['block_updates'],
+                    effective_batch_size=16, micro_batch_size=4, max_updates=cfg['block_updates'],
+                    restore_best=False, eval_every_updates=None, warmup_ratio=0.)
+                trained = train_adapter(session.model, session.tokenizer, block, selection, run.model, training,
+                                        run.seed, root / f'online/block{end}_training.jsonl')
+                if trained['optimizer_updates'] != cfg['block_updates']:
+                    raise ValueError('online learner stopped before its requested update count')
+                after = score(session, run, feature, root / f'online/block{end}_heldout.json', cfg)
+                online.append(dict(start=previous, end=end, before=before, heldout=after))
+                previous = end
+            features = dict(frozen_context=frozen, base=base_feature, base_halves=base_halves, traces=traces, online=online,
+                base_rate=base,
+                full_horizon=full_horizon, training_rows=len(original_train),
+                online_excess_bits=sum(r['before']['bits'] for r in online) - previous * online[-1]['heldout']['bits'] / len(feature),
+                boundary='Early learner-relative codes. Online excess uses independent heldout loss at the probe endpoint, not the finished target. No abstract source entropy claim.')
+            write_json(root / 'features.json', features)
+            # Endpoint information is loaded only after all early features are
+            # saved, and never enters their computation.
+            session.unload(); session.attach(run.adapter, run.seed)
+            if hashlib.sha256(target_path.read_bytes()).hexdigest() != contract['target_sha256']:
+                raise ValueError('finished adapter changed during the probe')
+            final = torch.load(target_path, map_location='cpu', weights_only=True)
+            reference, grid = sweep(session, run, final, rate_data, root / 'target', cfg, cfg['scales'])
+            budgets = [dict(retention=rho, scaled=scaled,
+                **measured_budget(grid, base, reference, rho, scaled=scaled))
+                for rho in cfg['retentions'] for scaled in (False, True)]
+            intervals = [dict(retention=rho, scaled=scaled,
+                **budget_interval(grid, base_scores, reference, rho, scaled=scaled, seed=run.seed))
+                for rho in cfg['retentions'] for scaled in (False, True)]
+            write_json(root / 'targets.json',
+                       dict(base=base, reference=reference, budgets=budgets, intervals=intervals,
+                            target_spectral=spectral_bits(final)))
+            write_json(root / 'complete.json', dict(complete=True, smoke=smoke, stage=cell['stage']))
+        finally:
+            session.unload()
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--config', type=Path, required=True)
+    parser.add_argument('--source-root', type=Path, required=True)
+    parser.add_argument('--out', type=Path, required=True)
+    parser.add_argument('--phase', choices=['prepare', 'smoke', 'run'], required=True)
+    parser.add_argument('--cell', type=int, default=0)
+    args = parser.parse_args(); config = read_json(args.config)
+    if args.phase == 'prepare':
+        print(json.dumps({'cells': len(prepare(config, args.out))}))
+    else:
+        run_cell(config, args.source_root, args.out, args.cell, args.phase == 'smoke')
+
+
+if __name__ == '__main__':
+    main()

@@ -527,6 +527,38 @@ def _balanced_svd(a: torch.Tensor, b: torch.Tensor) -> tuple[torch.Tensor, ...]:
     return new_a, new_b, singular
 
 
+def spectral_bits(
+    tensors: Mapping[str, torch.Tensor], bits: int = 16
+) -> float:
+    """Bits an effective-rank refactorization of this update would occupy.
+
+    Every behavioural measure of a fine-tune is a likelihood change, and a
+    likelihood change has to pass through a fitted law before it can be compared
+    with a file size. This one is read off the update itself and is already a
+    size. The singular spectrum of each LoRA pair gives an effective rank -- two
+    raised to the entropy of the normalized squared spectrum -- and a
+    factorization at that rank costs a definite number of parameters. An update
+    whose energy sits in one direction therefore counts as rank one however wide
+    the container it was trained in, which is the quantity a rank-searching
+    codec is actually paying for.
+
+    This is not an achieved file and must never be reported as one. It is an
+    architecture-and-spectrum estimate, comparable with a measured budget by a
+    single ratio rather than by a law.
+    """
+    total = 0.0
+    for _, _, a, b in _lora_pairs(tensors):
+        _, _, singular = _balanced_svd(a.float(), b.float())
+        energy = singular.clamp_min(0.0) ** 2
+        if float(energy.sum()) <= 0.0:
+            continue
+        share = energy / energy.sum()
+        share = share[share > 0]
+        effective = float(2 ** float(-(share * share.log2()).sum()))
+        total += effective * (int(a.shape[1]) + int(b.shape[0]))
+    return total * bits
+
+
 def truncate_lora_rank(
     tensors: Mapping[str, torch.Tensor], rank: int
 ) -> dict[str, torch.Tensor]:
