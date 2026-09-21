@@ -1,0 +1,20 @@
+{
+  "prototypes": [
+    4,
+    8,
+    16
+  ],
+  "seeds": [
+    11,
+    22,
+    33
+  ],
+  "arms": [
+    "hidden_hidden",
+    "cue_hidden",
+    "cue_mixed"
+  ],
+  "phase_updates": 1024,
+  "accuracy_target": 0.9,
+  "analysis": "Development continuation registered after the first full audit. Fixed 1024+1024 updates in every arm. In the mixed second phase, cue presence alternates by item and by the family repetition within each prototype, so every prototype/item occurs both with and without its cue. All final evaluations test every cue condition, including complete cue removal. Primary: whether mixed exposure preserves cue-free unseen-family performance at p8/p16, relative to abrupt removal, with p4 as the existing positive control. Report seedwise effects and even/odd item strata separately to check generality across items. A gain only on cued input is not rule transfer. Hidden/hidden repeats control for run drift. No universal scaling claim."
+}
