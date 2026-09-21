@@ -19,5 +19,5 @@ export PYTHONUNBUFFERED=1
 export SLURM_EXPORT_ENV=ALL
 export PYTHONPATH="$repo_root:$repo_root/src:${PYTHONPATH:+:$PYTHONPATH}"
 exec "$PYTHON" -m fineqcomp.information_budget_search --config "${CONFIG:-configs/information_budget_search/panel.json}" \
-  --source-root /lustre/fswork/projects/rech/fas/uul94gf/fineQComp \
+  --source-root "${SOURCE_ROOT:-/lustre/fswork/projects/rech/fas/uul94gf/fineQComp}" \
   --out "${OUTPUT:-outputs/main_results_v1}" --phase "${PHASE:?set phase}" --cell "${CELL:-${SLURM_ARRAY_TASK_ID:-0}}"

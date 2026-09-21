@@ -1,5 +1,8 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
+import yaml
 
 from fineqcomp.config import ModelSpec
 from fineqcomp.data import Example
@@ -7,6 +10,25 @@ from fineqcomp.information_budget_search import (
     budget_interval, exposure_record, measured_budget, partition)
 from fineqcomp.information_budget_prediction import (
     MEASURES, fit, predict, curve_forecast, develop, candidates, exposure_summary, screening_report)
+
+
+def test_dialogue_rate_panel_scores_held_out_dialogue():
+    raw = yaml.safe_load(
+        Path("configs/information_budget_search/dialogue_rate_data.yaml").read_text()
+    )
+    dialogue = raw["datasets"]["kind_dialogue"]
+
+    assert dialogue["test_rows"] >= 128
+    assert dialogue["evaluations"] == [
+        {
+            "key": "kind_dialogue",
+            "path": "Anthropic/hh-rlhf",
+            "name": "default",
+            "revision": "09be8c5bbc57cb3887f3a9732ad6aa7ec602a1fa",
+            "split": "test",
+            "converter": "hh_rlhf",
+        }
+    ]
 
 
 def test_source_augmentations_never_cross_halves():
