@@ -17,6 +17,26 @@ summary is [here](reports/scaling_grid/summary.json).
 work should use the existing serialized-update, held-out scoring, and matched
 control contracts rather than introduce a separate project or rate measure.
 
+**Scope of this branch.** `main` carries the experiments and configs cited in
+the thesis (`../report/`) and the ICLR draft, plus the newer compression-
+recovery line (`compression_beats_baseline/`). Abandoned directions — a
+predictive bit-budget classifier, policy-complexity and rule-discovery
+follow-ons, model-specific algorithm selection — keep their full history and
+code on the `archive` branch (see its `ARCHIVE.md`) rather than being deleted.
+
+## Repository layout
+
+| path | what it holds |
+|---|---|
+| `docs/` | standing notes: literature review, experiment protocol, early paper draft, prerequisite notes |
+| `results/` | the three programmes above, one directory per programme |
+| `compression_beats_baseline/` | the corrupted-adapter-recovery result: index, figures, write-up |
+| `configs/`, `scripts/` | experiment configs and cluster launchers, by programme/study |
+| `src/fineqcomp/` | the package: codec, training, evaluation, and each study's analysis module |
+| `tests/` | one test module per `src/fineqcomp` module it covers |
+| `codebooks/` | fixed hex codebooks used by the codec |
+| `reports/` | generated locally, gitignored; a few small summary artifacts that headline results cite are tracked anyway |
+
 ### How many bits does a fine-tune actually need to write?
 
 After a frozen model learns a task through a LoRA, how many transmitted bits
@@ -105,5 +125,5 @@ sbatch --array=0-11%12 --export=ALL,MODE=full scripts/jean_zay_information.sbatc
 python -m fineqcomp.information_scaling --out runs_information_scaling/full --aggregate
 ```
 
-See `experiments.md` for the protocol and claim gates, and
-`literature_review.md` for how the design follows from prior work.
+See `docs/experiments.md` for the protocol and claim gates, and
+`docs/literature_review.md` for how the design follows from prior work.
