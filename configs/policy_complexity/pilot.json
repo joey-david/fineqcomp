@@ -1,0 +1,19 @@
+{
+  "models": [
+    {"key": "mistral_7b_base", "name": "/lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1", "revision": "dsdir-shared-store", "backbone": "nf4", "chat": false},
+    {"key": "qwen25_7b_base", "name": "/lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B", "revision": "dsdir-shared-store", "backbone": "nf4", "chat": false}
+  ],
+  "seeds": [11],
+  "conditions": ["rule", "composition", "exceptions"],
+  "n_values": [16, 64, 256],
+  "training_ranks": [16],
+  "checkpoints": [32, 128, 512],
+  "data": {"train_pool_size": 256, "eval_size": 64, "exception_fraction": 0.25},
+  "training": {"learning_rate": 0.0002, "effective_batch_size": 16, "micro_batch_size": 4, "max_length": 256, "warmup_ratio": 0.03},
+  "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+  "codec": {"ranks": [1, 2, 4, 8, 16], "bits": [1, 2, 4, 8, 16]},
+  "batch_size": 8,
+  "matching_tolerance_nats": 0.1,
+  "plateau_fraction": 0.05,
+  "common_nll_targets": [0.1, 0.25, 0.5, 1.0]
+}
