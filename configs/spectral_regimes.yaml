@@ -1,0 +1,213 @@
+# Three regimes in a fine-tune's singular spectrum, tested on the two adapters
+# the recorded recovery result was measured on.
+#
+# Hypothesis. A LoRA update's information is not uniform across its singular
+# directions. The leading few carry the most dataset-specific content: lowest
+# intrinsic dimension, most brittle, the first thing aggressive coding destroys,
+# and therefore the seat of both the observed recovery and the paired drop in
+# update norm. Below them sits a band that is task-general rather than
+# dataset-specific -- the shape of a worked solution, an output style -- less
+# concentrated, less brittle, asymmetrically preserved by noise, and so able to
+# beat the frozen model on reasoning tasks once the overfitted leading
+# directions are gone. The remaining tail is progressively more generic and of
+# limited use.
+#
+# Two predictions follow, and both are refusable:
+#   1. A band excluding the leading directions beats the frozen base on the
+#      training task, while any band including them stays at the damaged level.
+#   2. That advantage follows the *task* rather than the *corpus*: it should
+#      appear on other arithmetic-reasoning corpora too, not only on GSM8K.
+#
+# Nothing here trains. Both arms are adopted by `--phase stage` from the
+# finished rank-16 Qwen2.5-7B adapters:
+#   permuted  trace-permuted-full__...__s11__4cb8d87ae9 (restored from the
+#             archive tar by decoding its lossless fp16 codec file)
+#   clean     cot-aligned-full__...__s11__5305319642
+version: 1
+models:
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    alpha: 32
+    dropout: 0.0
+    last_n_layers: null
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+training:
+  cot_full_1ep:
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 400
+    restore_best: false
+    label_span: all
+codecs:
+  fp16: {method: uniform, bits: 16, score_task: false}
+datasets:
+  cot_math: &cot
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    answer_marker: 'The answer is:'
+    # The adopted adapters trained on rows 256..32256 of this exact seed-11
+    # shuffle. Excluding every seed problem occurring in that slice leaves 3,025
+    # untouched ones to draw reserved rows from, so a filter is chosen on rows
+    # these adapters provably never saw. (The original study's own 256-row
+    # validation set was not: only 23 of its rows had an unseen seed problem.)
+    holdout_by_group: true
+    holdout_excludes_first_rows: 32256
+    validation_rows: 256
+    train_rows: 32000
+    test_rows: 500
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.85
+    minimum_validation_nll_gain_bits_per_token: 0.0
+  cot_math_permuted:
+    <<: *cot
+    rationale_control: permuted
+studies:
+  regimes_clean:
+    kind: natural
+    models: [qwen25_7b_base]
+    datasets: [cot_math]
+    seeds: [11]
+    adapters: [all_linear_r16]
+    training: cot_full_1ep
+  regimes_permuted:
+    kind: natural
+    models: [qwen25_7b_base]
+    datasets: [cot_math_permuted]
+    seeds: [11]
+    adapters: [all_linear_r16]
+    training: cot_full_1ep
+spectral_transfer:
+  seed: 11
+  arms: {clean: regimes_clean, permuted: regimes_permuted}
+  # Fine at the top, where the hypothesis says the regimes divide, and coarse
+  # in the tail, where it predicts nothing interesting happens.
+  edges: [0, 1, 2, 3, 4, 6, 8, 12, 16]
+  codes:
+    # fp16 is the regime axis: pure band selection, no coding confound.
+    fp16: {bits: 16}
+    two_bit: {bits: 2}
+    binary: {bits: 1}
+  scales: [0.1, 0.3, 0.5]
+  fixed_bands: [[0, 1], [1, 4], [4, 16]]
+  # 256 reserved rows, all of them held out of the adopted adapters' training.
+  training_validation_rows: 0
+  search_rows: 128
+  selection_rows: 128
+  finalists_per_family: 2
+  generation_batch_size: 32
+  max_new_tokens: 512
+  evaluation_chunk_rows: 128
+  bootstrap_draws: 10000
+  analysis_seed: 9212026
+  claim_gates:
+    coded_family: filter
+    transfer_family: math
+    minimum_corruption_harm: 0.05
+    equivalence_width: 0.10
+    minimum_in_family_datasets: 2
+  primary:
+    key: gsm8k
+    evaluator: gsm8k
+    family: training_task
+    max_new_tokens: 512
+  transfer:
+    # Arithmetic reasoning in other clothes: task ability should carry, corpus
+    # quirks should not.
+    svamp:
+      path: ChilleD/SVAMP
+      revision: 5e0bf1e5e7c0e9c4bc39180d224f41f3f801b7ef
+      split: test
+      converter: svamp
+      evaluator: gsm8k
+      family: math
+      max_new_tokens: 512
+    asdiv:
+      path: EleutherAI/asdiv
+      revision: 8f95807222d87b4c688c3c22a6ba2801e1fa03e2
+      split: validation
+      converter: asdiv
+      evaluator: gsm8k
+      family: math
+      rows: 500
+      max_new_tokens: 512
+    gsm_symbolic:
+      path: apple/GSM-Symbolic
+      name: main
+      revision: 93b5b3758d9d9841ffe81d6cd2ae2b030685b078
+      split: test
+      converter: gsm_symbolic
+      evaluator: gsm8k
+      family: math
+      rows: 500
+      max_new_tokens: 512
+    # Reasoning, but nowhere near the training distribution: no arithmetic, no
+    # worked solution, a one-token answer. The clean adapter significantly
+    # HURTS the frozen model on ARC (-0.027); if compression strips
+    # dataset-specific overfitting while keeping the task-general part, the
+    # coded arm should hold up here where the clean one does not.
+    arc_challenge:
+      path: allenai/ai2_arc
+      name: ARC-Challenge
+      revision: 210d026faf9955653af8916fad021475a3f00453
+      split: test
+      converter: arc_mc_gen
+      evaluator: mc_letter
+      family: ood_reasoning
+      rows: 500
+      max_new_tokens: 32
+    commonsenseqa:
+      path: tau/commonsense_qa
+      revision: 94630fe30dad47192a8546eb75f094926d47e155
+      split: validation
+      converter: commonsenseqa_gen
+      evaluator: mc_letter
+      family: ood_reasoning
+      rows: 500
+      max_new_tokens: 32
+    openbookqa:
+      path: allenai/openbookqa
+      name: main
+      revision: 388097ea7776314e93a529163e0fea805b8a6454
+      split: test
+      converter: openbookqa_gen
+      evaluator: mc_letter
+      family: ood_reasoning
+      rows: 500
+      max_new_tokens: 32
+    mmlu:
+      path: cais/mmlu
+      name: all
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: ood_reasoning
+      rows: 500
+      max_new_tokens: 32

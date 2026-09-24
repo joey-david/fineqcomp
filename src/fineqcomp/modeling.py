@@ -258,6 +258,7 @@ class ModelSession:
     spec: ModelSpec
     model: torch.nn.Module
     tokenizer: Any
+    _adapter_attached: bool = False
 
     @classmethod
     def load(cls, spec: ModelSpec) -> "ModelSession":
@@ -324,10 +325,15 @@ class ModelSession:
 
     def attach(self, adapter: AdapterSpec, seed: int) -> torch.nn.Module:
         self.model = attach_adapter(self.model, adapter, seed)
+        self._adapter_attached = True
         return self.model
 
     def unload(self) -> torch.nn.Module:
-        self.model = unload_adapter(self.model)
+        # A screen scores the frozen model with no adapter ever attached, so
+        # there is nothing here for PEFT's unload() to undo.
+        if self._adapter_attached:
+            self.model = unload_adapter(self.model)
+            self._adapter_attached = False
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
         return self.model

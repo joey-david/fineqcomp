@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-usage="usage: scripts/remote.sh push | push-prepared | pull | pull-info | pull-stats | pull-logs"
+usage="usage: scripts/remote.sh push | push-prepared | push-study <name> | pull-study <name> | pull | pull-info | pull-stats | pull-logs"
 action="${1:?$usage}"
 host="${SSH_SERVER:-lamgate}"
 remote_root="${REMOTE_REPO_ROOT:-/home/lamsade/jdavid/fineQComp}"
@@ -32,6 +32,31 @@ push-prepared)
   rsync -avz --delete \
     --exclude local-preflight.json \
     .cache/prepared/ "$host:$remote_root/.cache/prepared/"
+  ;;
+push-study)
+  # A self-contained study directory under .cache/reports: its frozen probes,
+  # prepared splits and lock. Everything in it is produced off the cluster, so
+  # the compute nodes never need network access to a dataset hub.
+  study="${2:?usage: scripts/remote.sh push-study <name>}"
+  local_root=".cache/reports/$study"
+  [[ -d "$local_root" ]] || { echo "no such study: $local_root" >&2; exit 2; }
+  ssh -o BatchMode=yes -o ConnectTimeout=10 "$host" \
+    "mkdir -p '$remote_root/.cache/reports/$study'"
+  rsync -avz --prune-empty-dirs \
+    --exclude '*.pt' \
+    --exclude '*.fqcb' \
+    "$local_root/" "$host:$remote_root/.cache/reports/$study/"
+  ;;
+pull-study)
+  # Scores, locks and summaries only. Adapters stay on the cluster: every
+  # coded file is a deterministic function of them.
+  study="${2:?usage: scripts/remote.sh pull-study <name>}"
+  mkdir -p ".cache/reports/$study"
+  rsync -avz --prune-empty-dirs \
+    --exclude '*.pt' \
+    --exclude '*.fqcb' \
+    --exclude 'prepared/' \
+    "$host:$remote_root/.cache/reports/$study/" ".cache/reports/$study/"
   ;;
 pull)
   mkdir -p .cache/runs .cache/reports remote_logs

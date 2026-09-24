@@ -402,6 +402,13 @@ def _generation_metrics(
     }
 
 
+def _first_choice_letter(response: str, labels: list[str]) -> str | None:
+    """Read the first option letter that stands alone, so prose cannot match."""
+    allowed = "".join(labels)
+    match = re.search(rf"(?<![A-Za-z])([{allowed}])(?![A-Za-z])", response)
+    return match.group(1) if match else None
+
+
 def evaluate_natural(
     model: torch.nn.Module,
     tokenizer: Any,
@@ -509,6 +516,33 @@ def evaluate_natural(
             "answer_extracted_fraction": extracted / max(len(examples), 1),
             **generation_metrics,
         }, predictions
+    if dataset_key == "mc_letter":
+        correct = 0
+        extracted = 0
+        for example, response, generation in zip(
+            examples, responses, generation_records, strict=True
+        ):
+            labels = [str(label) for label in example.metadata["labels"]]
+            predicted = _first_choice_letter(response, labels)
+            extracted += int(predicted is not None)
+            is_correct = predicted is not None and predicted == example.response.strip()
+            correct += int(is_correct)
+            predictions.append(
+                {
+                    "example_id": example.example_id,
+                    "expected": example.response.strip(),
+                    "prediction": predicted,
+                    "response": response,
+                    "correct": is_correct,
+                    **generation,
+                }
+            )
+        return {
+            "examples": len(examples),
+            "exact_match": correct / max(len(examples), 1),
+            "answer_extracted_fraction": extracted / max(len(examples), 1),
+            **generation_metrics,
+        }, predictions
     if dataset_key == "humaneval":
         passed = 0
         statuses: dict[str, int] = {}
@@ -529,6 +563,10 @@ def evaluate_natural(
                     "response": response,
                     **generation,
                     **result,
+                    # Every evaluator's prediction dict carries "correct" so a
+                    # caller can score any task the same way; humaneval's own
+                    # field is named "passed".
+                    "correct": result["passed"],
                 }
             )
         return {
