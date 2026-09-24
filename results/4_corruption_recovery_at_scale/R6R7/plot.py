@@ -8,7 +8,8 @@ Writes, as vector PDF plus PNG preview:
   R6R7_collage: window maps on the top row (a), contributions on the bottom
       row (b), one column per model.
 All maps share one colour scale and all histograms one y-axis. Directions are
-zero-based and axes follow the paper's appendix figure A10. Style follows
+zero-based as in the paper; the maps are A10's layout turned 90 degrees
+counter-clockwise, window start on x and window end on y. Style follows
 figures4papers (github.com/ChenLiu-1996/figures4papers): Helvetica, thick
 left/bottom spines only, black-edged bars, its blue/red palette, no grid.
 
@@ -64,14 +65,14 @@ def window_grid(name: str) -> np.ndarray:
 
 def draw_map(ax, grid: np.ndarray, limit: float):
     # pcolormesh keeps each cell a vector patch; imshow would embed a raster.
-    mesh = ax.pcolormesh(np.arange(RANK + 1) + 0.5, np.arange(RANK + 1) - 0.5, grid,
+    # Start on x, end on y: A10's layout turned 90 degrees counter-clockwise.
+    mesh = ax.pcolormesh(np.arange(RANK + 1) - 0.5, np.arange(RANK + 1) + 0.5, grid.T,
                          cmap=DIVERGING, vmin=-limit, vmax=limit)
     ax.set_aspect("equal")
-    ax.invert_yaxis()
-    ax.set_xticks([1, 4, 8, 12, 16])
-    ax.set_yticks([0, 4, 8, 12, 15])
-    ax.set_xlabel("window end (exclusive)")
-    ax.set_ylabel("window start")
+    ax.set_xticks([0, 4, 8, 12, 15])
+    ax.set_yticks([1, 4, 8, 12, 16])
+    ax.set_xlabel("window start")
+    ax.set_ylabel("window end (exclusive)")
     return mesh
 
 
