@@ -33,6 +33,19 @@ args=(
   --config "$config" --manifest "$manifest"
   --shard "$SLURM_ARRAY_TASK_ID" --shards "$shards"
 )
+# Jean-Zay keeps prepared corpora and finished runs at the repo root, not under
+# .cache/, so a campaign launched here has to say where they are.
+if [[ -n "${PREPARED_ROOT:-}" ]]; then
+  args+=(--prepared-root "$PREPARED_ROOT")
+fi
+if [[ -n "${RUNS_ROOT:-}" ]]; then
+  args+=(--runs-root "$RUNS_ROOT")
+fi
+# One rank at a time, for a study whose arms differ only by adapter.
+if [[ -n "${ADAPTERS:-}" ]]; then
+  read -r -a adapters <<< "$ADAPTERS"
+  args+=(--adapters "${adapters[@]}")
+fi
 if [[ -n "${MODELS:-}" ]]; then
   read -r -a models <<< "$MODELS"
   args+=(--models "${models[@]}")

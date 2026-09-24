@@ -116,6 +116,197 @@ def spectral_slice(
     return sliced
 
 
+def spectral_profile(tensors: dict[str, torch.Tensor]) -> dict[str, float]:
+    """Summarise how a LoRA update spreads its energy, from the weights alone.
+
+    Each site's update B @ A has at most r singular values, taken exactly from
+    the r x r core of the two thin QR factors, so no d x d matrix is formed.
+    Site statistics are pooled with each site's share of the total energy as
+    its weight. `pair_overlap` compares the energy the r stored LoRA pairs
+    carry one by one with the update's true energy: 1 means orthogonal pairs,
+    above 1 means pairs that cancel, which is what dropping random pairs below
+    one bit per value acts on.
+    """
+    sites = []
+    for a_name in sorted(n for n in tensors if ".lora_A." in n):
+        a = tensors[a_name].double()
+        b = tensors[a_name.replace(".lora_A.", ".lora_B.")].double()
+        _, rb = torch.linalg.qr(b)
+        _, ra = torch.linalg.qr(a.T)
+        sigma = torch.linalg.svdvals(rb @ ra.T)
+        energy = float((sigma ** 2).sum())
+        if energy == 0.0:
+            continue
+        share = sigma ** 2 / energy
+        entropy = float(-(share[share > 0] * share[share > 0].log()).sum())
+        pairs = float(((b ** 2).sum(0) * (a ** 2).sum(1)).sum())
+        rows = torch.cat([a, b.T], dim=1)
+        centred = rows - rows.mean(1, keepdim=True)
+        kurtosis = float(((centred ** 4).mean(1) / (centred ** 2).mean(1).clamp_min(1e-30) ** 2).mean())
+        sites.append({"energy": energy, "top1": float(share[0]), "top4": float(share[:4].sum()),
+                      "effective_rank": float(torch.exp(torch.tensor(entropy))),
+                      "stable_rank": energy / float(sigma[0] ** 2),
+                      "pair_overlap": pairs / energy, "kurtosis": kurtosis})
+    if not sites:
+        raise ValueError("adapter has no non-zero LoRA site")
+    total = sum(site["energy"] for site in sites)
+    weights = [site["energy"] / total for site in sites]
+    profile = {f"spectrum_{key}": sum(w * site[key] for w, site in zip(weights, sites))
+               for key in ("top1", "top4", "effective_rank", "stable_rank", "pair_overlap", "kurtosis")}
+    ordered = sorted(weights, reverse=True)
+    profile["spectrum_log_energy"] = float(torch.log(torch.tensor(total)))
+    profile["spectrum_site_top10pct_share"] = sum(ordered[:max(1, len(ordered) // 10)])
+    profile["spectrum_sites"] = float(len(sites))
+    return profile
+
+
+@torch.no_grad()
+def functional_profile(session: Any, rows: list, model_spec: Any, max_length: int) -> dict[str, float]:
+    """Spectrum of an attached LoRA update as the base model exercises it on data.
+
+    The weight spectrum says how the update is shaped; this says how the base
+    model's own activations on the training rows excite it. Per site it
+    accumulates the r x r covariance C of the bottleneck A h over every token,
+    so the update's output covariance B C B^T has the eigenvalues of
+    C^1/2 B^T B C^1/2, and it records the frozen layer's own output energy
+    E||W0 h||^2 on the same tokens. Adapter, base model and data all enter.
+    """
+    from torch.utils.data import DataLoader
+
+    from fineqcomp.modeling import CausalExampleDataset, causal_collate, model_device
+
+    sites, hooks = {}, []
+    for name, module in session.model.named_modules():
+        if not (hasattr(module, "lora_A") and hasattr(module, "base_layer")
+                and "default" in getattr(module, "lora_A", {})):
+            continue
+        site = sites[name] = {"module": module, "cov": None, "base": 0.0, "tokens": 0}
+
+        def bottleneck(_, __, output, site=site):
+            z = output.detach().reshape(-1, output.shape[-1]).double()
+            site["cov"] = z.T @ z if site["cov"] is None else site["cov"] + z.T @ z
+            site["tokens"] += z.shape[0]
+
+        def frozen(_, __, output, site=site):
+            site["base"] += float(output.detach().double().pow(2).sum())
+
+        hooks.append(module.lora_A["default"].register_forward_hook(bottleneck))
+        hooks.append(module.base_layer.register_forward_hook(frozen))
+    if not sites:
+        raise ValueError("no LoRA site is attached")
+    dataset = CausalExampleDataset(session.tokenizer, rows, model_spec, max_length)
+    loader = DataLoader(dataset, batch_size=1, shuffle=False,
+                        collate_fn=lambda batch: causal_collate(batch, session.tokenizer.pad_token_id))
+    device = model_device(session.model)
+    session.model.eval()
+    try:
+        for batch in loader:
+            session.model(input_ids=batch["input_ids"].to(device),
+                          attention_mask=batch["attention_mask"].to(device))
+    finally:
+        for hook in hooks:
+            hook.remove()
+    stats = []
+    for site in sites.values():
+        module = site["module"]
+        b = module.lora_B["default"].weight.detach().double().cpu()
+        scale = float(module.scaling["default"]) ** 2 / site["tokens"]
+        cov = site["cov"].cpu() * scale
+        values, vectors = torch.linalg.eigh(cov)
+        root = vectors @ torch.diag(values.clamp_min(0).sqrt()) @ vectors.T
+        spectrum = torch.linalg.eigvalsh(root @ b.T @ b @ root).flip(0).clamp_min(0)
+        energy = float(spectrum.sum())
+        if energy == 0.0:
+            continue
+        share = spectrum / energy
+        nonzero = share[share > 0]
+        pairs = float(((b ** 2).sum(0) * torch.diagonal(cov)).sum())
+        stats.append({"energy": energy, "base": site["base"] / site["tokens"],
+                      "top1": float(share[0]), "top4": float(share[:4].sum()),
+                      "effective_rank": float(torch.exp(-(nonzero * nonzero.log()).sum())),
+                      "pair_overlap": pairs / energy})
+    total = sum(s["energy"] for s in stats)
+    weights = [s["energy"] / total for s in stats]
+    profile = {f"functional_{key}": sum(w * s[key] for w, s in zip(weights, stats))
+               for key in ("top1", "top4", "effective_rank", "pair_overlap")}
+    profile["functional_log_relative_energy"] = float(
+        torch.log(torch.tensor(total / sum(s["base"] for s in stats))))
+    profile["functional_site_log_relative"] = sum(
+        w * float(torch.log(torch.tensor(s["energy"] / s["base"]))) for w, s in zip(weights, stats))
+    ordered = sorted(weights, reverse=True)
+    profile["functional_site_top10pct_share"] = sum(ordered[:max(1, len(ordered) // 10)])
+    return profile
+
+
+@torch.no_grad()
+def gain_profile(session: Any, tensors: dict[str, torch.Tensor], rows: list, model_spec: Any,
+                 max_length: int, batch_size: int = 4) -> dict[str, float]:
+    """Which singular directions carry the adapter's likelihood gain on its data.
+
+    With an adapter attached (at the same rank as `tensors`), scores the base
+    model, the full update, and the full update with each singular direction
+    removed in turn, all on the same rows. The loss from dropping direction i
+    is its marginal share of the gain, with every other direction present --
+    the leave-one-out question the pass-band studies showed matters. Adapter,
+    base model and data all enter; nothing is compressed.
+    """
+    from fineqcomp.codec import pad_lora_rank
+    from fineqcomp.training import causal_nll
+
+    rank = max(t.shape[0] for n, t in tensors.items() if ".lora_A." in n)
+
+    def nll(update: dict[str, torch.Tensor]) -> float:
+        apply_adapter_tensors(session.model, pad_lora_rank(update, rank))
+        return float(causal_nll(session.model, session.tokenizer, rows, model_spec,
+                                max_length, batch_size)["nll"])
+
+    base = nll({n: (t * 0 if ".lora_B." in n else t) for n, t in tensors.items()})
+    full = nll(tensors)
+    losses = [nll(spectral_subset(tensors, [j for j in range(rank) if j != i])) - full
+              for i in range(rank)]
+    apply_adapter_tensors(session.model, tensors)
+    helpful = sorted((x for x in losses if x > 0), reverse=True)
+    total_helpful = sum(helpful)
+    cumulative, needed = 0.0, len(helpful)
+    for count, value in enumerate(helpful, start=1):
+        cumulative += value
+        if cumulative >= 0.9 * total_helpful:
+            needed = count
+            break
+    gain = base - full
+    return {
+        "gain_bits_per_token": gain / 0.6931471805599453,
+        "gain_top1_share": helpful[0] / total_helpful if helpful else 0.0,
+        "gain_directions_90": float(needed),
+        "gain_negative_share": sum(-x for x in losses if x < 0) / max(sum(abs(x) for x in losses), 1e-30),
+        "gain_additivity": sum(losses) / gain if gain else float("nan"),
+        "gain_leading_direction_share": max(losses[0], 0.0) / total_helpful if total_helpful else 0.0,
+    }
+
+
+def spectral_subset(
+    tensors: dict[str, torch.Tensor], indices: "list[int]"
+) -> dict[str, torch.Tensor]:
+    """Keep an arbitrary set of singular directions and drop the rest.
+
+    `spectral_slice` can only express a contiguous window, which cannot ask
+    what one direction contributes *in the presence of all the others* -- the
+    leave-one-out question. This takes an explicit index list instead.
+    """
+    full = max(t.shape[0] for n, t in tensors.items() if ".lora_A." in n)
+    balanced = truncate_lora_rank(tensors, full)
+    keep = sorted(set(int(i) for i in indices))
+    if not keep or keep[0] < 0 or keep[-1] >= full:
+        raise ValueError(f"indices must lie inside [0, {full})")
+    picker = torch.tensor(keep, dtype=torch.long)
+    sliced = {}
+    for a_name in sorted(n for n in balanced if ".lora_A." in n):
+        b_name = a_name.replace(".lora_A.", ".lora_B.")
+        sliced[a_name] = balanced[a_name].index_select(0, picker).contiguous()
+        sliced[b_name] = balanced[b_name].index_select(1, picker).contiguous()
+    return sliced
+
+
 def build_condition(
     key: str,
     trained: dict[str, torch.Tensor],

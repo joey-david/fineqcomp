@@ -1,0 +1,330 @@
+# Scaled spectral-transfer study: which part of a corrupted adapter survives
+# lossy coding, and does the surviving part generalise across a task family?
+#
+# Stage 1 (`--phase screen`) scores every candidate frozen model on every probe
+# with no adapter. The Mistral-7B/GSM8K pilot skipped this and failed on
+# fluency: its base arm hit the generation cap on 74% of rows and scored 0.102,
+# so "corrupted below base" was unreachable and every spectral filter was
+# measuring termination rather than reasoning. The screen gates on fluency
+# before score and rejects receivers that are at the floor or the ceiling.
+#
+# Stage 2 trains a matched clean/permuted MetaMathQA pair on the chosen
+# receiver, searches the band-and-codec grid on reserved clean training rows,
+# freezes the winners, and only then scores the frozen probes. The ordering the
+# study is powered to see on the training task is
+#     permuted_raw  <  base  <  permuted_coded  <=  clean_raw,
+# and the transfer claim is that the same gap appears on the other `math`
+# probes (dataset agnosticism) but not on `code` or `mc_science`
+# (task specificity).
+version: 1
+models:
+  mistral_7b:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-v0.1
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_7b:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_math_7b:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-Math-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  llama31_8b:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/meta-llama/Llama-3.1-8B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen3_8b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen3-8B-Base
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  gemma2_9b_it:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/google/gemma-2-9b-it
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: true
+  # DeepSeek-R1-Distill is deliberately absent. It answers through a long
+  # thinking trace, so a 512-token budget would cap it on every row and the
+  # fluency gate would reject it for using the wrong decoding contract rather
+  # than for being a poor receiver. Qwen3-32B with thinking disabled is the
+  # scale-up candidate that can be judged on the same terms as the rest.
+  qwen3_32b:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen3-32B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: true
+    disable_thinking: true
+screen:
+  seed: 11
+  rows: 128
+  generation_batch_size: 32
+  max_new_tokens: 512
+  training_family: math
+  # `search` and `select` train and choose filters on this probe alone, so a
+  # receiver whose untrained score on it is already near the ceiling leaves no
+  # room to show corruption hurting or coding recovering, however fluent it is
+  # on every sibling probe.
+  primary_probe: gsm8k
+  gates:
+    metric: exact_match
+    # Fluency first. These three are what the Mistral pilot failed.
+    maximum_generation_limit_fraction: 0.10
+    minimum_answer_extracted_fraction: 0.95
+    maximum_repeated_8gram_fraction: 0.15
+    # Then room to fall below the frozen model and to climb back past it.
+    minimum_baseline_score: 0.10
+    maximum_baseline_score: 0.80
+  probes:
+    # Same family, four different sources and surface forms.
+    gsm8k:
+      path: openai/gsm8k
+      name: main
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: test
+      converter: gsm8k
+      evaluator: gsm8k
+      family: math
+      rows: 512
+      max_new_tokens: 512
+    svamp:
+      path: ChilleD/SVAMP
+      revision: 5e0bf1e5e7c0e9c4bc39180d224f41f3f801b7ef
+      split: test
+      converter: svamp
+      evaluator: gsm8k
+      family: math
+      max_new_tokens: 512
+    asdiv:
+      path: EleutherAI/asdiv
+      revision: 8f95807222d87b4c688c3c22a6ba2801e1fa03e2
+      split: validation
+      converter: asdiv
+      evaluator: gsm8k
+      family: math
+      rows: 512
+      max_new_tokens: 512
+    # Same templates as the GSM8K test set with different names and numbers.
+    # The disjointness check passes on surface form, so this probe is the
+    # closest sibling in the panel, not an independent corpus.
+    gsm_symbolic:
+      path: apple/GSM-Symbolic
+      name: main
+      revision: 93b5b3758d9d9841ffe81d6cd2ae2b030685b078
+      split: test
+      converter: gsm_symbolic
+      evaluator: gsm8k
+      family: math
+      rows: 512
+      max_new_tokens: 512
+    math500:
+      path: HuggingFaceH4/MATH-500
+      revision: 6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be
+      split: test
+      converter: math
+      evaluator: math
+      family: math
+      max_new_tokens: 1024
+    # Different tasks. The recovered component must not help here.
+    humaneval:
+      path: openai/openai_humaneval
+      name: openai_humaneval
+      revision: 7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544
+      split: test
+      converter: humaneval
+      evaluator: humaneval
+      # This evaluator's headline metric is not exact_match.
+      metric: pass_at_1
+      family: code
+      max_new_tokens: 512
+    arc_challenge:
+      path: allenai/ai2_arc
+      name: ARC-Challenge
+      revision: 210d026faf9955653af8916fad021475a3f00453
+      split: test
+      converter: arc_mc_gen
+      evaluator: mc_letter
+      family: mc_science
+      rows: 512
+      max_new_tokens: 32
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    alpha: 32
+    dropout: 0.0
+    last_n_layers: null
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+training:
+  cot_full_1ep:
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 400
+    restore_best: false
+    label_span: all
+codecs:
+  fp16: {method: uniform, bits: 16, score_task: false}
+datasets:
+  scale_metamath_clean: &metamath
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    answer_marker: 'The answer is:'
+    # MetaMathQA is 395k augmentations of 13,929 seed problems, so the held-out
+    # rows must be whole seed problems or the search split sees rephrasings of
+    # what the adapter trained on.
+    holdout_by_group: true
+    validation_rows: 512
+    train_rows: 16000
+    test_rows: 512
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.0
+  scale_metamath_permuted:
+    <<: *metamath
+    rationale_control: permuted
+studies:
+  # Edit this one model key to the screen's recommendation, then prepare.
+  scale_clean:
+    kind: natural
+    models: [qwen25_7b]
+    datasets: [scale_metamath_clean]
+    seeds: [11]
+    adapters: [all_linear_r16]
+    training: cot_full_1ep
+  scale_permuted:
+    kind: natural
+    models: [qwen25_7b]
+    datasets: [scale_metamath_permuted]
+    seeds: [11]
+    adapters: [all_linear_r16]
+    training: cot_full_1ep
+spectral_transfer:
+  seed: 11
+  arms: {clean: scale_clean, permuted: scale_permuted}
+  edges: [0, 1, 2, 4, 8, 12, 16]
+  codes:
+    fp16: {bits: 16}
+    binary: {bits: 1}
+    mixed1p5: {bits: 1, blend: 0.5}
+    two_bit: {bits: 2}
+    four_bit: {bits: 4}
+    midtread2: {bits: 2, quantizer: midtread}
+  scales: [0.1, 0.3, 0.5]
+  fixed_bands: [[0, 2], [2, 8], [8, 16]]
+  training_validation_rows: 128
+  search_rows: 128
+  selection_rows: 256
+  finalists_per_family: 2
+  generation_batch_size: 32
+  max_new_tokens: 512
+  evaluation_chunk_rows: 128
+  bootstrap_draws: 10000
+  analysis_seed: 9212026
+  # The training task's own benchmark, and the only split the search and
+  # selection scorers share a parser with. No probe below may choose a filter. MetaMathQA rows always close with
+  # "The answer is: N", which the GSM8K numeric parser reads on every held-out
+  # row, so search, selection and this split share one scorer.
+  primary:
+    key: gsm8k
+    evaluator: gsm8k
+    family: training_task
+    max_new_tokens: 512
+  # Frozen before any score exists. Every one of these is refusable.
+  claim_gates:
+    # The condition family whose frozen winner the claims are read from.
+    # Selection picks the member; this file only picks the family, in advance.
+    coded_family: band_codec
+    transfer_family: math
+    # The corrupted arm must actually hurt, or there is nothing to recover.
+    minimum_corruption_harm: 0.05
+    # "No better than the frozen model" needs an interval that excludes a real
+    # gain, not merely a point estimate that happens to be small.
+    equivalence_width: 0.10
+    # Three of the four sibling corpora, so one awkward corpus cannot carry it.
+    minimum_in_family_datasets: 3
+  transfer:
+    # Same family, three further corpora and one harder one. Dataset
+    # agnosticism is the claim that the coded adapter's gain over the frozen
+    # model survives the change of corpus.
+    svamp:
+      path: ChilleD/SVAMP
+      revision: 5e0bf1e5e7c0e9c4bc39180d224f41f3f801b7ef
+      split: test
+      converter: svamp
+      evaluator: gsm8k
+      family: math
+      max_new_tokens: 512
+    asdiv:
+      path: EleutherAI/asdiv
+      revision: 8f95807222d87b4c688c3c22a6ba2801e1fa03e2
+      split: validation
+      converter: asdiv
+      evaluator: gsm8k
+      family: math
+      rows: 512
+      max_new_tokens: 512
+    gsm_symbolic:
+      path: apple/GSM-Symbolic
+      name: main
+      revision: 93b5b3758d9d9841ffe81d6cd2ae2b030685b078
+      split: test
+      converter: gsm_symbolic
+      evaluator: gsm8k
+      family: math
+      rows: 512
+      max_new_tokens: 512
+    math500:
+      path: HuggingFaceH4/MATH-500
+      revision: 6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be
+      split: test
+      converter: math
+      evaluator: math
+      family: math
+      max_new_tokens: 1024
+    # Different tasks. Task specificity is the claim that the same coded
+    # adapter does not beat the frozen model here.
+    humaneval:
+      path: openai/openai_humaneval
+      name: openai_humaneval
+      revision: 7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544
+      split: test
+      converter: humaneval
+      evaluator: humaneval
+      # This evaluator's headline metric is not exact_match.
+      metric: pass_at_1
+      family: code
+      max_new_tokens: 512
+    arc_challenge:
+      path: allenai/ai2_arc
+      name: ARC-Challenge
+      revision: 210d026faf9955653af8916fad021475a3f00453
+      split: test
+      converter: arc_mc_gen
+      evaluator: mc_letter
+      family: mc_science
+      rows: 512
+      max_new_tokens: 32

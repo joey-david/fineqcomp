@@ -1,0 +1,270 @@
+# Per-direction pass-band study, replicating spectral_regimes_fine (Qwen2.5-7B /
+# MetaMathQA) on the Gemma-2-9B-it / NuminaMath-CoT adapters trained by
+# configs/generalization_gemma.yaml and adopted with --phase stage. Same design:
+# every contiguous window of the 16 singular directions at full precision
+# (136), every leave-one-out (16), and the shrinkage controls.
+# Probes are a subset of the generalization panel, so the adopted adapters'
+# decontaminated training rows are clean against them too.
+version: 1
+models:
+  gemma2_9b_it:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/google/gemma-2-9b-it
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: true
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    alpha: 32
+    dropout: 0.0
+    last_n_layers: null
+    target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+training:
+  cot_full_1ep:
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 400
+    restore_best: false
+    label_span: all
+codecs:
+  fp16:
+    method: uniform
+    bits: 16
+    score_task: false
+datasets:
+  numina_cot:
+    task_type: generative
+    train_source:
+      path: AI-MO/NuminaMath-CoT
+      name: default
+      revision: 9d8d210c9f6a36c8f3cd84045668c9b7800ef517
+      split: train
+      converter: math
+      group_field: problem
+    answer_marker: \boxed{
+    answer_bearing_only: true
+    holdout_by_group: true
+    validation_rows: 288
+    train_rows: 24000
+    test_rows: 500
+    evaluations:
+    - key: math
+      path: HuggingFaceH4/MATH-500
+      name: default
+      revision: 6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be
+      split: test
+      converter: math
+    screening_metric: exact_match
+    maximum_baseline_score: 0.85
+    minimum_validation_nll_gain_bits_per_token: 0.0
+  numina_cot_permuted:
+    task_type: generative
+    train_source:
+      path: AI-MO/NuminaMath-CoT
+      name: default
+      revision: 9d8d210c9f6a36c8f3cd84045668c9b7800ef517
+      split: train
+      converter: math
+      group_field: problem
+    answer_marker: \boxed{
+    answer_bearing_only: true
+    holdout_by_group: true
+    validation_rows: 288
+    train_rows: 24000
+    test_rows: 500
+    evaluations:
+    - key: math
+      path: HuggingFaceH4/MATH-500
+      name: default
+      revision: 6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be
+      split: test
+      converter: math
+    screening_metric: exact_match
+    maximum_baseline_score: 0.85
+    minimum_validation_nll_gain_bits_per_token: 0.0
+    rationale_control: permuted
+studies:
+  gen_clean:
+    kind: natural
+    models:
+    - gemma2_9b_it
+    datasets:
+    - numina_cot
+    seeds:
+    - 11
+    adapters:
+    - all_linear_r16
+    training: cot_full_1ep
+  gen_permuted:
+    kind: natural
+    models:
+    - gemma2_9b_it
+    datasets:
+    - numina_cot_permuted
+    seeds:
+    - 11
+    adapters:
+    - all_linear_r16
+    training: cot_full_1ep
+spectral_transfer:
+  seed: 11
+  arms:
+    clean: gen_clean
+    permuted: gen_permuted
+  codes:
+    fp16:
+      bits: 16
+  leave_one_out: true
+  scales:
+  - 0.1
+  - 0.3
+  - 0.5
+  fixed_bands:
+  - - 0
+    - 1
+  - - 1
+    - 4
+  - - 4
+    - 16
+  training_validation_rows: 32
+  search_rows: 128
+  selection_rows: 128
+  finalists_per_family: 2
+  generation_batch_size: 32
+  max_new_tokens: 512
+  evaluation_chunk_rows: 128
+  bootstrap_draws: 10000
+  analysis_seed: 9212026
+  claim_gates:
+    coded_family: filter
+    transfer_family: math
+    minimum_corruption_harm: 0.05
+    equivalence_width: 0.1
+    minimum_in_family_datasets: 2
+  primary:
+    key: math500
+    evaluator: math
+    family: training_task
+    distance: 0
+    rows: 500
+    max_new_tokens: 1024
+  transfer:
+    gsm8k:
+      path: openai/gsm8k
+      name: main
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: test
+      converter: gsm8k
+      evaluator: gsm8k
+      family: math_word
+      distance: 2
+      rows: 400
+      max_new_tokens: 512
+    svamp:
+      path: ChilleD/SVAMP
+      revision: 5e0bf1e5e7c0e9c4bc39180d224f41f3f801b7ef
+      split: test
+      converter: svamp
+      evaluator: gsm8k
+      family: math_word
+      distance: 2
+      rows: 400
+      max_new_tokens: 512
+    asdiv:
+      path: EleutherAI/asdiv
+      revision: 8f95807222d87b4c688c3c22a6ba2801e1fa03e2
+      split: validation
+      converter: asdiv
+      evaluator: gsm8k
+      family: math_word
+      distance: 2
+      rows: 400
+      max_new_tokens: 512
+    gsm_symbolic:
+      path: apple/GSM-Symbolic
+      name: main
+      revision: 93b5b3758d9d9841ffe81d6cd2ae2b030685b078
+      split: test
+      converter: gsm_symbolic
+      evaluator: gsm8k
+      family: math_word
+      distance: 2
+      rows: 400
+      max_new_tokens: 512
+    aqua_rat:
+      path: deepmind/aqua_rat
+      name: raw
+      revision: 33301c6a050c96af81f63cad5562cb5363e88971
+      split: test
+      converter: aqua_gen
+      evaluator: mc_letter
+      family: math_hard
+      distance: 1
+      rows: 400
+      max_new_tokens: 32
+    arc_challenge:
+      path: allenai/ai2_arc
+      name: ARC-Challenge
+      revision: 210d026faf9955653af8916fad021475a3f00453
+      split: test
+      converter: arc_mc_gen
+      evaluator: mc_letter
+      family: sci_reasoning
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    openbookqa:
+      path: allenai/openbookqa
+      name: main
+      revision: 388097ea7776314e93a529163e0fea805b8a6454
+      split: test
+      converter: openbookqa_gen
+      evaluator: mc_letter
+      family: sci_reasoning
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    commonsenseqa:
+      path: tau/commonsense_qa
+      revision: 94630fe30dad47192a8546eb75f094926d47e155
+      split: validation
+      converter: commonsenseqa_gen
+      evaluator: mc_letter
+      family: commonsense
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+  edges:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 16

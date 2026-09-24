@@ -151,6 +151,146 @@ def _convert_math(rows: Any, split: str) -> list[Example]:
     ]
 
 
+def _convert_svamp(rows: Any, split: str) -> list[Example]:
+    """Use the GSM8K prompt and numeric scorer for arithmetic transfer."""
+    examples = _convert_gsm8k(
+        [{"question": f"{row['Body']} {row['Question']}",
+          "answer": f"#### {row['Answer']}"} for row in rows], split
+    )
+    return [replace(example, example_id=f"svamp-{split}-{row['ID']}")
+            for example, row in zip(examples, rows, strict=True)]
+
+
+def _convert_asdiv(rows: Any, split: str) -> list[Example]:
+    """Keep the ASDiv rows a single-number scorer can actually mark.
+
+    ASDiv answers are not all numbers. `Comparison` rows name a person,
+    `Ratio` rows give a ratio, and scattered rows across the arithmetic types
+    answer with a clock time, a date, an ordinal, a fraction or a list. None of
+    these is scoreable by the GSM8K numeric parser, so they are excluded here
+    rather than silently marked wrong. The retention floor turns a future
+    change in the dataset's answer formatting into a failure instead of a
+    quietly shrinking probe.
+    """
+    converted, skipped = [], 0
+    for index, row in enumerate(rows):
+        answer = str(row["answer"]).split("(")[0].strip()
+        if not re.fullmatch(r"-?\d[\d,]*(?:\.\d+)?", answer):
+            skipped += 1
+            continue
+        converted.append({"question": f"{row['body']} {row['question']}",
+                          "answer": f"#### {answer}"})
+    total = len(converted) + skipped
+    if total and len(converted) / total < 0.85:
+        raise ValueError(
+            f"asdiv/{split}: only {len(converted)} of {total} answers are numeric"
+        )
+    return [replace(example, example_id=f"asdiv-{split}-{index}",
+                    metadata={**example.metadata, "unscoreable_rows_excluded": skipped})
+            for index, example in enumerate(_convert_gsm8k(converted, split))]
+
+
+def _convert_gsm_symbolic(rows: Any, split: str) -> list[Example]:
+    """GSM-Symbolic already ships GSM8K-shaped rationales and '####' answers."""
+    examples = _convert_gsm8k(rows, split)
+    return [replace(example, example_id=f"gsm-symbolic-{split}-{row['id']}-{row['instance']}")
+            for example, row in zip(examples, rows, strict=True)]
+
+
+def _convert_mc_gen(rows: Any, split: str, prefix: str = "mc") -> list[Example]:
+    """Generative multiple choice, so off-family probes keep the same metrics.
+
+    Three schemas appear across the reasoning benchmarks and all are
+    unambiguous, so one converter reads them rather than four near-copies:
+    `choices` as {label, text} with a letter `answerKey` (ARC, CommonsenseQA,
+    OpenBookQA), `choices` as a plain list with an integer `answer` (MMLU), and
+    `endings` with an integer `label` (HellaSwag).
+    """
+    converted = []
+    for index, row in enumerate(rows):
+        question = row.get("question") or row.get("question_stem") or row.get("ctx")
+        choices, target = row.get("choices"), None
+        if isinstance(choices, dict):
+            texts = [" ".join(str(t).split()) for t in choices["text"]]
+            source = [str(x) for x in choices["label"]]
+            key = str(row["answerKey"])
+            if key not in source:
+                continue  # a handful of rows ship no usable key; drop, never guess
+            target = source.index(key)
+        elif isinstance(choices, list):
+            texts = [" ".join(str(t).split()) for t in choices]
+            target = int(row["answer"])
+        elif "endings" in row:
+            texts = [" ".join(str(t).split()) for t in row["endings"]]
+            target = int(row["label"])
+        elif "option1" in row:                      # WinoGrande: coreference
+            texts = [" ".join(str(row[f"option{i}"]).split()) for i in (1, 2)]
+            target = int(row["answer"]) - 1
+            question = row["sentence"]
+        elif "options" in row:                      # RACE, AQuA-RAT
+            raw_options = [str(t) for t in row["options"]]
+            # AQuA prefixes each option with its own letter; RACE does not.
+            texts = [" ".join(o.split(")", 1)[-1].split()) if len(o) > 1 and o[1] == ")"
+                     else " ".join(o.split()) for o in raw_options]
+            key = str(row.get("answer") or row.get("correct"))
+            target = ord(key.upper()) - ord("A") if key.isalpha() else int(key)
+            if "article" in row:
+                question = f"{' '.join(str(row['article']).split())}\n\nQuestion: {question}"
+        else:
+            raise ValueError(f"{prefix}/{split}/{index}: unrecognised choice schema")
+        if not 2 <= len(texts) <= 8 or not 0 <= target < len(texts):
+            continue
+        labels = [chr(ord("A") + offset) for offset in range(len(texts))]
+        rendered = "\n".join(f"{label}. {text}"
+                              for label, text in zip(labels, texts, strict=True))
+        converted.append(Example(
+            example_id=f"{prefix}-{split}-{row.get('id', index)}",
+            prompt=("Choose the best answer. Reply with only its letter.\n\n"
+                    f"Question: {' '.join(str(question).split())}\n{rendered}\nAnswer:"),
+            response=" " + labels[target],
+            metadata={"split": split, "evaluator": "mc_letter", "labels": labels},
+        ))
+    if not converted:
+        raise ValueError(f"{prefix}/{split}: no scoreable rows")
+    return converted
+
+
+def _convert_arc_mc_gen(rows: Any, split: str) -> list[Example]:
+    return _convert_mc_gen(rows, split, "arc")
+
+
+def _convert_commonsenseqa_gen(rows: Any, split: str) -> list[Example]:
+    return _convert_mc_gen(rows, split, "csqa")
+
+
+def _convert_openbookqa_gen(rows: Any, split: str) -> list[Example]:
+    return _convert_mc_gen(rows, split, "obqa")
+
+
+def _convert_mmlu_gen(rows: Any, split: str) -> list[Example]:
+    return _convert_mc_gen(rows, split, "mmlu")
+
+
+def _convert_hellaswag_gen(rows: Any, split: str) -> list[Example]:
+    return _convert_mc_gen(rows, split, "hellaswag")
+
+
+def _convert_qasc_gen(rows: Any, split: str) -> list[Example]:
+    return _convert_mc_gen(rows, split, "qasc")
+
+
+def _convert_winogrande_gen(rows: Any, split: str) -> list[Example]:
+    return _convert_mc_gen(rows, split, "winogrande")
+
+
+def _convert_race_gen(rows: Any, split: str) -> list[Example]:
+    return _convert_mc_gen(rows, split, "race")
+
+
+def _convert_aqua_gen(rows: Any, split: str) -> list[Example]:
+    return _convert_mc_gen(rows, split, "aqua")
+
+
 def _convert_openr1_math(rows: Any, split: str) -> list[Example]:
     """Use the curated DeepSeek-R1 trace stored in each OpenR1 message pair."""
     converted = []
@@ -344,6 +484,18 @@ def _convert_xbrl(rows: Any, split: str) -> list[Example]:
 
 
 _NATURAL_CONVERTERS = {
+    "svamp": _convert_svamp,
+    "asdiv": _convert_asdiv,
+    "gsm_symbolic": _convert_gsm_symbolic,
+    "arc_mc_gen": _convert_arc_mc_gen,
+    "commonsenseqa_gen": _convert_commonsenseqa_gen,
+    "openbookqa_gen": _convert_openbookqa_gen,
+    "mmlu_gen": _convert_mmlu_gen,
+    "hellaswag_gen": _convert_hellaswag_gen,
+    "qasc_gen": _convert_qasc_gen,
+    "winogrande_gen": _convert_winogrande_gen,
+    "race_gen": _convert_race_gen,
+    "aqua_gen": _convert_aqua_gen,
     "gsm8k": _convert_gsm8k,
     "hh_rlhf": _convert_hh_rlhf,
     "alpaca": _convert_alpaca,
@@ -818,10 +970,28 @@ def permute_rationales(
                 donors.update(zip(recipients, candidate, strict=True))
                 break
         else:
-            raise ValueError(
-                "could not permute rationales without a matched prompt or body; "
-                "increase the block size"
+            # Random retries fail when many rows in one block share a body --
+            # NuminaMath has answer-only rows whose whole "working" is the same
+            # boilerplate. Sorting by body and shifting by the largest group's
+            # size never pairs equal bodies once that group is at most half the
+            # block, so the rows stay in rather than being filtered out.
+            by_body = sorted(recipients, key=lambda index: (parsed[index][0], index))
+            largest = max(
+                sum(parsed[i][0] == parsed[j][0] for j in recipients) for i in recipients
             )
+            shifted = by_body[largest:] + by_body[:largest]
+            if 2 * largest > len(recipients) or any(
+                parsed[r][0] == parsed[d][0]
+                or (str(rows[r].metadata.get("source_problem", ""))
+                    and rows[r].metadata.get("source_problem")
+                    == rows[d].metadata.get("source_problem"))
+                for r, d in zip(by_body, shifted, strict=True)
+            ):
+                raise ValueError(
+                    "could not permute rationales without a matched prompt or body; "
+                    "increase the block size"
+                )
+            donors.update(zip(by_body, shifted, strict=True))
 
     rewritten = []
     for recipient, row in enumerate(rows):
@@ -1004,8 +1174,45 @@ def _load_natural_from_hub(
         reserved = validation_rows * (
             ANSWER_MARKER_SLACK if required_marker else 1
         )
-        calibration_rows = shuffled.select(range(min(reserved, len(shuffled))))
-        train_rows = shuffled.select(range(min(reserved, len(shuffled)), len(shuffled)))
+        group_field = str(source.get("group_field", "original_question"))
+        excluded_rows = int(spec.get("holdout_excludes_first_rows", 0) or 0)
+        if spec.get("holdout_by_group"):
+            # An augmentation corpus repeats one seed problem across many rows.
+            # A prefix split would then put rephrasings of the same question on
+            # both sides of the held-out boundary, so whole groups move.
+            keys = shuffled[group_field]
+            # A study that adopts someone else's finished adapter has to hold
+            # out rows *that adapter* never saw, not merely rows this split
+            # calls held out. Naming the row count its training consumed marks
+            # every group it touched as ineligible, so the reserved rows are
+            # unseen by construction rather than by assumption.
+            consumed = set(keys[:excluded_rows]) if excluded_rows else set()
+            calibration_index, train_index, held = [], [], set()
+            for index, key in enumerate(keys):
+                if key in consumed:
+                    train_index.append(index)
+                elif key in held:
+                    # Every other augmentation of a reserved seed problem is
+                    # dropped rather than trained on, so one problem cannot sit
+                    # on both sides of the boundary.
+                    continue
+                elif len(calibration_index) < reserved:
+                    held.add(key)
+                    calibration_index.append(index)
+                else:
+                    train_index.append(index)
+            if len(calibration_index) < reserved:
+                raise ValueError(
+                    f"{dataset_key}: {len(calibration_index)} held-out rows from "
+                    f"{len(held)} groups of {group_field!r}, need {reserved}"
+                    + (f"; {len(consumed)} groups excluded as already trained on"
+                       if consumed else "")
+                )
+            calibration_rows = shuffled.select(calibration_index)
+            train_rows = shuffled.select(train_index)
+        else:
+            calibration_rows = shuffled.select(range(min(reserved, len(shuffled))))
+            train_rows = shuffled.select(range(min(reserved, len(shuffled)), len(shuffled)))
         # `train_rows` bounds the training set so one run fits a bounded job.
         # It reshuffles per seed, unlike the test cap, because seeds should see
         # different training data.
@@ -1016,7 +1223,7 @@ def _load_natural_from_hub(
         if groups is not None:
             train_rows, _ = limit_source_problems(
                 train_rows,
-                str(source.get("group_field", "original_question")),
+                group_field,
                 int(groups),
                 int(limit) if limit is not None else None,
             )

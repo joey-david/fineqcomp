@@ -1,4 +1,4 @@
-"""Window maps (R6) and per-direction contributions (R7) for Qwen2.5-7B, 14B and 32B.
+"""Window maps (R6) and per-direction contributions (R7) for Qwen2.5-7B, Qwen2.5-14B and Mistral-7B.
 
 Writes, as vector PDF plus PNG preview:
   R6_<model>: accuracy minus frozen base for every contiguous window of the
@@ -29,7 +29,8 @@ from plot_band_contribution import RANK, YLABEL, contributions, draw  # noqa: E4
 MODELS = [
     ("R6_every_window", "qwen2.5_7b", "Qwen2.5-7B"),
     ("R6c_every_window_qwen14b", "qwen2.5_14b", "Qwen2.5-14B"),
-    ("R6d_every_window_qwen32b", "qwen2.5_32b", "Qwen2.5-32B"),
+    # Mistral's adapters were trained and scored on GSM8K, the Qwens' on MetaMathQA.
+    ("R6e_every_window_mistral7b", "mistral_7b", "Mistral-7B (GSM8K)"),
 ]
 EDGES = np.arange(RANK + 1) + 0.5
 TICKS = [1, 4, 8, 12, 16]

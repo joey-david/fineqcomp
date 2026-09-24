@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-usage="usage: scripts/jean_zay_submit.sh <batch-script|campaign|bit-budget>"
+usage="usage: scripts/jean_zay_submit.sh <batch-script|campaign|bit-budget|spectral-scale>"
 target="${1:?$usage}"
 
 # Jean-Zay calls this a QoS, not a partition. The short H100 QoS has a hard
@@ -73,6 +73,55 @@ if [[ "$target" == bit-budget ]]; then
     --dependency="afterany:$sweep_id" --export=ALL,MODE=report "$script")"
   printf 'manifest=%s check=%s probes=%s sweep=%s report=%s\n' \
     "$manifest_id" "$check_id" "$probes_id" "$sweep_id" "$report_id"
+  exit 0
+fi
+
+if [[ "$target" == spectral-scale ]]; then
+  # Stage 2 of the scaled spectral study, submitted as one dependency chain.
+  # `prepare` refuses to run if the config's receiver is not the one the screen
+  # recommended, so a stale model key stops the chain before any GPU is spent.
+  # Shard counts match what the pilot measured: search saturates eight workers,
+  # the test phase sixteen.
+  script=scripts/jean_zay_spectral_transfer.sbatch
+  config="${SCALE_CONFIG:-configs/spectral_scale.yaml}"
+  out="${SCALE_OUT:-.cache/reports/spectral_scale_v1}"
+  common=(--export=ALL --time=01:55:00)
+  args=(--config "$config" --out "$out")
+  mkdir -p logs
+  prepare_id="$(sbatch --parsable --job-name=fq-scale-prep --time=00:30:00 \
+    --nodes=1 --ntasks=1 --gres=gpu:1 --export=ALL "$script" prepare "${args[@]}")"
+  clean_id="$(sbatch --parsable --job-name=fq-scale-clean "${common[@]}" \
+    --dependency="afterok:$prepare_id" --nodes=1 --ntasks=1 --gres=gpu:1 \
+    "$script" train --arm clean "${args[@]}")"
+  permuted_id="$(sbatch --parsable --job-name=fq-scale-permuted "${common[@]}" \
+    --dependency="afterok:$prepare_id" --nodes=1 --ntasks=1 --gres=gpu:1 \
+    "$script" train --arm permuted "${args[@]}")"
+  search_ids=()
+  for offset in 0 4; do
+    search_ids+=("$(sbatch --parsable --job-name="fq-scale-search-$offset" \
+      --export=ALL,TOTAL_SHARDS=8,SHARD_OFFSET="$offset" --time=01:55:00 \
+      --dependency="afterok:$clean_id:$permuted_id" \
+      --nodes=1 --ntasks=4 --gres=gpu:4 "$script" search "${args[@]}")")
+  done
+  search_dependency="$(IFS=:; echo "${search_ids[*]}")"
+  validate_id="$(sbatch --parsable --job-name=fq-scale-validate \
+    --export=ALL,TOTAL_SHARDS=4,SHARD_OFFSET=0 --time=01:55:00 \
+    --dependency="afterok:$search_dependency" \
+    --nodes=1 --ntasks=4 --gres=gpu:4 "$script" validate "${args[@]}")"
+  test_ids=()
+  for offset in 0 4 8 12; do
+    test_ids+=("$(sbatch --parsable --job-name="fq-scale-test-$offset" \
+      --export=ALL,TOTAL_SHARDS=16,SHARD_OFFSET="$offset" --time=01:55:00 \
+      --dependency="afterok:$validate_id" \
+      --nodes=1 --ntasks=4 --gres=gpu:4 "$script" test "${args[@]}" --group core)")
+  done
+  test_dependency="$(IFS=:; echo "${test_ids[*]}")"
+  report_id="$(sbatch --parsable --job-name=fq-scale-report --time=00:20:00 \
+    --dependency="afterany:$test_dependency" --nodes=1 --ntasks=1 --gres=gpu:1 \
+    --export=ALL "$script" report "${args[@]}" --group core)"
+  printf 'prepare=%s clean=%s permuted=%s search=%s validate=%s test=%s report=%s\n' \
+    "$prepare_id" "$clean_id" "$permuted_id" "$search_dependency" "$validate_id" \
+    "$test_dependency" "$report_id"
   exit 0
 fi
 
