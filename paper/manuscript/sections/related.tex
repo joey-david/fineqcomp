@@ -1,0 +1,16 @@
+\section{Related Work}
+
+% PEFT and adapter structure
+Parameter-efficient finetuning (PEFT) was popularized by \citep{hu2022lora}, who introduced adapters as compact and modular updates to very large models. \citep{dettmers2023qlora} further enabled efficient finetuning on quantized models, tying the two notions of restricted parameter updating and parameter precision for quantization, though they did not yet offer to quantize adapters. Before this \citep{aghajanyan2021intrinsicdim} showed that effective finetuning often lies in a low intrisic dimensional subspace, justifying the efficiency of LoRA. \citep{zhu2024loraasymmetry} posited that different components of low-rank adapters play asymmetric roles, strengthening our intuition behind the identification of these components for predicting rates.
+\newline
+% quantization
+Even outside of finetuning, LLMs have been known to operate in heavily quantized regimes, a restricted kind of compression. \citep{yao2022zeroquant} studied efficient low-bit post-training quantization of large transformers, and \citep{frantar2023gptq} developed a first accurate post-training quantization method, specifically for LLMs. \citep{lin2024awq} then used activation-aware weight importance for low-bit LLM quantization. In a similar fashion, \citep{xiao2023smoothquant} enabled accurate low-bit quantization by smoothing activation outliers.
+To assess in detail how such quantization affects performance, \citep{liu2025paretoq} characterize the scaling behavior of quantization across extremely low-bit quantization regimes.
+Lately, quantization has also been explicitly extended to adapters:
+\citep{mirzaei2025loraquant} compresses trained LoRA adapters to ultra-low precision while preserving performance. We replicate some of their methods to surface the recovery effect on corrupted finetuning data. More recently, \citep{tan2026adapterbits} are the first to measure adapter capacity and memorization directly in bits.
+\newline
+% Information, compression, and rate
+From an information-theoretic point of view, \citep{arora2018genbounds} first connected neural-network compressibility to generalization bounds. This works supports our intuition behind the recovery dynamics of our corrupted adapter compression. \citep{lotfi2022pacbayescomp} then derived tight PAC-Bayes generalization bounds from model compression.
+\citep{young2025radio} also apply the notion of rate-distortion directly to LLM compression, though they use it specifically to efficiently quantize entire LLMs. \citep{urdshals2025compressibility} Connects compressibility, description length, and learned model complexity.
+\newline
+Most of our recovery experiments use chain-of-thought supervision \citep{wei2022cot}, whose internal information dynamics are an active field of study \citep{qian2025reasoningdynamics,dutta2024stepbystep,yang2025symbolicmechanisms}.

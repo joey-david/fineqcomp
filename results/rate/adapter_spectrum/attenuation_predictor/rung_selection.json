@@ -1,0 +1,162 @@
+[
+  {
+    "run_id": "transposed-code__mistral-7b-base__kind-code__all-linear-r16__s11__00c30cc0b2",
+    "split": "development",
+    "selected_rate": 0.8996009826660156,
+    "retention": 0.8917050142631556,
+    "oracle_rate": 1.022488784790039,
+    "oracle_ratio": 0.879815012201569
+  },
+  {
+    "run_id": "transposed-code__qwen25-7b-base__kind-code__all-linear-r16__s11__7d8372873a",
+    "split": "development",
+    "selected_rate": 0.7720653979809253,
+    "retention": 0.9295938298039691,
+    "oracle_rate": 0.7720653979809253,
+    "oracle_ratio": 1.0
+  },
+  {
+    "run_id": "transposed-math__mistral-7b-base__panel-math__all-linear-r16__s11__b9c8849386",
+    "split": "development",
+    "selected_rate": 0.6488452911376953,
+    "retention": 0.880072468872425,
+    "oracle_rate": 0.7742136001586915,
+    "oracle_ratio": 0.8380701281980848
+  },
+  {
+    "run_id": "transposed-math__qwen25-7b-base__panel-math__all-linear-r16__s11__d0c9add9a3",
+    "split": "development",
+    "selected_rate": 0.333282470703125,
+    "retention": 0.8676345299698268,
+    "oracle_rate": 0.3959738991477273,
+    "oracle_ratio": 0.8416778768006278
+  },
+  {
+    "run_id": "transposed-xbrl__mistral-7b-base__xbrl-tags__all-linear-r16__s11__1b9c049c38",
+    "split": "development",
+    "selected_rate": 0.33533420562744143,
+    "retention": 0.907843450692085,
+    "oracle_rate": 0.33533420562744143,
+    "oracle_ratio": 1.0
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-7b-base__xbrl-tags__all-linear-r16__s11__78c93c4f2e",
+    "split": "development",
+    "selected_rate": 0.5211098410866477,
+    "retention": 0.9322619578811756,
+    "oracle_rate": 0.5211098410866477,
+    "oracle_ratio": 1.0
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "split": "heldout",
+    "selected_rate": 0.9001339700390506,
+    "retention": 0.9016787930026092,
+    "oracle_rate": 0.9001339700390506,
+    "oracle_ratio": 1.0
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "split": "heldout",
+    "selected_rate": 1.5103167000777222,
+    "retention": 0.9738358036876217,
+    "oracle_rate": 1.0229878724977253,
+    "oracle_ratio": 1.476377912858474
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "split": "heldout",
+    "selected_rate": 1.5098018646240234,
+    "retention": 0.9670636208063169,
+    "oracle_rate": 1.5098018646240234,
+    "oracle_ratio": 1.0
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "split": "heldout",
+    "selected_rate": 1.5005728981711648,
+    "retention": 0.9280101756282993,
+    "oracle_rate": 1.5005728981711648,
+    "oracle_ratio": 1.0
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "split": "heldout",
+    "selected_rate": 1.0233181790188626,
+    "retention": 0.9232303304023546,
+    "oracle_rate": 1.0233181790188626,
+    "oracle_ratio": 1.0
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "split": "heldout",
+    "selected_rate": 0.900134118137701,
+    "retention": 0.916880693098069,
+    "oracle_rate": 0.900134118137701,
+    "oracle_ratio": 1.0
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "split": "heldout",
+    "selected_rate": 1.0229498111446012,
+    "retention": 0.930604852690376,
+    "oracle_rate": 0.9000902809372157,
+    "oracle_ratio": 1.1364968968217926
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "split": "heldout",
+    "selected_rate": 1.0225292205810548,
+    "retention": 0.9280310400464675,
+    "oracle_rate": 1.0225292205810548,
+    "oracle_ratio": 1.0
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "split": "heldout",
+    "selected_rate": 1.497232016030844,
+    "retention": 0.9556362702789604,
+    "oracle_rate": 1.497232016030844,
+    "oracle_ratio": 1.0
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "split": "heldout",
+    "selected_rate": 0.3985447234228086,
+    "retention": 0.939692423704724,
+    "oracle_rate": 0.33581694769866544,
+    "oracle_ratio": 1.1867915724742693
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "split": "heldout",
+    "selected_rate": 0.3358175400932666,
+    "retention": 0.9535047054500096,
+    "oracle_rate": 0.2730143821561268,
+    "oracle_ratio": 1.2300360788364073
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "split": "heldout",
+    "selected_rate": 0.3353527069091797,
+    "retention": 0.8848079466415956,
+    "oracle_rate": 0.39806785583496096,
+    "oracle_ratio": 0.8424511097630978
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "split": "heldout",
+    "selected_rate": 0.6451877742618709,
+    "retention": 0.9126277470747856,
+    "oracle_rate": 0.6451877742618709,
+    "oracle_ratio": 1.0
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "split": "heldout",
+    "selected_rate": 0.6495905695734797,
+    "retention": 0.9504357184279696,
+    "oracle_rate": 0.5247098905546171,
+    "oracle_ratio": 1.2379994760282944
+  }
+]

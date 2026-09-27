@@ -1,0 +1,176 @@
+
+\documentclass{article} % For LaTeX2e
+\usepackage{src/iclr2027_conference,times}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+\input{src/math_commands.tex}
+
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{todonotes}
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage{longtable}
+
+% caption setup
+\usepackage{caption}
+\usetikzlibrary{positioning,arrows.meta,calc,decorations.pathreplacing}
+\captionsetup{
+    font=small,
+    labelfont=bf
+}
+\newcommand{\todofig}[2][]{\todo[color=blue!15,#1]{#2}}
+
+\title{The Behavioral Rate of Fine-Tuning:
+Compression as a Measure of Useful Information}
+% Compression Reveals the Structure of Learned Behavior in Language Models?
+
+
+% Authors must not appear in the submitted version. They should be hidden
+% as long as the \iclrfinalcopy macro remains commented out below.
+% Non-anonymous submissions will be rejected without review.
+
+\author{Joey David$^{1}$, Paul Caillon$^{1}$, Alexandre Allauzen$^{1,2}$ \\
+$^1$ Miles Team, LAMSADE, Université Paris Dauphine-PSL, Paris, France \\
+$^2$ ESPCI PSL, Paris, France \\
+\texttt{\{name\}.\{surname\}@dauphine.psl.eu}
+}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+%\iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
+\begin{document}
+\raggedbottom
+
+\maketitle
+
+\begin{abstract}
+Low-Rank Adaptation (LoRA) adapts a frozen language model through a compact learned update, making it a natural setting for asking how much information fine-tuning actually needs to write.
+Yet adapter rank, parameter count, or numerical reconstruction error do not directly tell us how many bits are required to preserve the behavior acquired during training.
+We therefore define an operational behavioral rate $R^\star$ as the exact serialized size of a compressed adapter.
+It is the smallest number of bits that, once reloaded into the frozen base model, retains a fixed fraction of the adapter's held-out fine-tuning gain.
+Across a broad set of LoRA fine-tuning experiments, we find that this rate increases with distinct training content at fixed optimization budgets, but is not determined by source description length, fine-tuning gain, or ordinary weight-space reconstruction error.
+Most importantly, the same datasets exhibit substantially different, and even reordered, rates across frozen base models, showing that fine-tuning compressibility is a property of the dataset–receiver pair rather than of the dataset alone.
+Correction spectra measured on the data rank these rates within a receiver but fail on new receivers; the best cross-receiver predictor we found reads the trained adapter's leading singular direction.
+Compression can also do more than preserve behavior. Adapters trained on deliberately corrupted reasoning fall far below the frozen model; compressed, they score above it (GSM8K 23.7\% to 82.9\%, against 77.6\% for the frozen Qwen2.5-7B), in three model families and at sizes from 0.5B to 32B. The damage sits in the update's leading singular directions, and compression works mostly by shrinking them. Away from its task, the compressed corrupted adapter keeps the frozen model's accuracy where a clean fine-tune does not: on harder math it keeps 97\% of base accuracy, the clean adapter 44\%.
+Together, these results suggest that the information cost of fine-tuning is not intrinsic to the data or to parameter displacement, but depends on the receiver, the target behavior, and how the required corrections are represented in the learned update.
+\end{abstract}
+
+\input{sections/intro}
+\input{sections/related}
+\input{sections/diagnostics}
+\input{sections/information_theory}
+\input{sections/information_recovery}
+\input{sections/behavior_prediction}
+
+
+% I just keep this for now to not forget where goes the caption for tables and figures.
+% \subsection{Figures}
+
+
+% \begin{figure}[h]
+% \begin{center}
+% %\framebox[4.0in]{$\;$}
+% \fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
+% \end{center}
+% \caption{Sample figure caption.}
+% \end{figure}
+
+% \subsection{Tables}
+
+
+% \begin{table}[t]
+% \caption{Sample table title}
+% \label{sample-table}
+% \begin{center}
+% \begin{tabular}{ll}
+% \multicolumn{1}{c}{\bf PART}  &\multicolumn{1}{c}{\bf DESCRIPTION}
+% \\ \hline \\
+% Dendrite         &Input terminal \\
+% Axon             &Output terminal \\
+% Soma             &Cell body (contains cell nucleus) \\
+% \end{tabular}
+% \end{center}
+% \end{table}
+
+
+
+
+\newpage
+
+\subsection*{AI use statement}
+
+(This section is \textbf{required} and does not count toward the page limit.)
+
+In this work, we used generative AI tools for [tasks with required disclosure].
+We have not used generative AI tools for [other tasks with required disclosure],
+and [the rest of the required disclosure tasks] are not applicable to this work.
+Additionally, we used generative AI tools for [tasks with recommended
+disclosure]. We have reviewed all AI-assisted work. [Elaborate. For example, “we
+checked LLM-generated research ideas for potential plagiarism through a manual
+literature survey”, “LLM-generated code was verified and tested for correctness
+by 2 authors”, etc.]. We take responsibility for the final content of this work,
+including text, claims or artifacts produced with the aid of generative AI.
+
+See the ICLR 2027 AI Policy for Authors for more details. This statement should
+not be more than 1 page.
+
+\subsection*{Ethics statement}
+
+(This section is \textbf{recommended} and does not count toward the page limit.)
+
+If authors feel that their paper submission raises questions regarding the Code
+of Ethics, they are encouraged to include a paragraph of Ethics Statement (at
+the end of the main text before references) to address potential concerns where
+appropriate. Topics include, but are not limited to, studies that involve human
+subjects, practices to data set releases, potentially harmful insights,
+methodologies and applications, potential conflicts of interest and sponsorship,
+discrimination/bias/fairness concerns, privacy and security issues, legal
+compliance, and research integrity issues (e.g., IRB, documentation, research
+ethics). This statement should not be more than 1 page.
+
+\subsection*{Reproducibility statement}
+
+(This section is \textbf{recommended} and does not count toward the page limit.)
+
+It is important that the work published in ICLR is reproducible. Authors are
+strongly encouraged to include a paragraph-long Reproducibility Statement at the
+end of the main text (before references) to discuss the efforts that have been
+made to ensure reproducibility. This paragraph should not itself describe
+details needed for reproducing the results, but rather reference the parts of
+the main paper, appendix, and supplemental materials that will help with
+reproducibility. For example, for novel models or algorithms, a link to an
+anonymous downloadable source code can be submitted as supplementary materials;
+for theoretical results, clear explanations of any assumptions and a complete
+proof of the claims can be included in the appendix; for any datasets used in
+the experiments, a complete description of the data processing steps can be
+provided in the supplementary materials. Each of the above are examples of
+things that can be referenced in the reproducibility statement.
+
+% \subsubsection*{Author Contributions}
+% If you'd like to, you may include  a section for author contributions as is done
+% in many journals. This is optional and at the discretion of the authors.
+
+% \subsubsection*{Acknowledgments}
+% Use unnumbered third level headings for the acknowledgments. All
+% acknowledgments, including those to funding agencies, go at the end of the paper.
+
+
+\bibliography{biblio}
+\bibliographystyle{src/iclr2027_conference}
+
+\appendix
+\input{appendix/xp_details}
+\input{appendix/theory_app}
+\input{appendix/additional_results}
+
+\end{document}

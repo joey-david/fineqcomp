@@ -286,7 +286,7 @@ def test_the_behavioural_lever_is_part_of_a_run_identity():
 
 def test_layer_allocation_plans_hold_the_budget_fixed():
     """Starving one band only means something at a matched total budget."""
-    from fineqcomp.layer_profile import ALLOCATION_PLANS
+    from fineqcomp.studies.layer_profile import ALLOCATION_PLANS
 
     budgets = {}
     for name, plan in ALLOCATION_PLANS.items():
@@ -307,7 +307,7 @@ def test_layer_allocation_plans_hold_the_budget_fixed():
 def test_the_weight_profile_finds_where_training_moved_the_model():
     import torch
 
-    from fineqcomp.layer_profile import weight_profile
+    from fineqcomp.studies.layer_profile import weight_profile
 
     tensors = {}
     for layer in range(12):

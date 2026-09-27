@@ -6,7 +6,7 @@ import math
 
 import torch
 
-from fineqcomp.layer_profile import _divergences
+from fineqcomp.studies.layer_profile import _divergences
 
 
 def _case(base: list[float], adapted: list[float], observed: int):

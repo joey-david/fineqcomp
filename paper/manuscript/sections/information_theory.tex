@@ -1,0 +1,103 @@
+\section{A Receiver-Relative Rate-Distortion View of Fine-Tuning}
+\label{sec:information_theory}
+
+% Fine-tuning does not need to describe a task from scratch: the frozen model is already available to the decoder and therefore acts as shared side information.
+% The relevant coding problem is consequently conditional on both the receiver $M$ and the behavior $U$ that must survive compression.
+% This motivates defining distortion behaviorally, rather than through numerical reconstruction of adapter parameters.
+% Locally, behavioral distortion is governed by a quadratic form $e^\top H_Ue$, so Euclidean weight error is adequate only under an approximately isotropic functional geometry.
+% Before training, the dataset induces a field of requested corrections on the frozen receiver, summarized by their mean $\mu$ and second moment $J$;(neither quantity is itself the learned adapter).
+% Under a local quadratic training model, $\mu$ determines the systematic update direction, while $J$ additionally captures how correction demands are distributed across directions.
+% Combining update variability with the behavioral geometry yields a receiver-relative spectrum $H_U^{1/2}\Sigma_\Delta H_U^{1/2}$, whose eigenvalues naturally control local coding difficulty in classical quadratic rate–distortion models.
+% This does not derive the empirical behavioral rate, but motivates the concrete competing predictors tested later: correction magnitude, dimensionality, log-volume, and eventually receiver-whitened correction geometry.
+
+
+This section introduces a receiver-relative rate-distortion view of fine-tuning. Our goal is not to derive an exact information-theoretic law for LoRA, but to formalize the empirical observations of Section~\ref{sec:diagnostics} and motivate the quantities studied later in the paper. We first treat the frozen model as shared side information, then characterize behavioral preservation through a functional geometry over adapter perturbations, and finally show why, in this geometry, compressing an update can improve on both the update and the frozen model. Detailed derivations and the assumptions underlying these approximations are given in Appendix~\ref{app:rate-distortion}.
+
+\subsection{The Frozen Model as Side Information}
+
+A fine-tuning adapter is not used independently from the model on which it was trained.
+At inference time, its parameters act through their composition with the frozen base model.
+As illustrated in Figure~\ref{fig:information_view}, the adapter can therefore be viewed as a finite-rate message whose effect is interpreted by a particular receiver.
+Let $M$ denote a frozen model, $A$ a trained adapter, and $c$ a finite code of length $\ell(c)$ from which a shared decoder reconstructs
+$\hat A = \mathrm{Dec}(c).$
+The reconstructed model is $M\oplus\hat A$, where $\oplus$ denotes composition of the frozen model with its adapter.
+Since $M$ is available at both encoding and decoding time, it acts as shared side information: the code only needs to specify the additional modification required by this receiver.
+\newline
+Compression should therefore be evaluated through the behavior of the composed model.
+For a utility $U$ for which larger values are better, we define
+\(
+    D_{M,U}(A,\hat A)
+    =
+    \left[
+        U(M\oplus A)-U(M\oplus\hat A)
+    \right]_+ ,
+\)
+with the corresponding difference reversed for a loss.
+Given a tolerance $\varepsilon$, we define the \emph{receiver-relative behavioral description length}
+\begin{equation}
+    L^\star_{M,U}(A,\varepsilon)
+    =
+    \min_c \ell(c)
+    \quad
+    \mathrm{s.t.}
+    \quad
+    D_{M,U}\!\left(A,\mathrm{Dec}(c)\right)
+    \leq \varepsilon .
+    \label{eq:behavior-preserving-length}
+\end{equation}
+
+Equation~\ref{eq:behavior-preserving-length} formalizes two dependencies that are central to our setting:
+changing $M$ changes how an update is interpreted, while changing $U$ changes which differences between decoded updates matter.
+This is an operational one-shot coding problem for a deterministic checkpoint, not a Shannon rate-distortion function.
+The empirical rates studied later are therefore achievable, codec-dependent rates rather than information-theoretic optima.
+
+\subsection{Behavioral Distortion Induces a Functional Geometry}
+
+The definition above does not yet specify which parameter perturbations are costly.
+Let a compressed adapter satisfy $\hat A=A+e$, where $e$ is the compression error.
+Under a local expansion of a differentiable evaluation loss, and when the first-order term is negligible for the perturbations considered, the leading behavioral distortion is
+\begin{equation}
+    D_{M,U}(A,A+e)
+    \approx
+    \frac{1}{2}e^\top H_U e ,
+    \label{eq:functional-quadratic-distortion}
+\end{equation}
+where $H_U$ denotes the local positive-semidefinite geometry associated with the chosen behavior.
+\newline
+This differs from ordinary weight reconstruction error,
+$
+    D_{\mathrm{weight}}(A,A+e)=\|e\|_2^2,
+$
+which assigns the same cost to every parameter direction.
+Equation~\ref{eq:functional-quadratic-distortion}, in contrast, weights an error by its orientation relative to the behavioral sensitivity of the composed model.
+Euclidean and functional distortion induce the same ordering over perturbations only in the isotropic case, when $H_U$ is proportional to the identity on the subspace explored by compression.
+\newline
+The failures of weight error and of uniform bit budgets in Section~\ref{sec:diagnostics} are both consistent with an anisotropic geometry: what matters is where an error lies, not only its size.
+
+\subsection{Why Compression Can Improve on the Base Model}
+\label{sec:why-compression-helps}
+
+Equation~\ref{eq:functional-quadratic-distortion} assumes that the first-order term vanishes, i.e.\ that the trained adapter sits at an optimum of the behavior $U$ we care about.
+Training only guarantees an optimum of the training loss.
+When the data ask for corrections that $U$ does not reward, as with the corrupted supervision of Section~\ref{sec:recovery}, the two optima differ.
+Consider moving along the trained update, $M\oplus\alpha A$ for $\alpha\in[0,1]$, so that $\alpha=0$ is the frozen model and $\alpha=1$ the adapter.
+To second order,
+\begin{equation}
+    U(M\oplus\alpha A)
+    \approx
+    U(M)+\alpha\, g_U^\top A-\frac{\alpha^2}{2}\,A^\top H_U A ,
+    \label{eq:overshoot}
+\end{equation}
+with $g_U$ the gradient of $U$ at the frozen model.
+If the update first helps ($g_U^\top A>0$) but is too large, $U$ peaks at $\alpha^\star=g_U^\top A/A^\top H_U A<1$, and every scale between $0$ and $2\alpha^\star$ beats the frozen model while the full update may fall far below it.
+A code that removes part of the update, or shrinks it, then scores above both.
+The same argument applies direction by direction: if the harmful excess lives in a few strong directions of $A$, cutting or shrinking those directions recovers the gain the rest of the update carries.
+\newline
+Compression may also limit what an update does away from its task.
+Generalization bounds based on compression tighten as a model's description shortens \citep{arora2018genbounds,lotfi2022pacbayescomp}: a code with fewer bits can carry less that is specific to the training set.
+For an adapter, this suggests that a heavily compressed update should move the frozen model less on unrelated tasks than the full update does, even when both reach the same accuracy at home.
+Section~\ref{sec:recovery} tests both predictions: the damage of a corrupted adapter sits in its leading singular directions, shrinking its leading direction traces the concave curve of Equation~\ref{eq:overshoot}, and the compressed adapter stays at the frozen model's level off-task where a clean fine-tune does not.
+\newline
+The same view also suggests what could set the rate before training.
+The per-example correction gradients $g_i=\nabla_\theta\ell_i(\theta_0)$ describe what the data ask of this receiver; their second moment, weighted by the receiver's geometry, has a spectrum whose log-determinant plays the role of rate in quadratic rate-distortion theory \citep{cover2006elements}.
+Appendix~\ref{app:correction-statistics} derives this proxy; Section~\ref{sec:behavior-prediction} tests it.

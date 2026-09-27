@@ -1,0 +1,156 @@
+\section{Experimental Details}
+\label{app:xp_details}
+
+\subsection{Models, training and evaluation}
+\label{app:setup}
+
+\paragraph{Models.} All frozen models are base (pretrained) checkpoints loaded in 4-bit NF4 with double quantization (bitsandbytes), except Mistral-7B-Instruct-v0.3 and Gemma-2-9B-it, which are instruction-tuned and prompted through their chat template. We use Qwen2.5 at 0.5B, 1.5B, 3B, 7B, 14B and 32B parameters, Qwen3-8B-Base, Llama-3.1-8B, Mistral-7B-v0.1, Mistral-7B-Instruct-v0.3 and Gemma-2-9B-it. Most experiments use Qwen2.5-7B.
+
+\paragraph{Adapters and training.} Unless stated otherwise, adapters are LoRA of rank 16 with scale $\alpha = 32$ ($\alpha/r = 2$) and no dropout, on the attention and MLP projections of every layer (q, k, v, o, gate, up and down). We train with AdamW at learning rate $2\times10^{-4}$, $\beta = (0.9, 0.95)$, no weight decay, 3\% linear warmup, gradient clipping at 1.0, effective batch size 16 (micro-batches of 4) and maximum sequence length 1,024 tokens, with the loss on the whole response. The corruption experiments of Section~\ref{sec:recovery} train for one epoch on 32,000 MetaMathQA rows (2,000 updates), and evaluate the validation loss every 200 updates. The adapters of Figure~\ref{fig:families} and of the 14B and 32B studies keep the checkpoint with the lowest validation loss; the Qwen2.5-7B window-search adapters keep the final one. Seeds are 11, 22 and 33 where three are reported, and 11 otherwise.
+
+\paragraph{Evaluation.} Decoding is greedy. GSM8K-style tasks allow 512 new tokens and are scored by exact match of the final answer; MATH-500 allows 1,024 tokens and is checked with Math-Verify; multiple-choice probes ask for a letter within 32 tokens. GSM8K uses all 1,319 test problems where stated and a fixed subset of 500 otherwise. Intervals are 95\% paired bootstrap intervals over questions (2,000 to 10,000 draws), clustered by template for GSM-Symbolic.
+
+\paragraph{Selecting spectral filters.} For the window searches of Section~\ref{sec:recovery}, the corrupted update is decomposed by SVD into its 16 singular directions. Each candidate keeps a set of directions at full precision or codes them. Candidates are scored on 128 MetaMathQA rows reserved from training (every seed problem of the training slice is excluded), the finalists are re-scored on 128 further reserved rows, and only the selected filter is scored on the test sets.
+
+\paragraph{Compute.} Training and evaluation ran on single NVIDIA H100 or A100 GPUs (80\,GB) of the Jean-Zay cluster (IDRIS).
+
+\subsection{Corruptions}
+\label{app:corruptions}
+
+\begin{table}[h]
+\caption{Corruptions used, with the number of configurations that use each.}
+\label{tab:corruptions}
+\centering
+\small
+\begin{tabular}{p{0.3\linewidth}p{0.52\linewidth}r}
+\toprule
+ & corruption & configs \\
+\midrule
+rationale permuted & each worked explanation/CoT moved to a different problem; question and answer line kept & 19 \\
+response mismatched & the whole response dealt to a different item, for tasks without an answer line & 10 \\
+rationale steps shuffled & steps of the explanation reordered; steps, arithmetic and answer kept & 2 \\
+arithmetic corrupted & half the computed results moved by up to a third, and the answer follows the wrong chain & 2 \\
+labels scrambled / flipped & each multiple-choice letter, or short text label, moved to another of its choices & 2 + 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Codecs and rate accounting}
+\label{app:codecs}
+
+Rates are the size of the serialized file, decoding metadata included, divided by the number of scalar values in the uncompressed adapter. The uniform code is a zero-free midrise quantizer fitted per row; the exact-zero control is a midtread quantizer scaled by the row's absolute maximum. LoRAQuant runs in four configurations: 2@0.8, 2@0.9, 3@0.8 and 3@0.9. Below one bit per value we remove paired rank directions before coding. Table~\ref{tab:codecs} lists the rates each code realises.
+
+\begin{table}[h]
+\caption{Realised rate and retained GSM8K gain per codec (Mistral-7B, 3 seeds, raw gain 61.5 points).}
+\label{tab:codecs}
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+codec & bits / value & gain kept (\%) & relative RMSE \\
+\midrule
+midtread, 2 levels (exact zero) & 0.63 & 61.1 & 0.881 \\
+adaptive, may drop rows, target 1 & 0.98 & 2.6 & 0.537 \\
+uniform zero-free, 1 bit & 1.02 & 85.7 & 0.563 \\
+adaptive, keeps rows, target 1.1 & 1.03 & 85.9 & 0.561 \\
+LoRAQuant 2@0.8 & 1.59 & 95.4 & -- \\
+uniform zero-free, 2 bits & 1.97 & 98.6 & 0.314 \\
+LoRAQuant 3@0.9 & 2.69 & 99.1 & -- \\
+uniform zero-free, 3 bits & 2.84 & 99.8 & 0.184 \\
+uniform zero-free, 4 bits & 3.39 & 100.7 & 0.112 \\
+uniform zero-free, 8 bits & 7.28 & 100.1 & 0.008 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The compressed adapters of Figure~\ref{fig:families} use the uniform code below one bit: half of the rank directions are removed and the rest are coded at 1 bit, 0.52 bits per value overall and 2.63 to 2.74\,MB depending on the model. The rank-1 codes of Figure~\ref{fig:rank-bits} and Table~\ref{tab:scale} keep the leading singular direction of the update; a rank-1 adapter at 1 bit is a 0.40\,MB file for Qwen2.5-7B.
+
+\subsection{Candidates for the behavioral rate}
+\label{app:negative}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/A2_negative_battery.pdf}
+\caption{Candidates for predictors of $R^\star(0.90)$, one point per arm (seed means; 24 arms, Mistral-7B). (a) Held-out bits saved: $r=-0.31$. (b) Forward KL tracks bits saved at $r=+0.978$, so it is not a second measurement. (c) Base bits per token on the corpus: $r=+0.25$. (d) Sixteen times the optimizer updates on the same rows lowers $R^\star$; bars are seed s.d. (e) Second-order Taylor prediction of the damage against measured damage, symmetric log axes: close above one bit per value, wrong in sign and size below it. (f) $R^\star$ at other retention thresholds: code and dialogue sit at the top of the math range at every threshold.}
+\label{fig:a2}
+\end{figure}
+
+The audit re-scored 268 cells from 67 arms on four receivers with 46 candidate measures, after six repairs to the measurement pipeline; nothing was retrained. The repairs lower the held-out-receiver error from 0.239 (receiver mean) to 0.152, but the best predictor is text cross-row redundancy, two zlib calls that never look at the model (Figure~\ref{fig:a3}). A measure of the corpus alone assigns one value to a corpus on every receiver, so it cannot produce the corpus--receiver reorderings of Section~\ref{sec:behavior-prediction}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.66\linewidth]{figures/A3_rate_law_audit.pdf}
+\caption{Leave-one-receiver-out RMSE of $R^\star(0.90)$ for the rate-law models, four receivers.}
+\label{fig:a3}
+\end{figure}
+
+Table~\ref{tab:external} lists every test of a correction statistic on a receiver outside the development pair. Only the locked rows were chosen before seeing that receiver’s \(R^\star\); the rest are shown for completeness.
+
+\begin{table}[h]
+\caption{Correction statistics on new receivers. $\rho$: Spearman between measure and $R^\star(0.90)$ over natural corpora (seed means). RMSE: absolute prediction from the development fit, against the base-code-length fit. Gate: $\rho\ge0.70$ and lower RMSE than base code length.}
+\label{tab:external}
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llcrrrr}
+\toprule
+receiver & measure & locked & corpora & $\rho$ & RMSE & base RMSE \\
+\midrule
+Llama-3.1-8B & Fisher log-volume & yes & 5 & $-0.10$ & 0.357 & 0.327 \\
+Qwen3-8B & Fisher effective rank & yes & 4 & $-0.40$ & 0.408 & 0.306 \\
+Qwen2.5-7B, new panel & coherent energy / entropy & yes & 5 & 0.10 & 0.296 & 0.241 \\
+\midrule
+Llama-3.1-8B & coherent energy / entropy & no & 5 & 0.70 & 0.132 & 0.327 \\
+Qwen3-8B & coherent energy / entropy & no & 4 & 0.80 & 0.163 & 0.306 \\
+Qwen3-8B & coherent energy & no & 4 & 1.00 & 0.206 & 0.306 \\
+Llama-3.1-8B & Fisher log-determinant & no & 5 & $-0.50$ & 0.483 & 0.327 \\
+Qwen3-8B & Fisher log-determinant & no & 4 & 0.40 & 0.461 & 0.306 \\
+Qwen2.5-7B, new panel & Fisher log-determinant & no & 5 & 0.70 & 0.234 & 0.241 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Known payload}
+\label{app:payload}
+
+Sixteen single-token labels are assigned to (family, item) pairs; 128 of 192 mappings are taught, and only the rule that generates labels changes between conditions, so the number of independent 4-bit draws behind them is known. This separates the information the data carries relative to the base model, the weights installed, and the serialized rate by construction.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/A4_known_payload.pdf}
+\caption{(a) Prequential code length against the known number of source bits. The switch code, which spends one bit per block naming the cheaper of base and adapter, lands within 1.1--3.5$\times$ of the known bits and at most one bit per block above the base code; the plain mixture overshoots the base at 256 and 512 bits. Recall on taught mappings is 1.000 in every cell. (b) $R^\star(0.90)$ does not follow the known information; bars are the seed range. Mistral-7B, 2,048 updates, 3 seeds.}
+\label{fig:a4}
+\end{figure}
+
+\begin{table}[h]
+\caption{GSM8K accuracy (\%) of aligned and permuted adapters under three codes, 3-seed means. Rates: 1.97, 1.50 and 1.02 bits per value.}
+\label{tab:a6}
+\centering
+\small
+\begin{tabular}{lrrrrrrrr}
+\toprule
+ & \multicolumn{4}{c}{aligned} & \multicolumn{4}{c}{permuted} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+model & raw & 2 bits & 1.5 bits & 1 bit & raw & 2 bits & 1.5 bits & 1 bit \\
+\midrule
+Mistral-7B & 68.9 & 67.3 & 64.2 & 59.3 & 15.7 & 15.3 & 14.3 & 24.2 \\
+Qwen2.5-7B & 83.2 & 83.4 & 82.9 & 82.4 & 23.7 & 23.2 & 27.4 & 65.8 \\
+Llama-3.1-8B & 73.2 & 72.2 & 70.0 & 65.7 & 19.8 & 19.4 & 17.1 & 34.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:r6r7} (Section~\ref{sec:recovery}) repeats the sweep on Qwen2.5-14B and 32B, each with its own corrupted and clean adapters trained as at 7B (rank 16, one epoch on the same 32,000 MetaMathQA rows), except that the checkpoint with the lowest validation loss is kept. At these scales the corrupted adapter falls below base on the search split, so the windows show damage being removed as well as gain added.
+% NOTE: Gemma-2-9B-it on NuminaMath-CoT replicates where the damage sits (dropping direction 0 alone restores the base)
+% but its selected window does not beat the base on the MATH-500 test (51.2 vs 51.0). Decide whether to report it.
+% Mistral-7B-Instruct window search: jobs queued on Jean-Zay, not yet run.
+
+\subsection{All generalization probes}
+\label{app:breadth}
+
+Table~\ref{tab:a11} lists the 72 probes behind Figure~\ref{fig:breadth}.
+
+{\small\setlength{\tabcolsep}{4pt}
+\input{tables/A11_breadth}
+}

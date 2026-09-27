@@ -1,0 +1,341 @@
+\section{Details on the Receiver-Relative Rate-Distortion View}
+\label{app:rate-distortion}
+
+This appendix provides additional details for the local arguments used in
+Section~\ref{sec:information_theory}.
+The purpose of these derivations is not to establish an exact rate-distortion
+theory of LoRA, but to make explicit the assumptions under which the geometric
+quantities introduced in the main text arise.
+
+\subsection{Local Behavioral Distortion}
+\label{app:local-distortion}
+
+Let $A$ denote a trained adapter and let $\hat A=A+e$ be a perturbed version,
+where $e$ is the error induced by compression.
+For a differentiable evaluation loss $\mathcal{L}_U$, a Taylor expansion around
+$A$ gives
+\begin{equation}
+\begin{split}
+    \mathcal{L}_U(M\oplus(A+e))
+    -
+    \mathcal{L}_U(M\oplus A)
+    &=
+    g_U^\top e
+    +
+    \frac{1}{2}e^\top H_Ue
+    +
+    o(\|e\|^2),
+\end{split}
+\label{eq:app-taylor}
+\end{equation}
+where
+\[
+    g_U
+    =
+    \nabla_A \mathcal{L}_U(M\oplus A),
+    \qquad
+    H_U
+    =
+    \nabla_A^2 \mathcal{L}_U(M\oplus A).
+\]
+
+The quadratic approximation used in the main text therefore requires the
+first-order contribution to be negligible for the perturbations considered.
+This is exact at a stationary point of the evaluation objective and can also
+be a useful local approximation when $|g_U^\top e|$ is small compared with the
+quadratic term.
+
+The exact Hessian need not be positive semidefinite.
+When interpreting $H_U$ as a local distortion metric, one may instead use a
+positive-semidefinite curvature approximation, such as a generalized
+Gauss--Newton matrix.
+The relevant point for our argument is not the particular approximation, but
+that behavioral distortion generally defines a non-isotropic metric over
+parameter perturbations.
+
+\subsection{When Does Weight Error Recover Functional Distortion?}
+\label{app:isotropy}
+
+Squared weight reconstruction error corresponds to the Euclidean quadratic
+form
+\[
+    D_{\mathrm{weight}}(e)=e^\top e,
+\]
+whereas the local functional criterion is
+\[
+    D_{\mathrm{func}}(e)=e^\top H_Ue.
+\]
+
+Let $\mathcal{S}$ denote the subspace containing the compression errors under
+consideration.
+If
+\begin{equation}
+    H_U|_{\mathcal{S}}=\lambda I,
+    \qquad \lambda>0,
+    \label{eq:isotropic-condition}
+\end{equation}
+then
+\[
+    D_{\mathrm{func}}(e)
+    =
+    \lambda D_{\mathrm{weight}}(e)
+\]
+for every $e\in\mathcal{S}$, and the two criteria induce identical rankings of
+compression errors.
+
+Conversely, if all perturbations with equal Euclidean norm have equal
+functional cost, the restriction of $H_U$ to $\mathcal{S}$ must be proportional
+to the identity.
+To see this, diagonalize the symmetric quadratic form on $\mathcal{S}$.
+If two eigenvalues differ, perturbations of equal norm along their associated
+eigenvectors have different functional costs.
+
+Thus, ordinary reconstruction error is sufficient only under an isotropic
+functional geometry on the errors produced by the codec.
+The RMSE counterexample and layer-location controls in the main text provide
+empirical evidence against this approximation in our setting.
+
+\subsection{Correction Statistics and the Learned Update}
+\label{app:correction-statistics}
+
+At the frozen parameters $\theta_0$, let
+\[
+    g_i=\nabla_\theta\ell_i(\theta_0),
+    \qquad
+    \mu=\mathbb{E}[g_i],
+    \qquad
+    J=\mathbb{E}[g_ig_i^\top].
+\]
+The centered correction covariance is
+\begin{equation}
+    C_g
+    =
+    \mathbb{E}\big[
+        (g_i-\mu)(g_i-\mu)^\top
+    \big]
+    =
+    J-\mu\mu^\top.
+    \label{eq:app-centered-gradient}
+\end{equation}
+
+A quadratic approximation to the average training objective has the form
+\[
+    \mathcal{L}_T(\theta_0+\Delta\theta)
+    \approx
+    \mathcal{L}_T(\theta_0)
+    +
+    \mu^\top\Delta\theta
+    +
+    \frac{1}{2}
+    \Delta\theta^\top H_T\Delta\theta.
+\]
+When $H_T$ is invertible on the relevant subspace, its minimizer is
+\begin{equation}
+    \Delta\theta^\star
+    =
+    -H_T^{-1}\mu.
+    \label{eq:app-newton-update}
+\end{equation}
+
+Throughout, $H_T^{-1}$ denotes the inverse restricted to the relevant
+subspace. When $H_T$ is singular, the same local expressions can instead be
+read using a pseudoinverse or a suitably damped inverse.
+
+Equation~\ref{eq:app-newton-update} makes clear that $J$ does not determine the
+deterministic local update.
+For example, in one dimension, a dataset for which every example has gradient
+$+1$ and a dataset containing equal numbers of gradients $+1$ and $-1$ both
+satisfy
+\[
+    J=1,
+\]
+but their means are respectively $\mu=1$ and $\mu=0$.
+Their local optimal updates are therefore different despite having identical
+second moments.
+
+We consequently interpret $J$ as a descriptor of the geometry of the
+corrections requested by the data, rather than as an estimate of the adapter
+update itself.
+Its potential relevance to compression comes from the directional diversity
+that it captures in addition to the mean correction.
+
+\subsection{From Correction Statistics to a Receiver-Relative Spectrum}
+\label{app:relative-spectrum}
+
+To motivate a link between correction statistics and compressibility, consider
+the following local linear model.
+Let $G$ be a random correction gradient and suppose that it induces a local
+response
+\begin{equation}
+    \Delta\theta=-H_T^{-1}G.
+    \label{eq:app-linear-response}
+\end{equation}
+This should be understood as an idealized response model, not as a description
+of an SGD trajectory.
+
+Under Equation~\ref{eq:app-linear-response}, the mean update is
+\[
+    \mathbb{E}[\Delta\theta]
+    =
+    -H_T^{-1}\mu,
+\]
+its covariance is
+\begin{equation}
+    \mathrm{Cov}(\Delta\theta)
+    =
+    H_T^{-1}C_gH_T^{-1},
+    \label{eq:app-update-covariance}
+\end{equation}
+and its second moment is
+\begin{equation}
+    \mathbb{E}[
+        \Delta\theta\Delta\theta^\top
+    ]
+    =
+    H_T^{-1}JH_T^{-1}.
+    \label{eq:app-update-second-moment}
+\end{equation}
+
+Behavioral distortion introduces a second geometry through $H_U$.
+Applying it to the centered update covariance in
+Equation~\ref{eq:app-update-covariance} gives
+\begin{equation}
+    C_{\mathrm{rel}}
+    =
+    H_U^{1/2}
+    H_T^{-1}
+    C_g
+    H_T^{-1}
+    H_U^{1/2}.
+    \label{eq:app-relative-covariance}
+\end{equation}
+This is the quantity that corresponds most directly to the Gaussian
+rate-distortion argument below: it is the covariance of the local update
+distribution expressed in behaviorally weighted coordinates.
+
+For prediction, however, we are also interested in the systematic correction
+encoded by $\mu$. Since
+\[
+    J=C_g+\mu\mu^\top,
+\]
+retaining the uncentered second moment motivates the related geometry
+\begin{equation}
+    \widetilde C_{\mathrm{rel}}
+    =
+    H_U^{1/2}
+    H_T^{-1}
+    J
+    H_T^{-1}
+    H_U^{1/2}.
+    \label{eq:app-relative-second-moment}
+\end{equation}
+Unlike $C_{\mathrm{rel}}$, $\widetilde C_{\mathrm{rel}}$ is not itself a
+Gaussian source covariance. It is a second-moment extension that retains both
+the mean correction and its directional variability, and is introduced as a
+candidate geometry for predicting behavioral rate.
+
+When training and evaluation share the same local geometry,
+$H_T=H_U=H$, this reduces to
+\begin{equation}
+    \widetilde C_{\mathrm{rel}}
+    =
+    H^{-1/2}JH^{-1/2}.
+    \label{eq:app-whitened-spectrum}
+\end{equation}
+
+This whitening has a simple interpretation.
+A correction direction is discounted when the training geometry makes it easy
+to realize, and amplified when it corresponds to a behaviorally sensitive
+direction of the receiver.
+
+Our empirical implementation is more limited than Equation~\ref{eq:app-relative-second-moment}: the $J$ used later is estimated from projected output-head correction gradients rather than gradients in the full LoRA parameter space.
+It is therefore a correction-gradient second moment, not the Fisher information matrix, the Hessian, or the learned update itself.
+We use it as an accessible proxy for the receiver-relative geometry motivated above.
+
+\subsection{Gaussian Rate-Distortion Motivation}
+\label{app:gaussian-rd}
+
+The spectral summaries used in the main text are motivated by the classical
+rate-distortion function of a Gaussian source under quadratic distortion
+\citep[Ch.~10]{cover2006elements}.
+
+Let
+\[
+    X\sim\mathcal{N}(0,\Sigma)
+\]
+and consider a quadratic distortion
+\[
+    d(x,\hat x)
+    =
+    (x-\hat x)^\top H(x-\hat x),
+    \qquad H\succeq0.
+\]
+After the change of coordinates
+\[
+    Z=H^{1/2}X,
+\]
+the problem becomes ordinary squared-error coding for a Gaussian variable with
+covariance
+\[
+    C=H^{1/2}\Sigma H^{1/2}.
+\]
+Let $\lambda_1,\ldots,\lambda_d$ denote the eigenvalues of $C$.
+The Gaussian rate-distortion function is then given by reverse water filling:
+\begin{equation}
+    R(D)
+    =
+    \frac{1}{2}
+    \sum_j
+    \left[
+        \log_2\frac{\lambda_j}{\nu}
+    \right]_+,
+    \label{eq:app-waterfilling}
+\end{equation}
+where $\nu$ is chosen so that
+\[
+    D
+    =
+    \sum_j\min(\lambda_j,\nu).
+\]
+
+Equation~\ref{eq:app-waterfilling} highlights two properties relevant to our
+setting.
+Rate increases when the distortion-weighted variance becomes larger, but also
+when it is spread across more active directions.
+This motivates considering both scale-sensitive and
+dimensionality-sensitive summaries of correction spectra.
+
+A convenient smooth summary is
+\begin{equation}
+    I_{\mathrm{rel}}(\alpha)
+    =
+    \frac{1}{2}
+    \log\det
+    \left(
+        I+\alpha C_{\mathrm{rel}}
+    \right)
+    =
+    \frac{1}{2}
+    \sum_j
+    \log(1+\alpha\lambda_j).
+    \label{eq:app-soft-logdet}
+\end{equation}
+Unlike Equation~\ref{eq:app-waterfilling}, this expression does not implement
+an explicit distortion threshold and should not be interpreted as the
+rate-distortion function of our adapters.
+We use it only as a smooth statistic that increases with both the magnitude
+and dimensionality of the relevant spectrum.
+
+Our empirical correction spectrum is a substantially coarser approximation.
+It is constructed from projected output-head correction gradients rather than
+from gradients in the full LoRA parameter space, and we do not explicitly
+estimate $H_T$ or $H_U$ in the experiments reported here.
+Consequently,
+\[
+    \log\det(I+\alpha J)
+\]
+should be interpreted as a tractable proxy for the second-moment geometry
+$\widetilde C_{\mathrm{rel}}$, which is itself an extension of the covariance
+geometry directly motivated by Gaussian rate-distortion theory.
+It is therefore neither a direct estimate of
+Equation~\ref{eq:app-relative-covariance} nor an information-theoretic rate.

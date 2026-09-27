@@ -1,0 +1,237 @@
+% --- Palette: figures4papers (paper/plots/style.py), same meanings as the plots:
+% blue = the adapter / message, gray = frozen base, red = damage/distortion.
+\definecolor{srcFill}{HTML}{EEF7EE}
+\definecolor{srcDraw}{HTML}{8BCF8B}
+\definecolor{srcIcon}{HTML}{3F8F3F}
+\definecolor{encFill}{HTML}{F5EAF3}
+\definecolor{encDraw}{HTML}{C28FB9}
+\definecolor{encIcon}{HTML}{9A4D8E}
+\definecolor{msgFill}{HTML}{E6EEF7}
+\definecolor{msgDraw}{HTML}{3775BA}
+\definecolor{msgIcon}{HTML}{0F4D92}
+\definecolor{baseFill}{HTML}{F2F2F2}
+\definecolor{decDraw}{HTML}{4D4D4D}
+\definecolor{baseIcon}{HTML}{767676}
+\definecolor{adpFill}{HTML}{E6EEF7}
+\definecolor{adpIcon}{HTML}{0F4D92}
+\definecolor{outFill}{HTML}{E5F2F3}
+\definecolor{outDraw}{HTML}{42949E}
+\definecolor{outIcon}{HTML}{2C6F77}
+\definecolor{distDraw}{HTML}{B64342}
+
+\begin{figure}[t]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+  font=\normalsize,
+  >={Latex[length=2.7mm,width=2.0mm]},
+  flow/.style={->,line width=1.15pt,draw=decDraw},
+  panel/.style={
+    rounded corners=2.5pt,
+    line width=1.0pt,
+    minimum width=3.15cm,
+    minimum height=2.85cm,
+    inner sep=0pt
+  },
+  role/.style={font=\bfseries\large},
+  main/.style={font=\large,align=center,text=black!92},
+  sub/.style={font=\itshape\normalsize}
+]
+
+% --- Main panels ---------------------------------------------------
+\node[panel,draw=srcDraw,fill=srcFill] (data) at (0,0) {};
+\node[panel,draw=encDraw,fill=encFill] (training) at (4.05,0) {};
+\node[panel,draw=msgDraw,fill=msgFill] (adapter) at (8.10,0) {};
+\node[minimum width=4.80cm,minimum height=2.85cm,inner sep=0pt] (decoder) at (13.10,0) {};
+\node[panel,draw=outDraw,fill=outFill] (behavior) at (18.15,0) {};
+
+% --- SOURCE icon: clean stacked documents --------------------------
+\begin{scope}[
+    shift={($(data.center)+(0,0.64)$)},
+    draw=srcIcon,
+    line width=1.15pt,
+    scale=1.18
+]
+
+% back sheet
+\draw[
+    fill=srcFill,
+    rounded corners=1.2pt
+]
+(-0.02,-0.28) rectangle (0.34,0.30);
+
+% middle sheet
+\draw[
+    fill=srcFill,
+    rounded corners=1.2pt
+]
+(-0.12,-0.20) rectangle (0.24,0.38);
+
+% front sheet
+\draw[
+    fill=srcFill,
+    rounded corners=1.2pt
+]
+(-0.22,-0.12) rectangle (0.14,0.46);
+
+% text lines on front sheet only
+\draw[line width=.9pt] (-0.14,0.26) -- (0.06,0.26);
+\draw[line width=.9pt] (-0.14,0.13) -- (0.06,0.13);
+\draw[line width=.9pt] (-0.14,0.00) -- (0.02,0.00);
+
+\end{scope}
+\node[main] at ($(data.center)+(0,-0.70)$) {Fine-tuning\\data};
+
+% --- ENCODER icon --------------------------------------------------
+\begin{scope}[shift={($(training.center)+(0,0.66)$)},scale=1.18]
+  \foreach \a in {0,45,...,315}{\begin{scope}[rotate=\a]\fill[encIcon] (-0.08,0.29) rectangle (0.08,0.43);\end{scope}}
+  \fill[encIcon] (0,0) circle (0.34);
+  \fill[encFill] (0,0) circle (0.13);
+\end{scope}
+\node[main] at ($(training.center)+(0,-0.62)$) {Fine-tuning};
+
+% --- MESSAGE adapter glyph ----------------------------------------
+\begin{scope}[shift={($(adapter.center)+(0,0.66)$)},draw=msgIcon,line width=1.25pt,scale=1.18]
+  \draw[fill=msgFill,rounded corners=2.6pt] (-0.34,-0.31) rectangle (0.40,0.31);
+  \foreach \yy in {-0.18,0,0.18}{\draw (-0.50,\yy)--(-0.34,\yy);}
+  \draw (0.02,-0.17)--(0.02,0.17);
+  \draw (0.14,-0.17)--(0.14,0.17);
+  \draw (0.26,-0.17)--(0.26,0.17);
+\end{scope}
+\node[main] at ($(adapter.center)+(0,-0.70)$) {Learned\\adapter};
+
+% --- DECODER -------------------------------------------------------
+\begin{scope}
+  \clip[rounded corners=2.5pt] (decoder.south west) rectangle (decoder.north east);
+  \fill[baseFill] (decoder.south west) rectangle (decoder.center |- decoder.north);
+  \fill[adpFill] (decoder.center |- decoder.south) rectangle (decoder.north east);
+\end{scope}
+\draw[draw=decDraw,line width=1.0pt,rounded corners=2.5pt]
+  (decoder.south west) rectangle (decoder.north east);
+
+% docking divider
+\draw[dashed,dash pattern=on 3pt off 2.4pt,draw=black!34,line width=.72pt]
+  ($(decoder.center)+(0,1.425)$)--($(decoder.center)+(0,0.38)$);
+\draw[draw=black!34,line width=.72pt]
+  ($(decoder.center)+(0,0.38)$) arc[start angle=90,end angle=-90,radius=.20cm];
+\draw[dashed,dash pattern=on 3pt off 2.4pt,draw=black!34,line width=.72pt]
+  ($(decoder.center)+(0,-0.38)$)--($(decoder.center)+(0,-1.425)$);
+
+% base-model network icon
+% --- Base-model icon: compact layered neural network ----------------
+\begin{scope}[
+    shift={($(decoder.west)!0.5!(decoder.center)+(0,0.49)$)},
+    x=0.34cm,
+    y=0.27cm
+]
+
+% connections: input -> hidden
+\foreach \yi in {-1,0,1}{
+    \foreach \yh in {-1.35,-0.45,0.45,1.35}{
+        \draw[
+            draw=baseIcon!55,
+            line width=0.45pt
+        ] (-1,\yi) -- (0,\yh);
+    }
+}
+
+% connections: hidden -> output
+\foreach \yh in {-1.35,-0.45,0.45,1.35}{
+    \foreach \yo in {-1,0,1}{
+        \draw[
+            draw=baseIcon!55,
+            line width=0.45pt
+        ] (0,\yh) -- (1,\yo);
+    }
+}
+
+% nodes
+\foreach \y in {-1,0,1}{
+    \filldraw[
+        fill=baseFill,
+        draw=baseIcon,
+        line width=0.75pt
+    ] (-1,\y) circle (0.105cm);
+
+    \filldraw[
+        fill=baseFill,
+        draw=baseIcon,
+        line width=0.75pt
+    ] (1,\y) circle (0.105cm);
+}
+
+\foreach \y in {-1.35,-0.45,0.45,1.35}{
+    \filldraw[
+        fill=baseFill,
+        draw=baseIcon,
+        line width=0.75pt
+    ] (0,\y) circle (0.105cm);
+}
+
+\end{scope}
+\node[font=\large,text=black!92] at ($(decoder.west)!0.5!(decoder.center)+(0,-0.48)$) {Base model};
+\node[sub,text=baseIcon] at ($(decoder.west)!0.5!(decoder.center)+(0,-0.91)$) {frozen};
+
+% matching trained-adapter glyph
+\begin{scope}[shift={($(decoder.center)!0.5!(decoder.east)+(0,0.70)$)},draw=adpIcon,line width=1.25pt,scale=1.18]
+  \draw[fill=adpFill,rounded corners=2.6pt] (-0.34,-0.31) rectangle (0.40,0.31);
+  \foreach \yy in {-0.18,0,0.18}{\draw (-0.50,\yy)--(-0.34,\yy);}
+  \draw (0.02,-0.17)--(0.02,0.17);
+  \draw (0.14,-0.17)--(0.14,0.17);
+  \draw (0.26,-0.17)--(0.26,0.17);
+\end{scope}
+\node[font=\large,text=black!92] at ($(decoder.center)!0.5!(decoder.east)+(0,-0.48)$) {Adapter};
+\node[sub,text=adpIcon] at ($(decoder.center)!0.5!(decoder.east)+(0,-0.91)$) {trained};
+
+% --- RECONSTRUCTION icon ------------------------------------------
+\begin{scope}[shift={($(behavior.center)+(0,0.66)$)},draw=outIcon,line width=1.25pt,scale=1.18]
+  \draw (0,0) circle (.34);
+  \draw (0,0) circle (.21);
+  \draw (0,0) circle (.07);
+  \draw[->] (.39,.39)--(.0,.0);
+\end{scope}
+\node[main] at ($(behavior.center)+(0,-0.70)$) {Adapted\\behavior};
+
+% --- Stage headings ------------------------------------------------
+\node[role,text=srcIcon] at ($(data.north)+(0,1.00)$) {SOURCE};
+\node[role,text=encIcon] at ($(training.north)+(0,1.00)$) {ENCODER};
+\node[role,text=msgIcon] at ($(adapter.north)+(0,1.00)$) {MESSAGE};
+\node[role,text=decDraw] at ($(decoder.north)+(0,1.00)$) {DECODER};
+\node[role,text=outIcon] at ($(behavior.north)+(0,1.00)$) {RECONSTRUCTION};
+
+% heading brackets
+\foreach \node/\col in {data/srcIcon,training/encIcon,adapter/msgIcon,decoder/decDraw,behavior/outIcon}{
+  \draw[\col,line width=.75pt,rounded corners=2pt]
+    ($ (\node.north west)+(0,0.38) $)
+    -- ($ (\node.north west)+(0,0.50) $)
+    -- ($ (\node.north east)+(0,0.50) $)
+    -- ($ (\node.north east)+(0,0.38) $);
+}
+
+% --- Main flow -----------------------------------------------------
+\draw[flow] (data.east)--(training.west);
+\draw[flow] (training.east)--(adapter.west);
+\draw[flow] (adapter.east)--(decoder.west);
+\draw[flow] (decoder.east)--(behavior.west);
+
+% --- Rate brace ----------------------------------------------------
+\draw[decorate,decoration={brace,mirror,amplitude=4.4pt},draw=msgIcon,line width=.8pt]
+  ($(adapter.south west)+(0,-.12)$)--($(adapter.south east)+(0,-.12)$);
+\node[font=\large,text=msgIcon] (rate) at ($(adapter.south)+(0,-.62)$) {rate $R$};
+
+% --- Behavioral distortion ----------------------------------------
+\coordinate (dbot) at ($(adapter.south)+(0,-1.46)$);
+\draw[->,dash pattern=on 4pt off 3pt,line width=.9pt,draw=distDraw]
+  (data.south)
+  -- (data.south |- dbot)
+  -- node[pos=.53,below=5pt,font=\large,text=distDraw,fill=white,inner xsep=2pt]
+     {behavioral distortion $D$}
+  (behavior.south |- dbot)
+  -- (behavior.south);
+
+\end{tikzpicture}%
+}
+
+\caption{Information-theoretic view of parameter-efficient fine-tuning. $R$ is the number of bits used by the adapter, $D$ measures failure to preserve the behavior induced by fine-tuning.}
+\label{fig:information_view}
+\end{figure}

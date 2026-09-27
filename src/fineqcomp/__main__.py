@@ -1,4 +1,4 @@
-from fineqcomp.progress_cli import main
+from fineqcomp.cli import main
 
 
 if __name__ == "__main__":

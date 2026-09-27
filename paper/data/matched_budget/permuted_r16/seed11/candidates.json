@@ -1,0 +1,227 @@
+[
+  {
+    "bits": 1,
+    "budget_units": 1,
+    "effective_bits_per_value": 1.2780032467532467,
+    "file_bits": 3224576,
+    "gsm8k_accuracy": 0.814,
+    "key": "r1_b1",
+    "rank": 1
+  },
+  {
+    "bits": 2,
+    "budget_units": 2,
+    "effective_bits_per_value": 2.19045505275974,
+    "file_bits": 5526816,
+    "gsm8k_accuracy": 0.676,
+    "key": "r1_b2",
+    "rank": 1
+  },
+  {
+    "bits": 4,
+    "budget_units": 4,
+    "effective_bits_per_value": 3.506775695008117,
+    "file_bits": 8848072,
+    "gsm8k_accuracy": 0.452,
+    "key": "r1_b4",
+    "rank": 1
+  },
+  {
+    "bits": 8,
+    "budget_units": 8,
+    "effective_bits_per_value": 7.334865817775974,
+    "file_bits": 18506864,
+    "gsm8k_accuracy": 0.386,
+    "key": "r1_b8",
+    "rank": 1
+  },
+  {
+    "bits": 16,
+    "budget_units": 16,
+    "effective_bits_per_value": 15.072113433441558,
+    "file_bits": 38028992,
+    "gsm8k_accuracy": 0.396,
+    "key": "r1_b16",
+    "rank": 1
+  },
+  {
+    "bits": 1,
+    "budget_units": 2,
+    "effective_bits_per_value": 1.1407914595170454,
+    "file_bits": 5756744,
+    "gsm8k_accuracy": 0.802,
+    "key": "r2_b1",
+    "rank": 2
+  },
+  {
+    "bits": 2,
+    "budget_units": 4,
+    "effective_bits_per_value": 2.055209073153409,
+    "file_bits": 10371144,
+    "gsm8k_accuracy": 0.338,
+    "key": "r2_b2",
+    "rank": 2
+  },
+  {
+    "bits": 4,
+    "budget_units": 8,
+    "effective_bits_per_value": 3.371624835125812,
+    "file_bits": 17014136,
+    "gsm8k_accuracy": 0.232,
+    "key": "r2_b4",
+    "rank": 2
+  },
+  {
+    "bits": 8,
+    "budget_units": 16,
+    "effective_bits_per_value": 7.201054560673701,
+    "file_bits": 36338480,
+    "gsm8k_accuracy": 0.234,
+    "key": "r2_b8",
+    "rank": 2
+  },
+  {
+    "bits": 16,
+    "budget_units": 32,
+    "effective_bits_per_value": 14.936176250507305,
+    "file_bits": 75372008,
+    "gsm8k_accuracy": 0.232,
+    "key": "r2_b16",
+    "rank": 2
+  },
+  {
+    "bits": 1,
+    "budget_units": 4,
+    "effective_bits_per_value": 1.07237501268263,
+    "file_bits": 10822992,
+    "gsm8k_accuracy": 0.728,
+    "key": "r4_b1",
+    "rank": 4
+  },
+  {
+    "bits": 2,
+    "budget_units": 8,
+    "effective_bits_per_value": 1.9882820426643668,
+    "file_bits": 20066824,
+    "gsm8k_accuracy": 0.244,
+    "key": "r4_b2",
+    "rank": 4
+  },
+  {
+    "bits": 4,
+    "budget_units": 16,
+    "effective_bits_per_value": 3.312162324979708,
+    "file_bits": 33428144,
+    "gsm8k_accuracy": 0.228,
+    "key": "r4_b4",
+    "rank": 4
+  },
+  {
+    "bits": 8,
+    "budget_units": 32,
+    "effective_bits_per_value": 7.147517216670049,
+    "file_bits": 72136632,
+    "gsm8k_accuracy": 0.23,
+    "key": "r4_b8",
+    "rank": 4
+  },
+  {
+    "bits": 16,
+    "budget_units": 64,
+    "effective_bits_per_value": 14.861766468394887,
+    "file_bits": 149993032,
+    "gsm8k_accuracy": 0.234,
+    "key": "r4_b16",
+    "rank": 4
+  },
+  {
+    "bits": 1,
+    "budget_units": 8,
+    "effective_bits_per_value": 1.0379400872564934,
+    "file_bits": 20950912,
+    "gsm8k_accuracy": 0.614,
+    "key": "r8_b1",
+    "rank": 8
+  },
+  {
+    "bits": 2,
+    "budget_units": 16,
+    "effective_bits_per_value": 1.9550999232700892,
+    "file_bits": 39463864,
+    "gsm8k_accuracy": 0.22,
+    "key": "r8_b2",
+    "rank": 8
+  },
+  {
+    "bits": 4,
+    "budget_units": 32,
+    "effective_bits_per_value": 3.290153206168831,
+    "file_bits": 66412032,
+    "gsm8k_accuracy": 0.224,
+    "key": "r8_b4",
+    "rank": 8
+  },
+  {
+    "bits": 8,
+    "budget_units": 64,
+    "effective_bits_per_value": 7.131547804002638,
+    "file_bits": 143950920,
+    "gsm8k_accuracy": 0.222,
+    "key": "r8_b8",
+    "rank": 8
+  },
+  {
+    "bits": 16,
+    "budget_units": 128,
+    "effective_bits_per_value": 14.820169027749595,
+    "file_bits": 299146416,
+    "gsm8k_accuracy": 0.216,
+    "key": "r8_b16",
+    "rank": 8
+  },
+  {
+    "bits": 1,
+    "budget_units": 16,
+    "effective_bits_per_value": 1.0204895812195618,
+    "file_bits": 41197344,
+    "gsm8k_accuracy": 0.534,
+    "key": "r16_b1",
+    "rank": 16
+  },
+  {
+    "bits": 2,
+    "budget_units": 32,
+    "effective_bits_per_value": 1.9388592212231128,
+    "file_bits": 78272088,
+    "gsm8k_accuracy": 0.226,
+    "key": "r16_b2",
+    "rank": 16
+  },
+  {
+    "bits": 4,
+    "budget_units": 64,
+    "effective_bits_per_value": 3.282377763227983,
+    "file_bits": 132510168,
+    "gsm8k_accuracy": 0.234,
+    "key": "r16_b4",
+    "rank": 16
+  },
+  {
+    "bits": 8,
+    "budget_units": 128,
+    "effective_bits_per_value": 7.1294716178596795,
+    "file_bits": 287818024,
+    "gsm8k_accuracy": 0.232,
+    "key": "r16_b8",
+    "rank": 16
+  },
+  {
+    "bits": 16,
+    "budget_units": 256,
+    "effective_bits_per_value": 14.798144650149656,
+    "file_bits": 597403704,
+    "gsm8k_accuracy": 0.234,
+    "key": "r16_b16",
+    "rank": 16
+  }
+]

@@ -9,18 +9,27 @@ __pycache__/
 build/
 dist/
 *.egg-info/
-tex/
 
-# Generated locally or on the GPU host.
+# Local runs, prepared corpora, checkpoints, and render scratch.
 .cache/
+.hf_cache/
+.claude/
+logs/
+prepared/
+runs/
 remote_logs/
 remote_results/
-.hf_cache/
-
-# LaTeX build output.
-tex/.latex-build/
-tex/main.pdf
-
-# Local scratch, not repo content.
+tmp/
 incoming/
-*.bib
+
+# LaTeX build output. Paper source, bibliography, and figures belong in Git.
+paper/manuscript/.latex-build/
+paper/manuscript/main.pdf
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz

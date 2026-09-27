@@ -6,6 +6,7 @@ import hashlib
 import math
 import re
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -180,3 +181,75 @@ def unload_adapter(model: Any) -> torch.nn.Module:
     if not hasattr(model, "unload"):
         raise TypeError("expected a PEFT model with unload()")
     return model.unload()
+
+
+def save_adapter(path: Path, tensors: dict[str, torch.Tensor]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix('.tmp')
+    torch.save(tensors, temporary)
+    temporary.replace(path)
+
+
+def lora_pairs(tensors: dict[str, torch.Tensor]) -> list[tuple[str, str]]:
+    """Every (lora_A, lora_B) name pair in a tensor map, in a fixed order."""
+    pairs = []
+    for a_name in sorted(name for name in tensors if ".lora_A." in name):
+        b_name = a_name.replace(".lora_A.", ".lora_B.")
+        if b_name not in tensors:
+            raise KeyError(f"{a_name} has no matching lora_B tensor")
+        pairs.append((a_name, b_name))
+    if not pairs:
+        raise ValueError("tensor map holds no LoRA factor pairs")
+    return pairs
+
+
+def frobenius_inner(
+    a_left: torch.Tensor,
+    b_left: torch.Tensor,
+    a_right: torch.Tensor,
+    b_right: torch.Tensor,
+) -> float:
+    """<B_l A_l, B_r A_r>_F without ever forming a dense weight update.
+
+    tr((B_l A_l)^T B_r A_r) = tr((B_l^T B_r)(A_r A_l^T)), and both factors are
+    r x r. The dense update for one `gate_proj` is 68M values; this is two
+    matrices of at most 16 x 16.
+    """
+    left = b_left.T @ b_right
+    right = a_right @ a_left.T
+    return float((left * right.T).sum())
+
+
+def update_geometry(
+    tensors: dict[str, torch.Tensor],
+    reference: dict[str, torch.Tensor] | None = None,
+) -> dict[str, float]:
+    """Frobenius norm of an update, and its cosine against a reference update.
+
+    Both are summed over target modules, which treats the concatenation of every
+    module's update as one vector -- the same object a single scalar `alpha`
+    rescales, so the norm reported here is exactly the quantity a shrinkage
+    account has to move.
+
+    The runtime `alpha / rank` scaling is a constant common to every condition
+    here (all of them are padded back to the same rank-16 adapter spec and
+    applied through it), so it cancels in the cosine and rescales every norm
+    by the same factor. Norms are therefore comparable across conditions and
+    are not absolute weight-space distances.
+    """
+    squared = 0.0
+    cross = 0.0
+    reference_squared = 0.0
+    for a_name, b_name in lora_pairs(tensors):
+        a, b = tensors[a_name], tensors[b_name]
+        squared += frobenius_inner(a, b, a, b)
+        if reference is None:
+            continue
+        ref_a, ref_b = reference[a_name], reference[b_name]
+        cross += frobenius_inner(a, b, ref_a, ref_b)
+        reference_squared += frobenius_inner(ref_a, ref_b, ref_a, ref_b)
+    geometry = {"update_norm": squared ** 0.5}
+    if reference is not None:
+        denominator = (squared * reference_squared) ** 0.5
+        geometry["cosine_to_clean"] = cross / denominator if denominator > 0 else 0.0
+    return geometry

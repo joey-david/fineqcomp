@@ -159,3 +159,40 @@ def test_the_marker_search_direction_is_a_property_of_the_marker():
     assert first == 5
     assert last == 12
     assert response_boundary(tokenizer, "no marker here", "```") is None
+
+
+def test_session_unload_is_a_noop_without_an_attach(monkeypatch):
+    """A screen scores the frozen model with no adapter ever attached.
+
+    unload_adapter() requires a PEFT model with unload(), which a bare base
+    model is not. Calling ModelSession.unload() in that state used to raise
+    TypeError from inside a `finally` block, masking whatever real error the
+    scoring call had just hit.
+    """
+    from fineqcomp.modeling import ModelSession
+
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+    base = SimpleNamespace()  # deliberately has no unload()
+    session = ModelSession(spec=None, model=base, tokenizer=None)
+    assert session.unload() is base
+
+
+def test_session_unload_after_attach_still_unloads(monkeypatch):
+    from fineqcomp.modeling import ModelSession
+
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+    calls = []
+
+    class Peft:
+        def unload(self):
+            calls.append("unloaded")
+            return "base"
+
+    def fake_attach(model, adapter, seed):
+        return Peft()
+
+    monkeypatch.setattr("fineqcomp.modeling.attach_adapter", fake_attach)
+    session = ModelSession(spec=None, model=SimpleNamespace(), tokenizer=None)
+    session.attach(adapter=None, seed=11)
+    assert session.unload() == "base"
+    assert calls == ["unloaded"]

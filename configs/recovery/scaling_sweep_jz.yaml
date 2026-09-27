@@ -1,0 +1,57 @@
+arms:
+  cot_0p5b:
+    config: configs/recovery/scale_and_tasks_jz.yaml
+    dataset: cot_math_permuted
+    evaluator: gsm8k
+    model: qwen25_0p5b_base
+    rank: 16
+    study: scale_ladder
+  cot_14b:
+    config: configs/recovery/scale_and_tasks_jz.yaml
+    dataset: cot_math_permuted
+    evaluator: gsm8k
+    model: qwen25_14b_base
+    rank: 16
+    study: scale_ladder
+  cot_1p5b:
+    config: configs/recovery/scale_and_tasks_jz.yaml
+    dataset: cot_math_permuted
+    evaluator: gsm8k
+    model: qwen25_1p5b_base
+    rank: 16
+    study: scale_ladder
+  cot_32b:
+    config: configs/recovery/scale_and_tasks_jz.yaml
+    dataset: cot_math_permuted
+    evaluator: gsm8k
+    model: qwen25_32b_base
+    rank: 16
+    study: scale_ladder
+  cot_3b:
+    config: configs/recovery/scale_and_tasks_jz.yaml
+    dataset: cot_math_permuted
+    evaluator: gsm8k
+    model: qwen25_3b_base
+    rank: 16
+    study: scale_ladder
+  cot_7b:
+    config: configs/recovery/scale_and_tasks_jz.yaml
+    dataset: cot_math_permuted
+    evaluator: gsm8k
+    model: qwen25_7b_base
+    rank: 16
+    study: scale_ladder
+conditions:
+- base
+- raw
+- rank1_b1
+- rank1_b16
+- scale_head_0p5
+- norm_matched_b1
+- tail_b16
+evaluation_batch_size: 32
+max_new_tokens: 512
+seed: 11
+smoke_rows: 8
+test_rows: 500
+version: 1

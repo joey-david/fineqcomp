@@ -1,0 +1,340 @@
+% Parameter-efficient fine-tuning and adapter information
+
+@inproceedings{hu2022lora,
+  title = {{LoRA}: Low-Rank Adaptation of Large Language Models},
+  author = {Edward J. Hu and Yelong Shen and Phillip Wallis and Zeyuan Allen-Zhu
+            and Yuanzhi Li and Shean Wang and Lu Wang and Weizhu Chen},
+  booktitle = {The Tenth International Conference on Learning Representations},
+  year = {2022},
+  publisher = {OpenReview.net},
+  url = {https://openreview.net/forum?id=nZeVKeeFYf9},
+}
+
+@inproceedings{dettmers2023qlora,
+  title = {{QLoRA}: Efficient Finetuning of Quantized {LLMs}},
+  author = {Tim Dettmers and Artidoro Pagnoni and Ari Holtzman and Luke
+            Zettlemoyer},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume = {36},
+  pages = {10088--10115},
+  year = {2023},
+  doi = {10.52202/075280-0441},
+  url = {
+         https://proceedings.neurips.cc/paper_files/paper/2023/hash/1feb87871436031bdc0f2beaa62a049b-Abstract.html
+         },
+}
+
+@inproceedings{zhu2024loraasymmetry,
+  title = {Asymmetry in Low-Rank Adapters of Foundation Models},
+  author = {Jiacheng Zhu and Kristjan Greenewald and Kimia Nadjahi and Haitz S{
+            \'a}ez De Oc{\'a}riz Borde and Rickard Br{\"u}el Gabrielsson and
+            Leshem Choshen and Marzyeh Ghassemi and Mikhail Yurochkin and Justin
+            Solomon},
+  booktitle = {Proceedings of the 41st International Conference on Machine
+               Learning},
+  series = {Proceedings of Machine Learning Research},
+  volume = {235},
+  pages = {62369--62385},
+  publisher = {PMLR},
+  year = {2024},
+  url = {https://proceedings.mlr.press/v235/zhu24c.html},
+}
+
+@inproceedings{aghajanyan2021intrinsicdim,
+  title = {Intrinsic Dimensionality Explains the Effectiveness of Language Model
+           Fine-Tuning},
+  author = {Armen Aghajanyan and Sonal Gupta and Luke Zettlemoyer},
+  booktitle = {Proceedings of the 59th Annual Meeting of the Association for
+               Computational Linguistics and the 11th International Joint
+               Conference on Natural Language Processing (Volume 1: Long Papers)},
+  pages = {7319--7328},
+  address = {Online},
+  publisher = {Association for Computational Linguistics},
+  year = {2021},
+  doi = {10.18653/v1/2021.acl-long.568},
+  url = {https://aclanthology.org/2021.acl-long.568/},
+}
+
+@misc{mirzaei2025loraquant,
+  title = {{LoRAQuant}: Mixed-Precision Quantization of {LoRA} to Ultra-Low Bits
+           },
+  author = {Amir Reza Mirzaei and Yuqiao Wen and Yanshuai Cao and Lili Mou},
+  year = {2025},
+  eprint = {2510.26690},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2510.26690},
+  url = {https://arxiv.org/abs/2510.26690},
+}
+
+@misc{tan2026adapterbits,
+  title = {How Many Bits Can an Adapter Write? Measuring the Capacity and
+           Memorization of Parameter-Efficient Fine-Tuning},
+  author = {Kaizhen Tan and Heqing Du and Yang Feng},
+  year = {2026},
+  eprint = {2607.21351},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2607.21351},
+  url = {https://arxiv.org/abs/2607.21351},
+}
+
+% Quantization, compression, and rate / description-length
+
+@inproceedings{lin2024awq,
+  title = {{AWQ}: Activation-aware Weight Quantization for On-Device {LLM}
+           Compression and Acceleration},
+  author = {Ji Lin and Jiaming Tang and Haotian Tang and Shang Yang and Wei-Ming
+            Chen and Wei-Chen Wang and Guangxuan Xiao and Xingyu Dang and Chuang
+            Gan and Song Han},
+  booktitle = {Proceedings of Machine Learning and Systems},
+  volume = {6},
+  pages = {87--100},
+  year = {2024},
+  url = {
+         https://proceedings.mlsys.org/paper_files/paper/2024/hash/42a452cbafa9dd64e9ba4aa95cc1ef21-Abstract-Conference.html
+         },
+}
+
+@inproceedings{frantar2023gptq,
+  title = {{GPTQ}: Accurate Post-Training Quantization for Generative
+           Pre-trained Transformers},
+  author = {Elias Frantar and Saleh Ashkboos and Torsten Hoefler and Dan
+            Alistarh},
+  booktitle = {The Eleventh International Conference on Learning Representations
+               },
+  year = {2023},
+  publisher = {OpenReview.net},
+  url = {https://openreview.net/forum?id=tcbBPnfwxS},
+}
+
+@article{gong2026lbllmsurvey,
+  title = {A Survey of Low-bit Large Language Models: Basics, Systems, and
+           Algorithms},
+  author = {Ruihao Gong and Yifu Ding and Zining Wang and Chengtao Lv and Xingyu
+            Zheng and Jinyang Du and Yang Yong and Shiqiao Gu and Haotong Qin and
+            Jinyang Guo and Dahua Lin and Michele Magno and Xianglong Liu},
+  journal = {Neural Networks},
+  volume = {198},
+  pages = {108619},
+  year = {2026},
+  doi = {10.1016/j.neunet.2025.107856},
+  url = {https://doi.org/10.1016/j.neunet.2025.107856},
+}
+
+@article{grunwald2019mdlrevisited,
+  title = {Minimum Description Length Revisited},
+  author = {Peter Gr{\"u}nwald and Teemu Roos},
+  journal = {International Journal of Mathematics for Industry},
+  volume = {11},
+  number = {1},
+  pages = {1930001},
+  year = {2019},
+  doi = {10.1142/S2661335219300018},
+  url = {https://doi.org/10.1142/S2661335219300018},
+}
+
+@inproceedings{lotfi2022pacbayescomp,
+  title = {{PAC}-Bayes Compression Bounds So Tight That They Can Explain
+           Generalization},
+  author = {Sanae Lotfi and Marc Finzi and Sanyam Kapoor and Andres Potapczynski
+            and Micah Goldblum and Andrew Gordon Wilson},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume = {35},
+  pages = {31459--31473},
+  year = {2022},
+  doi = {10.52202/068431-2281},
+  url = {
+         https://proceedings.neurips.cc/paper_files/paper/2022/hash/cbeec55c50c3367024bafab2438a021b-Abstract-Conference.html
+         },
+}
+
+@inproceedings{liu2025paretoq,
+  title = {{ParetoQ}: Improving Scaling Laws in Extremely Low-bit {LLM}
+           Quantization},
+  author = {Zechun Liu and Changsheng Zhao and Hanxian Huang and Sijia Chen and
+            Jing Zhang and Jiawei Zhao and Scott Roy and Lisa Jin and Yunyang
+            Xiong and Yangyang Shi and Lin Xiao and Yuandong Tian and Bilge Soran
+            and Raghuraman Krishnamoorthi and Tijmen Blankevoort and Vikas
+            Chandra},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume = {38},
+  pages = {101395--101420},
+  year = {2025},
+  doi = {10.52202/085713-3055},
+  url = {
+         https://proceedings.neurips.cc/paper_files/paper/2025/hash/83b17fb3369b1effa97ca5409526b02e-Abstract-Conference.html
+         },
+}
+
+@inproceedings{young2025radio,
+  title = {Radio: Rate--Distortion Optimization for Large Language Model
+           Compression},
+  author = {Sean I. Young},
+  booktitle = {Proceedings of the 42nd International Conference on Machine
+               Learning},
+  series = {Proceedings of Machine Learning Research},
+  volume = {267},
+  pages = {72819--72836},
+  publisher = {PMLR},
+  year = {2025},
+  url = {https://proceedings.mlr.press/v267/young25b.html},
+}
+
+@inproceedings{xiao2023smoothquant,
+  title = {{SmoothQuant}: Accurate and Efficient Post-Training Quantization for
+           Large Language Models},
+  author = {Guangxuan Xiao and Ji Lin and Mickael Seznec and Hao Wu and Julien
+            Demouth and Song Han},
+  booktitle = {Proceedings of the 40th International Conference on Machine
+               Learning},
+  series = {Proceedings of Machine Learning Research},
+  volume = {202},
+  pages = {38087--38099},
+  publisher = {PMLR},
+  year = {2023},
+  url = {https://proceedings.mlr.press/v202/xiao23c.html},
+}
+
+@inproceedings{arora2018genbounds,
+  title = {Stronger Generalization Bounds for Deep Nets via a Compression
+           Approach},
+  author = {Sanjeev Arora and Rong Ge and Behnam Neyshabur and Yi Zhang},
+  booktitle = {Proceedings of the 35th International Conference on Machine
+               Learning},
+  series = {Proceedings of Machine Learning Research},
+  volume = {80},
+  pages = {254--263},
+  publisher = {PMLR},
+  year = {2018},
+  url = {https://proceedings.mlr.press/v80/arora18b.html},
+}
+
+@inproceedings{yao2022zeroquant,
+  title = {{ZeroQuant}: Efficient and Affordable Post-Training Quantization for
+           Large-Scale Transformers},
+  author = {Zhewei Yao and Reza Yazdani Aminabadi and Minjia Zhang and Xiaoxia
+            Wu and Conglong Li and Yuxiong He},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume = {35},
+  pages = {27168--27183},
+  year = {2022},
+  doi = {10.52202/068431-1970},
+  url = {
+         https://proceedings.neurips.cc/paper_files/paper/2022/hash/adf7fa39d65e2983d724ff7da57f00ac-Abstract-Conference.html
+         },
+}
+
+@misc{urdshals2025compressibility,
+  title = {Compressibility Measures Complexity: Minimum Description Length Meets
+           Singular Learning Theory},
+  author = {Einar Urdshals and Edmund Lau and Jesse Hoogland and Stan van
+            Wingerden and Daniel Murfet},
+  year = {2025},
+  eprint = {2510.12077},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2510.12077},
+  url = {https://arxiv.org/abs/2510.12077},
+}
+
+
+% Reasoning and chain-of-thought
+
+@inproceedings{wei2022cot,
+  title = {Chain-of-Thought Prompting Elicits Reasoning in Large Language Models
+           },
+  author = {Jason Wei and Xuezhi Wang and Dale Schuurmans and Maarten Bosma and
+            Brian Ichter and Fei Xia and Ed H. Chi and Quoc V. Le and Denny Zhou},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume = {35},
+  pages = {24824--24837},
+  year = {2022},
+  doi = {10.52202/068431-1800},
+  url = {
+         https://proceedings.neurips.cc/paper/2022/hash/9d5609613524ecf4f15af0f7b31abca4-Abstract-Conference.html
+         },
+}
+
+@inproceedings{li2026slowthinkfast,
+  title = {Making Slow Thinking Faster: Compressing {LLM} Chain-of-Thought via
+           Step Entropy},
+  author = {Zeju Li and Jianyuan Zhong and Ziyang Zheng and Xiangyu Wen and
+            Zhijian Xu and Yingying Cheng and Fan Zhang and Qiang Xu},
+  booktitle = {The Fourteenth International Conference on Learning
+               Representations},
+  year = {2026},
+  publisher = {OpenReview.net},
+  url = {https://openreview.net/forum?id=cGLqQfS5wH},
+}
+
+@inproceedings{hao2025continuallatent,
+  title = {Training Large Language Models to Reason in a Continuous Latent Space
+           },
+  author = {Shibo Hao and Sainbayar Sukhbaatar and DiJia Su and Xian Li and
+            Zhiting Hu and Jason E. Weston and Yuandong Tian},
+  booktitle = {Second Conference on Language Modeling},
+  year = {2025},
+  publisher = {OpenReview.net},
+  url = {https://openreview.net/forum?id=Itxz7S4Ip3},
+}
+
+@article{dutta2024stepbystep,
+  title = {How to Think Step-by-Step: A Mechanistic Understanding of
+           Chain-of-Thought Reasoning},
+  author = {Subhabrata Dutta and Joykirat Singh and Soumen Chakrabarti and
+            Tanmoy Chakraborty},
+  journal = {Transactions on Machine Learning Research},
+  year = {2024},
+  url = {https://mlanthology.org/tmlr/2024/dutta2024tmlr-think/},
+}
+
+@inproceedings{qian2025reasoningdynamics,
+  title = {Demystifying Reasoning Dynamics with Mutual Information: Thinking
+           Tokens are Information Peaks in {LLM} Reasoning},
+  author = {Chen Qian and Dongrui Liu and Haochen Wen and Zhen Bai and Yong Liu
+            and Jing Shao},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume = {38},
+  pages = {14065--14104},
+  year = {2025},
+  doi = {10.52202/085713-0421},
+  url = {
+         https://proceedings.neurips.cc/paper_files/paper/2025/hash/12867c8f1888d97d4e9f95f03c0f3ec9-Abstract-Conference.html
+         },
+}
+
+@inproceedings{yang2025symbolicmechanisms,
+  title = {Emergent Symbolic Mechanisms Support Abstract Reasoning in Large
+           Language Models},
+  author = {Yukang Yang and Declan Iain Campbell and Kaixuan Huang and Mengdi
+            Wang and Jonathan D. Cohen and Taylor Whittington Webb},
+  booktitle = {Proceedings of the 42nd International Conference on Machine
+               Learning},
+  series = {Proceedings of Machine Learning Research},
+  volume = {267},
+  pages = {70515--70549},
+  publisher = {PMLR},
+  year = {2025},
+  url = {https://proceedings.mlr.press/v267/yang25c.html},
+}
+
+% Pointer / state-tracking task context
+@inproceedings{fagnou2024chainandcausal,
+  title = {Chain and Causal Attention for Efficient Entity Tracking},
+  author = {Erwan Fagnou and Paul Caillon and Blaise Delattre and Alexandre
+            Allauzen},
+  booktitle = {Proceedings of the 2024 Conference on Empirical Methods in
+               Natural Language Processing},
+  pages = {13174--13188},
+  address = {Miami, Florida, USA},
+  publisher = {Association for Computational Linguistics},
+  year = {2024},
+  doi = {10.18653/v1/2024.emnlp-main.731},
+  url = {https://aclanthology.org/2024.emnlp-main.731/},
+}
+
+@article{cover2006elements,
+  title={Elements of information theory second edition solutions to problems},
+  author={Cover, Thomas M and Thomas, Joy A},
+  journal={Internet Access},
+  pages={19--20},
+  year={2006}
+}

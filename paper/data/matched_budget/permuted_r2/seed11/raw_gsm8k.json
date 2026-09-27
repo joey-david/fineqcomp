@@ -1,0 +1,16 @@
+{
+  "answer_extracted_fraction": 1.0,
+  "clipped_mean_repeated_8gram_fraction": 0.5561097256857855,
+  "exact_match": 0.204,
+  "examples": 500,
+  "generation_policy": {
+    "do_sample": false
+  },
+  "generation_seed": 11,
+  "hit_generation_limit_fraction": 0.002,
+  "max_new_tokens": 512,
+  "mean_completion_tokens": 141.264,
+  "mean_repeated_8gram_fraction": 0.015383950898431177,
+  "terminated_fraction": 0.998,
+  "terminated_mean_repeated_8gram_fraction": 0.01430033211128217
+}

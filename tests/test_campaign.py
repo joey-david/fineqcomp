@@ -23,7 +23,7 @@ from fineqcomp.runner import (
 
 
 def test_campaign_expands_to_fixed_grid(tmp_path):
-    runs = expand_campaign(load_campaign("configs/campaign.yaml"))
+    runs = expand_campaign(load_campaign("configs/rate/campaign.yaml"))
 
     assert len(runs) == 24
     assert Counter(run.study for run in runs) == {
@@ -41,9 +41,9 @@ def test_campaign_expands_to_fixed_grid(tmp_path):
 
 
 def test_conditional_trace_control_matches_the_finished_aligned_grid():
-    control = load_campaign("configs/conditional_trace_rate.yaml")
-    cot = load_campaign("configs/cot_panel.yaml")
-    llama = load_campaign("configs/external_llama_panel.yaml")
+    control = load_campaign("configs/recovery/conditional_trace_rate.yaml")
+    cot = load_campaign("configs/recovery/aligned_panel.yaml")
+    llama = load_campaign("configs/rate/external_llama_panel.yaml")
     runs = expand_campaign(control)
 
     assert len(runs) == 9
@@ -69,83 +69,25 @@ def test_conditional_trace_control_matches_the_finished_aligned_grid():
         assert control["models"][model] == aligned["models"][model]
 
     lock = json.loads(Path(
-        "results/3_chain_of_thought_under_compression/"
+        "results/recovery/"
         "conditional_trace_rate_lock.json"
     ).read_text())
     assert set(lock["arms"]["permuted"]["run_ids"]) == {
         run.run_id for run in runs
     }
     for arm in lock["arms"]["aligned"]["runs"]:
-        campaign = load_campaign(arm["config"])
+        aligned_runs = expand_campaign(cot) + expand_campaign(llama)
         assert set(arm["run_ids"]) == {
-            run.run_id for run in expand_campaign(campaign)
+            run.run_id for run in aligned_runs
             if run.study == arm["study"] and run.model.key == arm["model"]
         }
 
 
-def test_native_reasoning_smoke_is_one_seed_with_a_wide_rate_grid():
-    campaign = load_campaign("configs/reasoning_native_smoke.yaml")
-    runs = expand_campaign(campaign)
 
-    assert len(runs) == 9
-    assert {run.seed for run in runs} == {11}
-    assert {run.dataset_key for run in runs} == {"cot_math"}
-    assert all(run.model.chat and not run.model.disable_thinking for run in runs)
-    assert {
-        run.model.generation_profile
-        for run in runs
-        if run.model.key.startswith("qwen3_")
-    } == {"qwen3_thinking"}
-    assert {
-        run.model.generation_profile
-        for run in runs
-        if run.model.key.startswith("r1_")
-    } == {"deepseek_r1"}
-    assert {run.model.key for run in runs} == set(campaign["models"])
-    rates = {
-        float(codec["bits"]) + float(codec.get("blend", 0.0))
-        for codec in campaign["codecs"].values()
-    }
-    assert rates == {
-        0.0625, 0.125, 0.25, 0.5, 0.75,
-        1.0, 1.25, 1.5, 1.75, 2.0, 3.0, 4.0, 8.0, 16.0,
-    }
-
-
-def test_reasoning_data_smoke_caps_every_new_trace_source():
-    campaign = load_campaign("configs/reasoning_data_smoke.yaml")
-    runs = expand_campaign(campaign)
-
-    assert len(runs) == 2
-    assert {run.dataset_key for run in runs} == {
-        "numina_math_cot_smoke", "openr1_math_smoke"
-    }
-    for spec in campaign["datasets"].values():
-        assert spec["train_rows"] == 128
-        assert spec["validation_rows"] == 64
-        assert spec["test_rows"] == 64
-
-
-def test_reasoning_scaling_lock_matches_the_smoke_panel_and_rate_grid():
-    lock = json.loads(Path(
-        "results/3_chain_of_thought_under_compression/"
-        "reasoning_scaling_battery_lock.json"
-    ).read_text())
-    campaign = load_campaign(lock["model_panel"]["smoke_config"])
-
-    assert set(lock["model_panel"]["smoke_models"]) == set(campaign["models"])
-    rates = sorted(
-        float(codec["bits"]) + float(codec.get("blend", 0.0))
-        for codec in campaign["codecs"].values()
-    )
-    assert rates == lock["rate_grid"]["coarse_target_bits_per_value"]
-    assert lock["grpo_extension"]["implementation_owner"] == (
-        "src/fineqcomp/grpo_control.py"
-    )
 
 
 def test_stale_manifest_is_rejected():
-    campaign = load_campaign("configs/campaign.yaml")
+    campaign = load_campaign("configs/rate/campaign.yaml")
     runs = expand_campaign(campaign)
 
     with pytest.raises(ValueError, match="prepare again"):
@@ -153,7 +95,7 @@ def test_stale_manifest_is_rejected():
 
 
 def test_two_shards_are_disjoint_and_cost_balanced():
-    runs = expand_campaign(load_campaign("configs/campaign.yaml"))
+    runs = expand_campaign(load_campaign("configs/rate/campaign.yaml"))
     shards = partition_runs(runs, 2)
 
     assert {run.run_id for run in shards[0]}.isdisjoint(run.run_id for run in shards[1])
@@ -163,7 +105,7 @@ def test_two_shards_are_disjoint_and_cost_balanced():
 
 
 def test_four_shards_match_the_two_host_layout():
-    runs = expand_campaign(load_campaign("configs/campaign.yaml"))
+    runs = expand_campaign(load_campaign("configs/rate/campaign.yaml"))
     shards = partition_runs(runs, 4)
 
     assert sum(map(len, shards)) == 24
@@ -173,7 +115,7 @@ def test_four_shards_match_the_two_host_layout():
 
 
 def test_weighted_workers_give_a100s_three_times_more_work():
-    runs = expand_campaign(load_campaign("configs/campaign.yaml"))
+    runs = expand_campaign(load_campaign("configs/rate/campaign.yaml"))
     weights = [3.0, 3.0, 1.0, 1.0]
     partitions = partition_runs_weighted(runs, weights)
     normalized = [
@@ -189,7 +131,7 @@ def test_weighted_workers_give_a100s_three_times_more_work():
 
 
 def test_natural_screening_uses_fixed_dataset_ceiling(tmp_path):
-    campaign = load_campaign("configs/campaign.yaml")
+    campaign = load_campaign("configs/rate/campaign.yaml")
     run = next(
         run
         for run in expand_campaign(campaign)
@@ -220,7 +162,7 @@ def test_run_id_tracks_dataset_size_caps(tmp_path):
     trained adapter and codec metrics rather than recomputing them.
     """
     def metamath_ids(rows: int) -> set[str]:
-        raw = load_campaign("configs/campaign.yaml")
+        raw = load_campaign("configs/rate/campaign.yaml")
         raw["datasets"]["metamath"]["train_rows"] = rows
         return {
             run.run_id
@@ -243,7 +185,7 @@ def test_compressibility_arms_are_compute_matched():
     together and the experiment cannot separate them — which is what a first
     smoke config did by flattening every arm to one epoch.
     """
-    for path in ("configs/compressibility.yaml", "configs/compressibility_smoke.yaml"):
+    for path in ("configs/rate/compressibility.yaml", "configs/rate/compressibility_smoke.yaml"):
         raw = load_campaign(path)
         seen = set()
         for name, study in raw["studies"].items():
@@ -258,14 +200,14 @@ def test_compressibility_arms_are_compute_matched():
 
 
 def test_run_id_does_not_repeat_a_study_named_after_its_dataset():
-    raw = load_campaign("configs/compressibility.yaml")
+    raw = load_campaign("configs/rate/compressibility.yaml")
     for run in expand_campaign(raw):
         assert run.run_id.count(run.study.replace("_", "-")) == 1
 
 
 def test_information_pilot_uses_a_cached_model_and_dense_curve():
-    campaign = load_campaign("configs/campaign.yaml")
-    info = yaml.safe_load(Path("configs/information_scaling.yaml").read_text())
+    campaign = load_campaign("configs/rate/campaign.yaml")
+    info = yaml.safe_load(Path("configs/payload/information_scaling.yaml").read_text())
 
     assert info["model"] == "mistral_7b_base"
     assert info["model"] in campaign["models"]

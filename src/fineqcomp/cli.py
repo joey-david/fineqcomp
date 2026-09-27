@@ -18,7 +18,6 @@ from fineqcomp.campaign import (
     write_manifest,
 )
 from fineqcomp.config import load_campaign
-from fineqcomp.rank_frontier import DEFAULT_RATES
 from fineqcomp.data import prepare_all_natural
 from fineqcomp.dataset_info import measure_arms
 from fineqcomp.rstar import report as rstar_report
@@ -178,7 +177,7 @@ def _run(args: argparse.Namespace) -> int:
         args.runs_root,
         pilot_rows=args.pilot_rows,
     )
-    counts = engine.run_many(selected, force=args.force, limit=args.limit)
+    counts = engine.run_many(selected, force=args.force, limit=args.limit, progress=True)
     print(json.dumps(counts, indent=2))
     return 1 if counts["failed"] else 0
 
@@ -223,7 +222,7 @@ def _dataset_information(args: argparse.Namespace) -> int:
 def _frozen_measurement_rows(args: argparse.Namespace):
     """Select one manifest run and the prepared rows a frozen pass will read."""
     from fineqcomp.data import load_natural_dataset
-    from fineqcomp.relative_info import sample_examples
+    from fineqcomp.studies.relative_info import sample_examples
 
     campaign = load_campaign(args.config)
     runs = read_manifest(args.manifest)
@@ -263,7 +262,7 @@ def _frozen_measurement_record(args, run, available_rows, rows) -> dict[str, Any
 
 def _trace_retrieval(args: argparse.Namespace) -> int:
     from fineqcomp.modeling import ModelSession
-    from fineqcomp.relative_info import trace_retrieval_load
+    from fineqcomp.studies.relative_info import trace_retrieval_load
 
     run, available_rows, rows, marker = _frozen_measurement_rows(args)
     if not marker:
@@ -329,18 +328,11 @@ def _generation_smoke(args: argparse.Namespace) -> int:
     return 0
 
 
-def _reasoning_task_smoke(args: argparse.Namespace) -> int:
-    from fineqcomp.reasoning_tasks import audit_reasoning_task_panel
-
-    report = audit_reasoning_task_panel(args.rows, args.seed)
-    write_json(args.out, report)
-    print(json.dumps(report, indent=2))
-    return 0 if report["passed"] else 1
 
 
 def _relative_information(args: argparse.Namespace) -> int:
     from fineqcomp.modeling import ModelSession
-    from fineqcomp.relative_info import (
+    from fineqcomp.studies.relative_info import (
         SketchSpec,
         measure_layer_energy,
         measure_relative_information,
@@ -399,7 +391,7 @@ def _relative_information(args: argparse.Namespace) -> int:
 
 
 def _relative_information_report(args: argparse.Namespace) -> int:
-    from fineqcomp.relative_info import write_relative_information_report
+    from fineqcomp.studies.relative_info import write_relative_information_report
 
     summary = write_relative_information_report(
         Path(args.results),
@@ -413,7 +405,7 @@ def _relative_information_report(args: argparse.Namespace) -> int:
 
 
 def _rank_frontier(args: argparse.Namespace) -> int:
-    from fineqcomp.rank_frontier import frontier, sweep_run
+    from fineqcomp.studies.rank_frontier import frontier, sweep_run
 
     rows = sweep_run(
         Path(args.run),
@@ -443,7 +435,7 @@ def _rank_frontier(args: argparse.Namespace) -> int:
 
 
 def _rank_frontier_report(args: argparse.Namespace) -> int:
-    from fineqcomp.rank_frontier import write_rank_frontier_report
+    from fineqcomp.studies.rank_frontier import write_rank_frontier_report
 
     summary = write_rank_frontier_report(
         Path(args.results), Path(args.runs_root), Path(args.out)
@@ -453,7 +445,7 @@ def _rank_frontier_report(args: argparse.Namespace) -> int:
 
 
 def _relative_law(args: argparse.Namespace) -> int:
-    from fineqcomp.relative_validation import write_rate_law_report
+    from fineqcomp.studies.relative_validation import write_rate_law_report
 
     grid = {
         rows: Path(root)
@@ -474,7 +466,7 @@ def _relative_law(args: argparse.Namespace) -> int:
 
 
 def _relative_information_diagnose(args: argparse.Namespace) -> int:
-    from fineqcomp.relative_validation import write_measure_diagnostics_report
+    from fineqcomp.studies.relative_validation import write_measure_diagnostics_report
 
     result = write_measure_diagnostics_report(
         Path(args.cells),
@@ -488,7 +480,7 @@ def _relative_information_diagnose(args: argparse.Namespace) -> int:
 
 
 def _relative_information_channel_validate(args: argparse.Namespace) -> int:
-    from fineqcomp.relative_validation import (
+    from fineqcomp.studies.relative_validation import (
         write_fixed_channel_prospective_report,
     )
 
@@ -516,7 +508,7 @@ def _relative_information_channel_validate(args: argparse.Namespace) -> int:
 def _layer_profile(args: argparse.Namespace) -> int:
     from fineqcomp.campaign import _model
     from fineqcomp.data import load_natural_dataset
-    from fineqcomp.layer_profile import profile_run
+    from fineqcomp.studies.layer_profile import profile_run
     from fineqcomp.modeling import ModelSession
 
     campaign = load_campaign(args.config)
@@ -668,14 +660,14 @@ def build_parser() -> argparse.ArgumentParser:
     prepare = subparsers.add_parser(
         "prepare", help="materialize the fixed manifest and pinned datasets"
     )
-    prepare.add_argument("--config", default="configs/campaign.yaml")
+    prepare.add_argument("--config", default="configs/rate/campaign.yaml")
     prepare.add_argument("--manifest", default=".cache/prepared/manifest.jsonl")
     prepare.add_argument("--prepared-root", default=".cache/prepared")
     prepare.add_argument("--no-data", action="store_true")
     prepare.set_defaults(func=_prepare)
 
     run = subparsers.add_parser("run", help="run one cost-balanced manifest shard")
-    run.add_argument("--config", default="configs/campaign.yaml")
+    run.add_argument("--config", default="configs/rate/campaign.yaml")
     run.add_argument("--manifest", default=".cache/prepared/manifest.jsonl")
     run.add_argument("--prepared-root", default=".cache/prepared")
     run.add_argument("--runs-root", default=".cache/runs")
@@ -709,7 +701,7 @@ def build_parser() -> argparse.ArgumentParser:
         "dataset-information",
         help="measure how much information each arm's training data carries",
     )
-    information.add_argument("--config", default="configs/compressibility.yaml")
+    information.add_argument("--config", default="configs/rate/compressibility.yaml")
     information.add_argument("--manifest", default=".cache/prepared/manifest.jsonl")
     information.add_argument("--prepared-root", default=".cache/prepared")
     information.add_argument("--out", default=".cache/reports/dataset_information.json")
@@ -797,14 +789,6 @@ def build_parser() -> argparse.ArgumentParser:
     generation_smoke.add_argument("--max-new-tokens", type=int, required=True)
     generation_smoke.set_defaults(func=_generation_smoke)
 
-    task_smoke = subparsers.add_parser(
-        "reasoning-task-smoke",
-        help="audit the frozen procedural generators and programmatic scorers",
-    )
-    task_smoke.add_argument("--out", required=True)
-    task_smoke.add_argument("--rows", type=int, default=32)
-    task_smoke.add_argument("--seed", type=int, default=20_260_828)
-    task_smoke.set_defaults(func=_reasoning_task_smoke)
 
     relative_report = subparsers.add_parser(
         "relative-information-report",
@@ -816,7 +800,7 @@ def build_parser() -> argparse.ArgumentParser:
     relative_report.add_argument("--runs-root", default=".cache/runs")
     relative_report.add_argument(
         "--out",
-        default="results/1_rate_behaviour_frontier/relative_information_candidates",
+        default="results/rate/relative_information_candidates",
     )
     relative_report.add_argument("--permutations", type=int, default=50_000)
     relative_report.add_argument(
@@ -831,7 +815,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="sweep rank against rate on a finished adapter; no training",
     )
     rank.add_argument("--run", required=True)
-    rank.add_argument("--config", default="configs/campaign.yaml")
+    rank.add_argument("--config", default="configs/rate/campaign.yaml")
     rank.add_argument("--prepared-root", default=".cache/prepared")
     rank.add_argument("--out", required=True)
     rank.add_argument(
@@ -847,7 +831,7 @@ def build_parser() -> argparse.ArgumentParser:
     rank_report.add_argument("--results", default=".cache/reports/rank_frontier")
     rank_report.add_argument("--runs-root", default=".cache/runs")
     rank_report.add_argument(
-        "--out", default="results/1_rate_behaviour_frontier/rank_frontier"
+        "--out", default="results/rate/rank_frontier"
     )
     rank_report.set_defaults(func=_rank_frontier_report)
 
@@ -858,7 +842,7 @@ def build_parser() -> argparse.ArgumentParser:
     relative_law.add_argument("--results", default=".cache/reports/relative_information_channel")
     relative_law.add_argument("--runs-root", default=".cache/runs")
     relative_law.add_argument(
-        "--out", default="results/1_rate_behaviour_frontier/rate_law_audit"
+        "--out", default="results/rate/rate_law_audit"
     )
     relative_law.add_argument(
         "--row-grid",
@@ -904,7 +888,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="where the adapter bits are needed: layer allocation and"
         " representation shift, on adapters that already exist",
     )
-    profile.add_argument("--config", default="configs/compressibility.yaml")
+    profile.add_argument("--config", default="configs/rate/compressibility.yaml")
     profile.add_argument("--manifest", default=".cache/prepared/compressibility-manifest.jsonl")
     profile.add_argument("--prepared-root", default=".cache/prepared")
     profile.add_argument("--runs-root", default=".cache/runs")
@@ -948,7 +932,7 @@ def build_parser() -> argparse.ArgumentParser:
     star.add_argument("--information", default=".cache/reports/dataset_information.json")
     star.add_argument("--out", default=".cache/reports")
     star.add_argument("--target", type=float, default=0.90)
-    star.add_argument("--config", default="configs/compressibility.yaml")
+    star.add_argument("--config", default="configs/rate/compressibility.yaml")
     star.add_argument(
         "--all-runs",
         action="store_true",
@@ -959,7 +943,7 @@ def build_parser() -> argparse.ArgumentParser:
     screen = subparsers.add_parser(
         "screen", help="measure base-task headroom before natural-task training"
     )
-    screen.add_argument("--config", default="configs/campaign.yaml")
+    screen.add_argument("--config", default="configs/rate/campaign.yaml")
     screen.add_argument("--manifest", default=".cache/prepared/manifest.jsonl")
     screen.add_argument("--prepared-root", default=".cache/prepared")
     screen.add_argument("--runs-root", default=".cache/runs")
@@ -971,7 +955,7 @@ def build_parser() -> argparse.ArgumentParser:
     preflight = subparsers.add_parser(
         "preflight", help="check the remote runtime without starting the grid"
     )
-    preflight.add_argument("--config", default="configs/campaign.yaml")
+    preflight.add_argument("--config", default="configs/rate/campaign.yaml")
     preflight.add_argument("--manifest", default=".cache/prepared/manifest.jsonl")
     preflight.add_argument("--prepared-root", default=".cache/prepared")
     preflight.add_argument("--report", default=".cache/prepared/preflight.json")
@@ -996,7 +980,7 @@ def build_parser() -> argparse.ArgumentParser:
     cache = subparsers.add_parser(
         "cache-models", help="download and verify every pinned model snapshot"
     )
-    cache.add_argument("--config", default="configs/campaign.yaml")
+    cache.add_argument("--config", default="configs/rate/campaign.yaml")
     cache.add_argument("--report", default=".cache/prepared/model-cache.json")
     cache.set_defaults(func=_cache_models)
     return parser

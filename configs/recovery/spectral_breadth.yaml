@@ -1,0 +1,914 @@
+# Breadth: how fast does each adapter decay as the task moves away from home?
+#
+# Distance 0 is GSM8K, the benchmark MetaMathQA is built from and the task both
+# adapters were trained for. Distance 1 is the same task in other corpora.
+# Distance 2 is still mathematics but harder or in multiple-choice form.
+# Distance 3 is technical reasoning with no arithmetic. Distance 4 is everyday
+# and linguistic reasoning. Distance 5 is a different modality altogether.
+#
+# The narrow panel found that a clean fine-tune significantly HURTS the frozen
+# model on MATH-500 and ARC-Challenge, and that the compressed corrupted
+# adapter beats it on exactly those two. Two probes is an anecdote; this is 71,
+# and it spans the whole range rather than only the failures, so the question
+# becomes a decay curve: the clean adapter should win at home and fall off
+# fastest, the compressed one should give up some of that and fall off slower.
+#
+# Filters are chosen on reserved MetaMathQA rows. Nothing in this panel takes
+# part in selecting what is tested on it.
+#
+# Probes carry 400 rows so the analysis can split each in half: whether the
+# clean adapter hurts is decided on one half, the clean-versus-compressed
+# comparison measured on the other. Deciding and comparing on the same rows
+# would manufacture the result through regression to the mean.
+version: 1
+models:
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    alpha: 32
+    dropout: 0.0
+    last_n_layers: null
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+training:
+  cot_full_1ep:
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 400
+    restore_best: false
+    label_span: all
+codecs:
+  fp16: {method: uniform, bits: 16, score_task: false}
+datasets:
+  cot_math: &cot
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    answer_marker: 'The answer is:'
+    # The adopted adapters trained on rows 256..32256 of this exact seed-11
+    # shuffle. Excluding every seed problem occurring in that slice leaves 3,025
+    # untouched ones to draw reserved rows from, so a filter is chosen on rows
+    # these adapters provably never saw. (The original study's own 256-row
+    # validation set was not: only 23 of its rows had an unseen seed problem.)
+    holdout_by_group: true
+    holdout_excludes_first_rows: 32256
+    validation_rows: 256
+    train_rows: 32000
+    test_rows: 500
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.85
+    minimum_validation_nll_gain_bits_per_token: 0.0
+  cot_math_permuted:
+    <<: *cot
+    rationale_control: permuted
+studies:
+  regimes_clean:
+    kind: natural
+    models: [qwen25_7b_base]
+    datasets: [cot_math]
+    seeds: [11]
+    adapters: [all_linear_r16]
+    training: cot_full_1ep
+  regimes_permuted:
+    kind: natural
+    models: [qwen25_7b_base]
+    datasets: [cot_math_permuted]
+    seeds: [11]
+    adapters: [all_linear_r16]
+    training: cot_full_1ep
+spectral_transfer:
+  seed: 11
+  arms: {clean: regimes_clean, permuted: regimes_permuted}
+  # Fine at the top, where the hypothesis says the regimes divide, and coarse
+  # in the tail, where it predicts nothing interesting happens.
+  edges: [0, 1, 2, 4, 8, 16]
+  codes:
+    # fp16 is the regime axis: pure band selection, no coding confound.
+    fp16: {bits: 16}
+    two_bit: {bits: 2}
+    binary: {bits: 1}
+  scales: [0.1, 0.3, 0.5]
+  fixed_bands: [[0, 1], [1, 4], [4, 16]]
+  # 256 reserved rows, all of them held out of the adopted adapters' training.
+  training_validation_rows: 0
+  search_rows: 128
+  selection_rows: 128
+  finalists_per_family: 2
+  generation_batch_size: 32
+  max_new_tokens: 512
+  evaluation_chunk_rows: 128
+  bootstrap_draws: 10000
+  analysis_seed: 9212026
+  claim_gates:
+    coded_family: filter
+    transfer_family: math
+    minimum_corruption_harm: 0.05
+    equivalence_width: 0.10
+    minimum_in_family_datasets: 2
+  primary:
+    key: gsm8k
+    evaluator: gsm8k
+    family: training_task
+    distance: 0
+    rows: 500
+    max_new_tokens: 512
+  transfer:
+    svamp:
+      path: ChilleD/SVAMP
+      revision: 5e0bf1e5e7c0e9c4bc39180d224f41f3f801b7ef
+      split: test
+      converter: svamp
+      evaluator: gsm8k
+      family: math_word
+      distance: 1
+      rows: 400
+      max_new_tokens: 512
+    asdiv:
+      path: EleutherAI/asdiv
+      revision: 8f95807222d87b4c688c3c22a6ba2801e1fa03e2
+      split: validation
+      converter: asdiv
+      evaluator: gsm8k
+      family: math_word
+      distance: 1
+      rows: 400
+      max_new_tokens: 512
+    gsm_symbolic:
+      path: apple/GSM-Symbolic
+      name: main
+      revision: 93b5b3758d9d9841ffe81d6cd2ae2b030685b078
+      split: test
+      converter: gsm_symbolic
+      evaluator: gsm8k
+      family: math_word
+      distance: 1
+      rows: 400
+      max_new_tokens: 512
+    math500:
+      path: HuggingFaceH4/MATH-500
+      revision: 6e4ed1a2a79af7d8630a6b768ec859cb5af4d3be
+      split: test
+      converter: math
+      evaluator: math
+      family: math_hard
+      distance: 2
+      rows: 400
+      max_new_tokens: 1024
+    aqua_rat:
+      path: deepmind/aqua_rat
+      name: raw
+      revision: 33301c6a050c96af81f63cad5562cb5363e88971
+      split: test
+      converter: aqua_gen
+      evaluator: mc_letter
+      family: math_hard
+      distance: 2
+      rows: 400
+      max_new_tokens: 32
+    arc_challenge:
+      path: allenai/ai2_arc
+      name: ARC-Challenge
+      revision: 210d026faf9955653af8916fad021475a3f00453
+      split: test
+      converter: arc_mc_gen
+      evaluator: mc_letter
+      family: sci_reasoning
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    arc_easy:
+      path: allenai/ai2_arc
+      name: ARC-Easy
+      revision: 210d026faf9955653af8916fad021475a3f00453
+      split: test
+      converter: arc_mc_gen
+      evaluator: mc_letter
+      family: sci_reasoning
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    openbookqa:
+      path: allenai/openbookqa
+      name: main
+      revision: 388097ea7776314e93a529163e0fea805b8a6454
+      split: test
+      converter: openbookqa_gen
+      evaluator: mc_letter
+      family: sci_reasoning
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    qasc:
+      path: allenai/qasc
+      revision: a34ba204eb9a33b919c10cc08f4f1c8dae5ec070
+      split: validation
+      converter: qasc_gen
+      evaluator: mc_letter
+      family: sci_reasoning
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    commonsenseqa:
+      path: tau/commonsense_qa
+      revision: 94630fe30dad47192a8546eb75f094926d47e155
+      split: validation
+      converter: commonsenseqa_gen
+      evaluator: mc_letter
+      family: commonsense
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    hellaswag:
+      path: Rowan/hellaswag
+      revision: 218ec52e09a7e7462a5400043bb9a69a41d06b76
+      split: validation
+      converter: hellaswag_gen
+      evaluator: mc_letter
+      family: commonsense
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    winogrande:
+      path: allenai/winogrande
+      name: winogrande_xl
+      revision: 01e74176c63542e6b0bcb004dcdea22d94fb67b5
+      split: validation
+      converter: winogrande_gen
+      evaluator: mc_letter
+      family: commonsense
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    race_high:
+      path: ehovy/race
+      name: high
+      revision: 2fec9fd81f1dc971569a9b729c43f2f0e6436637
+      split: test
+      converter: race_gen
+      evaluator: mc_letter
+      family: reading
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    humaneval:
+      path: openai/openai_humaneval
+      name: openai_humaneval
+      revision: 7dce6050a7d6d172f3cc5c32aa97f52fa1a2e544
+      split: test
+      converter: humaneval
+      evaluator: humaneval
+      family: code
+      distance: 5
+      rows: 164
+      max_new_tokens: 512
+    mmlu_abstract_algebra:
+      path: cais/mmlu
+      name: abstract_algebra
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_math
+      distance: 2
+      rows: 400
+      max_new_tokens: 32
+    mmlu_anatomy:
+      path: cais/mmlu
+      name: anatomy
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_astronomy:
+      path: cais/mmlu
+      name: astronomy
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_business_ethics:
+      path: cais/mmlu
+      name: business_ethics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_clinical_knowledge:
+      path: cais/mmlu
+      name: clinical_knowledge
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_college_biology:
+      path: cais/mmlu
+      name: college_biology
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_college_chemistry:
+      path: cais/mmlu
+      name: college_chemistry
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_college_computer_science:
+      path: cais/mmlu
+      name: college_computer_science
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_college_mathematics:
+      path: cais/mmlu
+      name: college_mathematics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_math
+      distance: 2
+      rows: 400
+      max_new_tokens: 32
+    mmlu_college_medicine:
+      path: cais/mmlu
+      name: college_medicine
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_college_physics:
+      path: cais/mmlu
+      name: college_physics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_computer_security:
+      path: cais/mmlu
+      name: computer_security
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_conceptual_physics:
+      path: cais/mmlu
+      name: conceptual_physics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_econometrics:
+      path: cais/mmlu
+      name: econometrics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_electrical_engineering:
+      path: cais/mmlu
+      name: electrical_engineering
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_elementary_mathematics:
+      path: cais/mmlu
+      name: elementary_mathematics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_math
+      distance: 2
+      rows: 400
+      max_new_tokens: 32
+    mmlu_formal_logic:
+      path: cais/mmlu
+      name: formal_logic
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_global_facts:
+      path: cais/mmlu
+      name: global_facts
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_biology:
+      path: cais/mmlu
+      name: high_school_biology
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_chemistry:
+      path: cais/mmlu
+      name: high_school_chemistry
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_computer_science:
+      path: cais/mmlu
+      name: high_school_computer_science
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_european_history:
+      path: cais/mmlu
+      name: high_school_european_history
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_geography:
+      path: cais/mmlu
+      name: high_school_geography
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_government_and_politics:
+      path: cais/mmlu
+      name: high_school_government_and_politics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_macroeconomics:
+      path: cais/mmlu
+      name: high_school_macroeconomics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_mathematics:
+      path: cais/mmlu
+      name: high_school_mathematics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_math
+      distance: 2
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_microeconomics:
+      path: cais/mmlu
+      name: high_school_microeconomics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_physics:
+      path: cais/mmlu
+      name: high_school_physics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_psychology:
+      path: cais/mmlu
+      name: high_school_psychology
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_statistics:
+      path: cais/mmlu
+      name: high_school_statistics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_math
+      distance: 2
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_us_history:
+      path: cais/mmlu
+      name: high_school_us_history
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_high_school_world_history:
+      path: cais/mmlu
+      name: high_school_world_history
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_human_aging:
+      path: cais/mmlu
+      name: human_aging
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_human_sexuality:
+      path: cais/mmlu
+      name: human_sexuality
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_international_law:
+      path: cais/mmlu
+      name: international_law
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_jurisprudence:
+      path: cais/mmlu
+      name: jurisprudence
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_logical_fallacies:
+      path: cais/mmlu
+      name: logical_fallacies
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_machine_learning:
+      path: cais/mmlu
+      name: machine_learning
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_stem
+      distance: 3
+      rows: 400
+      max_new_tokens: 32
+    mmlu_management:
+      path: cais/mmlu
+      name: management
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_marketing:
+      path: cais/mmlu
+      name: marketing
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_medical_genetics:
+      path: cais/mmlu
+      name: medical_genetics
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_miscellaneous:
+      path: cais/mmlu
+      name: miscellaneous
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_moral_disputes:
+      path: cais/mmlu
+      name: moral_disputes
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_moral_scenarios:
+      path: cais/mmlu
+      name: moral_scenarios
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_nutrition:
+      path: cais/mmlu
+      name: nutrition
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_philosophy:
+      path: cais/mmlu
+      name: philosophy
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_prehistory:
+      path: cais/mmlu
+      name: prehistory
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_professional_accounting:
+      path: cais/mmlu
+      name: professional_accounting
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_professional_law:
+      path: cais/mmlu
+      name: professional_law
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32
+    mmlu_professional_medicine:
+      path: cais/mmlu
+      name: professional_medicine
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_professional_psychology:
+      path: cais/mmlu
+      name: professional_psychology
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_public_relations:
+      path: cais/mmlu
+      name: public_relations
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_security_studies:
+      path: cais/mmlu
+      name: security_studies
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_sociology:
+      path: cais/mmlu
+      name: sociology
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_us_foreign_policy:
+      path: cais/mmlu
+      name: us_foreign_policy
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_virology:
+      path: cais/mmlu
+      name: virology
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_other
+      distance: 4
+      rows: 400
+      max_new_tokens: 32
+    mmlu_world_religions:
+      path: cais/mmlu
+      name: world_religions
+      revision: c30699e8356da336a370243923dbaf21066bb9fe
+      split: test
+      converter: mmlu_gen
+      evaluator: mc_letter
+      family: mmlu_humanities
+      distance: 5
+      rows: 400
+      max_new_tokens: 32

@@ -7,17 +7,11 @@ from transformers import LlamaConfig, LlamaForCausalLM, PreTrainedTokenizerFast
 
 from fineqcomp.adapters import adapter_tensors, apply_adapter_tensors
 from fineqcomp.artifacts import read_json
-from fineqcomp.behavioral_trajectory import (
-    codec_candidates, evaluate_checkpoint, matched_field, paired_interval, report, score,
+from fineqcomp.studies.behavioral_trajectory import (
+    codec_candidates, evaluate_checkpoint, paired_interval, report, score,
     select_files, train_cell,
 )
 from fineqcomp.config import AdapterSpec, ModelSpec, RunSpec, TrainingSpec
-from fineqcomp.cot_verbosity_mechanism import (
-    functional_spectrum_predictions,
-    functional_spectrum_summary,
-    spectral_coordinates,
-    spectral_projection,
-)
 from fineqcomp.data import Example
 from fineqcomp.modeling import ModelSession
 from fineqcomp.training import train_adapter
@@ -141,44 +135,6 @@ def test_binary_norm_controls_and_linear_scale(tmp_path):
     torch.testing.assert_close(product(candidates['scale_full_1_b16']), product(tensors))
 
 
-def test_functional_spectrum_recovers_band_attenuation_and_residual():
-    torch.manual_seed(52)
-    trained = {
-        'layer.lora_A.default.weight': torch.randn(4, 7),
-        'layer.lora_B.default.weight': torch.randn(9, 4),
-    }
-    bands = [(0, 1), (1, 2), (2, 4)]
-    coefficients = [0.25, -0.5, 0.8]
-    candidate = spectral_projection(trained, bands, coefficients)
-    geometry = spectral_coordinates(trained, candidate, bands)
-    assert geometry['coefficients'] == pytest.approx(coefficients, abs=1e-5)
-    assert geometry['residual_fraction'] == pytest.approx(0.0, abs=1e-5)
-
-    unrelated = {
-        'layer.lora_A.default.weight': torch.randn(1, 7),
-        'layer.lora_B.default.weight': torch.randn(9, 1),
-    }
-    assert spectral_coordinates(trained, unrelated, bands)['residual_fraction'] > 0
-
-
-def test_signed_functional_spectrum_beats_unsigned_energy_on_signed_bands():
-    rows = [
-        {'key': 'tail', 'file_bits': 1, 'geometry': {
-            'coefficients': [0.0, 1.0], 'scalar_to_full': 0.5},
-         'calibration_gain': 0.6, 'projection_calibration_gain': 0.6,
-         'test_gain': 0.6},
-        {'key': 'head', 'file_bits': 2, 'geometry': {
-            'coefficients': [1.0, 0.0], 'scalar_to_full': 0.5},
-         'calibration_gain': -0.2, 'projection_calibration_gain': -0.2,
-         'test_gain': -0.2},
-    ]
-    predicted = functional_spectrum_predictions(
-        rows, base_calibration=1.0, full_calibration=0.6,
-        band_marginals=[-0.2, 0.6])
-    summary = functional_spectrum_summary(predicted)
-    assert summary['scores']['signed']['rmse'] == pytest.approx(0.0)
-    assert summary['scores']['energy']['rmse'] > 0.3
-    assert summary['scores']['signed']['mean_selection_regret'] == pytest.approx(0.0)
 
 
 def test_transformer_train_decode_generate_select_test_and_report(tiny, tmp_path):
@@ -213,29 +169,3 @@ def test_transformer_train_decode_generate_select_test_and_report(tiny, tmp_path
     assert len(result['rows']) == 2
     assert len(result['candidate_results']) == 14
     assert paired_interval(test.with_suffix('.jsonl'), test.with_suffix('.jsonl'), 20, 11) == [0, 0]
-
-
-def test_matched_field_runs_exact_exposures_from_one_prefix(tiny, tmp_path, monkeypatch):
-    from fineqcomp import config as config_module, program_selection as ps
-    session, run, config, _ = tiny
-    session.unload()
-    ps_config = ps.load_config(__import__('pathlib').Path('configs/program_selection.yaml'))
-    ps_config.update(diagnostic_rows=8, targeted_candidates=8, probe_rows=8,
-                     ambiguous_eval_rows=8, generation_max_new_tokens=2)
-    monkeypatch.setattr(ps, 'load_config', lambda _: ps_config)
-    monkeypatch.setattr(ModelSession, 'load', lambda _: session)
-    monkeypatch.setattr(config_module, 'load_campaign', lambda _: {
-        'models': {'tiny': {'name': 'tiny', 'revision': 'local', 'backbone': 'bf16'}},
-        'adapters': {'all_linear_r16': {'method': 'full_lora', 'rank': 4,
-            'target_modules': ['q_proj', 'v_proj'], 'last_n_layers': None,
-            'alpha': 8, 'dropout': 0}}})
-    config.update(field_models=['tiny'], seeds=[11], field_config='unused',
-                  field_campaign='unused', field_target='position_2',
-                  field_incumbent='named_code', field_exposures=[1, 8])
-    matched_field(config, tmp_path, 0)
-    root = tmp_path / 'field/tiny/seed11'
-    assert (root / 'complete.json').exists()
-    results = [read_json(p) for p in root.glob('*/result.json')]
-    assert sorted(r['exposures'] for r in results) == [0, 1, 1, 8, 8]
-    assert all(r['training']['train_examples'] == 512 for r in results)
-    assert all(r['training']['optimizer_updates'] == 32 for r in results)

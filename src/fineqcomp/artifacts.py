@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from contextlib import contextmanager
 from fcntl import LOCK_EX, LOCK_NB, LOCK_UN, flock
@@ -60,3 +61,7 @@ def claim_run(run_dir: str | Path) -> Iterator[bool]:
             yield True
         finally:
             flock(stream.fileno(), LOCK_UN)
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()

@@ -1,0 +1,261 @@
+{
+  "scores": [
+    {
+      "subset": "all",
+      "target": "r_star",
+      "candidate": "direct",
+      "n": 64,
+      "rmse": 0.12015723222000282,
+      "mae": 0.08899560766290807
+    },
+    {
+      "subset": "all",
+      "target": "r_star",
+      "candidate": "calibrated",
+      "n": 64,
+      "rmse": 0.10605594053530934,
+      "mae": 0.07773326175764697
+    },
+    {
+      "subset": "all",
+      "target": "r_star",
+      "candidate": "constant",
+      "held_out": "model_key",
+      "n": 64,
+      "rmse": 0.2805421517066958
+    },
+    {
+      "subset": "all",
+      "target": "r_star",
+      "candidate": "constant",
+      "held_out": "task_family",
+      "n": 64,
+      "rmse": 0.28642405533109494
+    },
+    {
+      "subset": "all",
+      "target": "r_star",
+      "candidate": "text_redundancy",
+      "held_out": "model_key",
+      "n": 64,
+      "rmse": 0.23546458806579543
+    },
+    {
+      "subset": "all",
+      "target": "r_star",
+      "candidate": "text_redundancy",
+      "held_out": "task_family",
+      "n": 64,
+      "rmse": 0.23671266631720414
+    },
+    {
+      "subset": "all",
+      "target": "r_star",
+      "candidate": "spectrum_tokens",
+      "held_out": "model_key",
+      "n": 64,
+      "rmse": 0.2027039123360743
+    },
+    {
+      "subset": "all",
+      "target": "r_star",
+      "candidate": "spectrum_tokens",
+      "held_out": "task_family",
+      "n": 64,
+      "rmse": 0.19424488987213764
+    },
+    {
+      "subset": "all",
+      "target": "r_star_raw",
+      "candidate": "direct",
+      "n": 64,
+      "rmse": 0.11173046103067541,
+      "mae": 0.07578728920448215
+    },
+    {
+      "subset": "all",
+      "target": "r_star_raw",
+      "candidate": "calibrated",
+      "n": 64,
+      "rmse": 0.11121161939788023,
+      "mae": 0.0784438757365816
+    },
+    {
+      "subset": "all",
+      "target": "r_star_raw",
+      "candidate": "constant",
+      "held_out": "model_key",
+      "n": 64,
+      "rmse": 0.2891700215070565
+    },
+    {
+      "subset": "all",
+      "target": "r_star_raw",
+      "candidate": "constant",
+      "held_out": "task_family",
+      "n": 64,
+      "rmse": 0.2893716219012574
+    },
+    {
+      "subset": "all",
+      "target": "r_star_raw",
+      "candidate": "text_redundancy",
+      "held_out": "model_key",
+      "n": 64,
+      "rmse": 0.252644051245928
+    },
+    {
+      "subset": "all",
+      "target": "r_star_raw",
+      "candidate": "text_redundancy",
+      "held_out": "task_family",
+      "n": 64,
+      "rmse": 0.26242336197067484
+    },
+    {
+      "subset": "all",
+      "target": "r_star_raw",
+      "candidate": "spectrum_tokens",
+      "held_out": "model_key",
+      "n": 64,
+      "rmse": 0.20887543768358055
+    },
+    {
+      "subset": "all",
+      "target": "r_star_raw",
+      "candidate": "spectrum_tokens",
+      "held_out": "task_family",
+      "n": 64,
+      "rmse": 0.1991022344906884
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star",
+      "candidate": "direct",
+      "n": 58,
+      "rmse": 0.10452814293273137,
+      "mae": 0.08216896896320301
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star",
+      "candidate": "calibrated",
+      "n": 58,
+      "rmse": 0.09237550871883518,
+      "mae": 0.07128248457651033
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star",
+      "candidate": "constant",
+      "held_out": "model_key",
+      "n": 58,
+      "rmse": 0.26677042141248564
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star",
+      "candidate": "constant",
+      "held_out": "task_family",
+      "n": 58,
+      "rmse": 0.2872787693735903
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star",
+      "candidate": "text_redundancy",
+      "held_out": "model_key",
+      "n": 58,
+      "rmse": 0.2114840270840856
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star",
+      "candidate": "text_redundancy",
+      "held_out": "task_family",
+      "n": 58,
+      "rmse": 0.22763601787101717
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star",
+      "candidate": "spectrum_tokens",
+      "held_out": "model_key",
+      "n": 58,
+      "rmse": 0.1766261669276855
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star",
+      "candidate": "spectrum_tokens",
+      "held_out": "task_family",
+      "n": 58,
+      "rmse": 0.19089543131457914
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star_raw",
+      "candidate": "direct",
+      "n": 58,
+      "rmse": 0.09364786983960621,
+      "mae": 0.06759427273321579
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star_raw",
+      "candidate": "calibrated",
+      "n": 58,
+      "rmse": 0.09883964377081052,
+      "mae": 0.07206661034636924
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star_raw",
+      "candidate": "constant",
+      "held_out": "model_key",
+      "n": 58,
+      "rmse": 0.26970737153778607
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star_raw",
+      "candidate": "constant",
+      "held_out": "task_family",
+      "n": 58,
+      "rmse": 0.2859880163586072
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star_raw",
+      "candidate": "text_redundancy",
+      "held_out": "model_key",
+      "n": 58,
+      "rmse": 0.2258416704816915
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star_raw",
+      "candidate": "text_redundancy",
+      "held_out": "task_family",
+      "n": 58,
+      "rmse": 0.25234324149622106
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star_raw",
+      "candidate": "spectrum_tokens",
+      "held_out": "model_key",
+      "n": 58,
+      "rmse": 0.17950580223459064
+    },
+    {
+      "subset": "bracketed",
+      "target": "r_star_raw",
+      "candidate": "spectrum_tokens",
+      "held_out": "task_family",
+      "n": 58,
+      "rmse": 0.19169432401367054
+    }
+  ],
+  "boundary": "One archived adapter per arm. Six targets already reach 90% at the lowest recorded rate; their reported rates are upper bounds. Report all 64 and the 58 bracketed targets. No attenuation coefficient is refitted."
+}

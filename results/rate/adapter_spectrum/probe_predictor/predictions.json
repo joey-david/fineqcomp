@@ -1,0 +1,2162 @@
+[
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.8767918214519209,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9909239063128354,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.02062900194812,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.9015471227289509,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6703539929144758,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.870312627292361,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8923958942425642,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9281160425394569,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.7462146828746862,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.41428446339595143,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0320224517203425,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37520121288353053,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.36943164739792195,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.4757406841418252,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6166606409204883,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "constant",
+    "target": "target",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5334669160851582,
+    "predicted": 0.6686740366521658
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.8767918214519209,
+    "predicted": 0.9230195729307448
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9909239063128354,
+    "predicted": 0.9230195729307448
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.02062900194812,
+    "predicted": 0.9230195729307448
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.9015471227289509,
+    "predicted": 0.9230195729307448
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6703539929144758,
+    "predicted": 0.9230195729307448
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 0.9230195729307448
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.9230195729307448
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.870312627292361,
+    "predicted": 0.7616677583803897
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8923958942425642,
+    "predicted": 0.7616677583803897
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9281160425394569,
+    "predicted": 0.7616677583803897
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.7462146828746862,
+    "predicted": 0.7616677583803897
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.41428446339595143,
+    "predicted": 0.7616677583803897
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0320224517203425,
+    "predicted": 0.7616677583803897
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.35406297900674555
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.35406297900674555
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37520121288353053,
+    "predicted": 0.35406297900674555
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.36943164739792195,
+    "predicted": 0.35406297900674555
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.4757406841418252,
+    "predicted": 0.35406297900674555
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6166606409204883,
+    "predicted": 0.35406297900674555
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5334669160851582,
+    "predicted": 0.35406297900674555
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.8767918214519209,
+    "predicted": 0.8551860230065873
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9909239063128354,
+    "predicted": 1.0056210345277183
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.02062900194812,
+    "predicted": 1.038300478659129
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.9015471227289509,
+    "predicted": 0.9123602149649943
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6703539929144758,
+    "predicted": 0.7574823723750688
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 1.029760768891113
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.7864441229856851
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.870312627292361,
+    "predicted": 0.8104819257255973
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8923958942425642,
+    "predicted": 0.8002687135567708
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9281160425394569,
+    "predicted": 0.9244258076269014
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.7462146828746862,
+    "predicted": 0.7256415562224361
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.41428446339595143,
+    "predicted": 0.41235169644955394
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0320224517203425,
+    "predicted": 1.006300008460731
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.4147663755622737
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.42615062840640006
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37520121288353053,
+    "predicted": 0.4410703137792247
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.36943164739792195,
+    "predicted": 0.4304014413449626
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.4757406841418252,
+    "predicted": 0.507538454208468
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6166606409204883,
+    "predicted": 0.6684300543726911
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5334669160851582,
+    "predicted": 0.5573156672776802
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.8767918214519209,
+    "predicted": 1.0008672363265787
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9909239063128354,
+    "predicted": 0.8678761810941209
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.02062900194812,
+    "predicted": 0.9369144652040021
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.9015471227289509,
+    "predicted": 1.0041252867340131
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6703539929144758,
+    "predicted": 0.9397678481238285
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 0.9070793620961515
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.828238570978014
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.870312627292361,
+    "predicted": 0.6820635967914195
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8923958942425642,
+    "predicted": 0.631666933285927
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9281160425394569,
+    "predicted": 0.8252193931656981
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.7462146828746862,
+    "predicted": 0.7279345170065705
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.41428446339595143,
+    "predicted": 0.5065826347447464
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0320224517203425,
+    "predicted": 0.8428420914117182
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.3183388968525085
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.31622105861169914
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37520121288353053,
+    "predicted": 0.3340168819690177
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.36943164739792195,
+    "predicted": 0.3279431322992088
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.4757406841418252,
+    "predicted": 0.37410070771751736
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6166606409204883,
+    "predicted": 0.4762122243513902
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5334669160851582,
+    "predicted": 0.42468607200846
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.8767918214519209,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9909239063128354,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.02062900194812,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.9015471227289509,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6729277812964624,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.870312627292361,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8923958942425642,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9281160425394569,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.7462146828746862,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.4205439852618227,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0320224517203425,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37521196283769553,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37006702645758366,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.49866897237209135,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6188582169609833,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "constant",
+    "target": "target_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5617388142256113,
+    "predicted": 0.6695210827080269
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.8767918214519209,
+    "predicted": 0.9227920350506147
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9909239063128354,
+    "predicted": 0.9227920350506147
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.02062900194812,
+    "predicted": 0.9227920350506147
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.9015471227289509,
+    "predicted": 0.9227920350506147
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6729277812964624,
+    "predicted": 0.9227920350506147
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 0.9227920350506147
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.9227920350506147
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.870312627292361,
+    "predicted": 0.762121915451528
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8923958942425642,
+    "predicted": 0.762121915451528
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9281160425394569,
+    "predicted": 0.762121915451528
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.7462146828746862,
+    "predicted": 0.762121915451528
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.4205439852618227,
+    "predicted": 0.762121915451528
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0320224517203425,
+    "predicted": 0.762121915451528
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.3562392246765539
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.3562392246765539
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37521196283769553,
+    "predicted": 0.3562392246765539
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37006702645758366,
+    "predicted": 0.3562392246765539
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.49866897237209135,
+    "predicted": 0.3562392246765539
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6188582169609833,
+    "predicted": 0.3562392246765539
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5617388142256113,
+    "predicted": 0.3562392246765539
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.8767918214519209,
+    "predicted": 0.8555495272394786
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9909239063128354,
+    "predicted": 1.0055945283321581
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.02062900194812,
+    "predicted": 1.0381892493404181
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.9015471227289509,
+    "predicted": 0.9125754921935694
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6729277812964624,
+    "predicted": 0.7580991782978976
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 1.0296716792048708
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.786985844095144
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.870312627292361,
+    "predicted": 0.8109613276072993
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8923958942425642,
+    "predicted": 0.8007745937111406
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9281160425394569,
+    "predicted": 0.9246098041920456
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.7462146828746862,
+    "predicted": 0.7263409110826726
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.4205439852618227,
+    "predicted": 0.4138632712259127
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0320224517203425,
+    "predicted": 1.006271741990672
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.41627169016006227
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.42762642874893353
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37521196283769553,
+    "predicted": 0.44250743407762627
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37006702645758366,
+    "predicted": 0.43186622123847496
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.49866897237209135,
+    "predicted": 0.508803252467837
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6188582169609833,
+    "predicted": 0.6692777329650372
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5617388142256113,
+    "predicted": 0.5584514155772031
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.8767918214519209,
+    "predicted": 1.0005307778010142
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9909239063128354,
+    "predicted": 0.8680135297485665
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.02062900194812,
+    "predicted": 0.936805851190886
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.9015471227289509,
+    "predicted": 1.0037772207535476
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6729277812964624,
+    "predicted": 0.9396490683645096
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 0.9070770415931073
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.8285171365303828
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.870312627292361,
+    "predicted": 0.682862939866655
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8923958942425642,
+    "predicted": 0.6326458245343516
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9281160425394569,
+    "predicted": 0.8255087151416678
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.7462146828746862,
+    "predicted": 0.7285704357724522
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.4205439852618227,
+    "predicted": 0.508007163774236
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0320224517203425,
+    "predicted": 0.843068629007599
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.32043408177272226
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.31832378875337786
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37521196283769553,
+    "predicted": 0.3360562109378422
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37006702645758366,
+    "predicted": 0.3300041002135856
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.49866897237209135,
+    "predicted": 0.37599723005616115
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6188582169609833,
+    "predicted": 0.4777449540300067
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5617388142256113,
+    "predicted": 0.4264023738897009
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.7906609897571019,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9844928220839518,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.011928135324236,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8142975975986507,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6556169240244806,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8347289454369179,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.886998642738877,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9075647318278971,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.6968958721639947,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.3593435029913914,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0274755510875762,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37521196283769553,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.3700122564812444,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.49866897237209135,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6188582169609833,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "constant",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5617388142256113,
+    "predicted": 0.6320060136704337
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.7906609897571019,
+    "predicted": 0.8733817441777175
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9844928220839518,
+    "predicted": 0.8733817441777175
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.011928135324236,
+    "predicted": 0.8733817441777175
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8142975975986507,
+    "predicted": 0.8733817441777175
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6556169240244806,
+    "predicted": 0.8733817441777175
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 0.8733817441777175
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.8733817441777175
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8347289454369179,
+    "predicted": 0.720257719767434
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.886998642738877,
+    "predicted": 0.720257719767434
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9075647318278971,
+    "predicted": 0.720257719767434
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.6968958721639947,
+    "predicted": 0.720257719767434
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.3593435029913914,
+    "predicted": 0.720257719767434
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0274755510875762,
+    "predicted": 0.720257719767434
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.33343787295945304
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.33343787295945304
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37521196283769553,
+    "predicted": 0.33343787295945304
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.3700122564812444,
+    "predicted": 0.33343787295945304
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.49866897237209135,
+    "predicted": 0.33343787295945304
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6188582169609833,
+    "predicted": 0.33343787295945304
+  },
+  {
+    "candidate": "text_redundancy",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5617388142256113,
+    "predicted": 0.33343787295945304
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.7906609897571019,
+    "predicted": 0.8173435555530801
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9844928220839518,
+    "predicted": 0.9668312951530027
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.011928135324236,
+    "predicted": 0.9993049605929147
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8142975975986507,
+    "predicted": 0.8741577282173592
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6556169240244806,
+    "predicted": 0.7202551335435889
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 0.9908190243926123
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.7490345153501279
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8347289454369179,
+    "predicted": 0.7729209548179348
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.886998642738877,
+    "predicted": 0.7627720540684715
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9075647318278971,
+    "predicted": 0.886147345233532
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.6968958721639947,
+    "predicted": 0.6886148153387732
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.3593435029913914,
+    "predicted": 0.37729770568809595
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0274755510875762,
+    "predicted": 0.9675059936654502
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.3796971798448743
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.39100974736153526
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37521196283769553,
+    "predicted": 0.40583548519592405
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.3700122564812444,
+    "predicted": 0.3952337934211756
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.49866897237209135,
+    "predicted": 0.4718850834091839
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6188582169609833,
+    "predicted": 0.6317635677192397
+  },
+  {
+    "candidate": "half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5617388142256113,
+    "predicted": 0.5213488551074035
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.7906609897571019,
+    "predicted": 0.9477468461276111
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 0.9844928220839518,
+    "predicted": 0.8213423726777924
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 1.011928135324236,
+    "predicted": 0.8869614320614093
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8142975975986507,
+    "predicted": 0.9508435366945435
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.6556169240244806,
+    "predicted": 0.8896734969059278
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": true,
+    "observed": 1.2811617713495742,
+    "predicted": 0.8586039572517163
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "kind_code",
+    "new_receiver": false,
+    "observed": 0.8677398655171515,
+    "predicted": 0.7836678747442437
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.8347289454369179,
+    "predicted": 0.6447324357306896
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 0.886998642738877,
+    "predicted": 0.5968317426885554
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.9075647318278971,
+    "predicted": 0.7807982262483347
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.6968958721639947,
+    "predicted": 0.688331529717273
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": false,
+    "observed": 0.3593435029913914,
+    "predicted": 0.4779424319277592
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "panel_math",
+    "new_receiver": true,
+    "observed": 1.0274755510875762,
+    "predicted": 0.7975481338918191
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.3357431425618939,
+    "predicted": 0.29902174792459424
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "gemma2_9b_instruct",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.28294291609034244,
+    "predicted": 0.2970087988039676
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "llama31_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.37521196283769553,
+    "predicted": 0.3139232572775541
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "mistral_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.3700122564812444,
+    "predicted": 0.3081503191838135
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.49866897237209135,
+    "predicted": 0.3520218713440193
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen25_math_7b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": true,
+    "observed": 0.6188582169609833,
+    "predicted": 0.4490761617299863
+  },
+  {
+    "candidate": "train_half_probe",
+    "target": "target_raw_without_probe",
+    "model_key": "qwen3_8b_base",
+    "dataset_key": "xbrl_tags",
+    "new_receiver": false,
+    "observed": 0.5617388142256113,
+    "predicted": 0.4001019194817479
+  }
+]

@@ -7,7 +7,7 @@ import torch
 import pytest
 
 from fineqcomp.data import Example
-from fineqcomp.relative_info import (
+from fineqcomp.studies.relative_info import (
     CANDIDATES,
     _assignment_statistics,
     _lexical_score_blocks,
@@ -22,7 +22,7 @@ from fineqcomp.relative_info import (
     sample_examples,
     text_cross_row_redundancy,
 )
-from fineqcomp.relative_validation import (
+from fineqcomp.studies.relative_validation import (
     add_tokenizer_fertility,
     analyze_fixed_channel_prospective,
     candidate_gate,
@@ -314,7 +314,7 @@ def _tiny_causal_session():
 
 
 def test_channel_bits_ignores_a_rescaling_that_moves_the_report_log_volume():
-    from fineqcomp.relative_info import _channel_bits, _logdet
+    from fineqcomp.studies.relative_info import _channel_bits, _logdet
 
     spectrum = torch.tensor([9.0, 3.0, 1.0, 0.2, 0.05], dtype=torch.float64)
     assert _channel_bits(spectrum * 1000.0) == pytest.approx(
@@ -328,7 +328,7 @@ def test_channel_bits_ignores_a_rescaling_that_moves_the_report_log_volume():
 
 
 def test_channel_bits_are_recovered_from_a_stored_spectrum():
-    from fineqcomp.relative_info import _channel_bits, spectral_candidates_from_record
+    from fineqcomp.studies.relative_info import _channel_bits, spectral_candidates_from_record
 
     spectrum = [4.0, 2.0, 0.5, 0.1]
     recovered = spectral_candidates_from_record(
@@ -439,7 +439,7 @@ def test_locked_channel_test_uses_only_the_fixed_candidate_and_prefit():
 
 def test_layer_energy_is_a_depth_profile_that_leaves_the_model_alone():
     from fineqcomp.config import ModelSpec
-    from fineqcomp.relative_info import LAYER_CANDIDATES, measure_layer_energy
+    from fineqcomp.studies.relative_info import LAYER_CANDIDATES, measure_layer_energy
 
     session = _tiny_causal_session()
     spec = ModelSpec("tiny", "tiny", "local", "bf16")
@@ -471,7 +471,7 @@ def test_layer_energy_is_a_depth_profile_that_leaves_the_model_alone():
 
 
 def test_task_families_fold_by_source_corpus_not_by_dataset_key():
-    from fineqcomp.relative_info import _task_family
+    from fineqcomp.studies.relative_info import _task_family
 
     metamath = ("arm_a", "lever_div_400", "behav_shouted_broad", "cot_math",
                 "panel_math", "metamath", "budget_math")
@@ -484,7 +484,7 @@ def test_task_families_fold_by_source_corpus_not_by_dataset_key():
 
 
 def test_token_level_moments_separate_within_and_between_example_spread():
-    from fineqcomp.relative_info import _base_candidates
+    from fineqcomp.studies.relative_info import _base_candidates
 
     width, tokens = 4, 8
     means = torch.eye(width, dtype=torch.float64)[:2].repeat_interleave(4, 0)
@@ -508,7 +508,7 @@ def test_token_level_moments_separate_within_and_between_example_spread():
 
 
 def test_head_subspace_reads_the_frozen_unembedding():
-    from fineqcomp.relative_info import _head_subspace, _inside_fraction
+    from fineqcomp.studies.relative_info import _head_subspace, _inside_fraction
 
     session = _tiny_causal_session()
     basis = _head_subspace(session.model, rank=2)
@@ -568,7 +568,7 @@ def test_channel_bits_sit_just_under_a_white_noise_ceiling():
     ceiling is that times the number of modes. Any real spectrum falls below
     it, and how far below is the whole of the measure's range.
     """
-    from fineqcomp.relative_info import _channel_bits, _channel_deficit_bits
+    from fineqcomp.studies.relative_info import _channel_bits, _channel_deficit_bits
 
     white = torch.ones(256, dtype=torch.float64)
     concentrated = torch.zeros(256, dtype=torch.float64)
@@ -711,7 +711,7 @@ class _CopyingSession:
 
 
 def test_trace_retrieval_reads_the_ceiling_when_traces_are_interchangeable():
-    from fineqcomp.relative_info import trace_retrieval_load
+    from fineqcomp.studies.relative_info import trace_retrieval_load
 
     rows = [
         Example(f"r{index}", f"problem {index}", "same working ANSWER: 1", {})
@@ -738,7 +738,7 @@ def test_trace_retrieval_reads_the_ceiling_when_traces_are_interchangeable():
 
 
 def test_trace_retrieval_falls_when_the_model_can_place_the_trace():
-    from fineqcomp.relative_info import trace_retrieval_load
+    from fineqcomp.studies.relative_info import trace_retrieval_load
 
     # Letters whose token ids appear nowhere in the fixed wording, so the only
     # thing linking a trace to its problem is the repeated letter itself.
