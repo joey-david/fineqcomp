@@ -1,0 +1,101 @@
+# F5 (fig:families) with Mistral-7B-Instruct-v0.3 in place of base Mistral-7B,
+# whose frozen base cannot stop or answer on GSM8K. Everything except the model
+# is configs/recovery/f03_gain_versus_damage.yaml: the permuted-rationale
+# MetaMathQA arm, the same recipe, rows, seeds and 1,319 GSM8K test problems,
+# and the F5 compressed arm, `sub0_500` (half the rank directions removed, the
+# rest coded at 1 bit; 2.7 MB for base Mistral). fp16 is kept as the lossless
+# reference the runner scores anyway.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+
+codecs:
+  fp16: {method: uniform, bits: 16}
+  sub0_500: {method: uniform, bits: 0, blend: 0.5}
+
+models:
+  mistral_7b_instruct:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/mistralai/Mistral-7B-Instruct-v0.3
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: true
+
+adapters:
+  all_linear_r16:
+    method: full_lora
+    rank: 16
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 32
+    dropout: 0.0
+
+training:
+  cot_full_1ep:
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+    label_span: all
+
+datasets:
+  cot_math:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    answer_marker: 'The answer is:'
+    validation_rows: 256
+    train_rows: 32000
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.8
+    minimum_validation_nll_gain_bits_per_token: 0.02
+  cot_math_permuted:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    answer_marker: 'The answer is:'
+    rationale_control: permuted
+    validation_rows: 256
+    train_rows: 32000
+    test_rows: 1319
+    evaluations:
+      - key: gsm8k
+        path: openai/gsm8k
+        name: main
+        revision: 740312add88f781978c0658806c59bc2815b9866
+        split: test
+        converter: gsm8k
+    screening_metric: exact_match
+    maximum_baseline_score: 0.85
+    minimum_validation_nll_gain_bits_per_token: 0.02
+
+studies:
+  trace_permuted_full:
+    kind: natural
+    models: [mistral_7b_instruct]
+    datasets: [cot_math_permuted]
+    seeds: [11, 22, 33]
+    adapters: [all_linear_r16]
+    training: cot_full_1ep

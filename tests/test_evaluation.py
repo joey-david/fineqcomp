@@ -236,3 +236,35 @@ def test_exact_string_normaliser_cuts_the_continuation():
         _normalize_answer_text(" us-gaap:LiabilitiesCurrent\n\nQuestion: ...")
         == "us-gaap:liabilitiescurrent"
     )
+
+
+def test_humaneval_predictions_carry_a_correct_key_like_every_other_evaluator(monkeypatch):
+    """collect() in spectral_transfer.py reads p["correct"] for any evaluator.
+
+    HumanEval's own scorer names its field "passed", so without this alias a
+    coded-adapter test run on HumanEval crashes with a KeyError the moment it
+    tries to fold the predictions into a row.
+    """
+    examples = [
+        Example("HumanEval/0", "def f(): pass", "",
+                {"evaluator": "humaneval", "code_prefix": "", "tests": "",
+                 "entry_point": "f"}),
+    ]
+
+    def fake_generate(unused_model, unused_tokenizer, rows, *unused, **unused_kw):
+        return [{"response": "    return 1", "completion_tokens": 4,
+                 "terminated_with_eos": True, "hit_generation_limit": False}
+                for _ in rows]
+
+    monkeypatch.setattr(evaluation, "generate_response_records", fake_generate)
+    monkeypatch.setattr(evaluation, "run_humaneval_tests",
+                        lambda *a, **k: {"passed": True, "status": "passed"})
+    model_spec = ModelSpec("model", "model", "revision", "bf16")
+
+    metrics, predictions = evaluate_natural(
+        object(), object(), examples, model_spec, "humaneval", 1
+    )
+
+    assert metrics["pass_at_1"] == 1.0
+    assert predictions[0]["correct"] is True
+    assert predictions[0]["passed"] is True

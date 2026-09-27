@@ -26,11 +26,53 @@ def test_baseline_waiter_takes_lock_after_failed_holder(tmp_path, monkeypatch):
         assert result == (True, None)
 
 
+def test_progress_preserves_claims_and_counts_failures(tmp_path, monkeypatch):
+    campaign = load_campaign("configs/recovery/aligned_panel.yaml")
+    runs = expand_campaign(campaign)[:2]
+    engine = RunEngine(campaign, runs_root=tmp_path)
+    claim = runner.claim_run
+    updates = []
+
+    class Progress:
+        def __init__(self, **options):
+            assert options["total"] == 2
+            assert not options["disable"]
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def update(self, count):
+            updates.append(count)
+
+    def run_one(session, run, force=False):
+        if run == runs[1]:
+            raise ValueError("failed run")
+        return "completed"
+
+    monkeypatch.setattr(runner, "tqdm", Progress)
+    monkeypatch.setattr(runner.ModelSession, "load", lambda _: SimpleNamespace(model=object()))
+    monkeypatch.setattr(engine, "run_one", run_one)
+
+    counts = engine.run_many(runs, progress=True)
+
+    assert counts == {"completed": 1, "failed": 1, "skipped": 0,
+                      "screened_out": 0, "no_learning": 0}
+    assert updates == [1, 1]
+    assert runner.claim_run is claim
+    assert json.loads((tmp_path / runs[1].run_id / "status.json").read_text())["state"] == "failed"
+    for run in runs:
+        with claim(tmp_path / run.run_id) as acquired:
+            assert acquired
+
+
 def test_diversity_configs_reuse_panel_baselines():
-    panel = load_campaign("configs/high_gain_panel.yaml")
+    panel = load_campaign("configs/rate/high_gain_panel.yaml")
     for config, panel_dataset in (
-        ("configs/diversity_sql.yaml", "text_to_sql"),
-        ("configs/diversity_xbrl.yaml", "xbrl_tags"),
+        ("configs/rate/diversity_sql.yaml", "text_to_sql"),
+        ("configs/rate/diversity_xbrl.yaml", "xbrl_tags"),
     ):
         diversity = load_campaign(config)
         campaign = {
@@ -55,7 +97,7 @@ def test_diversity_configs_reuse_panel_baselines():
 
 
 def test_generation_limit_gets_its_own_baseline_key():
-    campaign = load_campaign("configs/reasoning_native_smoke.yaml")
+    campaign = load_campaign("configs/recovery/aligned_panel.yaml")
     run = expand_campaign(campaign)[0]
     original = RunEngine(campaign)._baseline_key(run)
     changed = {
@@ -77,7 +119,7 @@ def test_generation_limit_gets_its_own_baseline_key():
 
 
 def test_sampled_decoding_gets_its_own_run_and_baseline_keys():
-    campaign = load_campaign("configs/reasoning_native_smoke.yaml")
+    campaign = load_campaign("configs/recovery/aligned_panel.yaml")
     run = expand_campaign(campaign)[0]
     changed_run = replace(
         run,
@@ -107,7 +149,7 @@ def test_sampled_decoding_gets_its_own_run_and_baseline_keys():
 
 
 def test_saturated_natural_cell_stops_before_adapter_training(tmp_path, monkeypatch):
-    campaign = load_campaign("configs/campaign.yaml")
+    campaign = load_campaign("configs/rate/campaign.yaml")
     run = next(
         run
         for run in expand_campaign(campaign)
@@ -130,7 +172,7 @@ def test_saturated_natural_cell_stops_before_adapter_training(tmp_path, monkeypa
 
 
 def test_learning_gate_requires_fixed_validation_bit_gain(tmp_path):
-    campaign = load_campaign("configs/campaign.yaml")
+    campaign = load_campaign("configs/rate/campaign.yaml")
     run = next(
         run
         for run in expand_campaign(campaign)

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import torch
+from tqdm.auto import tqdm
 
 from fineqcomp.adapters import adapter_tensors, apply_adapter_tensors
 from fineqcomp.artifacts import claim_run, read_json, run_complete, write_json
@@ -27,7 +28,6 @@ from fineqcomp.data import Example, load_natural_dataset
 from fineqcomp.evaluation import evaluate_natural, write_predictions
 from fineqcomp.modeling import (
     ModelSession,
-    generation_policy,
     validate_single_token_labels,
 )
 from fineqcomp.training import causal_nll, train_adapter
@@ -794,7 +794,8 @@ class RunEngine:
         return "completed"
 
     def run_many(
-        self, runs: list[RunSpec], force: bool = False, limit: int | None = None
+        self, runs: list[RunSpec], force: bool = False, limit: int | None = None,
+        *, progress: bool = False,
     ) -> dict[str, int]:
         counts = {
             "completed": 0,
@@ -806,39 +807,42 @@ class RunEngine:
         grouped: dict[tuple[str, str], list[RunSpec]] = defaultdict(list)
         for run in runs[:limit]:
             grouped[(run.model.key, run.model.backbone)].append(run)
-        for group in grouped.values():
-            session = ModelSession.load(group[0].model)
-            try:
-                for run in group:
-                    run_dir = self.runs_root / run.run_id
-                    try:
-                        with claim_run(run_dir) as claimed:
-                            if not claimed:
-                                counts["skipped"] += 1
-                                continue
-                            result = self.run_one(session, run, force=force)
-                        counts[result] += 1
-                    except Exception as error:
-                        counts["failed"] += 1
-                        write_json(
-                            run_dir / "status.json",
-                            {
-                                "state": "failed",
-                                "error": repr(error),
-                                "traceback": traceback.format_exc(),
-                                "updated_at": time.time(),
-                            },
-                        )
-                    finally:
-                        if hasattr(session.model, "unload"):
-                            try:
-                                session.unload()
-                            except Exception:
-                                pass
-            finally:
-                del session
-                if torch.cuda.is_available():
-                    torch.cuda.empty_cache()
+        with tqdm(total=sum(map(len, grouped.values())), desc="fineQComp jobs",
+                  unit="job", dynamic_ncols=True, disable=not progress) as progress_bar:
+            for group in grouped.values():
+                session = ModelSession.load(group[0].model)
+                try:
+                    for run in group:
+                        run_dir = self.runs_root / run.run_id
+                        try:
+                            with claim_run(run_dir) as claimed:
+                                if not claimed:
+                                    counts["skipped"] += 1
+                                    continue
+                                result = self.run_one(session, run, force=force)
+                            counts[result] += 1
+                        except Exception as error:
+                            counts["failed"] += 1
+                            write_json(
+                                run_dir / "status.json",
+                                {
+                                    "state": "failed",
+                                    "error": repr(error),
+                                    "traceback": traceback.format_exc(),
+                                    "updated_at": time.time(),
+                                },
+                            )
+                        finally:
+                            progress_bar.update(1)
+                            if hasattr(session.model, "unload"):
+                                try:
+                                    session.unload()
+                                except Exception:
+                                    pass
+                finally:
+                    del session
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
         return counts
 
     def screen_natural(

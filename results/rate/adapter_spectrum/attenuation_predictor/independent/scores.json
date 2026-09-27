@@ -1,0 +1,146 @@
+{
+  "scores": [
+    {
+      "target": "independent_r_star",
+      "candidate": "direct",
+      "n": 14,
+      "rmse": 0.047569631291372996,
+      "mae": 0.04037261267755658,
+      "receiver_rmse": {
+        "gemma2_9b_base": 0.04090660809972247,
+        "gemma2_9b_instruct": 0.061296769742121796,
+        "llama31_8b_base": 0.02331381617329598,
+        "qwen25_math_7b_base": 0.056048354466180145,
+        "qwen3_8b_base": 0.046547758307167966
+      }
+    },
+    {
+      "target": "independent_r_star",
+      "candidate": "calibrated",
+      "n": 14,
+      "rmse": 0.06941990463527521,
+      "mae": 0.05680831591528369,
+      "receiver_rmse": {
+        "gemma2_9b_base": 0.06220988043698659,
+        "gemma2_9b_instruct": 0.1048400509143446,
+        "llama31_8b_base": 0.0340491797100933,
+        "qwen25_math_7b_base": 0.028160891994092982,
+        "qwen3_8b_base": 0.09226608343365035
+      }
+    },
+    {
+      "target": "independent_r_star",
+      "candidate": "constant",
+      "n": 14,
+      "rmse": 0.3393642965273282,
+      "mae": 0.3068905924680737,
+      "receiver_rmse": {
+        "gemma2_9b_base": 0.2648279227775693,
+        "gemma2_9b_instruct": 0.3338990185178484,
+        "llama31_8b_base": 0.3263314490935858,
+        "qwen25_math_7b_base": 0.469150877987903,
+        "qwen3_8b_base": 0.2094066950961962
+      }
+    },
+    {
+      "target": "independent_r_star",
+      "candidate": "text_redundancy",
+      "n": 14,
+      "rmse": 0.19147452292363135,
+      "mae": 0.14352291696632022,
+      "receiver_rmse": {
+        "gemma2_9b_base": 0.06172274612189663,
+        "gemma2_9b_instruct": 0.11055817156813162,
+        "llama31_8b_base": 0.1330606268883168,
+        "qwen25_math_7b_base": 0.36070953716095383,
+        "qwen3_8b_base": 0.10422806497138215
+      }
+    },
+    {
+      "target": "independent_r_star",
+      "candidate": "spectrum_tokens",
+      "n": 14,
+      "rmse": 0.07624881854171943,
+      "mae": 0.057628513050899055,
+      "receiver_rmse": {
+        "gemma2_9b_base": 0.04496452910752601,
+        "gemma2_9b_instruct": 0.08419456050686658,
+        "llama31_8b_base": 0.060467169348757226,
+        "qwen25_math_7b_base": 0.026784434869345092,
+        "qwen3_8b_base": 0.14307637882391777
+      }
+    },
+    {
+      "target": "independent_r_star_raw",
+      "candidate": "direct",
+      "n": 14,
+      "rmse": 0.05038067670668357,
+      "mae": 0.04321140963421242,
+      "receiver_rmse": {
+        "gemma2_9b_base": 0.044549675335558335,
+        "gemma2_9b_instruct": 0.0667957765531116,
+        "llama31_8b_base": 0.02850898373303741,
+        "qwen25_math_7b_base": 0.056048354466180145,
+        "qwen3_8b_base": 0.046547758307167966
+      }
+    },
+    {
+      "target": "independent_r_star_raw",
+      "candidate": "calibrated",
+      "n": 14,
+      "rmse": 0.07777001995650071,
+      "mae": 0.06696186812628908,
+      "receiver_rmse": {
+        "gemma2_9b_base": 0.08604419983176877,
+        "gemma2_9b_instruct": 0.11019652741874901,
+        "llama31_8b_base": 0.047005883670317654,
+        "qwen25_math_7b_base": 0.028160891994092982,
+        "qwen3_8b_base": 0.09226608343365035
+      }
+    },
+    {
+      "target": "independent_r_star_raw",
+      "candidate": "constant",
+      "n": 14,
+      "rmse": 0.33281456352750605,
+      "mae": 0.29673704025706843,
+      "receiver_rmse": {
+        "gemma2_9b_base": 0.23731526433100678,
+        "gemma2_9b_instruct": 0.32987578227410186,
+        "llama31_8b_base": 0.32005093638619386,
+        "qwen25_math_7b_base": 0.469150877987903,
+        "qwen3_8b_base": 0.2094066950961962
+      }
+    },
+    {
+      "target": "independent_r_star_raw",
+      "candidate": "text_redundancy",
+      "n": 14,
+      "rmse": 0.18899340172671814,
+      "mae": 0.14235850643043974,
+      "receiver_rmse": {
+        "gemma2_9b_base": 0.05414479589885086,
+        "gemma2_9b_instruct": 0.10609682527690992,
+        "llama31_8b_base": 0.12306286621756278,
+        "qwen25_math_7b_base": 0.36070953716095383,
+        "qwen3_8b_base": 0.10422806497138215
+      }
+    },
+    {
+      "target": "independent_r_star_raw",
+      "candidate": "spectrum_tokens",
+      "n": 14,
+      "rmse": 0.07629150857268592,
+      "mae": 0.056616690898102555,
+      "receiver_rmse": {
+        "gemma2_9b_base": 0.05154498251053943,
+        "gemma2_9b_instruct": 0.08270438479522396,
+        "llama31_8b_base": 0.05744823831502886,
+        "qwen25_math_7b_base": 0.026784434869345092,
+        "qwen3_8b_base": 0.14307637882391777
+      }
+    }
+  ],
+  "target_shift_rmse": 0.009344910549715561,
+  "boundary": "Frozen 64-example predictions versus newly measured targets on the remaining calibration examples. No prediction or coefficient refitted. The runner also excludes duplicate prompt/response content."
+}

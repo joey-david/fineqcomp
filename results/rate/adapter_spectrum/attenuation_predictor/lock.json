@@ -1,0 +1,75 @@
+{
+  "development": [
+    "transposed-code__mistral-7b-base__kind-code__all-linear-r16__s11__00c30cc0b2",
+    "transposed-code__qwen25-7b-base__kind-code__all-linear-r16__s11__7d8372873a",
+    "transposed-math__mistral-7b-base__panel-math__all-linear-r16__s11__b9c8849386",
+    "transposed-math__qwen25-7b-base__panel-math__all-linear-r16__s11__d0c9add9a3",
+    "transposed-xbrl__mistral-7b-base__xbrl-tags__all-linear-r16__s11__1b9c049c38",
+    "transposed-xbrl__qwen25-7b-base__xbrl-tags__all-linear-r16__s11__78c93c4f2e"
+  ],
+  "heldout": [
+    "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204"
+  ],
+  "scales": [
+    0,
+    0.125,
+    0.25,
+    0.5,
+    1
+  ],
+  "sample_seed": 271828,
+  "rows": 64,
+  "created_utc": "2026-09-25",
+  "sources": {
+    "src/fineqcomp/generalisation.py": "b75a2e258f7b28d9e6c0441b0f58625345ab5531b9dd9749c0bba9a189f3cfa7",
+    "results/1_rate_behaviour_frontier/adapter_spectrum/functional.py": "5b492bb57d9ca41f008746c501808585e18b8c0cbe09c9584a5dd41007380431",
+    "results/1_rate_behaviour_frontier/adapter_spectrum/README.md": "6c0582e237ea3c9d30c53cf3612624594ed1ef042665f0551caa0cce0bd1651c"
+  },
+  "frozen_before_heldout": {
+    "split": "calibration",
+    "primary": "linear crossing of running-max raw-gain retention at 0.9, divided by binary projection",
+    "calibrated_secondary": [
+      0.04092423,
+      1.00678548
+    ],
+    "development_direct_rmse": 0.07411442165071609,
+    "no_clipping": true
+  },
+  "validation_jobs": {
+    "development_train": 166378,
+    "development_calibration": 166415,
+    "heldout_calibration": 166477,
+    "audit_calibration": 166547,
+    "independent_smoke": 166587,
+    "independent_heldout": 172799,
+    "seed_replication": 173083
+  },
+  "independent_validation": {
+    "prediction_rows": 64,
+    "target_rows": "remaining calibration rows, excluding duplicate prompt/response content",
+    "config_source": "archived .cache/runs config.json files, copied to isolated remote configs/",
+    "no_refit": true
+  },
+  "seed_replication": {
+    "seeds": [
+      22,
+      33
+    ],
+    "checkpoints": 40,
+    "development_fit": "only original seed-11 development checkpoints",
+    "no_refit": true
+  }
+}

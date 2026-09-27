@@ -1,0 +1,846 @@
+{
+  "scores": [
+    {
+      "retention": 0.5,
+      "reference": "raw",
+      "n": 14,
+      "rmse": 0.03680101231577937,
+      "predicted_above_one_bit": 0
+    },
+    {
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "n": 14,
+      "rmse": 0.037784956950387416,
+      "predicted_above_one_bit": 0
+    },
+    {
+      "retention": 0.75,
+      "reference": "raw",
+      "n": 14,
+      "rmse": 0.04314802570758819,
+      "predicted_above_one_bit": 0
+    },
+    {
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "n": 14,
+      "rmse": 0.04617031865817954,
+      "predicted_above_one_bit": 0
+    },
+    {
+      "retention": 0.9,
+      "reference": "raw",
+      "n": 14,
+      "rmse": 0.05391880164633114,
+      "predicted_above_one_bit": 4
+    },
+    {
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "n": 14,
+      "rmse": 0.04919110381048359,
+      "predicted_above_one_bit": 4
+    },
+    {
+      "retention": 0.95,
+      "reference": "raw",
+      "n": 14,
+      "rmse": 0.09725141753863319,
+      "predicted_above_one_bit": 8
+    },
+    {
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "n": 14,
+      "rmse": 0.1038752215064694,
+      "predicted_above_one_bit": 8
+    }
+  ],
+  "predictions": [
+    {
+      "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.288622933076601,
+      "observed": 0.3137592471684099
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.288622933076601,
+      "observed": 0.32518813527552054
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.5375117012895447,
+      "observed": 0.5664745870621258
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.5375117012895447,
+      "observed": 0.5993217692600266
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 0.8947237162610271,
+      "observed": 0.8328639479656033
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 0.8947237162610271,
+      "observed": 0.8963368260863136
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 1.0229488738840415,
+      "observed": 0.9648299818731059
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 1.0229488738840415,
+      "observed": 1.1382755140112013
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.3681085769911377,
+      "observed": 0.3344742744553345
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.3681085769911377,
+      "observed": 0.3355358516010809
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.7499597889625756,
+      "observed": 0.6521239512361546
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.7499597889625756,
+      "observed": 0.6561403129672282
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 1.092227155077117,
+      "observed": 0.9907755814666636
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 1.092227155077117,
+      "observed": 0.9984387548111531
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 1.5934448158000911,
+      "observed": 1.3115624368294867
+    },
+    {
+      "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 1.5934448158000911,
+      "observed": 1.3324914507453638
+    },
+    {
+      "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.3322741340038486,
+      "observed": 0.36404823513509765
+    },
+    {
+      "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.3322741340038486,
+      "observed": 0.36418918940062595
+    },
+    {
+      "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.6671694670949466,
+      "observed": 0.693331274576269
+    },
+    {
+      "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.6671694670949466,
+      "observed": 0.6937016630018578
+    },
+    {
+      "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 1.0463364460487705,
+      "observed": 1.0654457895444613
+    },
+    {
+      "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 1.0463364460487705,
+      "observed": 1.0670980318034187
+    },
+    {
+      "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 1.3710527995879642,
+      "observed": 1.395416577317086
+    },
+    {
+      "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 1.3710527995879642,
+      "observed": 1.3971606108126515
+    },
+    {
+      "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.3855233755504996,
+      "observed": 0.38647539980597967
+    },
+    {
+      "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.3855233755504996,
+      "observed": 0.38647539980597967
+    },
+    {
+      "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.6743028522007264,
+      "observed": 0.6949075598616433
+    },
+    {
+      "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.6743028522007264,
+      "observed": 0.6949075598616433
+    },
+    {
+      "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 1.2149402301477608,
+      "observed": 1.3246629868972974
+    },
+    {
+      "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 1.2149402301477608,
+      "observed": 1.3246629868972974
+    },
+    {
+      "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 1.816890312774116,
+      "observed": 1.7214483850136113
+    },
+    {
+      "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 1.816890312774116,
+      "observed": 1.7214483850136113
+    },
+    {
+      "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.23702908832481062,
+      "observed": 0.24379496527370784
+    },
+    {
+      "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.23702908832481062,
+      "observed": 0.24379496527370784
+    },
+    {
+      "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.484252916832754,
+      "observed": 0.495551232295128
+    },
+    {
+      "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.484252916832754,
+      "observed": 0.495551232295128
+    },
+    {
+      "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 0.9644983530219988,
+      "observed": 0.9042825079278738
+    },
+    {
+      "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 0.9644983530219988,
+      "observed": 0.9042825079278738
+    },
+    {
+      "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 1.2904646302359044,
+      "observed": 1.3009365003543207
+    },
+    {
+      "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 1.2904646302359044,
+      "observed": 1.3009365003543207
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.21955051708911016,
+      "observed": 0.23854461559350293
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.21955051708911016,
+      "observed": 0.2421474022403052
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.4465165540098754,
+      "observed": 0.4739887718965749
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.4465165540098754,
+      "observed": 0.4877198448874624
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 0.8164504045963957,
+      "observed": 0.7933881725021095
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 0.8164504045963957,
+      "observed": 0.8376716756509699
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 0.9929816145501603,
+      "observed": 0.9892164012721998
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 0.9929816145501603,
+      "observed": 1.0767574680655616
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.2132091532223096,
+      "observed": 0.21093223664370814
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.2132091532223096,
+      "observed": 0.21136215893992272
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.44385032714942874,
+      "observed": 0.4491072552180799
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.44385032714942874,
+      "observed": 0.451047596738464
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 0.9204907768861541,
+      "observed": 0.8707879437404022
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 0.9204907768861541,
+      "observed": 0.876048509128184
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 1.1946766500751704,
+      "observed": 1.1980635980071528
+    },
+    {
+      "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 1.1946766500751704,
+      "observed": 1.2113949830670157
+    },
+    {
+      "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.2852741214306441,
+      "observed": 0.3223063972751971
+    },
+    {
+      "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.2852741214306441,
+      "observed": 0.325360083543464
+    },
+    {
+      "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.5360321103737443,
+      "observed": 0.5614160081168873
+    },
+    {
+      "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.5360321103737443,
+      "observed": 0.5710326724860231
+    },
+    {
+      "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 0.9212819960020759,
+      "observed": 0.8883941382107968
+    },
+    {
+      "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 0.9212819960020759,
+      "observed": 0.9118965116449784
+    },
+    {
+      "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 1.0849919641061918,
+      "observed": 1.1490607039497431
+    },
+    {
+      "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 1.0849919641061918,
+      "observed": 1.214738824504497
+    },
+    {
+      "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.30922696728068916,
+      "observed": 0.3571255257914992
+    },
+    {
+      "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.30922696728068916,
+      "observed": 0.3571255257914992
+    },
+    {
+      "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.6213010367163352,
+      "observed": 0.6831037084307172
+    },
+    {
+      "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.6213010367163352,
+      "observed": 0.6831037084307172
+    },
+    {
+      "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 1.1219280154417446,
+      "observed": 1.1454845957805513
+    },
+    {
+      "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 1.1219280154417446,
+      "observed": 1.1454845957805513
+    },
+    {
+      "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 1.4972474387872576,
+      "observed": 1.461598003892409
+    },
+    {
+      "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 1.4972474387872576,
+      "observed": 1.461598003892409
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.1668364784281275,
+      "observed": 0.10999033032401104
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.1668364784281275,
+      "observed": 0.10999033032401104
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.2502547176421912,
+      "observed": 0.21782067211223372
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.2502547176421912,
+      "observed": 0.21782067211223372
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 0.3853781334143101,
+      "observed": 0.333913914142082
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 0.3853781334143101,
+      "observed": 0.333913914142082
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 0.5202659599441511,
+      "observed": 0.43623358552640656
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 0.5202659599441511,
+      "observed": 0.43623358552640656
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.1521298506909564,
+      "observed": 0.08785055063149293
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.1521298506909564,
+      "observed": 0.08785055063149293
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.22819477603643462,
+      "observed": 0.15286224330360765
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.22819477603643462,
+      "observed": 0.15286224330360765
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 0.2738337312437215,
+      "observed": 0.24992278503872306
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 0.2738337312437215,
+      "observed": 0.24992278503872306
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 0.32042245831711225,
+      "observed": 0.3278590744578673
+    },
+    {
+      "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 0.32042245831711225,
+      "observed": 0.3278590744578673
+    },
+    {
+      "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.16491410639390602,
+      "observed": 0.1150122144651118
+    },
+    {
+      "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.16491410639390602,
+      "observed": 0.1150122144651118
+    },
+    {
+      "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.24737115959085906,
+      "observed": 0.20716719802054534
+    },
+    {
+      "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.24737115959085906,
+      "observed": 0.20716719802054534
+    },
+    {
+      "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 0.3277248929636197,
+      "observed": 0.364912681080308
+    },
+    {
+      "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 0.3277248929636197,
+      "observed": 0.364912681080308
+    },
+    {
+      "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 0.4943684151432975,
+      "observed": 0.4884764886376003
+    },
+    {
+      "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 0.4943684151432975,
+      "observed": 0.4884764886376003
+    },
+    {
+      "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.22079988064779502,
+      "observed": 0.19381522235146934
+    },
+    {
+      "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.22079988064779502,
+      "observed": 0.19381522235146934
+    },
+    {
+      "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.3862030189855846,
+      "observed": 0.40416307513848976
+    },
+    {
+      "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.3862030189855846,
+      "observed": 0.40416307513848976
+    },
+    {
+      "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 0.5966491173588515,
+      "observed": 0.6235569415611137
+    },
+    {
+      "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 0.5966491173588515,
+      "observed": 0.6235569415611137
+    },
+    {
+      "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 0.9072979890173898,
+      "observed": 0.7629640216647534
+    },
+    {
+      "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 0.9072979890173898,
+      "observed": 0.7629640216647534
+    },
+    {
+      "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+      "retention": 0.5,
+      "reference": "raw",
+      "predicted": 0.19837717448296535,
+      "observed": 0.15929110910192068
+    },
+    {
+      "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+      "retention": 0.5,
+      "reference": "best_decoded",
+      "predicted": 0.19837717448296535,
+      "observed": 0.15929110910192068
+    },
+    {
+      "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+      "retention": 0.75,
+      "reference": "raw",
+      "predicted": 0.29756576172444804,
+      "observed": 0.32003870664616907
+    },
+    {
+      "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+      "retention": 0.75,
+      "reference": "best_decoded",
+      "predicted": 0.29756576172444804,
+      "observed": 0.32003870664616907
+    },
+    {
+      "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+      "retention": 0.9,
+      "reference": "raw",
+      "predicted": 0.5372882464928713,
+      "observed": 0.5130798662735794
+    },
+    {
+      "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+      "retention": 0.9,
+      "reference": "best_decoded",
+      "predicted": 0.5372882464928713,
+      "observed": 0.5130798662735794
+    },
+    {
+      "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+      "retention": 0.95,
+      "reference": "raw",
+      "predicted": 0.7281867040586356,
+      "observed": 0.6483321332497164
+    },
+    {
+      "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+      "retention": 0.95,
+      "reference": "best_decoded",
+      "predicted": 0.7281867040586356,
+      "observed": 0.6483321332497164
+    }
+  ]
+}

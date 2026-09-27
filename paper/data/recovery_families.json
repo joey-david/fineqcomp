@@ -1,0 +1,254 @@
+{
+  "llama31_8b_base": {
+    "seeds": [
+      {
+        "seed": 11,
+        "run": "trace-permuted-full__llama31-8b-base__cot-math-permuted__all-linear-r16__s11__ca01431d31",
+        "base_accuracy": 0.10159211523881728,
+        "raw_accuracy": 0.19863532979529946,
+        "compressed_accuracy": 0.39423805913570886,
+        "serialized_bytes": 2744633,
+        "retained_nll_gain": 0.6133290403468773,
+        "paired_compressed_minus_raw": {
+          "n_questions": 1319,
+          "mean": 0.1956027293404094,
+          "ci95": [
+            0.16300227445034116,
+            0.22820318423047764
+          ]
+        },
+        "paired_compressed_minus_base": {
+          "n_questions": 1319,
+          "mean": 0.2926459438968916,
+          "ci95": [
+            0.2630780894617134,
+            0.32221379833206976
+          ]
+        },
+        "base_and_raw_wrong_compressed_right": 351,
+        "count_base_and_raw_wrong": 979,
+        "compressed_breaks_raw_correct": 134,
+        "compressed_repairs_raw_wrong": 392
+      },
+      {
+        "seed": 22,
+        "run": "trace-permuted-full__llama31-8b-base__cot-math-permuted__all-linear-r16__s22__2fe81169ea",
+        "base_accuracy": 0.10159211523881728,
+        "raw_accuracy": 0.19787717968157695,
+        "compressed_accuracy": 0.4275966641394996,
+        "serialized_bytes": 2744618,
+        "retained_nll_gain": 0.5986496351008519,
+        "paired_compressed_minus_raw": {
+          "n_questions": 1319,
+          "mean": 0.22971948445792267,
+          "ci95": [
+            0.19787717968157695,
+            0.26156178923426837
+          ]
+        },
+        "paired_compressed_minus_base": {
+          "n_questions": 1319,
+          "mean": 0.3260045489006823,
+          "ci95": [
+            0.2971948445792267,
+            0.354814253222138
+          ]
+        },
+        "base_and_raw_wrong_compressed_right": 373,
+        "count_base_and_raw_wrong": 980,
+        "compressed_breaks_raw_correct": 117,
+        "compressed_repairs_raw_wrong": 420
+      },
+      {
+        "seed": 33,
+        "run": "trace-permuted-full__llama31-8b-base__cot-math-permuted__all-linear-r16__s33__49b00b39cb",
+        "base_accuracy": 0.10159211523881728,
+        "raw_accuracy": 0.19636087945413191,
+        "compressed_accuracy": 0.4268385140257771,
+        "serialized_bytes": 2744643,
+        "retained_nll_gain": 0.6004635307740447,
+        "paired_compressed_minus_raw": {
+          "n_questions": 1319,
+          "mean": 0.2304776345716452,
+          "ci95": [
+            0.1986163760424564,
+            0.2623199393479909
+          ]
+        },
+        "paired_compressed_minus_base": {
+          "n_questions": 1319,
+          "mean": 0.3252463987869598,
+          "ci95": [
+            0.29567854435178165,
+            0.354814253222138
+          ]
+        },
+        "base_and_raw_wrong_compressed_right": 369,
+        "count_base_and_raw_wrong": 980,
+        "compressed_breaks_raw_correct": 117,
+        "compressed_repairs_raw_wrong": 421
+      }
+    ],
+    "across_seeds": {
+      "n_seeds": 3,
+      "base": 0.10159211523881728,
+      "raw": 0.19762446297700278,
+      "compressed": 0.4162244124336619,
+      "compressed_minus_raw_question_clustered": {
+        "n_questions": 1319,
+        "mean": 0.21859994945665912,
+        "ci95": [
+          0.19307556229466766,
+          0.2441243366186505
+        ]
+      },
+      "compressed_minus_base_question_clustered": {
+        "n_questions": 1319,
+        "mean": 0.3146322971948446,
+        "ci95": [
+          0.29011877685114984,
+          0.33965125094768767
+        ]
+      },
+      "both_wrong_then_right_fraction": 0.2762193580995704
+    }
+  },
+  "qwen25_7b_base": {
+    "seeds": [
+      {
+        "seed": 11,
+        "run": "trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s11__4cb8d87ae9",
+        "base_accuracy": 0.775587566338135,
+        "raw_accuracy": 0.2350265352539803,
+        "compressed_accuracy": 0.8294162244124337,
+        "serialized_bytes": 2630747,
+        "retained_nll_gain": 0.6693418008951878,
+        "paired_compressed_minus_raw": {
+          "n_questions": 1319,
+          "mean": 0.5943896891584534,
+          "ci95": [
+            0.5663381349507203,
+            0.6224412433661866
+          ]
+        },
+        "paired_compressed_minus_base": {
+          "n_questions": 1319,
+          "mean": 0.053828658074298714,
+          "ci95": [
+            0.0310841546626232,
+            0.07733131159969674
+          ]
+        },
+        "base_and_raw_wrong_compressed_right": 131,
+        "count_base_and_raw_wrong": 263,
+        "compressed_breaks_raw_correct": 26,
+        "compressed_repairs_raw_wrong": 810
+      },
+      {
+        "seed": 22,
+        "run": "trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s22__e4b91b820b",
+        "base_accuracy": 0.775587566338135,
+        "raw_accuracy": 0.2441243366186505,
+        "compressed_accuracy": 0.821076573161486,
+        "serialized_bytes": 2630845,
+        "retained_nll_gain": 0.6679696926752351,
+        "paired_compressed_minus_raw": {
+          "n_questions": 1319,
+          "mean": 0.5769522365428355,
+          "ci95": [
+            0.5473843821076573,
+            0.6057619408642911
+          ]
+        },
+        "paired_compressed_minus_base": {
+          "n_questions": 1319,
+          "mean": 0.045489006823351025,
+          "ci95": [
+            0.024260803639120546,
+            0.06747536012130402
+          ]
+        },
+        "base_and_raw_wrong_compressed_right": 117,
+        "count_base_and_raw_wrong": 256,
+        "compressed_breaks_raw_correct": 34,
+        "compressed_repairs_raw_wrong": 795
+      },
+      {
+        "seed": 33,
+        "run": "trace-permuted-full__qwen25-7b-base__cot-math-permuted__all-linear-r16__s33__347ec18132",
+        "base_accuracy": 0.775587566338135,
+        "raw_accuracy": 0.23199393479909022,
+        "compressed_accuracy": 0.8362395754359363,
+        "serialized_bytes": 2630721,
+        "retained_nll_gain": 0.6349276324979336,
+        "paired_compressed_minus_raw": {
+          "n_questions": 1319,
+          "mean": 0.604245640636846,
+          "ci95": [
+            0.576194086429113,
+            0.6315390447308568
+          ]
+        },
+        "paired_compressed_minus_base": {
+          "n_questions": 1319,
+          "mean": 0.060652009097801364,
+          "ci95": [
+            0.039423805913570885,
+            0.08188021228203184
+          ]
+        },
+        "base_and_raw_wrong_compressed_right": 126,
+        "count_base_and_raw_wrong": 258,
+        "compressed_breaks_raw_correct": 24,
+        "compressed_repairs_raw_wrong": 821
+      }
+    ],
+    "across_seeds": {
+      "n_seeds": 3,
+      "base": 0.775587566338135,
+      "raw": 0.23704826889057368,
+      "compressed": 0.8289107910032854,
+      "compressed_minus_raw_question_clustered": {
+        "n_questions": 1319,
+        "mean": 0.5918625221127116,
+        "ci95": [
+          0.5670899671468284,
+          0.6161296436694466
+        ]
+      },
+      "compressed_minus_base_question_clustered": {
+        "n_questions": 1319,
+        "mean": 0.053323224665150375,
+        "ci95": [
+          0.033605003790750564,
+          0.07379327773565833
+        ]
+      },
+      "both_wrong_then_right_fraction": 0.09451604751074046
+    }
+  },
+  "mistral_7b_instruct": {
+    "seeds": [
+      {
+        "base_accuracy": 0.4670204700530705,
+        "raw_accuracy": 0.15769522365428354,
+        "compressed_accuracy": 0.5489006823351024
+      },
+      {
+        "base_accuracy": 0.4670204700530705,
+        "raw_accuracy": 0.15390447308567096,
+        "compressed_accuracy": 0.5579984836997726
+      },
+      {
+        "base_accuracy": 0.4670204700530705,
+        "raw_accuracy": 0.15011372251705837,
+        "compressed_accuracy": 0.5564821834723275
+      }
+    ],
+    "across_seeds": {
+      "base": 0.4670204700530705,
+      "raw": 0.15390447308567096,
+      "compressed": 0.5544604498357342
+    }
+  }
+}

@@ -1,0 +1,1080 @@
+[
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.9410513372299717,
+    "observed_retention": 0.9673538029300076
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.8923089522264362,
+    "observed_retention": 0.9306986214747773
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.8435665672229008,
+    "observed_retention": 0.8734756679265575
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.7948241822193652,
+    "observed_retention": 0.810900141934138
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.7123208174891901,
+    "observed_retention": 0.7187497793542276
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.5867627208969679,
+    "observed_retention": 0.6020401758480192
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.5239836726008568,
+    "observed_retention": 0.5310576967645282
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.44040610314170725,
+    "observed_retention": 0.44262955656056546
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.33030457735628044,
+    "observed_retention": 0.34733498878723074
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.22020305157085363,
+    "observed_retention": 0.25001468825029055
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-base__kind-code__all-linear-r16__s11__41ecd30ad1",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.11010152578542681,
+    "observed_retention": 0.12935357809384437
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.8595810917686557,
+    "observed_retention": 0.9112047293942911
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.8047993572058426,
+    "observed_retention": 0.8684685775190666
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.7500176226430294,
+    "observed_retention": 0.8178108518414587
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.6952358880802162,
+    "observed_retention": 0.7484647308220138
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.6139013477051158,
+    "observed_retention": 0.676786585653988
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.5059514284584125,
+    "observed_retention": 0.5489931276196061
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.45197646883506076,
+    "observed_retention": 0.5018738130000298
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.37778915977463207,
+    "observed_retention": 0.41426539776006227
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.28334186983097404,
+    "observed_retention": 0.337396535837298
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.18889457988731603,
+    "observed_retention": 0.24841718269701496
+  },
+  {
+    "run_id": "transposed-code__gemma2-9b-instruct__kind-code__all-linear-r16__s11__a5ce10ff69",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.09444728994365802,
+    "observed_retention": 0.12915611717211162
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.8816691133640041,
+    "observed_retention": 0.8934914803507847
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.8322186046416098,
+    "observed_retention": 0.8482447308836487
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.7827680959192154,
+    "observed_retention": 0.7955871292798827
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.7333175871968209,
+    "observed_retention": 0.7249484008139844
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.6491326698520136,
+    "observed_retention": 0.6463362407662242
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.537989504063086,
+    "observed_retention": 0.5335830256116929
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.48241792116862225,
+    "observed_retention": 0.4716847640323103
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.4016060408396011,
+    "observed_retention": 0.4039110167616683
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.3012045306297008,
+    "observed_retention": 0.32203254694169275
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.20080302041980055,
+    "observed_retention": 0.22508942556967126
+  },
+  {
+    "run_id": "transposed-code__llama31-8b-base__kind-code__all-linear-r16__s11__d2fdb0164a",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.10040151020990028,
+    "observed_retention": 0.11778505563740284
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.8403647697379097,
+    "observed_retention": 0.8511554704960262
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.8056834828627782,
+    "observed_retention": 0.8216865380582252
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.7710021959876467,
+    "observed_retention": 0.781945906063945
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.7363209091125152,
+    "observed_retention": 0.7290879307874037
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.6159181174708962,
+    "observed_retention": 0.6356116642231463
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.4893441137951156,
+    "observed_retention": 0.515694929119454
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.42605711195722523,
+    "observed_retention": 0.40827695489094035
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.342039623162098,
+    "observed_retention": 0.32132955763898213
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.2565297173715735,
+    "observed_retention": 0.22955525363920945
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.171019811581049,
+    "observed_retention": 0.14391270402002745
+  },
+  {
+    "run_id": "transposed-code__qwen25-math-7b-base__kind-code__all-linear-r16__s11__6642a6f411",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.0855099057905245,
+    "observed_retention": 0.07260762906438699
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.907465352505299,
+    "observed_retention": 0.9232303304023546
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.8811801194922894,
+    "observed_retention": 0.8993204628983303
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.8548948864792796,
+    "observed_retention": 0.8729172420515853
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.8286096534662698,
+    "observed_retention": 0.8303109760977327
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.760719552848517,
+    "observed_retention": 0.7714560405637783
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.6756279779940887,
+    "observed_retention": 0.6804292882491483
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.6330821905668744,
+    "observed_retention": 0.6175592405135198
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.5273614343430602,
+    "observed_retention": 0.5458011714326221
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.3955210757572951,
+    "observed_retention": 0.4515507963326491
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.2636807171715301,
+    "observed_retention": 0.32391073639043805
+  },
+  {
+    "run_id": "transposed-code__qwen3-8b-base__kind-code__all-linear-r16__s11__5cd6f517a0",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.13184035858576504,
+    "observed_retention": 0.1451919494800397
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.9519878596684626,
+    "observed_retention": 0.9578736292854448
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.9165833552658873,
+    "observed_retention": 0.9292372473778112
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.881178850863312,
+    "observed_retention": 0.8948926792342052
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.8457743464607368,
+    "observed_retention": 0.843134770229124
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.7879730278178996,
+    "observed_retention": 0.786776458092565
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.6992235392730911,
+    "observed_retention": 0.6944651665173528
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.6548487950006868,
+    "observed_retention": 0.6376498606960327
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.5693450494095879,
+    "observed_retention": 0.5644686769860264
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.427008787057191,
+    "observed_retention": 0.44711661462139995
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.28467252470479393,
+    "observed_retention": 0.2997807350926597
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-base__panel-math__all-linear-r16__s11__9e5dc38096",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.14233626235239696,
+    "observed_retention": 0.14667802176114925
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.9184910971823993,
+    "observed_retention": 0.9319508765428122
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.8894204176149442,
+    "observed_retention": 0.907251031487575
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.860349738047489,
+    "observed_retention": 0.8762232666805979
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.8312790584800338,
+    "observed_retention": 0.8404756466468367
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.7819712011995236,
+    "observed_retention": 0.7918366633065343
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.7107971418140683,
+    "observed_retention": 0.721732136783067
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.6752101121213405,
+    "observed_retention": 0.6674907580987011
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.5862787695126044,
+    "observed_retention": 0.6044221794440932
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.4397090771344533,
+    "observed_retention": 0.4988833037758125
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.2931393847563022,
+    "observed_retention": 0.3274797560238744
+  },
+  {
+    "run_id": "transposed-math__gemma2-9b-instruct__panel-math__all-linear-r16__s11__39284e3cfa",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.1465696923781511,
+    "observed_retention": 0.1656574549033092
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.9240419092708702,
+    "observed_retention": 0.9354226562545738
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.8858646371573901,
+    "observed_retention": 0.904038497047756
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.8476873650439098,
+    "observed_retention": 0.8590189540146166
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.8095100929304297,
+    "observed_retention": 0.8043272170169484
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.7148431693321733,
+    "observed_retention": 0.7264425993947851
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.5928796265950103,
+    "observed_retention": 0.5963979158844798
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.5318978552264287,
+    "observed_retention": 0.517015390553655
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.4381750415113977,
+    "observed_retention": 0.43510872439038595
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.3286312811335483,
+    "observed_retention": 0.3302759736166752
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.21908752075569884,
+    "observed_retention": 0.22001901236813826
+  },
+  {
+    "run_id": "transposed-math__llama31-8b-base__panel-math__all-linear-r16__s11__36b83a3266",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.10954376037784942,
+    "observed_retention": 0.11394088500709705
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.8638264078143955,
+    "observed_retention": 0.8789153939634635
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.8267414195381696,
+    "observed_retention": 0.8403587957343748
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.7896564312619438,
+    "observed_retention": 0.7946513751268915
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.7525714429857181,
+    "observed_retention": 0.7285669839305448
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.6537573238731577,
+    "observed_retention": 0.6442370095496522
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.5545798160667861,
+    "observed_retention": 0.545728394969561
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.5049910621636003,
+    "observed_retention": 0.4698039101177342
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.4042338257210793,
+    "observed_retention": 0.3982351005257845
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.30317536929080946,
+    "observed_retention": 0.2997219537505514
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.20211691286053965,
+    "observed_retention": 0.20912082946869387
+  },
+  {
+    "run_id": "transposed-math__qwen25-math-7b-base__panel-math__all-linear-r16__s11__9b75f7e9f8",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.10105845643026982,
+    "observed_retention": 0.1037497758369443
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.9903409112037537,
+    "observed_retention": 0.9947980450207807
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.9845956942308879,
+    "observed_retention": 0.9932010538496417
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.9788504772580221,
+    "observed_retention": 0.9902429332611935
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.9731052602851563,
+    "observed_retention": 0.9850464272754319
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.9424878469519754,
+    "observed_retention": 0.9739894936334174
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.8961530503970223,
+    "observed_retention": 0.939692423704724
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.8729856521195457,
+    "observed_retention": 0.9024455387483177
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.7492366248538956,
+    "observed_retention": 0.8217388398461039
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.5619274686404218,
+    "observed_retention": 0.7401850522739305
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.3746183124269478,
+    "observed_retention": 0.631997459152814
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-base__xbrl-tags__all-linear-r16__s11__948b9309bf",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.1873091562134739,
+    "observed_retention": 0.4111829712894326
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.9948177559231194,
+    "observed_retention": 0.9979113958928304
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.9923578348281883,
+    "observed_retention": 0.9969333185238368
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.9898979137332571,
+    "observed_retention": 0.9953681716493552
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.9874379926383259,
+    "observed_retention": 0.9923615743901694
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.9756938022649967,
+    "observed_retention": 0.9837416449108164
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.9578089083466018,
+    "observed_retention": 0.9650207396743716
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.9488664613874043,
+    "observed_retention": 0.9535047054500096
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.8216664870981223,
+    "observed_retention": 0.9258477951881773
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.6162498653235917,
+    "observed_retention": 0.8556143059270018
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.41083324354906114,
+    "observed_retention": 0.7401137805053524
+  },
+  {
+    "run_id": "transposed-xbrl__gemma2-9b-instruct__xbrl-tags__all-linear-r16__s11__894096b802",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.20541662177453057,
+    "observed_retention": 0.4875567188860522
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.9908790858295,
+    "observed_retention": 0.991978295868678
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.9869110130252599,
+    "observed_retention": 0.989320366679023
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.9829429402210198,
+    "observed_retention": 0.984975342338722
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.9789748674167796,
+    "observed_retention": 0.978661420792315
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.9516897101018515,
+    "observed_retention": 0.9627537842994618
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.9141845018690278,
+    "observed_retention": 0.9170397707746267
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.895431897752616,
+    "observed_retention": 0.8848079466415956
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.7579703321523685,
+    "observed_retention": 0.8341685973329962
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.5684777491142765,
+    "observed_retention": 0.7561316002482384
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.37898516607618427,
+    "observed_retention": 0.6107531939031885
+  },
+  {
+    "run_id": "transposed-xbrl__llama31-8b-base__xbrl-tags__all-linear-r16__s11__869d64a97b",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.18949258303809213,
+    "observed_retention": 0.39417858728228594
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.9622853145160226,
+    "observed_retention": 0.9856261107790378
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.9457197157957219,
+    "observed_retention": 0.9745629467016954
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.9291541170754211,
+    "observed_retention": 0.952275861029546
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.9125885183551203,
+    "observed_retention": 0.9126277470747856
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.8311112550154585,
+    "observed_retention": 0.8397916443291179
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.74201480635266,
+    "observed_retention": 0.7433533105855202
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.6974665820212608,
+    "observed_retention": 0.6858165740618317
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.5661234944206854,
+    "observed_retention": 0.6244542034004593
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.42459262081551413,
+    "observed_retention": 0.5263270979108488
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.2830617472103427,
+    "observed_retention": 0.4070206253454012
+  },
+  {
+    "run_id": "transposed-xbrl__qwen25-math-7b-base__xbrl-tags__all-linear-r16__s11__a71aedbcd3",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.14153087360517136,
+    "observed_retention": 0.22465042818291792
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "codec": "binary",
+    "fraction": 1.0,
+    "predicted_retention": 0.9706633627205525,
+    "observed_retention": 0.9867707568544377
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "codec": "sub0_14_16",
+    "fraction": 0.875,
+    "predicted_retention": 0.961160809392086,
+    "observed_retention": 0.9806640051477625
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "codec": "sub0_12_16",
+    "fraction": 0.75,
+    "predicted_retention": 0.9516582560636194,
+    "observed_retention": 0.972245727060033
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "codec": "sub0_10_16",
+    "fraction": 0.625,
+    "predicted_retention": 0.9421557027351529,
+    "observed_retention": 0.9504357184279696
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "codec": "sub0_08_16",
+    "fraction": 0.5,
+    "predicted_retention": 0.8788672404498731,
+    "observed_retention": 0.9071972866389394
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "codec": "sub0_06_16",
+    "fraction": 0.375,
+    "predicted_retention": 0.8080246776527493,
+    "observed_retention": 0.8297357326462613
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "codec": "sub0_05_16",
+    "fraction": 0.3125,
+    "predicted_retention": 0.7726033962541874,
+    "observed_retention": 0.7663362365107665
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "codec": "sub0_04_16",
+    "fraction": 0.25,
+    "predicted_retention": 0.6301128157802941,
+    "observed_retention": 0.7055758726542904
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "codec": "sub0_03_16",
+    "fraction": 0.1875,
+    "predicted_retention": 0.4725846118352206,
+    "observed_retention": 0.6051251675409021
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "codec": "sub0_02_16",
+    "fraction": 0.125,
+    "predicted_retention": 0.31505640789014705,
+    "observed_retention": 0.4789044274171045
+  },
+  {
+    "run_id": "transposed-xbrl__qwen3-8b-base__xbrl-tags__all-linear-r16__s11__1f45ae1204",
+    "codec": "sub0_01_16",
+    "fraction": 0.0625,
+    "predicted_retention": 0.15752820394507352,
+    "observed_retention": 0.28741296756036855
+  }
+]

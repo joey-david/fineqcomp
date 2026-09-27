@@ -327,3 +327,151 @@ def test_paws_converter_keeps_the_binary_label_exact():
         "split": "test",
         "evaluator": "paws",
     }
+
+
+def test_holdout_by_group_keeps_augmentations_off_both_sides(monkeypatch):
+    """MetaMathQA is 395k augmentations of 13,929 seed problems.
+
+    A prefix split puts rephrasings of the same seed problem in both the
+    training set and the reserved rows a filter is later chosen on, so the
+    search split is no longer held out. Whole seed problems move instead.
+    """
+
+    class Rows(list):
+        def shuffle(self, seed):
+            return self
+
+        def select(self, indices):
+            return Rows(self[index] for index in indices)
+
+        def __getitem__(self, item):
+            if isinstance(item, str):
+                return [row[item] for row in self]
+            return list.__getitem__(self, item)
+
+    # Twelve seed problems, four augmentations each, interleaved so a prefix
+    # split is guaranteed to straddle them.
+    rows = Rows(
+        {
+            "query": f"seed {index % 12} rephrased {index // 12}",
+            "response": f"work\n#### {index % 12}\nThe answer is: {index % 12}",
+            "original_question": f"seed {index % 12}",
+            "type": "GSM_Rephrased",
+        }
+        for index in range(48)
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "datasets",
+        SimpleNamespace(
+            load_dataset=lambda *args, **kwargs: {"train": rows, "test": rows}
+        ),
+    )
+    spec = {
+        "train_source": {
+            "path": "meta-math/MetaMathQA",
+            "revision": "r",
+            "split": "train",
+            "converter": "metamath",
+        },
+        "evaluations": [
+            {
+                "key": "gsm8k",
+                "path": "meta-math/MetaMathQA",
+                "revision": "r",
+                "split": "test",
+                "converter": "metamath",
+            }
+        ],
+        "validation_rows": 8,
+        "train_rows": 40,
+        "test_rows": 2,
+    }
+    grouped = data._load_natural_from_hub(
+        {"datasets": {"arm": {**spec, "holdout_by_group": True}}}, "arm", 11
+    )
+    def seeds(split):
+        return {row.metadata["source_problem"] for row in grouped[split]}
+
+    assert not seeds("train") & seeds("calibration")
+    assert len(grouped["calibration"]) == 8
+
+    ungrouped = data._load_natural_from_hub({"datasets": {"arm": spec}}, "arm", 11)
+    overlap = {row.metadata["source_problem"] for row in ungrouped["train"]} & {
+        row.metadata["source_problem"] for row in ungrouped["calibration"]
+    }
+    assert overlap, "without the flag the prefix split leaks, which is the bug"
+
+
+def test_holdout_by_group_fails_loudly_when_groups_cannot_fill_it(monkeypatch):
+    class Rows(list):
+        def shuffle(self, seed):
+            return self
+
+        def select(self, indices):
+            return Rows(self[index] for index in indices)
+
+        def __getitem__(self, item):
+            if isinstance(item, str):
+                return [row[item] for row in self]
+            return list.__getitem__(self, item)
+
+    rows = Rows(
+        {
+            "query": f"q{index}",
+            "response": "w\n#### 1\nThe answer is: 1",
+            "original_question": "one and only seed",
+            "type": "GSM_Rephrased",
+        }
+        for index in range(6)
+    )
+    monkeypatch.setitem(
+        sys.modules,
+        "datasets",
+        SimpleNamespace(
+            load_dataset=lambda *args, **kwargs: {"train": rows, "test": rows}
+        ),
+    )
+    raw = {
+        "datasets": {
+            "arm": {
+                "train_source": {
+                    "path": "m",
+                    "revision": "r",
+                    "split": "train",
+                    "converter": "metamath",
+                },
+                "evaluations": [
+                    {
+                        "key": "gsm8k",
+                        "path": "m",
+                        "revision": "r",
+                        "split": "test",
+                        "converter": "metamath",
+                    }
+                ],
+                "holdout_by_group": True,
+                "validation_rows": 20,
+                "train_rows": 2,
+                "test_rows": 2,
+            }
+        }
+    }
+    with pytest.raises(ValueError, match="held-out rows from"):
+        data._load_natural_from_hub(raw, "arm", 11)
+
+
+def test_permutation_falls_back_when_many_rows_share_a_body():
+    # NuminaMath carries answer-only rows whose body is identical boilerplate;
+    # random retries cannot derange a block holding a dozen of them.
+    from fineqcomp.data import Example, permute_rationales
+    rows = [Example(f"r{i}", f"p{i}", " The correct answer is $\\boxed{A}$", {}) for i in range(12)]
+    rows += [Example(f"s{i}", f"q{i}", f" work {i:02d} step\\boxed{{{i}}}", {}) for i in range(20)]
+    out = permute_rationales(rows, "\\boxed{", seed=3)
+    for before, after in zip(rows, out, strict=True):
+        assert after.prompt == before.prompt
+        assert after.response.rsplit("\\boxed{", 1)[1] == before.response.rsplit("\\boxed{", 1)[1]
+    bodies = [r.response.rsplit("\\boxed{", 1)[0] for r in out]
+    assert sorted(bodies) == sorted(r.response.rsplit("\\boxed{", 1)[0] for r in rows)
+    assert all(a.response.rsplit("\\boxed{", 1)[0] != b.response.rsplit("\\boxed{", 1)[0]
+               for a, b in zip(rows, out, strict=True))

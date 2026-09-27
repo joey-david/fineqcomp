@@ -17,6 +17,8 @@ from fineqcomp.preflight import (
 def test_cache_models_downloads_exact_revisions_and_checks_weights(
     tmp_path, monkeypatch
 ):
+    monkeypatch.delenv("HF_TOKEN", raising=False)
+    monkeypatch.delenv("HUGGING_FACE_HUB_TOKEN", raising=False)
     calls = []
 
     def snapshot_download(model, revision, token):

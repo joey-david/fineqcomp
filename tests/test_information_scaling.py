@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from fineqcomp.information_scaling import (
+from fineqcomp.studies.information_scaling import (
     MAX_SYMBOL_BITS,
     Cell,
     Condition,
@@ -174,7 +174,7 @@ def test_overfit_is_reported_as_a_number_not_as_retention_above_one():
 
 def test_the_ladder_carries_an_empty_adapter_anchor(monkeypatch, tmp_path):
     monkeypatch.setattr(
-        "fineqcomp.information_scaling.encode_tensor_map",
+        "fineqcomp.studies.information_scaling.encode_tensor_map",
         lambda tensors, path, bits, blend: {
             "file_bits": 1000 * (bits + 1),
             "effective_bits_per_value": bits + blend,
@@ -182,15 +182,15 @@ def test_the_ladder_carries_an_empty_adapter_anchor(monkeypatch, tmp_path):
         },
     )
     monkeypatch.setattr(
-        "fineqcomp.information_scaling.decode_adapter_tensor_map",
+        "fineqcomp.studies.information_scaling.decode_adapter_tensor_map",
         lambda path: ({}, {}),
     )
     monkeypatch.setattr(
-        "fineqcomp.information_scaling.apply_adapter_tensors",
+        "fineqcomp.studies.information_scaling.apply_adapter_tensors",
         lambda model, tensors: None,
     )
     monkeypatch.setattr(
-        "fineqcomp.information_scaling.score",
+        "fineqcomp.studies.information_scaling.score",
         lambda *args, **kwargs: SimpleNamespace(
             summary=lambda: {"accuracy": 1.0, "code_bits_per_mapping": 0.5}
         ),
@@ -347,7 +347,7 @@ def test_the_switch_code_can_never_lose_to_the_free_base_code():
 
 def test_rule_condition_costs_four_bits_however_many_mappings():
     """A rule is a program, not a payload: its cost does not scale."""
-    from fineqcomp.information_scaling import Condition, build_dataset, source_bits
+    from fineqcomp.studies.information_scaling import Condition, build_dataset, source_bits
 
     raw = {"labels": [str(i) for i in "ABCDEFGHIJKLMNOP"], "mappings": 256,
            "items_per_family": 16, "codebook_dir": "codebooks"}
@@ -357,7 +357,7 @@ def test_rule_condition_costs_four_bits_however_many_mappings():
 
 
 def test_payload_families_are_the_only_thing_that_scales():
-    from fineqcomp.information_scaling import Condition, build_dataset, source_bits
+    from fineqcomp.studies.information_scaling import Condition, build_dataset, source_bits
 
     raw = {"labels": [str(i) for i in "ABCDEFGHIJKLMNOP"], "mappings": 256,
            "items_per_family": 16, "codebook_dir": "codebooks"}
@@ -371,7 +371,7 @@ def test_payload_families_are_the_only_thing_that_scales():
 
 
 def test_revealing_the_rule_changes_the_prompt_but_not_the_labels():
-    from fineqcomp.information_scaling import Condition, build_dataset
+    from fineqcomp.studies.information_scaling import Condition, build_dataset
 
     raw = {"labels": [str(i) for i in "ABCDEFGHIJKLMNOP"], "mappings": 64,
            "items_per_family": 16, "codebook_dir": "codebooks"}
@@ -389,7 +389,7 @@ def test_condition_rejects_unknown_keys():
     measure the same thing in every cell.
     """
     import pytest
-    from fineqcomp.information_scaling import _condition
+    from fineqcomp.studies.information_scaling import _condition
 
     raw = {"conditions": [{"name": "a", "rule": "sum", "payload_familes": 4}]}
     with pytest.raises(ValueError, match="unknown keys"):
@@ -397,7 +397,7 @@ def test_condition_rejects_unknown_keys():
 
 
 def test_condition_reads_the_rule_fields():
-    from fineqcomp.information_scaling import _condition
+    from fineqcomp.studies.information_scaling import _condition
 
     raw = {"conditions": [
         {"name": "a", "rule": "sum", "payload_families": 4, "reveal_rule": True}
@@ -415,7 +415,7 @@ def test_rule_ladder_is_total_and_holds_source_bits_fixed():
     condition's source bits are the same at every rung, so a difference in
     adapter rate cannot be a difference in what there was to learn.
     """
-    from fineqcomp.information_scaling import ALPHABET, RULES
+    from fineqcomp.studies.information_scaling import ALPHABET, RULES
 
     assert set(RULES) >= {"item", "sum", "difference", "xor", "product", "bilinear"}
     seen = {}

@@ -1,0 +1,116 @@
+# Aligned high-rank fine-tunes: the clean counterpart of the rank-32 and
+# rank-64 permuted arms in `low_rank_permuted.yaml`.
+#
+# Identity is copied from that file so the only field that differs is the
+# rationale control, exactly as `cot_math` differs from `cot_math_permuted`.
+# Seed 11 only: these exist to give a rank-32/64 band sweep its clean
+# reference, not to replicate anything.
+version: 1
+information_rows: 256
+evaluation_batch_size: 32
+codecs:
+  # fp16 only. These adapters are the uncompressed arm; every lossy rung in the
+  # comparison comes from the matched-budget sweep, which re-encodes the stored
+  # raw adapter rather than relying on what the campaign wrote.
+  fp16: {method: uniform, bits: 16}
+models:
+  qwen25_7b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-7B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+adapters:
+  all_linear_r1:
+    method: full_lora
+    rank: 1
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    # alpha/rank is held at 2 across every rank, matching the rank-16 arm's
+    # 32/16. Holding alpha fixed instead would change the update scale by 16x
+    # between the ends of the sweep and confound rank with learning rate.
+    alpha: 2
+    dropout: 0.0
+  all_linear_r2:
+    method: full_lora
+    rank: 2
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 4
+    dropout: 0.0
+  all_linear_r4:
+    method: full_lora
+    rank: 4
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 8
+    dropout: 0.0
+  all_linear_r8:
+    method: full_lora
+    rank: 8
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 16
+    dropout: 0.0
+  all_linear_r32:
+    method: full_lora
+    rank: 32
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 64
+    dropout: 0.0
+  all_linear_r64:
+    method: full_lora
+    rank: 64
+    target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+    last_n_layers: null
+    alpha: 128
+    dropout: 0.0
+training:
+  cot_full_1ep:
+    epochs: 1
+    learning_rate: 0.0002
+    effective_batch_size: 16
+    micro_batch_size: 4
+    max_length: 1024
+    warmup_ratio: 0.03
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    max_grad_norm: 1.0
+    eval_every_updates: 200
+    label_span: all
+datasets:
+  cot_math:
+    task_type: generative
+    train_source:
+      path: meta-math/MetaMathQA
+      name: default
+      revision: aa4f34d3d2d3231299b5b03d9b3e5a20da45aa18
+      split: train
+      converter: metamath
+    answer_marker: 'The answer is:'
+    validation_rows: 256
+    train_rows: 32000
+    test_rows: 1319
+    evaluations:
+    - key: gsm8k
+      path: openai/gsm8k
+      name: main
+      revision: 740312add88f781978c0658806c59bc2815b9866
+      split: test
+      converter: gsm8k
+    screening_metric: exact_match
+    # The permuted arm is expected to fall far below the base model, so the
+    # screening gates that protect an acquisition study are the wrong shape
+    # here. Both thresholds are copied from the rank-16 permuted arm so this
+    # campaign screens on exactly the terms that one did.
+    maximum_baseline_score: 0.85
+    minimum_validation_nll_gain_bits_per_token: 0.02
+studies:
+  aligned_high_rank:
+    kind: natural
+    models: [qwen25_7b_base]
+    datasets: [cot_math]
+    seeds: [11]
+    adapters: [all_linear_r32, all_linear_r64]
+    training: cot_full_1ep

@@ -4,7 +4,7 @@ import pytest
 import torch
 
 from fineqcomp.codec import decode_adapter_tensor_map
-from fineqcomp.matched_budget import (
+from fineqcomp.studies.matched_budget import (
     budget_units,
     candidate_grid,
     candidate_key,
@@ -254,7 +254,7 @@ def test_report_joins_a_finished_study_without_a_gpu(tmp_path):
         for row in rows:
             _write_split(root, row["key"], "gsm8k", row["gsm8k_accuracy"])
 
-    from fineqcomp.matched_budget import report
+    from fineqcomp.studies.matched_budget import report
 
     summary = report({"config": config, "cells": cells}, tmp_path)
     assert summary["status"] == "complete" and summary["missing"] == []

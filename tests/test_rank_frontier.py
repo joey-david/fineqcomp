@@ -10,7 +10,7 @@ from fineqcomp.codec import (
     encode_tensor_map,
     truncate_lora_rank,
 )
-from fineqcomp.rank_frontier import (
+from fineqcomp.studies.rank_frontier import (
     baseline_heldout_bits,
     frontier,
     random_mask_ladder,
@@ -148,7 +148,7 @@ def test_truncation_is_scored_against_the_mask_at_the_same_file_size():
     that exact file size, and cells outside the ladder's range are dropped
     rather than extrapolated.
     """
-    from fineqcomp.rank_frontier import compare_against_random_mask
+    from fineqcomp.studies.rank_frontier import compare_against_random_mask
 
     record = {
         "codecs": [
@@ -201,7 +201,7 @@ def test_a_grid_that_stops_below_the_container_does_not_add_it_back():
     it is the only cell that can reach the uncoded gain. That rule has to yield
     when the caller deliberately asks for a narrower grid.
     """
-    from fineqcomp.rank_frontier import sweep_tensors
+    from fineqcomp.studies.rank_frontier import sweep_tensors
     import inspect
 
     source = inspect.getsource(sweep_tensors)
