@@ -2,6 +2,9 @@
 
 <p align="center">Measure the bits needed to preserve a LoRA update's learned behavior.</p>
 
+<p align="center"><b>The Behavioral Rate of Fine-Tuning: Compression as a Measure of Useful Information</b><br>
+Joey David, Paul Caillon, Alexandre Allauzen. Under review at ICLR 2027.</p>
+
 <p align="center"><img src="paper/assets/recovery.png" width="850" alt="Frozen, corrupted, and compressed adapter accuracy across three model families"></p>
 
 fineQComp studies how much of a trained adapter must survive compression to
