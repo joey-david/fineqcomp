@@ -349,3 +349,92 @@ def test_rank_truncation_keeps_the_strongest_directions_and_shrinks_the_file():
     assert truncate_lora_rank(tensors, 99)[
         "m.lora_A.default.weight"
     ].shape == (rank, in_features)
+
+
+def _trained_like_pair(rank=16, out_features=96, in_features=80, seed=3):
+    """A LoRA pair whose rank directions differ in size, as trained ones do."""
+    generator = torch.Generator().manual_seed(seed)
+    scale = torch.logspace(0, -1.5, rank)
+    return {
+        "m.layers.0.q_proj.lora_A.default.weight": torch.rand(
+            rank, in_features, generator=generator
+        ) * 2 - 1,
+        "m.layers.0.q_proj.lora_B.default.weight": torch.randn(
+            out_features, rank, generator=generator
+        ) * scale[None, :],
+    }
+
+
+def _product(tensors):
+    a = tensors["m.layers.0.q_proj.lora_A.default.weight"].double()
+    b = tensors["m.layers.0.q_proj.lora_B.default.weight"].double()
+    return b @ a
+
+
+@pytest.mark.parametrize(
+    "gauge,kappa",
+    [("identity", 1.0), ("diagonal", 1e4), ("permutation", 1.0),
+     ("orthogonal", 1.0), ("conditioned", 100.0), ("svd", 1.0)],
+)
+def test_regauge_keeps_the_update_and_changes_the_factors(gauge, kappa):
+    from fineqcomp.codec import regauge_lora
+
+    tensors = _trained_like_pair()
+    regauged = regauge_lora(tensors, gauge, draw=1, kappa=kappa)
+
+    full = _product(tensors)
+    error = (_product(regauged) - full).norm() / full.norm()
+    assert error < 1e-6 * kappa
+    assert regauge_lora(tensors, gauge, draw=1, kappa=kappa).keys() == tensors.keys()
+    for name in tensors:
+        assert regauged[name].dtype == tensors[name].dtype
+        assert torch.equal(regauged[name], regauge_lora(tensors, gauge, 1, kappa)[name])
+        assert torch.equal(regauged[name], tensors[name]) == (gauge == "identity")
+
+
+def test_conditioned_gauge_has_the_requested_condition_number():
+    from fineqcomp.codec import gauge_matrix
+
+    q, inverse = gauge_matrix("conditioned", 16, torch.Generator().manual_seed(0), 1e3)
+    singular = torch.linalg.svdvals(q)
+    assert float(singular[0] / singular[-1]) == pytest.approx(1e3, rel=1e-9)
+    assert float(singular.log().sum()) == pytest.approx(0.0, abs=1e-9)
+    assert torch.allclose(q @ inverse, torch.eye(16, dtype=torch.float64), atol=1e-9)
+
+
+@pytest.mark.parametrize("bits,blend", [(1, 0.0), (2, 0.0), (1, 0.5), (0, 0.5)])
+def test_the_codec_cannot_see_a_rescaling_of_rank_directions(tmp_path, bits, blend):
+    """Per-direction fp16 scales absorb any diagonal gauge, at every rung.
+
+    Rotating the rank directions is a different matter: it changes what each
+    coded row holds, so the decoded update moves even though the uncoded one
+    is the same.
+    """
+    from fineqcomp.codec import regauge_lora
+
+    tensors = _trained_like_pair()
+
+    def decoded_product(update, name):
+        encode_tensor_map(update, tmp_path / name, bits, blend=blend)
+        return _product(decode_tensor_map(tmp_path / name)[1])
+
+    reference = decoded_product(tensors, "identity.fqcb")
+    rescaled = decoded_product(regauge_lora(tensors, "diagonal", kappa=1e4), "diag.fqcb")
+    rotated = decoded_product(regauge_lora(tensors, "orthogonal"), "rot.fqcb")
+    # fp16 rounds each scale independently, so agreement is to its precision.
+    assert (rescaled - reference).norm() / reference.norm() < 2e-3
+    assert (rotated - reference).norm() / reference.norm() > 5e-2
+
+
+def test_binary_projection_follows_the_factors_not_the_update():
+    from fineqcomp.codec import binary_projection, regauge_lora
+
+    tensors = _trained_like_pair()
+    projection, residual = binary_projection(tensors)
+    assert 0 < projection < 1 and residual > 0
+    assert binary_projection(regauge_lora(tensors, "diagonal", kappa=1e4))[0] == (
+        pytest.approx(projection, rel=2e-3)
+    )
+    # Mixing uniform-valued rows of A makes them more Gaussian, and a sign
+    # code keeps less of a Gaussian row than of a uniform one.
+    assert binary_projection(regauge_lora(tensors, "orthogonal"))[0] < projection

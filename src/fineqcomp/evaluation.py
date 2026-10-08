@@ -288,7 +288,11 @@ def generate_response_records(
                     render_prompt(tokenizer, row.prompt, model_spec) for row in batch
                 ]
                 encoded = tokenizer(prompts, return_tensors="pt", padding=True)
-                encoded = {key: value.to(device) for key, value in encoded.items()}
+                # A tokenizer whose input names include token_type_ids hands
+                # them to generate(), which Transformers 4.x rejects for
+                # decoder-only models; they carry nothing for these models.
+                encoded = {key: value.to(device) for key, value in encoded.items()
+                           if key != "token_type_ids"}
                 with inference_autocast(model, device):
                     generated = model.generate(
                         **encoded,

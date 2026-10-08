@@ -92,7 +92,23 @@ configs to edit until an old run resumes.
 
 ## Jean-Zay
 
-The launchers take their working root from `SLURM_SUBMIT_DIR`. Preload
+The reparameterization ablation (`configs/rate/reparameterization.yaml`) is the
+one experiment with a single-command launcher. From a clone under `$WORK`, on a
+login node:
+
+```bash
+bash scripts/jean_zay/reparameterization.sh          # check, plan, submit
+bash scripts/jean_zay/reparameterization.sh status   # progress
+```
+
+It validates the project, GPU family and every model snapshot with
+`sbatch --test-only` and file reads, then chains prepare, a GPU smoke test,
+training, the gauge sweep, the init-ablation profiles and a collect job that
+always writes `.cache/reparameterization/fineqcomp_reparameterization_results.tar.gz`.
+Rerunning it submits only unfinished work. `readme_paul.md` is the operator's
+version in French.
+
+The other launchers take their working root from `SLURM_SUBMIT_DIR`. Preload
 `scripts/jean_zay/env.sh` on the login node when compute nodes lack modules.
 Set `HF_HOME` to the shared model cache and stage data before using offline mode.
 Override the account with `sbatch --account=<project>@h100`. For H100 jobs under

@@ -15,6 +15,7 @@ import yaml
 
 Backbone = Literal["nf4", "bf16"]
 AdapterMethod = Literal["seeded_b", "full_lora"]
+AdapterInit = Literal["default", "rotated", "conditioned"]
 CodecMethod = Literal["uniform", "loraquant"]
 Quantizer = Literal["midrise", "midtread"]
 RunKind = Literal["natural"]
@@ -43,6 +44,11 @@ class AdapterSpec:
     dropout: float = 0.0
     reference_target_modules: tuple[str, ...] = ()
     reference_rank: int | None = None
+    # How LoRA-A starts: PEFT's own draw, or that draw left-multiplied by a
+    # per-module orthogonal (`rotated`) or `init_kappa`-conditioned Q. B starts
+    # at zero either way, so the model at step zero is the same.
+    init: AdapterInit = "default"
+    init_kappa: float = 10.0
 
 
 @dataclass(frozen=True)
@@ -182,6 +188,14 @@ def load_campaign(path: str | Path) -> dict[str, Any]:
                 raise ValueError(f"codec {key}: invalid variance_ratio")
         else:
             raise ValueError(f"codec {key}: unknown method")
+    for key, adapter in raw["adapters"].items():
+        init = str(adapter.get("init", "default"))
+        if init not in {"default", "rotated", "conditioned"}:
+            raise ValueError(f"adapter {key}: unknown init {init!r}")
+        if init != "default" and adapter.get("method") != "full_lora":
+            raise ValueError(f"adapter {key}: init {init!r} needs a trained LoRA-A")
+        if float(adapter.get("init_kappa", 10.0)) < 1.0:
+            raise ValueError(f"adapter {key}: init_kappa must be at least one")
     for key, training in raw["training"].items():
         span = str(training.get("label_span", "all"))
         if span not in {"all", "reasoning", "answer"}:
