@@ -140,6 +140,27 @@ def from_run(run_dir: Path, target: float = 0.90) -> dict[str, Any]:
     return result
 
 
+def kendall_tau_b(x: list[float], y: list[float]) -> float:
+    """Kendall's tau-b between two orderings of the same items, ties allowed."""
+    concordant = discordant = ties_x = ties_y = 0
+    for i in range(len(x)):
+        for j in range(i + 1, len(x)):
+            dx = (x[i] > x[j]) - (x[i] < x[j])
+            dy = (y[i] > y[j]) - (y[i] < y[j])
+            if dx == 0 and dy == 0:
+                continue
+            if dx == 0:
+                ties_x += 1
+            elif dy == 0:
+                ties_y += 1
+            elif dx == dy:
+                concordant += 1
+            else:
+                discordant += 1
+    denominator = ((concordant + discordant + ties_x) * (concordant + discordant + ties_y)) ** 0.5
+    return (concordant - discordant) / denominator if denominator else float("nan")
+
+
 def _fit(xs: list[float], ys: list[float]) -> dict[str, Any]:
     """Least-squares slope of R* on log2 of an information measure."""
     import math

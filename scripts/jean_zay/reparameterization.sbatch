@@ -10,7 +10,9 @@
 #   train    (GPU array) one manifest run per task, from lists/$LIST
 #   sweep    (GPU array) attenuation probe and the full gauge sweep, one
 #            seed-11 default adapter per task, from lists/$LIST
-#   profile  (GPU) attenuation probe of every init-ablation adapter
+#   frontier (GPU array) R* under rank truncation (fineqcomp rank-frontier),
+#            one adapter per task, from lists/$LIST
+#   profile  (GPU) attenuation probe of every init and scale adapter
 #   collect  (prepost) tables, summary and the archive to send back
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -46,6 +48,15 @@ need_project_env() {
 }
 helper() { "$PYTHON" scripts/jean_zay/reparameterization.py "$1" --state "$state" "${@:2}"; }
 nth() { sed -n "$(($2 + 1))p" "$1"; }
+# A receiver whose base model already passes the task is screened out before
+# training, as in the paper's panel; there is nothing downstream to measure.
+screened_out() {
+  if grep -q '"screened_out"' "$runs/$1/status.json" 2>/dev/null; then
+    echo "$1 was screened out (base model above the saturation threshold); nothing to measure"
+    return 0
+  fi
+  return 1
+}
 
 echo "stage=$stage job=${SLURM_JOB_ID:-} task=$task host=$(hostname) start=$(date '+%F %T')"
 case "$stage" in
@@ -79,7 +90,7 @@ smoke)
   load_env
   need_project_env
   smoke="$state/smoke"
-  rm -rf -- "${smoke:?}/runs" "$smoke"/*.csv "$smoke/PASSED"
+  rm -rf -- "${smoke:?}/runs" "$smoke/frontier" "$smoke"/*.csv "$smoke/PASSED"
   mkdir -p "$smoke/runs"
   nvidia-smi --query-gpu=name,memory.total --format=csv,noheader || true
   while read -r run_id; do
@@ -95,6 +106,8 @@ smoke)
     "$prepared/natural" "$smoke/attenuation" 0 1 attenuation 4 calibration
   "$PYTHON" "$profile_script" "$smoke/cell.csv" "$smoke/runs" "$smoke/runs" \
     "$prepared/natural" "$smoke/gauge" 0 1 gauge 4 calibration "$(cat "$lists/smoke_gauges.txt")"
+  "$PYTHON" -m fineqcomp rank-frontier --run "$smoke/runs/$(head -n 1 "$lists/smoke_frontier.txt")" \
+    --config "$config" --prepared-root "$prepared" --out "$smoke/frontier" --ranks 4
   helper smoke-check
   ;;
 train)
@@ -112,6 +125,7 @@ sweep)
   need_project_env
   run_id="$(nth "$lists/${LIST:?}" "$task")"
   [[ -n "$run_id" ]] || { echo "no run at line $((task + 1)) of $lists/$LIST" >&2; exit 2; }
+  if screened_out "$run_id"; then exit 0; fi
   if [[ ! -f "$runs/$run_id/raw_channel.pt" ]]; then
     echo "no trained adapter for $run_id: its train task failed or was cancelled" >&2
     exit 3
@@ -123,6 +137,19 @@ sweep)
     "$cell/attenuation" 0 1 attenuation 64 calibration
   "$PYTHON" "$profile_script" "$cell/cell.csv" "$runs" "$runs" "$prepared/natural" \
     "$cell/gauge" 0 1 gauge 256 calibration "$(cat "$lists/gauges.txt")"
+  ;;
+frontier)
+  load_env
+  need_project_env
+  run_id="$(nth "$lists/${LIST:?}" "$task")"
+  [[ -n "$run_id" ]] || { echo "no run at line $((task + 1)) of $lists/$LIST" >&2; exit 2; }
+  if screened_out "$run_id"; then exit 0; fi
+  if [[ ! -f "$runs/$run_id/metrics.json" ]]; then
+    echo "no finished run for $run_id: its train task failed or was cancelled" >&2
+    exit 3
+  fi
+  "$PYTHON" -m fineqcomp rank-frontier --run "$runs/$run_id" --config "$config" \
+    --prepared-root "$prepared" --out "$state/frontier/$run_id"
   ;;
 profile)
   load_env
