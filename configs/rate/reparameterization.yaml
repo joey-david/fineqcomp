@@ -15,6 +15,13 @@
 #            (`conditioned`). B starts at zero, so the model at step zero is
 #            unchanged; only the optimiser's starting factors differ. Three
 #            seeds per arm give the noise to read the difference against.
+#   scale_*  are receiver differences just capability? Qwen2.5 at 0.5B, 1.5B,
+#            3B and 14B on the same corpora, joining gauge_*'s Qwen2.5-7B.
+#
+# Two reviewer checks ride on the same adapters: R* under a second codec
+# (rank-frontier truncation of the strongest singular directions) for the
+# seed-11 panel and scale adapters, and the alpha90/gamma rate rule on every
+# adapter here, against tests fixed in results/rate/reparameterization/.
 #
 # Models, corpora, rows, training contract and codec ladder are copied from
 # transposed_receiver_panel.yaml, so the default-init adapters reproduce that
@@ -53,6 +60,27 @@ models:
     chat: false
   llama31_8b_base:
     name: /lustre/fsmisc/dataset/HuggingFace_Models/meta-llama/Llama-3.1-8B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  # Paths as in configs/recovery/scale_and_tasks_jz.yaml, which ran on Jean-Zay.
+  qwen25_0p5b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-0.5B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_1p5b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-1.5B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_3b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-3B
+    revision: dsdir-shared-store
+    backbone: nf4
+    chat: false
+  qwen25_14b_base:
+    name: /lustre/fsmisc/dataset/HuggingFace_Models/Qwen/Qwen2.5-14B
     revision: dsdir-shared-store
     backbone: nf4
     chat: false
@@ -144,4 +172,17 @@ studies:
     datasets: [panel_math]
   init_xbrl:
     <<: *init
+    datasets: [xbrl_tags]
+  scale_code: &scale
+    kind: natural
+    models: [qwen25_0p5b_base, qwen25_1p5b_base, qwen25_3b_base, qwen25_14b_base]
+    datasets: [kind_code]
+    seeds: [11]
+    adapters: [all_linear_r16]
+    training: panel_4ep
+  scale_math:
+    <<: *scale
+    datasets: [panel_math]
+  scale_xbrl:
+    <<: *scale
     datasets: [xbrl_tags]

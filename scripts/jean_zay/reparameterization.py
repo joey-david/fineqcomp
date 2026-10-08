@@ -45,8 +45,20 @@ GAUGES = tuple(os.environ.get("FQ_GAUGES", "").split()) or (
     "svd",
 )
 SMOKE_GAUGES = ("identity", "conditioned-k100-d0", "svd")
-SMOKE_ROWS = 4
 SWEEP_SEED = 11
+# Walltimes in minutes on an H100 for a 7-9B receiver: the panel's measured
+# durations plus a third (Mistral's code adapter trains in 104 min and its
+# baseline and ladder add about 30). A full gpu_p6 starts jobs by backfill, so
+# each array asks for what its slowest task needs, scaled by receiver size;
+# the launcher doubles them on A100s.
+MINUTES = {
+    "train": {"kind_code": 210, "panel_math": 180, "xbrl_tags": 90},
+    "sweep": {"kind_code": 240, "panel_math": 180, "xbrl_tags": 240},
+    "frontier": {"kind_code": 90, "panel_math": 60, "xbrl_tags": 90},
+}
+SIZE = {"qwen25_0p5b_base": 0.4, "qwen25_1p5b_base": 0.5, "qwen25_3b_base": 0.7,
+        "qwen25_14b_base": 1.3}
+PROFILE_MINUTES = 90
 # One pilot run per receiver, covering every corpus's scorer and one
 # non-default initialisation. The last one also takes the gauge smoke.
 SMOKE_CELLS = (
@@ -75,6 +87,7 @@ class State:
         self.runs = self.root / "runs"
         self.lists = self.root / "lists"
         self.sweep = self.root / "sweep"
+        self.frontier = self.root / "frontier"
         self.profile = self.root / "profile"
         self.smoke = self.root / "smoke"
         self.report = self.root / "report"
@@ -173,13 +186,41 @@ def attenuation_rows(state: State) -> dict[str, dict[str, str]]:
 
 
 def _sweep_runs(runs, excluded: set[str]):
+    """The seed-11 default adapters of the panel receivers: the factorization sweep."""
     return [run for run in runs if run.seed == SWEEP_SEED and run.adapter.init == "default"
+            and not run.study.startswith("scale_") and run.model.key not in excluded]
+
+
+def _frontier_runs(runs, excluded: set[str]):
+    """Adapters whose R* is also read under rank truncation: the sweep's and the scale ladder's."""
+    return _sweep_runs(runs, excluded) + [run for run in runs if run.study.startswith("scale_")
+                                          and run.model.key not in excluded]
+
+
+def _profile_runs(runs, excluded: set[str]):
+    """Adapters that get an attenuation probe outside the sweep, for the rate rule."""
+    return [run for run in runs if run.study.startswith(("init_", "scale_"))
             and run.model.key not in excluded]
 
 
+def frontier_cells(state: State, run_id: str) -> list[dict[str, Any]]:
+    return [json.loads(path.read_text())
+            for path in sorted((state.frontier / run_id).glob("r*_b*.json"))]
+
+
+def _minutes(stage: str, run) -> int:
+    return round(MINUTES[stage][run.dataset_key] * SIZE.get(run.model.key, 1.0))
+
+
 def plan(state: State) -> dict[str, Any]:
-    """Write the manifest and the work lists that remain; report what is excluded."""
+    """Write the manifest and the work that remains, as arrays the launcher submits.
+
+    `arrays.tsv` has one line per array: stage, list file, tasks, minutes on an
+    H100, and the training lists it waits for (or `-`). An array never mixes
+    corpora or walltimes, so each asks for what its own tasks need.
+    """
     from fineqcomp.campaign import write_manifest
+    from fineqcomp.studies.rank_frontier import DEFAULT_RANKS, DEFAULT_RATES
 
     campaign, runs = _campaign()
     write_manifest(runs, state.manifest)
@@ -190,46 +231,75 @@ def plan(state: State) -> dict[str, Any]:
     usable = [run for run in runs if run.model.key not in excluded]
     sweep = _sweep_runs(runs, excluded)
     sweep_ids = {run.run_id for run in sweep}
-    train_e1 = [run for run in sweep if not _done(state, run)]
-    train_e2 = [run for run in usable if run.run_id not in sweep_ids and not _done(state, run)]
+
+    def group(run) -> str:
+        if run.run_id in sweep_ids:
+            return "e1"
+        return "scale" if run.study.startswith("scale_") else "e2"
+
+    training = [run for run in usable if not _done(state, run)]
     measured: dict[str, set[str]] = {}
     for row in gauge_rows(state):
         measured.setdefault(row["run_id"], set()).add(row["gauge"])
     sweep_todo = [run for run in sweep if _status(state, run.run_id) != "screened_out"
                   and not set(GAUGES) <= measured.get(run.run_id, set())]
+    full = len(DEFAULT_RATES) * len(set(DEFAULT_RANKS) | {16})
+    frontier_todo = [run for run in _frontier_runs(runs, excluded)
+                     if _status(state, run.run_id) != "screened_out"
+                     and len(frontier_cells(state, run.run_id)) < full]
     profiled = attenuation_rows(state)
-    profile_todo = [run for run in usable if run.study.startswith("init_")
-                    and run.run_id not in profiled]
+    profile_todo = [run for run in _profile_runs(runs, excluded) if run.run_id not in profiled]
     smoke = []
     for model, dataset, init in SMOKE_CELLS:
         smoke += [run for run in usable if (run.model.key, run.dataset_key, run.adapter.init,
                                             run.seed) == (model, dataset, init, SWEEP_SEED)][:1]
-    for key in sorted({run.model.key for run in usable} - {run.model.key for run in smoke}):
+    covered = {run.model.key for run in smoke}
+    for key in sorted({run.model.key for run in usable if not run.study.startswith("scale_")} - covered):
         smoke.append(next(run for run in usable if run.model.key == key))
+    frontier_probe = next((run for run in smoke if run.dataset_key == "panel_math"), smoke[0] if smoke else None)
     marker = state.smoke / "PASSED"
     smoke_needed = not (marker.is_file() and marker.read_text().strip() == _git_head())
 
     state.lists.mkdir(parents=True, exist_ok=True)
     for stale in state.lists.glob("*.txt"):
         stale.unlink()
-    lists = {"profile": profile_todo, "smoke": smoke}
-    # One array per stage and corpus, so each asks for the walltime its corpus
-    # needs: a full gpu_p6 starts jobs by backfill, and a long request waits.
-    arrays = []
+    lists: dict[str, list] = {"smoke": smoke, "smoke_frontier": [frontier_probe] if frontier_probe else []}
+    arrays: list[str] = []
+    trainer: dict[str, str] = {}
+
+    def add(stage: str, name: str, chosen: list, minutes: int, needs: set[str]) -> None:
+        lists[name] = chosen
+        arrays.append(f"{stage} {name}.txt {len(chosen)} {minutes} {','.join(sorted(needs)) or '-'}\n")
+
     for dataset in sorted({run.dataset_key for run in runs}):
-        for stage, name, chosen in (("train", "train_e1", train_e1), ("train", "train_e2", train_e2),
-                                    ("sweep", "sweep", sweep_todo)):
-            picked = [run for run in chosen if run.dataset_key == dataset]
-            if picked:
-                lists[f"{name}_{dataset}"] = picked
-                arrays.append(f"{stage} {name}_{dataset}.txt {dataset} {len(picked)}\n")
+        batches: dict[tuple[str, int], list] = {}
+        for run in training:
+            if run.dataset_key == dataset:
+                batches.setdefault((group(run), _minutes("train", run)), []).append(run)
+        for (name, minutes), chosen in sorted(batches.items()):
+            list_name = f"train_{name}_{dataset}_{minutes}m"
+            add("train", list_name, chosen, minutes, set())
+            trainer.update({run.run_id: f"{list_name}.txt" for run in chosen})
+        for stage, todo in (("sweep", sweep_todo), ("frontier", frontier_todo)):
+            batches = {}
+            for run in todo:
+                if run.dataset_key == dataset:
+                    batches.setdefault(_minutes(stage, run), []).append(run)
+            for minutes, chosen in sorted(batches.items()):
+                add(stage, f"{stage}_{dataset}_{minutes}m", chosen, minutes,
+                    {trainer[run.run_id] for run in chosen if run.run_id in trainer})
+    if profile_todo:
+        # One task walks the whole list, loading each receiver once.
+        lists["profile"] = profile_todo
+        needs = {trainer[run.run_id] for run in profile_todo if run.run_id in trainer}
+        arrays.append(f"profile profile.txt 1 {PROFILE_MINUTES} {','.join(sorted(needs)) or '-'}\n")
     for name, chosen in lists.items():
         (state.lists / f"{name}.txt").write_text("".join(f"{run.run_id}\n" for run in chosen))
     (state.lists / "arrays.tsv").write_text("".join(arrays))
     (state.lists / "gauges.txt").write_text(" ".join(GAUGES) + "\n")
     (state.lists / "smoke_gauges.txt").write_text(" ".join(SMOKE_GAUGES) + "\n")
     counts = {
-        "N_TRAIN_E1": len(train_e1), "N_TRAIN_E2": len(train_e2), "N_SWEEP": len(sweep_todo),
+        "N_TRAIN": len(training), "N_SWEEP": len(sweep_todo), "N_FRONTIER": len(frontier_todo),
         "N_PROFILE": len(profile_todo), "N_SMOKE": len(smoke),
         "SMOKE_NEEDED": int(smoke_needed and bool(smoke)), "N_RUNS": len(runs),
         "N_USABLE": len(usable), "EXCLUDED_MODELS": ",".join(sorted(excluded)),
@@ -316,6 +386,9 @@ def smoke_check(state: State) -> list[str]:
     attenuation = _read_csv(state.smoke / "attenuation_0.csv")
     if len(attenuation) != 1 or _float(attenuation[0].get("attenuation_binary_projection")) is None:
         problems.append("attenuation smoke missing or not finite")
+    probes = [json.loads(path.read_text()) for path in sorted((state.smoke / "frontier").glob("r*_b*.json"))]
+    if len(probes) != 12 or any(_float(cell.get("heldout_bits_saved")) is None for cell in probes):
+        problems.append(f"rank-truncation smoke wrote {len(probes)} of 12 finite cells")
     if not problems:
         (state.smoke / "PASSED").write_text(_git_head() + "\n")
     return problems
@@ -335,6 +408,25 @@ def _alpha90(row: dict[str, str]) -> float | None:
         return r_star(points, rate_key="scale", value_key="gain", reference=gain)["r_star"]
     except (KeyError, TypeError, ValueError):
         return None
+
+
+def _truncation_r_star(state: State, run_id: str, record: dict[str, Any]) -> float | None:
+    """R*(0.90) when the codec keeps the strongest singular directions (rank-frontier cells).
+
+    Rate is file bits per value of the full rank-16 adapter, so it is on the same
+    axis as the uniform ladder's; the reference is the best of the raw and coded
+    gains, as for the paper's R*.
+    """
+    from fineqcomp.rstar import r_star
+
+    cells = frontier_cells(state, run_id)
+    values = record.get("nominal_channel_values")
+    raw = (record.get("raw_behavioral_write") or {}).get("heldout_bits_saved")
+    if not cells or not values or raw is None:
+        return None
+    points = [{"rate": cell["file_bits"] / values, "saved": cell["heldout_bits_saved"]} for cell in cells]
+    reference = max([float(raw)] + [point["saved"] for point in points])
+    return r_star(points, rate_key="rate", value_key="saved", reference=reference)["r_star"]
 
 
 def _mean(values: list[float | None]) -> float | None:
@@ -365,6 +457,8 @@ def _run_table(state: State, runs) -> list[dict[str, Any]]:
             "state": status.get("state", "pending"), "error": status.get("error", ""),
         }
         if (root / "metrics.json").is_file():
+            record = read_json(root / "metrics.json", {}) or {}
+            row["truncation_r_star"] = _truncation_r_star(state, run.run_id, record)
             result = from_run(root)
             raw = result.get("raw_reference")
             row.update(r_star=result.get("r_star"), bracketed=result.get("bracketed"),
@@ -404,6 +498,7 @@ def _gauge_table(state: State, run_table: list[dict[str, Any]]) -> list[dict[str
             "dataset_key": info.get("dataset_key"), "gauge": row["gauge"],
             "gauge_kind": row.get("gauge_kind"), "kappa": _float(row.get("gauge_kappa")),
             "r_star": r, "r_star_raw": _float(row.get("r_star_raw")),
+            "bracketed": row.get("bracketed") == "True",
             "delta_r_star": None if r is None or r0 is None else r - r0,
             "gamma": gamma, "delta_gamma": None if gamma is None or gamma0 is None else gamma - gamma0,
             "rule_r_star": a / gamma if a is not None and gamma else None,
@@ -422,6 +517,61 @@ def _family(gauge: str) -> str:
     kind, *rest = gauge.split("-")
     kappa = next((part for part in rest if part.startswith("k")), "")
     return f"{kind}-{kappa}" if kind == "conditioned" else kind
+
+
+WELL_CONDITIONED = ("diagonal", "permutation", "orthogonal", "conditioned-k10", "svd")
+GATE_RMSE = 0.10
+GATE_SIGN = 0.80
+
+
+def gates(run_table: list[dict[str, Any]], gauge_table: list[dict[str, Any]]) -> dict[str, Any]:
+    """The tests written down in results/rate/reparameterization/README.md before any result.
+
+    The rule is R*(0.90) ~ alpha90 / gamma with no fitted coefficient. G1: new
+    adapters (non-default initialisations and the scale ladder). G2: the sweep's
+    well-conditioned factorizations, whose alpha90 is the identity's. G3: the sign
+    of each factorization's R* shift, where the shift exceeds that adapter's
+    codec noise (its largest shift over the three permutation draws).
+    """
+    def rmse(pairs):
+        return (sum((p - m) ** 2 for p, m in pairs) / len(pairs)) ** 0.5 if pairs else None
+
+    new = [row for row in run_table
+           if (row["study"].startswith("init_") and row["init"] != "default") or row["study"].startswith("scale_")]
+    g1 = [(row["rule_r_star"], row["r_star"]) for row in new
+          if row.get("rule_r_star") is not None and row.get("r_star") is not None and row.get("bracketed")]
+    moved_rows = [row for row in gauge_table if row["gauge"] != "identity"]
+    g2 = [(row["rule_r_star"], row["r_star"]) for row in moved_rows
+          if _family(row["gauge"]) in WELL_CONDITIONED and row["bracketed"]
+          and row["rule_r_star"] is not None and row["r_star"] is not None]
+    floor: dict[str, float] = {}
+    for row in moved_rows:
+        if row["gauge_kind"] == "permutation" and row["delta_r_star"] is not None:
+            floor[row["run_id"]] = max(floor.get(row["run_id"], 0.0), abs(row["delta_r_star"]))
+    beyond = [row for row in moved_rows if row["delta_r_star"] is not None and row["rule_delta_r_star"] is not None
+              and abs(row["delta_r_star"]) > floor.get(row["run_id"], 0.0)]
+    agree = [(row["rule_delta_r_star"] > 0) == (row["delta_r_star"] > 0) for row in beyond]
+    ill = [(row["rule_r_star"], row["r_star"]) for row in moved_rows
+           if _family(row["gauge"]) in ("conditioned-k100", "conditioned-k1000") and row["bracketed"]
+           and row["rule_r_star"] is not None and row["r_star"] is not None]
+
+    def verdict(value, threshold, below):
+        if value is None:
+            return "no data"
+        return "PASS" if (value <= threshold if below else value >= threshold) else "FAIL"
+
+    share = sum(agree) / len(agree) if agree else None
+    return {
+        "G1 rule on new adapters (RMSE, bits/value)": {
+            "n": len(g1), "value": rmse(g1), "threshold": GATE_RMSE, "verdict": verdict(rmse(g1), GATE_RMSE, True)},
+        "G2 rule on well-conditioned factorizations (RMSE)": {
+            "n": len(g2), "value": rmse(g2), "threshold": GATE_RMSE, "verdict": verdict(rmse(g2), GATE_RMSE, True)},
+        "G3 sign of R* shifts beyond codec noise (share)": {
+            "n": len(agree), "value": share, "threshold": GATE_SIGN, "verdict": verdict(share, GATE_SIGN, False)},
+        "ill-conditioned factorizations, not gated (RMSE; mean predicted minus measured)": {
+            "n": len(ill), "value": rmse(ill),
+            "bias": _mean([p - m for p, m in ill]) if ill else None},
+    }
 
 
 def _summary_markdown(state: State, run_table, gauge_table, notes: list[str]) -> str:
@@ -457,6 +607,37 @@ def _summary_markdown(state: State, run_table, gauge_table, notes: list[str]) ->
             f"{_fmt(_mean([abs(d) for d in deltas]))} | {_fmt(max(map(abs, deltas)) if deltas else None)} | "
             f"{_fmt(_mean([row['delta_gamma'] for row in rows]))} | "
             f"{_fmt(_mean([row['rule_delta_r_star'] for row in rows]))} | {_fmt(max(shifts) if shifts else None, 5)} |")
+    lines += ["", "## Pre-registered tests of the rate rule", "",
+              "| test | n | value | threshold | verdict |", "|---|---|---|---|---|"]
+    for name, gate in gates(run_table, gauge_table).items():
+        lines.append(f"| {name} | {gate['n']} | {_fmt(gate['value'])} | "
+                     f"{_fmt(gate.get('threshold'))} | {gate.get('verdict', _fmt(gate.get('bias')))} |")
+    lines += ["", "## Second codec: keep the strongest singular directions", "",
+              "| model | corpus | R* uniform | R* truncation |", "|---|---|---|---|"]
+    both = [row for row in run_table if row.get("truncation_r_star") is not None]
+    for row in both:
+        lines.append(f"| {row['model_key']} | {row['dataset_key']} | {_fmt(row.get('r_star'))} | "
+                     f"{_fmt(row['truncation_r_star'])} |")
+    paired = [row for row in both if row.get("r_star") is not None]
+    if len(paired) > 2:
+        from fineqcomp.rstar import kendall_tau_b
+
+        lines.append("")
+        lines.append(f"Kendall tau-b between the two codecs' R*, all {len(paired)} adapters: "
+                     f"{kendall_tau_b([r['r_star'] for r in paired], [r['truncation_r_star'] for r in paired]):.2f}.")
+        for dataset in sorted({row["dataset_key"] for row in paired}):
+            group = [row for row in paired if row["dataset_key"] == dataset]
+            if len(group) > 2:
+                tau = kendall_tau_b([r["r_star"] for r in group], [r["truncation_r_star"] for r in group])
+                lines.append(f"Receiver order within {dataset} ({len(group)} receivers): tau-b {tau:.2f}.")
+    lines += ["", "## Receiver scale (Qwen2.5, seed 11)", "",
+              "| corpus | model | state | R* uniform | R* truncation | rule |", "|---|---|---|---|---|---|"]
+    sizes = ("qwen25_0p5b_base", "qwen25_1p5b_base", "qwen25_3b_base", "qwen25_7b_base", "qwen25_14b_base")
+    for row in sorted((r for r in run_table if r["model_key"] in sizes and r["seed"] == SWEEP_SEED
+                       and r["init"] == "default"),
+                      key=lambda r: (r["dataset_key"], sizes.index(r["model_key"]))):
+        lines.append(f"| {row['dataset_key']} | {row['model_key']} | {row['state']} | {_fmt(row.get('r_star'))} | "
+                     f"{_fmt(row.get('truncation_r_star'))} | {_fmt(row.get('rule_r_star'))} |")
     lines += ["", "## Initialisation (Mistral-7B, three seeds)", "",
               "| corpus | init | n | R* mean | R* sd | gamma mean |", "|---|---|---|---|---|---|"]
     groups: dict[tuple[str, str], list[dict[str, Any]]] = {}
@@ -493,6 +674,10 @@ def collect(state: State, archive: Path | None = None) -> Path:
     except Exception:
         notes.append("gauge table failed: " + traceback.format_exc(limit=3).replace("\n", " "))
     try:
+        (state.report / "gates.json").write_text(json.dumps(gates(run_table, gauge_table), indent=2) + "\n")
+    except Exception:
+        notes.append("gates failed: " + traceback.format_exc(limit=3).replace("\n", " "))
+    try:
         (state.report / "summary.md").write_text(_summary_markdown(state, run_table, gauge_table, notes))
     except Exception:
         (state.report / "summary.md").write_text("summary failed:\n" + traceback.format_exc())
@@ -520,7 +705,8 @@ def collect(state: State, archive: Path | None = None) -> Path:
             add(run_dir / "logs" / "training.jsonl")
         for path in sorted(state.runs.glob("baselines/*/metrics.json")):
             add(path)
-        for path in sorted(state.sweep.glob("*/*.csv")) + sorted(state.profile.glob("*.csv")):
+        for path in (sorted(state.sweep.glob("*/*.csv")) + sorted(state.profile.glob("*.csv"))
+                     + sorted(state.frontier.glob("*/r*_b*.json")) + sorted(state.smoke.glob("frontier/*.json"))):
             add(path)
         for path in sorted(state.logs.glob("*")):
             add(path)
@@ -555,9 +741,15 @@ def status(state: State) -> str:
     complete = sum(set(GAUGES) <= measured.get(run.run_id, set()) for run in sweep)
     lines.append(f"Balayage des factorisations : {complete}/{len(sweep)} adaptateurs complets, "
                  f"{sum(len(v) for v in measured.values())}/{len(sweep) * len(GAUGES)} mesures")
-    init_runs = [run for run in usable if run.study.startswith("init_")]
+    from fineqcomp.studies.rank_frontier import DEFAULT_RANKS, DEFAULT_RATES
+
+    full = len(DEFAULT_RATES) * len(set(DEFAULT_RANKS) | {16})
+    truncated = _frontier_runs(runs, excluded)
+    lines.append("Second codec (troncature de rang) : "
+                 f"{sum(len(frontier_cells(state, run.run_id)) >= full for run in truncated)}/{len(truncated)} adaptateurs")
+    profile_runs = _profile_runs(runs, excluded)
     profiled = attenuation_rows(state)
-    lines.append(f"Profils d'atténuation : {sum(run.run_id in profiled for run in init_runs)}/{len(init_runs)}")
+    lines.append(f"Profils d'atténuation : {sum(run.run_id in profiled for run in profile_runs)}/{len(profile_runs)}")
     smoke = "réussi" if (state.smoke / "PASSED").is_file() else "pas encore réussi"
     lines.append(f"Test rapide (smoke) : {smoke}")
     archive = state.root / "fineqcomp_reparameterization_results.tar.gz"

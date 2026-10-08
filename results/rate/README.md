@@ -10,6 +10,8 @@ a predictor that transfers to other receivers.
 | [codec_comparison](codec_comparison/) | Weight reconstruction error can disagree with retained gain; Figure 2 |
 | [what_sets_the_adapter_bit_budget](what_sets_the_adapter_bit_budget/) | Diversity, training budget, rank, placement, and curvature controls |
 | [transposed_receiver_panel](transposed_receiver_panel/) | Same corpora across receivers; Figure 6 |
+| [retention_threshold](retention_threshold/) | Figure 6's claims at retention targets 0.50 to 0.95 |
+| [reparameterization](reparameterization/) | Does R* follow the update or its factors? Pre-registered; runs pending |
 | [adapter_spectrum](adapter_spectrum/) | Spectrum and shrinkability predictors; Figure 7 and its audits |
 | [rate_law_audit](rate_law_audit/) | Receiver-held-out tests and failed corpus-only rules |
 | [correction_spectral_rate](correction_spectral_rate/) | Correction-spectrum development and external checks |

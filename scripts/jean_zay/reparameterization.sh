@@ -112,21 +112,10 @@ for account in "$project@cpu" "$project@$gpu"; do
   fi
 done
 [[ ${#cpu_args[@]} -gt 0 ]] || die "la partition prepost refuse le projet $project (@cpu et @$gpu)."
-# Walltimes from the panel's measured H100 durations plus a third: Mistral's
-# code adapter trains in 104 min and its baseline and ladder add about 30. A
-# full gpu_p6 starts jobs by backfill, so every request is kept near its need.
-# A100s get twice as long.
-walltime() {  # stage [corpus]
-  local minutes
-  case "$1:${2:-}" in
-  smoke:) minutes=55 ;;
-  profile:) minutes=60 ;;
-  train:kind_code) minutes=210 ;;
-  train:panel_math) minutes=180 ;;
-  train:xbrl_tags) minutes=90 ;;
-  sweep:panel_math) minutes=180 ;;
-  *) minutes=240 ;;
-  esac
+# The planner sets each array's walltime from measured H100 durations (see
+# MINUTES in reparameterization.py); A100s get twice as long, within t3's 20 h.
+walltime() {  # minutes on an H100
+  local minutes="$1"
   if [[ "$gpu" == a100 ]]; then minutes=$((minutes * 2)); fi
   if ((minutes > 1200)); then minutes=1200; fi
   printf '%02d:%02d:00' $((minutes / 60)) $((minutes % 60))
@@ -177,14 +166,14 @@ try_submit() {  # like submit, but returns 1 instead of stopping everything
 }
 
 parallel="${FQ_MAX_PARALLEL:-12}"
-gpu_work=$((N_TRAIN_E1 + N_TRAIN_E2 + N_SWEEP + N_PROFILE))
+gpu_work=$((N_TRAIN + N_SWEEP + N_FRONTIER + N_PROFILE))
 lines=()
 if [[ "$gpu_work" -gt 0 ]]; then
   submit prepare STAGE=prepare "${cpu_args[@]}" --time=02:00:00
   lines+=("$last_id  préparation (venv, données)")
   gate="afterok:$last_id"
   if [[ "$SMOKE_NEEDED" == 1 ]]; then
-    smoke_args=("${gpu_args[@]}" "--time=$(walltime smoke)" "--dependency=$gate" --kill-on-invalid-dep=yes)
+    smoke_args=("${gpu_args[@]}" "--time=$(walltime 55)" "--dependency=$gate" --kill-on-invalid-dep=yes)
     if ! try_submit smoke STAGE=smoke "${smoke_args[@]}" "--qos=$smoke_qos"; then
       smoke_qos="qos_gpu_${gpu}-t3"
       submit smoke STAGE=smoke "${smoke_args[@]}" "--qos=$smoke_qos"
@@ -193,30 +182,27 @@ if [[ "$gpu_work" -gt 0 ]]; then
     gate="$gate:$last_id"
   fi
   gpu_t3=("${gpu_args[@]}" "--qos=qos_gpu_${gpu}-t3" --kill-on-invalid-dep=yes)
-  trained=""
-  while read -r stage list corpus count; do
+  # Each line: stage, list, tasks, minutes on an H100, training lists it waits for.
+  while read -r stage list tasks minutes needs; do
     [[ -n "$stage" ]] || continue
-    dependency="$gate"
-    trainer="trainer_$corpus"
-    if [[ "$stage" == sweep && -n "${!trainer:-}" ]]; then
-      dependency="$gate,afterany:${!trainer}"
+    waits=""
+    if [[ "$needs" != - ]]; then
+      for need in ${needs//,/ }; do
+        job="job_${need//[^A-Za-z0-9]/_}"
+        if [[ -n "${!job:-}" ]]; then waits="$waits:${!job}"; fi
+      done
     fi
-    submit "$stage" "STAGE=$stage,LIST=$list" "${gpu_t3[@]}" "--time=$(walltime "$stage" "$corpus")" \
-      "--array=0-$((count - 1))%$parallel" "--dependency=$dependency"
-    if [[ "$stage" == train ]]; then
-      trained="$trained:$last_id"
-      if [[ "$list" == train_e1_* ]]; then printf -v "$trainer" '%s' "$last_id"; fi
-      label="entraînement $corpus, $count adaptateur(s)"
-    else
-      label="factorisations $corpus, $count adaptateur(s)"
-    fi
-    lines+=("$last_id  $label")
+    submit "$stage" "STAGE=$stage,LIST=$list" "${gpu_t3[@]}" "--time=$(walltime "$minutes")" \
+      "--array=0-$((tasks - 1))%$parallel" "--dependency=$gate${waits:+,afterany$waits}"
+    printf -v "job_${list//[^A-Za-z0-9]/_}" '%s' "$last_id"
+    case "$stage" in
+    train) label="entraînement" ;;
+    sweep) label="factorisations" ;;
+    frontier) label="second codec" ;;
+    *) label="profils d'atténuation" ;;
+    esac
+    lines+=("$last_id  $label, ${list%.txt}, $tasks tâche(s)")
   done < "$state/lists/arrays.tsv"
-  if [[ "$N_PROFILE" -gt 0 ]]; then
-    submit profile STAGE=profile "${gpu_t3[@]}" "--time=$(walltime profile)" \
-      "--dependency=$gate${trained:+,afterany$trained}"
-    lines+=("$last_id  profils d'initialisation, $N_PROFILE adaptateur(s)")
-  fi
 fi
 everything="$(IFS=:; echo "${submitted[*]-}")"
 if [[ -n "$everything" ]]; then

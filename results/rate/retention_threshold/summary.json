@@ -1,0 +1,88 @@
+{
+  "runs": 60,
+  "taus": [
+    0.5,
+    0.75,
+    0.9,
+    0.95
+  ],
+  "unbracketed": 0,
+  "checks": {
+    "0.5": {
+      "receivers_where_xbrl_is_cheapest": [
+        "gemma2_9b_base",
+        "gemma2_9b_instruct",
+        "llama31_8b_base",
+        "mistral_7b_base",
+        "qwen25_math_7b_base",
+        "qwen3_8b_base"
+      ],
+      "cheapest_corpus_elsewhere": {
+        "qwen25_7b_base": "panel_math"
+      },
+      "math_qwen25_math_over_qwen25": 2.5252049871454374,
+      "receiver_order_kendall_vs_090": {
+        "kind_code": 0.42857142857142855,
+        "panel_math": 0.6,
+        "xbrl_tags": 0.8095238095238095
+      }
+    },
+    "0.75": {
+      "receivers_where_xbrl_is_cheapest": [
+        "gemma2_9b_base",
+        "gemma2_9b_instruct",
+        "llama31_8b_base",
+        "mistral_7b_base",
+        "qwen25_math_7b_base",
+        "qwen3_8b_base"
+      ],
+      "cheapest_corpus_elsewhere": {
+        "qwen25_7b_base": "panel_math"
+      },
+      "math_qwen25_math_over_qwen25": 2.6276139567152814,
+      "receiver_order_kendall_vs_090": {
+        "kind_code": 0.8095238095238095,
+        "panel_math": 0.8666666666666667,
+        "xbrl_tags": 0.9047619047619048
+      }
+    },
+    "0.9": {
+      "receivers_where_xbrl_is_cheapest": [
+        "gemma2_9b_base",
+        "gemma2_9b_instruct",
+        "llama31_8b_base",
+        "mistral_7b_base",
+        "qwen25_math_7b_base",
+        "qwen3_8b_base"
+      ],
+      "cheapest_corpus_elsewhere": {
+        "qwen25_7b_base": "panel_math"
+      },
+      "math_qwen25_math_over_qwen25": 2.491096198155009,
+      "receiver_order_kendall_vs_090": {
+        "kind_code": 1.0,
+        "panel_math": 1.0,
+        "xbrl_tags": 1.0
+      }
+    },
+    "0.95": {
+      "receivers_where_xbrl_is_cheapest": [
+        "gemma2_9b_base",
+        "gemma2_9b_instruct",
+        "llama31_8b_base",
+        "mistral_7b_base",
+        "qwen25_math_7b_base",
+        "qwen3_8b_base"
+      ],
+      "cheapest_corpus_elsewhere": {
+        "qwen25_7b_base": "panel_math"
+      },
+      "math_qwen25_math_over_qwen25": 2.388005999935851,
+      "receiver_order_kendall_vs_090": {
+        "kind_code": 0.7142857142857143,
+        "panel_math": 1.0,
+        "xbrl_tags": 0.9047619047619048
+      }
+    }
+  }
+}
