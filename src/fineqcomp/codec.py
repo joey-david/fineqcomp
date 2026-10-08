@@ -582,6 +582,104 @@ def pad_lora_rank(
     return padded
 
 
+GAUGES = ("identity", "diagonal", "permutation", "orthogonal", "conditioned", "svd")
+
+
+def _haar_orthogonal(size: int, generator: torch.Generator) -> torch.Tensor:
+    q, r = torch.linalg.qr(
+        torch.randn(size, size, generator=generator, dtype=torch.float64)
+    )
+    return q * torch.sign(torch.diagonal(r))[None, :]
+
+
+def gauge_matrix(
+    gauge: str, rank: int, generator: torch.Generator, kappa: float = 1.0
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """An invertible rank x rank Q and its inverse, in float64.
+
+    `diagonal` draws magnitudes log-uniformly over a ratio of `kappa` with
+    random signs; `conditioned` is U diag(s) V^T with Haar U, V and s spaced
+    geometrically from kappa^-1/2 to kappa^1/2, so its condition number is
+    exactly `kappa` and |det Q| is one.
+    """
+    eye = torch.eye(rank, dtype=torch.float64)
+    if gauge == "identity":
+        return eye, eye
+    if gauge == "diagonal":
+        log_scale = (torch.rand(rank, generator=generator, dtype=torch.float64) - 0.5)
+        signs = torch.randint(0, 2, (rank,), generator=generator) * 2 - 1
+        scale = signs * torch.exp(log_scale * math.log(kappa))
+        return torch.diag(scale), torch.diag(1.0 / scale)
+    if gauge == "permutation":
+        q = eye[torch.randperm(rank, generator=generator)]
+        return q, q.T
+    if gauge == "orthogonal":
+        q = _haar_orthogonal(rank, generator)
+        return q, q.T
+    if gauge == "conditioned":
+        u = _haar_orthogonal(rank, generator)
+        v = _haar_orthogonal(rank, generator)
+        s = float(kappa) ** torch.linspace(-0.5, 0.5, rank, dtype=torch.float64)
+        return (u * s[None, :]) @ v.T, (v / s[None, :]) @ u.T
+    raise ValueError(f"unknown gauge {gauge!r}; expected one of {GAUGES}")
+
+
+def regauge_lora(
+    tensors: Mapping[str, torch.Tensor],
+    gauge: str,
+    draw: int = 0,
+    kappa: float = 1.0,
+) -> dict[str, torch.Tensor]:
+    """Refactor every LoRA pair as (B Q^-1)(Q A): the same update, other factors.
+
+    The codec codes each factor's rank directions separately, so it sees the
+    factors, not the product. Q is drawn per pair from a seed keyed on the
+    gauge, the draw and the pair name. `svd` is the balanced singular basis
+    rather than a draw.
+    """
+    regauged: dict[str, torch.Tensor] = {}
+    for a_name, b_name, a, b in _lora_pairs(tensors):
+        a64, b64 = a.double(), b.double()
+        if gauge == "svd":
+            new_a, new_b, _ = _balanced_svd(a64, b64)
+        else:
+            seed = zlib.crc32(f"{gauge}:{kappa:g}:{draw}:{a_name}".encode())
+            generator = torch.Generator().manual_seed(seed)
+            q, q_inverse = gauge_matrix(gauge, int(a.shape[0]), generator, kappa)
+            new_a, new_b = q @ a64, b64 @ q_inverse
+        regauged[a_name] = new_a.to(tensors[a_name].dtype).contiguous()
+        regauged[b_name] = new_b.to(tensors[b_name].dtype).contiguous()
+    return regauged
+
+
+def binary_projection(tensors: Mapping[str, torch.Tensor]) -> tuple[float, float]:
+    """gamma = <Delta_1, Delta> / ||Delta||^2 and the one-bit code's residual.
+
+    Delta_1 is the update rebuilt from one-bit factors in their stored basis,
+    with the codec's own row quantizer and fp16 scales, summed over every
+    pair through r x r Gram products. The residual is the energy of Delta_1
+    orthogonal to Delta, relative to ||Delta||^2.
+    """
+    from fineqcomp.adapters import frobenius_inner
+
+    norm, coded_norm, dot = 0.0, 0.0, 0.0
+    for a_name, b_name, a, b in _lora_pairs(tensors):
+        factors = []
+        for name, tensor in ((a_name, a), (b_name, b)):
+            matrix, transposed = orient_for_scales(name, tensor)
+            _, _, decoded = midrise_quantize(matrix, 1)
+            factors.append((decoded.T if transposed else decoded).double())
+        a, b = a.double(), b.double()
+        qa, qb = factors
+        norm += frobenius_inner(a, b, a, b)
+        coded_norm += frobenius_inner(qa, qb, qa, qb)
+        dot += frobenius_inner(a, b, qa, qb)
+    if norm <= 0:
+        raise ValueError("the binary projection needs a non-zero adapter update")
+    projection = dot / norm
+    return projection, max(coded_norm / norm - projection ** 2, 0.0)
+
+
 def _oriented_groups(
     tensor: torch.Tensor, transpose: bool, group_size: int
 ) -> tuple[torch.Tensor, tuple[int, int], int]:

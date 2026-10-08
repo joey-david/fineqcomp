@@ -259,8 +259,7 @@ def attenuation_profile(session: Any, tensors: dict[str, torch.Tensor], rows: li
     row quantizer, including its transmitted fp16 scales, and small Gram
     matrices. They describe weight geometry; they do not measure coded loss.
     """
-    from fineqcomp.codec import midrise_quantize, orient_for_scales
-    from fineqcomp.adapters import frobenius_inner, lora_pairs
+    from fineqcomp.codec import binary_projection
     from fineqcomp.training import causal_nll
 
     scales = (0.0, 0.125, 0.25, 0.5, 1.0)
@@ -277,23 +276,9 @@ def attenuation_profile(session: Any, tensors: dict[str, torch.Tensor], rows: li
     finally:
         apply_adapter_tensors(session.model, tensors)
 
-    norm, coded_norm, dot = 0.0, 0.0, 0.0
-    for a_name, b_name in lora_pairs(tensors):
-        factors = []
-        for name in (a_name, b_name):
-            matrix, transposed = orient_for_scales(name, tensors[name])
-            _, _, decoded = midrise_quantize(matrix, 1)
-            factors.append((decoded.T if transposed else decoded).double())
-        a, b = tensors[a_name].double(), tensors[b_name].double()
-        qa, qb = factors
-        norm += frobenius_inner(a, b, a, b)
-        coded_norm += frobenius_inner(qa, qb, qa, qb)
-        dot += frobenius_inner(a, b, qa, qb)
-    if norm <= 0:
-        raise ValueError("attenuation needs a non-zero adapter update")
-    projection = dot / norm
+    projection, residual = binary_projection(tensors)
     profile["attenuation_binary_projection"] = projection
-    profile["attenuation_binary_residual"] = max(coded_norm / norm - projection ** 2, 0.0)
+    profile["attenuation_binary_residual"] = residual
     profile["attenuation_rows"] = len(rows)
     return profile
 

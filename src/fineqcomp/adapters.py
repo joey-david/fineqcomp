@@ -126,12 +126,35 @@ def attach_adapter(
                 parameter.requires_grad_(False)
             elif "lora_B" in name:
                 parameter.requires_grad_(True)
+    if spec.init != "default":
+        regauge_initial_a(model, spec, seed)
     trainable = sum(
         parameter.numel() for parameter in model.parameters() if parameter.requires_grad
     )
     if trainable == 0:
         raise ValueError("adapter has no trainable parameters")
     return model
+
+
+def regauge_initial_a(model: torch.nn.Module, spec: AdapterSpec, seed: int) -> None:
+    """Start every LoRA-A from Q A0 rather than PEFT's A0, with B still zero.
+
+    (B Q^-1)(Q A0) is zero like B A0, so the model before training is the
+    same; only the factors the optimiser starts from differ. Q is drawn per
+    module from the run seed and the parameter name.
+    """
+    from fineqcomp.codec import gauge_matrix
+
+    gauge = {"rotated": "orthogonal", "conditioned": "conditioned"}[spec.init]
+    for name, parameter in model.named_parameters():
+        if "lora_A" not in name:
+            continue
+        generator = torch.Generator().manual_seed(
+            _tensor_seed(seed, f"init-{spec.init}-{spec.init_kappa:g}:{name}")
+        )
+        q, _ = gauge_matrix(gauge, int(parameter.shape[0]), generator, spec.init_kappa)
+        start = q @ parameter.detach().to("cpu", torch.float64)
+        parameter.data.copy_(start.to(parameter.device, parameter.dtype))
 
 
 def adapter_tensors(model: torch.nn.Module, method: str) -> dict[str, torch.Tensor]:
